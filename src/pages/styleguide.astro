@@ -13,8 +13,8 @@ import Figure from "@/components/ui/Figure.astro";
 import Hero from "@/components/blocks/Hero.astro";
 import LiquidReveal from "@/components/blocks/LiquidReveal.astro";
 import { COLOR_ROLES, SPACE } from "@/lib/tokens";
-import heroBase from "@/assets/placeholders/hero-base.jpg";
-import heroReveal from "@/assets/placeholders/hero-reveal.jpg";
+import portraitPhoto from "@/assets/portrait/portrait-photo.png";
+import portraitClay from "@/assets/portrait/portrait-clay.png";
 import figureSample from "@/assets/placeholders/figure-sample.jpg";
 
 const TYPE_ROLES = [
@@ -268,9 +268,9 @@ const SECTIONS = [
       <Stack gap="4">
         <h2 id="blocks-title">Blocks</h2>
         <p class="muted measure">
-          Nav and Footer frame this page. Below: the split Hero with the LiquidReveal. Move the
-          pointer (or drag horizontally on touch) over the image. With reduced motion the base image
-          stays static.
+          Nav and Footer frame this page. Below: the split Hero with the LiquidReveal. At rest the
+          liquid orbits the face; point at the portrait and it is pulled towards the cursor (tap on
+          touch). With reduced motion it only appears while pointing, without orbit or wobble.
         </p>
       </Stack>
     </Container>
@@ -288,9 +288,10 @@ const SECTIONS = [
     </Fragment>
     <LiquidReveal
       slot="media"
-      base={heroBase}
-      reveal={heroReveal}
-      alt="Placeholder: abstract grey shapes."
+      photo={portraitPhoto}
+      clay={portraitClay}
+      alt="Portrait of Dawid Młynarz"
+      loading="lazy"
     />
   </Hero>
 </SiteLayout>

@@ -1,243 +1,111 @@
 ---
 /**
- * LiquidReveal: a base image; moving the pointer over it reveals a second image
- * through a liquid (metaball) trail that follows the pointer and melts away.
+ * LiquidReveal: the portrait hero. The top image (photo by default) is a real responsive <img>;
+ * once JS runs, a canvas fades in over it and a liquid mask follows the pointer to reveal the
+ * bottom image (the clay sculpture). At rest the liquid orbits the face on its own.
  *
- * - Without JS, or with prefers-reduced-motion, only the base image shows.
- * - The script initialises when the element nears the viewport (like client:visible).
- * - The reveal image is flattened onto the current --color-bg, re-read on theme change,
- *   so transparent PNGs look right in both themes.
+ * Both images must be transparent cutouts with identical framing. They are flattened onto
+ * --color-bg, so they sit on the page in light and dark. Behaviour lives in
+ * src/scripts/liquid-reveal.ts (ported from the original Webflow embed).
+ *
+ * Reduced motion: no orbit, wobble or droplets; the liquid appears only while pointing.
+ * No JS: the top image alone.
  */
 import { Image, getImage } from "astro:assets";
 
 interface Props {
-  base: ImageMetadata;
-  /** Describes the base image. The reveal image is decorative. */
+  photo: ImageMetadata;
+  clay: ImageMetadata;
+  /** Describes the portrait. */
   alt: string;
-  reveal: ImageMetadata;
-  /** Blob radius as a fraction of the element's shorter side. */
-  radius?: number;
-  loading?: "lazy" | "eager";
+  top?: "photo" | "clay";
+  /** Blob size, 6–60. */
+  size?: number;
+  /** Edge softness, 0–100. */
+  soft?: number;
+  /** Magnet pull towards the pointer, 0–100. */
+  pull?: number;
+  /** Edge wobble, 0–100. */
+  wobble?: number;
+  /** Trail heal time in seconds. */
+  fade?: number;
+  /** Resting orbit speed, 0–100. */
+  orbit?: number;
+  /** Part of the image always kept in frame: [x0, x1, y0, y1], 0–1. */
+  face?: [number, number, number, number];
+  /** image: the box takes the image's aspect ratio · fill: fills its parent (full-bleed heroes). */
+  fit?: "image" | "fill";
+  loading?: "eager" | "lazy";
   sizes?: string;
   class?: string;
 }
 
 const {
-  base,
+  photo,
+  clay,
   alt,
-  reveal,
-  radius = 0.16,
-  loading = "lazy",
-  sizes = "(min-width: 62em) 40vw, 100vw",
+  top = "photo",
+  size = 22,
+  soft = 30,
+  pull = 55,
+  wobble = 55,
+  fade = 1.8,
+  orbit = 40,
+  face = [0.27, 0.71, 0.04, 0.86],
+  fit = "image",
+  loading = "eager",
+  sizes = "(min-width: 62em) 50vw, 100vw",
   class: className,
 } = Astro.props;
 
-const widths = [480, 800, 1200, 1600].filter((w) => w <= base.width);
-const revealImage = await getImage({ src: reveal, width: Math.min(reveal.width, 1600) });
+const WIDTHS = [480, 800, 1200, 1600, 2400];
+const widthsFor = (img: ImageMetadata) => {
+  const fits = WIDTHS.filter((w) => w < img.width);
+  return [...fits, img.width];
+};
+
+// Same widths and format for both layers, so the canvas can pick a matching pair.
+const sourcesFor = async (img: ImageMetadata) =>
+  Promise.all(
+    widthsFor(img).map(async (w) => ({
+      url: (await getImage({ src: img, width: w, format: "webp", quality: 82 })).src,
+      w,
+    })),
+  );
+
+const [photoSources, claySources] = await Promise.all([sourcesFor(photo), sourcesFor(clay)]);
+const topImage = top === "clay" ? clay : photo;
+const config = { top, size, soft, pull, wobble, fade, orbit, face };
+
+// The static <img> mirrors the canvas framing: cover, centred on the face.
+const objectPosition = `${((face[0] + face[1]) / 2) * 100}% ${((face[2] + face[3]) / 2) * 100}%`;
 ---
 
 <liquid-reveal
-  class:list={["liquid", className]}
-  data-reveal-src={revealImage.src}
-  data-radius={radius}
-  style={`aspect-ratio: ${base.width} / ${base.height}`}
+  class:list={["liquid", `liquid--${fit}`, className]}
+  data-config={JSON.stringify(config)}
+  data-photo={JSON.stringify(photoSources)}
+  data-clay={JSON.stringify(claySources)}
+  data-ratio={photo.width / photo.height}
+  style={`--liquid-ratio: ${photo.width} / ${photo.height}`}
 >
   <Image
-    class="liquid__base"
-    src={base}
+    class="liquid__image"
+    src={topImage}
     alt={alt}
-    widths={widths.length ? widths : [base.width]}
+    widths={widthsFor(topImage)}
     sizes={sizes}
+    format="webp"
+    quality={82}
     loading={loading}
     fetchpriority={loading === "eager" ? "high" : undefined}
+    style={`object-position: ${objectPosition}`}
   />
   <canvas class="liquid__canvas" aria-hidden="true"></canvas>
 </liquid-reveal>
 
 <script>
-  const LIFETIME = 900; // ms a trail point lives
-  const MASK_SCALE = 0.25; // metaball field resolution relative to the canvas
-  const THRESHOLD = 0.45; // field value where the liquid edge sits
-  const SOFTNESS = 0.08; // edge anti-aliasing band
-
-  type Point = { x: number; y: number; t: number };
-
-  class LiquidReveal extends HTMLElement {
-    #canvas!: HTMLCanvasElement;
-    #ctx!: CanvasRenderingContext2D;
-    #mask = document.createElement("canvas");
-    #maskCtx = this.#mask.getContext("2d", { willReadFrequently: true })!;
-    #image = new Image();
-    #points: Point[] = [];
-    #pointer: { x: number; y: number } | null = null;
-    #frame = 0;
-    #bg = "transparent";
-    #abort = new AbortController();
-    #width = 0;
-    #height = 0;
-
-    connectedCallback() {
-      if (matchMedia("(prefers-reduced-motion: reduce)").matches) return;
-      const io = new IntersectionObserver(
-        (entries) => {
-          if (entries.some((entry) => entry.isIntersecting)) {
-            io.disconnect();
-            this.#init();
-          }
-        },
-        { rootMargin: "200px" },
-      );
-      io.observe(this);
-      this.#abort.signal.addEventListener("abort", () => io.disconnect());
-    }
-
-    disconnectedCallback() {
-      this.#abort.abort();
-      cancelAnimationFrame(this.#frame);
-    }
-
-    async #init() {
-      const canvas = this.querySelector("canvas");
-      const ctx = canvas?.getContext("2d");
-      const src = this.dataset.revealSrc;
-      if (!canvas || !ctx || !src) return;
-      this.#canvas = canvas;
-      this.#ctx = ctx;
-
-      this.#image.decoding = "async";
-      this.#image.src = src;
-      try {
-        await this.#image.decode();
-      } catch {
-        return; // reveal image failed: keep the static base image
-      }
-
-      const { signal } = this.#abort;
-      new ResizeObserver(() => this.#resize()).observe(this);
-      this.#readBackground();
-      document.addEventListener("themechange", () => this.#readBackground(), { signal });
-      matchMedia("(prefers-color-scheme: dark)").addEventListener(
-        "change",
-        () => this.#readBackground(),
-        { signal },
-      );
-      this.addEventListener("pointermove", (event) => this.#move(event), { signal });
-      this.addEventListener("pointerleave", () => (this.#pointer = null), { signal });
-      this.dataset.ready = "";
-    }
-
-    #readBackground() {
-      // --color-bg resolves light-dark() only on a real property, so read it via `color`.
-      this.#bg = getComputedStyle(this.#canvas).color;
-    }
-
-    #resize() {
-      const rect = this.getBoundingClientRect();
-      const dpr = Math.min(devicePixelRatio || 1, 2);
-      this.#width = rect.width;
-      this.#height = rect.height;
-      this.#canvas.width = Math.round(rect.width * dpr);
-      this.#canvas.height = Math.round(rect.height * dpr);
-      this.#mask.width = Math.max(1, Math.round(rect.width * MASK_SCALE));
-      this.#mask.height = Math.max(1, Math.round(rect.height * MASK_SCALE));
-    }
-
-    #move(event: PointerEvent) {
-      const rect = this.getBoundingClientRect();
-      const x = event.clientX - rect.left;
-      const y = event.clientY - rect.top;
-      const now = performance.now();
-      const last = this.#points.at(-1);
-      // Fill gaps on fast moves so the trail stays continuous.
-      if (last) {
-        const step = this.#radius() / 3;
-        const distance = Math.hypot(x - last.x, y - last.y);
-        for (let d = step; d < distance; d += step) {
-          const k = d / distance;
-          this.#points.push({ x: last.x + (x - last.x) * k, y: last.y + (y - last.y) * k, t: now });
-        }
-      }
-      this.#points.push({ x, y, t: now });
-      this.#pointer = { x, y };
-      if (!this.#frame) this.#frame = requestAnimationFrame((t) => this.#draw(t));
-    }
-
-    #radius() {
-      return Math.min(this.#width, this.#height) * Number(this.dataset.radius ?? 0.16);
-    }
-
-    #draw(now: number) {
-      this.#points = this.#points.filter((p) => now - p.t < LIFETIME);
-      if (this.#pointer) this.#points.push({ ...this.#pointer, t: now });
-
-      const { width: cw, height: ch } = this.#canvas;
-      const ctx = this.#ctx;
-      ctx.clearRect(0, 0, cw, ch);
-
-      if (!this.#points.length) {
-        this.#frame = 0;
-        return;
-      }
-
-      this.#renderMask(now);
-
-      // Mask → flattened background → reveal image, all clipped to the liquid shape.
-      ctx.imageSmoothingEnabled = true;
-      ctx.globalCompositeOperation = "source-over";
-      ctx.drawImage(this.#mask, 0, 0, cw, ch);
-      ctx.globalCompositeOperation = "source-in";
-      ctx.fillStyle = this.#bg;
-      ctx.fillRect(0, 0, cw, ch);
-      ctx.globalCompositeOperation = "source-atop";
-      const { naturalWidth: iw, naturalHeight: ih } = this.#image;
-      const scale = Math.max(cw / iw, ch / ih);
-      ctx.drawImage(
-        this.#image,
-        (cw - iw * scale) / 2,
-        (ch - ih * scale) / 2,
-        iw * scale,
-        ih * scale,
-      );
-      ctx.globalCompositeOperation = "source-over";
-
-      this.#frame = requestAnimationFrame((t) => this.#draw(t));
-    }
-
-    /** Sum soft radial falloffs (metaballs), then threshold them into a smooth liquid edge. */
-    #renderMask(now: number) {
-      const m = this.#maskCtx;
-      const { width: mw, height: mh } = this.#mask;
-      m.globalCompositeOperation = "source-over";
-      m.clearRect(0, 0, mw, mh);
-      m.globalCompositeOperation = "lighter";
-
-      const base = this.#radius() * MASK_SCALE;
-      for (const p of this.#points) {
-        const life = 1 - (now - p.t) / LIFETIME;
-        const r = base * Math.sqrt(life);
-        if (r < 1) continue;
-        const x = p.x * MASK_SCALE;
-        const y = p.y * MASK_SCALE;
-        const g = m.createRadialGradient(x, y, 0, x, y, r);
-        g.addColorStop(0, "rgb(255 255 255 / 0.35)");
-        g.addColorStop(1, "rgb(255 255 255 / 0)");
-        m.fillStyle = g;
-        m.fillRect(x - r, y - r, r * 2, r * 2);
-      }
-
-      const field = m.getImageData(0, 0, mw, mh);
-      const data = field.data;
-      const lo = THRESHOLD - SOFTNESS;
-      for (let i = 3; i < data.length; i += 4) {
-        const v = (data[i]! / 255 - lo) / (SOFTNESS * 2);
-        const a = v <= 0 ? 0 : v >= 1 ? 1 : v * v * (3 - 2 * v);
-        data[i] = a * 255;
-      }
-      m.putImageData(field, 0, 0);
-    }
-  }
-
-  if (!customElements.get("liquid-reveal")) customElements.define("liquid-reveal", LiquidReveal);
+  import "@/scripts/liquid-reveal";
 </script>
 
 <style>
@@ -246,12 +114,27 @@ const revealImage = await getImage({ src: reveal, width: Math.min(reveal.width, 
       position: relative;
       display: block;
       overflow: hidden;
-      border-radius: var(--radius-lg);
-      background-color: var(--color-bg-subtle);
-      touch-action: pan-y;
+      background-color: var(--color-bg);
     }
 
-    .liquid__base,
+    .liquid--image {
+      aspect-ratio: var(--liquid-ratio);
+    }
+
+    /* Narrow screens: a square box crops the cutout's empty sides so the face reads larger.
+       The canvas framing keeps the face in frame at any aspect ratio. */
+    @media (width < 48em) {
+      .liquid--image {
+        aspect-ratio: 1;
+      }
+    }
+
+    .liquid--fill {
+      inline-size: 100%;
+      block-size: 100%;
+    }
+
+    .liquid__image,
     .liquid__canvas {
       position: absolute;
       inset: 0;
@@ -259,14 +142,20 @@ const revealImage = await getImage({ src: reveal, width: Math.min(reveal.width, 
       block-size: 100%;
     }
 
-    .liquid__base {
+    .liquid__image {
       object-fit: cover;
     }
 
     .liquid__canvas {
-      /* Read by the script: the resolved background colour to flatten the reveal onto. */
+      /* Read by the script: the resolved page background the cutouts are flattened onto. */
       color: var(--color-bg);
       pointer-events: none;
+      opacity: 0;
+      transition: opacity var(--duration-reveal) var(--ease-standard);
+    }
+
+    [data-ready] > .liquid__canvas {
+      opacity: 1;
     }
   }
 </style>

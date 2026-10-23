@@ -142,6 +142,7 @@
     --ease-standard: cubic-bezier(0.4, 0, 0.2, 1);
     --duration-fast: 150ms;
     --duration-link: 350ms; /* animated link underline */
+    --duration-reveal: 600ms; /* media fading in once ready (liquid reveal canvas) */
     --z-nav: 100;
   }
 
