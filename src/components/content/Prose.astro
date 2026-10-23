@@ -81,10 +81,5 @@ const { class: className } = Astro.props;
     .prose :global(strong) {
       font-weight: var(--weight-semibold);
     }
-
-    .prose :global(p:has(> strong:only-child)) {
-      font-size: var(--text-lead);
-      line-height: var(--leading-lead);
-    }
   }
 </style>

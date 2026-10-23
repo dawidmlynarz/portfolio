@@ -1,15 +1,150 @@
 ---
 title: Optimizing conversion with improved search filters UX and new product category pages
 description: I joined BeatStars to elevate the user experience across multiple platforms. I was responsible for increasing the conversion rate of product listing pages, and search filters UX improvements of cross-platform experience (web, iOS, and Android).
+lead: "BeatStars is a digital production marketplace that allows music producers to license, sell, and give away free beats to creators."
 company: BeatStars
 role: Sr. Product Designer
 industry: Music, E-commerce
 business: B2C
-tags: [Product Design, Conversion Optimization, iOS & Android Design, UX Design]
+tags: [Product Design, Data-driven Design, Conversion Optimization, iOS & Android Design, UX Design]
 cover: ./cover.jpg
-coverAlt: Cover image for the BeatStars case study.
+coverAlt: BeatStars marketplace screens in dark mode, laid out at an angle.
+link:
+  href: https://www.beatstars.com/search?type=tracks
+  label: See it live
 order: 4
+next: beatstars-design-system
 draft: true
 ---
 
-{/* Body not migrated yet: it arrives in the Phase C batch, after the Newsweek AI pilot is approved. */}
+import beatstarsFiltersWeb from "./beatstars-filters-web.jpg";
+import beatstarsFiltersWebCollage from "./beatstars-filters-web-collage.jpg";
+import beatstarsFilters from "./beatstars-filters.jpg";
+import beatstarsFiltersMobileWeb from "./beatstars-filters-mobile-web.jpg";
+import beatstarsFiltersPlacement from "./beatstars-filters-placement.jpg";
+import beatstarsFiltersIos from "./beatstars-filters-ios.jpg";
+import beatstarsFiltersIos2 from "./beatstars-filters-ios-2.jpg";
+import beatstarsFiltersIosCollage from "./beatstars-filters-ios-collage.jpg";
+import beatstarsFiltersAndroid from "./beatstars-filters-android.jpg";
+import beatstarsCategories from "./beatstars-categories.jpg";
+import beatstarsCategoriesCollage from "./beatstars-categories-collage.jpg";
+
+## My role
+
+I was responsible for increasing the conversion rate of product listing pages, and search filters UX improvements of cross-platform experience (web, iOS, and Android). Some other projects I worked on included establishing a cross-platform design system, designing new product features, and scaling up the Studio platform.
+
+### Key achievements
+
+- Increased conversions across all product listing pages by 19.8%
+- Improved usability of filters across web, iOS, and Android platforms
+- Enhanced content discoverability on product category pages
+
+## Project Background
+
+BeatStars is a digital production marketplace that allows music producers to license, sell, and give away free beats. Marketplace is the main B2C product that addresses the needs of creators (buyers), and music producers (sellers).
+
+### Objectives
+
+- Redesign and validation of filters and search experience on the website
+- Translate redesigned filters into iOS and Android native platforms
+- Enhanced experience across category pages of Tracks, Sound Kits, Playlists, Musicians, and Albums
+
+<Figure
+  src={beatstarsFiltersWeb}
+  alt="BeatStars Tracks page on desktop with the redesigned filters sidebar."
+/>
+
+<Figure
+  src={beatstarsFiltersWebCollage}
+  alt="Desktop filter states: genre filters applied, empty results and tag selection."
+/>
+
+## The Challenge
+
+At BeatStars we wanted **to improve bounce rates and conversion rates on existing product category pages**. We used feedback collected from users, and Google Analytics data to back-up our design process during optimization efforts.
+
+According to the user’s feedback, **the most problematic part of the product category page was the navigation through product listing using filters and categories**. We have decided to start with enhancement of the website experience, and then create similar experience for native iOS and Android apps.
+
+## Solution
+
+We have **decided to start mobile-first, since ~70% of the BeatStars traffic was coming from mobile devices**. I have started with UX audit of the existing solution and competitive analysis of the top e-commerce websites.
+
+The important aspect of this redesign was the data analysis that showed us what are the most used filters. This information helped us to decide on the amount of filters, and to create the right flow for the user to apply only the relevant ones.
+
+<Figure
+  src={beatstarsFilters}
+  alt="Filter groups showing only the top five options per category: genre, mood, key and instrument."
+/>
+
+We have decided to display top 5 filters of each category, with ability to access the entire list. Based on the user feedback, we discovered that **this approach improved the usability of the filters accordeon and reduced the cognitive load**.
+
+Applying relevant filters is easier than showing relevant results. If the users are looking at highly relevant products, there is a higher chance they are going to purchase them. It was important for us to keep the narrowing down process within a reasonable, foreseeable timeframe.
+
+<Figure
+  src={beatstarsFiltersMobileWeb}
+  alt="Mobile web filters: track list, empty results, and the filter sheet with genre, BPM and key options."
+/>
+
+For mobile version we have experimented with the position of the filters button itself. Eventually, we have decided to keep the filters button fixed in the bottom of the screen as part of the web experience.
+
+Additionally, we have confirmed with A/B tests that the placement of the button for web mobile experience is the right choice.
+
+<Figure
+  src={beatstarsFiltersPlacement}
+  alt="Heatmaps of four filter-button placements on mobile web."
+/>
+
+## iOS and Android Filters
+
+After we successfully launched the web filters, we collected a good amount of data to prove that this approach works well. We decided to introduce the consistent filters approach to iOS and Android apps.
+
+Our primary goal was to stick to the iOS and Android patterns and still deliver filters that will match the web version. We have collected a good amount of data by then, in order to inform our further decisions.
+
+<Figure
+  src={beatstarsFiltersIos}
+  alt="iOS filter screens: genres, sort, tags, price and BPM pickers."
+/>
+
+<Figure src={beatstarsFiltersIosCollage} alt="Overview of every screen in the iOS filter flow." />
+
+## Consistency
+
+In order to keep consistency between web, iOS and Android systems we have used a cross-platform design system, that I have introduced when I have joined BeatStars.
+
+This has helped to quickly iterate on existing screens, and adapt components to the native systems. I was able to swap Figma components between native apps, due to the reliable libraries.
+
+<Figure
+  src={beatstarsFiltersIos2}
+  alt="iOS app: track list, the refine-results sheet, and filtered results."
+/>
+
+<Figure
+  src={beatstarsFiltersAndroid}
+  alt="Android app: track list, the refine-results sheet, and filtered results."
+/>
+
+## Category Pages
+
+Once the filters were ready, we were able to focus on category pages. We wanted to diversify the experience for the different types of products offered by BeatStars.
+
+We have started working towards different display of layouts and product items on the listings. Initially we have planned to A/B test list vs. grid approach for the category page, but eventually we decided to give the ability to the user to switch between the views.
+
+Based on the Google Analytics data, we kept the list view as the default product listing page, due to the better conversion, and density of information.
+
+<Figure
+  src={beatstarsCategories}
+  alt="Desktop category pages for all categories, sound kits and albums."
+/>
+
+<Figure
+  src={beatstarsCategoriesCollage}
+  alt="Mobile category pages: all categories, playlists, sound kits and musicians."
+/>
+
+## Key Takeaways
+
+BeatStars marketplace **had a 19.8% increase in conversion rate across all category pages** where we have improved the filtering system. We have been gradually rolling out the new filters and measuring the impact, starting with website and then adopting the approach for iOS and Android apps.
+
+I was particularly proud of the level of consistency we have achieved across website, iOS and Android platforms. Our work invested into design system paid off and it made the efforts smooth and time-efficient.
+
+**If you are interested in my design systems work for BeatStars, feel free to check out the related case study below.**

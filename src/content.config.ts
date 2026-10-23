@@ -20,6 +20,8 @@ const work = defineCollection({
       seoTitle: z.string().optional(),
       /** One or two sentences: card summary, lead paragraph and meta description. */
       description: z.string(),
+      /** Page intro under the headline, when it differs from the card summary. */
+      lead: z.string().optional(),
       company: z.string(),
       role: z.string(),
       /** Agency or partner the work was done through, e.g. "XWP.co". */
@@ -41,6 +43,12 @@ const work = defineCollection({
        * (unlinked) so the migration can be reviewed.
        */
       draft: z.boolean().default(false),
+      /**
+       * Was password-protected on Webflow. A protected draft gets no page on previews either
+       * (preview URLs are public) unless SHOW_PROTECTED_DRAFTS is set for an Access-protected
+       * preview environment. Remove the flag once the content is cleared to be public.
+       */
+      protected: z.boolean().default(false),
     }),
 });
 

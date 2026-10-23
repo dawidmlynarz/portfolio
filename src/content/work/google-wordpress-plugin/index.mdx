@@ -1,16 +1,111 @@
 ---
 title: Contributing to the official Google Material Design plugin for WordPress
 description: On behalf of XWP I worked with the product team to deliver UX improvements and new features for the open-source Google Material Design plugin for WordPress.
+lead: "Customize your site’s navigation, colors, typography, and shapes, use Material Components, and choose from over 1,000 Google Fonts and Material Design icons. From the team behind Google’s open-source design system."
 company: Google Material Design
 role: Sr. Product Designer
 via: XWP.co
 industry: WordPress Plugin
 business: Open-source
-tags: [Product Design, WordPress Design, UX Design, Design Systems]
+tags: [Product Design, Design Systems, WordPress Plugin, Open-source, Contributor]
 cover: ./cover.jpg
-coverAlt: Cover image for the Google Material Design case study.
+coverAlt: Material Design block patterns and editor panels for WordPress.
+link:
+  href: https://m3.material.io/blog/material-design-wordpress-plugin
+  label: Material Design for WordPress
 order: 5
+next: beatstars-product-design
 draft: true
+protected: true
 ---
 
-{/* Body not migrated yet: it arrives in the Phase C batch, after the Newsweek AI pilot is approved. */}
+import mdsBlocks from "./mds-blocks.jpg";
+import mdsAllBlocks from "./mds-all-blocks.jpg";
+import mdsMatrix from "./mds-matrix.jpg";
+import mdsCarouselWeb from "./mds-carousel-web.jpg";
+import mdsCarousel from "./mds-carousel.jpg";
+import msdDarkMode from "./msd-dark-mode.jpg";
+import mdsPanels from "./mds-panels.jpg";
+
+## My role
+
+In 2021 on behalf of XWP I had a chance to contribute to the Google's Material Design plugin for WordPress. It was an open-source project where I worked closely with stakeholders from Google to deliver UX improvements and new features for the plugin.
+
+**I was responsible for the entire design process: from the concept, through iteration and prototyping, until the design delivery, and developer handover.** Some work artifacts has been documented on Github, but majority of collaboration happened on a shared Slack with stakeholders.
+
+### Key achievements
+
+- Introduction of 20+ pattern blocks using Material Design components
+- Design of [Settings page](https://github.com/xwp/material-design-wp-plugin/issues/534) to manage updates and API key
+- Concept of light and dark mode based on the Material Design guidelines
+
+## Background
+
+Material Design for WordPress is an experimental plugin and theme that can customize the navigation, colors, typography and shapes, as well as access the full set of Google Fonts and Material Design icons for WordPress sites.
+
+The plugin was built using WordPress user interface, but **the biggest challenge was to link Material Design system with WordPress styles**. Overtime I have worked on updating some parts of the plugin to improve the user experience.
+
+<Figure
+  src={mdsBlocks}
+  alt="A landing page assembled from Material Design block patterns: hero, features, highlights, numbers and subscribe sections."
+/>
+
+<Figure
+  src={mdsAllBlocks}
+  alt="Overview of the 20+ Material Design block patterns for the WordPress block editor."
+/>
+
+## Designed 20+ block patterns
+
+Material Design plugin offers also a set of pre-made pattern blocks (complete page sections) that allow users to quickly build any landing page from scratch.
+
+In order to deliver a set of reusable block patterns I have done research on the most used landing page elements. We have used priority matrix to define which are the most important, and then divided the delivery process into phases.
+
+<Figure
+  src={mdsMatrix}
+  alt="Block pattern sketches next to a priority matrix of importance versus urgency."
+/>
+
+## Adapting components to WordPress block editor experience
+
+Gutenberg is the WordPress default editor, replacing the previous classic editor. It enables users to create and design content using individual blocks for text, images, videos, and other site elements on a drag-and-drop interface – providing enhanced flexibility and design capabilities.
+
+I was responsible for designing the experience of Material Design components behaviour as blocks. This required deep understanding of WordPress user interface and design system variables and attributes.
+
+<Figure
+  src={mdsCarouselWeb}
+  alt="Card carousel block in the WordPress block editor with its settings panel."
+/>
+
+<Figure
+  src={mdsCarousel}
+  alt="Carousel block variants in the editor: image gallery, post cards, empty state and placeholders."
+/>
+
+## Carousel block
+
+The great example of the component adaptation is Material Design card component, wrapped within a carousel block. I have analyzed the anatomy and behaviour of the component, in order to provide a simple user interface built into Gutenberg editor.
+
+I have designed the controls for the Cards collection embedded into the carousel block. Editor is able to define the number of columns, number of posts, and gutter. There are also some useful features added such as autoplay behaviour or ability to maintain equal height of the cards.
+
+<Figure
+  src={msdDarkMode}
+  alt="Theme customizer with dark-mode colour settings and a contrast warning, next to a dark Material theme preview."
+/>
+
+<Figure
+  src={mdsPanels}
+  alt="Colour palette panels for default and dark mode, with contrast indicators."
+/>
+
+## Dark mode
+
+I have explored how to incorporate the dark mode feature as a future iteration of the WordPress plugin. Material Design offers guidelines for creating dark and light theme UI. I embedded the color tokens into the side panel (main panel of theme editor) and aligned the styles with WordPress UI.
+
+Additionally, I have added a small indicator about the color contrast for the users. We couldn't predict what color combination is chosen by the user, therefore to maintain WCAG standards, we decided to provide a visual hint to notify the user.
+
+## Key Takeaways
+
+Working with Google Material Design team was a great experience. I have learned a lot about WordPress user interface, Material Design system, designing WordPress blocks from scratch, and more.
+
+It was also a great experience to contribute my skills to the open-source project. You can learn more about Material Design for Wordpress on the [official site](https://m3.material.io/blog/material-design-wordpress-plugin).

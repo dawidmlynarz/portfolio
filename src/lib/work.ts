@@ -1,19 +1,23 @@
 import { getCollection, type CollectionEntry } from "astro:content";
-import { isProduction } from "@/lib/site";
+import { isProduction, showProtectedDrafts } from "@/lib/site";
 
 export type Work = CollectionEntry<"work">;
 
 const byOrder = (a: Work, b: Work) => a.data.order - b.data.order;
 
-/** Case studies that have a page. */
-export async function getPublishedWork() {
-  return (await getCollection("work", ({ data }) => !data.draft)).sort(byOrder);
+/** Listed on this build: published work, plus drafts on preview builds (for review). */
+export const isListed = ({ data }: Work) => !data.draft || !isProduction;
+
+/** Gets a page on this build. Protected drafts stay unlinked cards unless previews are behind Access. */
+export const hasPage = (entry: Work) =>
+  isListed(entry) && (!entry.data.draft || !entry.data.protected || showProtectedDrafts);
+
+export async function getListedWork() {
+  return (await getCollection("work", isListed)).sort(byOrder);
 }
 
-/** What the Work and Home lists show: published work, plus drafts on preview builds. */
-export async function getListedWork() {
-  const all = await getCollection("work", ({ data }) => !data.draft || !isProduction);
-  return all.sort(byOrder);
+export async function getPagedWork() {
+  return (await getCollection("work", hasPage)).sort(byOrder);
 }
 
 export const workHref = (entry: Work) => `/work/${entry.id}`;

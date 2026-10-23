@@ -24,6 +24,12 @@ export default defineConfig({
     schema: {
       // Set by Cloudflare Pages at build time. Only the production branch is indexable.
       CF_PAGES_BRANCH: envField.string({ context: "server", access: "public", optional: true }),
+      // Set to "true" only where previews sit behind Cloudflare Access.
+      SHOW_PROTECTED_DRAFTS: envField.boolean({
+        context: "server",
+        access: "public",
+        default: false,
+      }),
     },
   },
 });

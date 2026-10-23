@@ -32,7 +32,7 @@ const facts = [
       <Container class="case-study__intro">
         <p class="text-caption case-study__eyebrow">Case study · {data.company}</p>
         <h1 class="case-study__title">{data.title}</h1>
-        <p class="text-lead case-study__lead">{data.description}</p>
+        <p class="text-lead case-study__lead">{data.lead ?? data.description}</p>
         <ul class="case-study__tags" role="list">
           {data.tags.map((tag) => (
             <Tag as="li">{tag}</Tag>

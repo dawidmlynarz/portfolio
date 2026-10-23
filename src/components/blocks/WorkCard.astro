@@ -1,7 +1,7 @@
 ---
 import { Image } from "astro:assets";
 import Tag from "@/components/ui/Tag.astro";
-import { roleLine, workHref, type Work } from "@/lib/work";
+import { hasPage, roleLine, workHref, type Work } from "@/lib/work";
 
 interface Props {
   entry: Work;
@@ -14,7 +14,7 @@ interface Props {
 const { entry, headingLevel = 2, eager = false } = Astro.props;
 const { data } = entry;
 const Heading = `h${headingLevel}` as const;
-const href = data.draft ? undefined : workHref(entry);
+const href = hasPage(entry) ? workHref(entry) : undefined;
 ---
 
 <article class:list={["work-card", { "work-card--draft": data.draft }]}>
@@ -33,9 +33,14 @@ const href = data.draft ? undefined : workHref(entry);
     </Heading>
     <p class="work-card__summary">{data.description}</p>
     <ul class="work-card__tags" role="list">
+      {data.draft && data.protected && !href && (
+        <Tag as="li" variant="solid">
+          Protected · no preview page
+        </Tag>
+      )}
       {data.draft && (
         <Tag as="li" variant="solid">
-          Draft · not published
+          Draft · preview only
         </Tag>
       )}
       <Tag as="li" variant="solid">
