@@ -1,0 +1,11 @@
+/*
+ * Entry point for all global CSS. The first statement fixes the layer order;
+ * everything after it may only add to these layers.
+ */
+@layer reset, tokens, base, components, utilities;
+
+@import "@fontsource-variable/dm-sans";
+@import "@fontsource-variable/dm-sans/wght-italic.css";
+@import "./reset.css";
+@import "./tokens.css";
+@import "./base.css";

@@ -1,0 +1,155 @@
+/*
+ * tokens.css — design tokens v1 (light + dark, fluid type)
+ *
+ * Mirrors the Figma file "mlynarz.com — Foundations"
+ * https://www.figma.com/design/vzoYNuNujywTubNYgLt10d
+ *   Figma collection "Primitives"  -> tier 1 below
+ *   Figma collection "Color"       -> tier 2 below (Light / Dark modes)
+ *   Figma collection "Type"        -> --text-* (Mobile 375 / Desktop 1440 modes = the clamp() min / max)
+ *   Figma collection "Layout"      -> --space-*, --radius-*, --gutter (same modes)
+ * Names are identical on both sides. Change a value in one place, then mirror it in the other.
+ *
+ * Tiers: 1 primitives (raw, never used in components) · 2 semantic (what components use) ·
+ *        3 component tokens (local to a component, rare).
+ * Rules: no hex/rgb/hsl and no raw px for spacing, radius or font-size outside this file.
+ * Base element styles live in base.css; the reset in reset.css; global.css wires the layers.
+ *
+ * THEMING
+ *   Default follows the OS (color-scheme: light dark). A toggle sets <html data-theme="light|dark">.
+ *   Put this inline in <head> BEFORE the CSS to avoid a flash:
+ *     <script>try{var t=localStorage.getItem('theme');if(t)document.documentElement.dataset.theme=t}catch(e){}</script>
+ *   Toggle: set dataset.theme + localStorage.theme; "system" = remove both.
+ *   Gotchas: use currentColor in the logo SVG; pass the current --color-bg to the LiquidReveal canvas
+ *   (it flattens transparent PNGs onto a background) and re-init it on theme change.
+ *   Dark mode is a tested design, not an inversion: brand blue gets lighter in dark for contrast.
+ */
+@layer reset, tokens, base, components, utilities;
+
+@layer tokens {
+  :root {
+    color-scheme: light dark;
+
+    /* ---------- 1. Primitives (placeholders until the new palette is chosen) ---------- */
+    --neutral-0: #fff;
+    --neutral-50: #f6f6f6;
+    --neutral-100: #ebebeb;
+    --neutral-200: #d6d6d6;
+    --neutral-300: #b3b3b3;
+    --neutral-500: #7a7a7a;
+    --neutral-700: #636363;
+    --neutral-800: #3a3a3a;
+    --neutral-850: #262626;
+    --neutral-900: #161616; /* softened "black" for text (was pure #000) */
+    --neutral-950: #0e0e0e; /* dark-mode background */
+    --blue-200: #b9c5ff;
+    --blue-300: #8da2ff;
+    --blue-600: #1735ca;
+    --blue-900: #0a2277;
+
+    /* ---------- 2. Semantic color: light-dark(light, dark) ---------- */
+    --color-bg: light-dark(var(--neutral-0), var(--neutral-950));
+    --color-bg-subtle: light-dark(var(--neutral-50), var(--neutral-900));
+    --color-text: light-dark(var(--neutral-900), var(--neutral-100));
+    --color-text-muted: light-dark(var(--neutral-700), var(--neutral-300));
+    --color-brand: light-dark(var(--blue-600), var(--blue-300));
+    --color-brand-strong: light-dark(var(--blue-900), var(--blue-200));
+    /* UI borders only, never text */
+    --color-border: light-dark(var(--neutral-500), var(--neutral-500));
+    --color-border-muted: light-dark(var(--neutral-300), var(--neutral-800));
+    --color-border-subtle: light-dark(var(--neutral-100), var(--neutral-850));
+    --color-focus: light-dark(var(--blue-600), var(--blue-300));
+    --color-overlay: color-mix(in srgb, var(--color-bg) 88%, transparent); /* sticky nav */
+
+    /* ---------- Typography ----------
+       Roles, not sizes. Fluid between 375px and 1440px viewports.
+       clamp(min, intercept + slope*vw, max)  ->  min/max are the Figma Mobile/Desktop values.
+         role      min -> max    line-height  tracking   weight
+         display   40 -> 88      1.02         -0.03em    600
+         h1        34 -> 64      1.05         -0.025em   600
+         h2        28 -> 44      1.10         -0.02em    600
+         h3        22 -> 30      1.20         -0.01em    600
+         h4        19 -> 22      1.30         -0.005em   600
+         lead      18 -> 22      1.50          0         400
+         body      16 -> 18      1.60          0         400
+         small     14 -> 15      1.50          0         400
+         caption   12 -> 13      1.40         +0.04em    500, uppercase
+    */
+    --font-heading:
+      "DM Sans Variable", "DM Sans", system-ui, sans-serif; /* swap when the new face is chosen */
+    --font-body: "DM Sans Variable", "DM Sans", system-ui, sans-serif;
+    --font-mono: ui-monospace, "SF Mono", "Menlo", monospace;
+
+    --text-display: clamp(2.5rem, 1.444rem + 4.507vw, 5.5rem);
+    --text-h1: clamp(2.125rem, 1.465rem + 2.817vw, 4rem);
+    --text-h2: clamp(1.75rem, 1.398rem + 1.502vw, 2.75rem);
+    --text-h3: clamp(1.375rem, 1.199rem + 0.751vw, 1.875rem);
+    --text-h4: clamp(1.1875rem, 1.122rem + 0.282vw, 1.375rem);
+    --text-lead: clamp(1.125rem, 1.037rem + 0.376vw, 1.375rem);
+    --text-body: clamp(1rem, 0.956rem + 0.188vw, 1.125rem);
+    --text-small: clamp(0.875rem, 0.853rem + 0.094vw, 0.9375rem);
+    --text-caption: clamp(0.75rem, 0.728rem + 0.094vw, 0.8125rem);
+
+    --leading-display: 1.02;
+    --tracking-display: -0.03em;
+    --leading-h1: 1.05;
+    --tracking-h1: -0.025em;
+    --leading-h2: 1.1;
+    --tracking-h2: -0.02em;
+    --leading-h3: 1.2;
+    --tracking-h3: -0.01em;
+    --leading-h4: 1.3;
+    --tracking-h4: -0.005em;
+    --leading-lead: 1.5;
+    --leading-body: 1.6;
+    --leading-small: 1.5;
+    --leading-caption: 1.4;
+    --tracking-caption: 0.04em;
+    --weight-regular: 400;
+    --weight-medium: 500;
+    --weight-semibold: 600;
+    --measure: 65ch;
+
+    /* ---------- Spacing (4px base, rem so it respects user font size) ---------- */
+    --space-1: 0.25rem;
+    --space-2: 0.5rem;
+    --space-3: 0.75rem;
+    --space-4: 1rem;
+    --space-6: 1.5rem;
+    --space-8: 2rem;
+    --space-10: 2.5rem;
+    --space-12: 3rem;
+    --space-16: 4rem;
+    --space-24: 6rem;
+
+    /* Fluid: Figma "Layout" modes Mobile 375 -> Desktop 1440 */
+    --gutter: clamp(1rem, 0.648rem + 1.502vw, 2rem); /* 16 -> 32  */
+    --space-section-sm: clamp(2.5rem, 2.06rem + 1.878vw, 3.75rem); /* 40 -> 60  */
+    --space-section-md: clamp(3.5rem, 2.972rem + 2.254vw, 5rem); /* 56 -> 80  */
+    --space-section-lg: clamp(4.5rem, 3.62rem + 3.756vw, 7rem); /* 72 -> 112 */
+    --container-max: 80rem;
+
+    /* Breakpoints (can't be vars in @media): 48em (768px), 62em (992px) */
+
+    /* ---------- Shape, depth, motion ---------- */
+    --radius-sm: 4px;
+    --radius-md: 8px;
+    --radius-lg: 20px;
+    --radius-xl: 48px; /* verify it is used, else drop from both CSS and Figma */
+    --radius-pill: 9999px;
+    --border-width: 1px;
+    --shadow-bar: 0 12px 30px -20px light-dark(rgb(0 0 0 / 30%), rgb(0 0 0 / 70%));
+    --ease-standard: cubic-bezier(0.4, 0, 0.2, 1);
+    --duration-fast: 150ms;
+    --duration-link: 350ms; /* animated link underline */
+    --z-nav: 100;
+  }
+
+  /* Manual override from the theme toggle (beats OS preference) */
+  :root[data-theme="light"] {
+    color-scheme: light;
+  }
+
+  :root[data-theme="dark"] {
+    color-scheme: dark;
+  }
+}
