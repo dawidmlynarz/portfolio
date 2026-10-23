@@ -1,31 +1,17 @@
 ---
-import BaseLayout from "@/layouts/BaseLayout.astro";
+import SiteLayout from "@/layouts/SiteLayout.astro";
+import Hero from "@/components/blocks/Hero.astro";
+import Button from "@/components/ui/Button.astro";
 ---
 
-<BaseLayout>
-  <main class="scaffold">
-    <p class="text-caption">Phase A · technical foundation</p>
-    <h1 class="text-display">Dawid Młynarz</h1>
-    <p class="text-lead">
-      Placeholder home page. Tokens, fonts, layers and tooling are wired up; components and pages
-      arrive in Phases B and C.
-    </p>
-  </main>
-</BaseLayout>
-
-<style>
-  @layer components {
-    .scaffold {
-      display: grid;
-      gap: var(--space-6);
-      max-inline-size: var(--container-max);
-      margin-inline: auto;
-      padding: var(--space-section-md) var(--gutter);
-    }
-
-    .text-lead {
-      max-inline-size: var(--measure);
-      color: var(--color-text-muted);
-    }
-  }
-</style>
+<SiteLayout>
+  <Hero
+    eyebrow="Phase B · design system"
+    title="Dawid Młynarz"
+    lead="Placeholder home page. The real pages are built in Phase C, once the styleguide is approved."
+  >
+    <Button slot="actions" href="/styleguide">
+      View the styleguide
+    </Button>
+  </Hero>
+</SiteLayout>

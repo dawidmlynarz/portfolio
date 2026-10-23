@@ -1,0 +1,53 @@
+---
+import type { HTMLAttributes } from "astro/types";
+
+interface Props extends HTMLAttributes<"a"> {
+  href: string;
+  /** underline: animated underline (default) · quiet: underline only on hover */
+  variant?: "underline" | "quiet";
+}
+
+const { href, variant = "underline", class: className, ...attrs } = Astro.props;
+const external = /^https?:\/\//.test(href) && !href.startsWith(Astro.site?.origin ?? "");
+---
+
+<a
+  href={href}
+  class:list={["link", `link--${variant}`, className]}
+  rel={external ? "noopener" : undefined}
+  {...attrs}
+>
+  <slot />
+  {external && (
+    <svg class="link__icon" viewBox="0 0 16 16" aria-hidden="true">
+      <path d="M5 11 11 5M6 5h5v5" />
+    </svg>
+  )}
+</a>
+
+<style>
+  @layer components {
+    .link--quiet {
+      --underline-size: 0%;
+      --underline-origin: right;
+    }
+
+    .link--quiet:hover {
+      --underline-size: 100%;
+      --underline-origin: left;
+    }
+
+    .link__icon {
+      display: inline-block;
+      inline-size: 0.75em;
+      block-size: 0.75em;
+      margin-inline-start: var(--space-1);
+      vertical-align: baseline;
+      fill: none;
+      stroke: currentcolor;
+      stroke-width: 1.5;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+    }
+  }
+</style>

@@ -11,6 +11,9 @@ export default defineConfig({
   trailingSlash: "never",
   build: { format: "file" },
   output: "static",
+  // Class-based scoping so a parent's scoped styles reach a child component's root via `class`
+  // (e.g. <Container class="nav__inner">). The default attribute strategy does not pass through.
+  scopedStyleStrategy: "class",
   integrations: [
     mdx(),
     sitemap({

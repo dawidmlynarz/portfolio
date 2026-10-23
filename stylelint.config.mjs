@@ -13,6 +13,12 @@ export default {
     // Vite resolves bare package imports; url() would not.
     "import-notation": "string",
 
+    // BEM-style class names: block, block__element, block--modifier (kebab-case parts).
+    "selector-class-pattern": [
+      "^[a-z][a-z0-9]*(-[a-z0-9]+)*(__[a-z0-9]+(-[a-z0-9]+)*)?(--[a-z0-9]+(-[a-z0-9]+)*)?$",
+      { message: "Use kebab-case BEM: block, block__element, block--modifier." },
+    ],
+
     // No raw colors: use semantic --color-* tokens.
     "color-no-hex": true,
     "color-named": "never",

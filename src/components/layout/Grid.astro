@@ -1,0 +1,28 @@
+---
+import type { HTMLTag } from "astro/types";
+import { space, type Space } from "@/lib/tokens";
+
+interface Props {
+  as?: HTMLTag;
+  gap?: Space;
+  /** Minimum column width before the grid wraps, e.g. "18rem". Fits as many columns as possible. */
+  min?: string;
+  class?: string;
+}
+
+const { as: Tag = "div", gap = "8", min = "18rem", class: className } = Astro.props;
+---
+
+<Tag class:list={["grid", className]} style={`--grid-gap: ${space(gap)}; --grid-min: ${min}`}>
+  <slot />
+</Tag>
+
+<style>
+  @layer components {
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(min(var(--grid-min), 100%), 1fr));
+      gap: var(--grid-gap);
+    }
+  }
+</style>

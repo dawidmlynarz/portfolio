@@ -6,7 +6,7 @@ Replacing a Webflow site with a clean, Webflow-agnostic build. Keep the `/work/<
 ## Hard rules
 
 1. **Tokens only.** No hex/rgb/hsl, no raw px for spacing or radius, no magic font sizes outside `src/styles/tokens.css`. Use semantic tokens (`--color-text`, `--space-4`), never primitives, in components.
-2. **Reuse before creating.** Check `src/components/` first. Add a variant instead of a near-duplicate.
+2. **Reuse before creating.** Check `src/components/` (`layout/`, `ui/`, `blocks/`) first. Add a variant instead of a near-duplicate. Every new component or variant also goes on `/styleguide`. Class names are BEM (`block__element--modifier`).
 3. **No Webflow leftovers.** No Webflow parity is required. Never copy Webflow classes, markup or generated CSS; build from current best practice. Anything in `/reference` (git-ignored) is loose reference only.
 4. **CSS layers:** `reset, tokens, base, components, utilities`. Component CSS lives next to the component in an Astro scoped `<style>`, wrapped in `@layer components { … }` (unlayered CSS beats every layer). Stylelint enforces this and rule 1.
 5. **Content is separate from presentation.** Case studies are MDX in `src/content/work/` with a Zod schema. Images need `alt` (schema enforces it) and go through `astro:assets`.

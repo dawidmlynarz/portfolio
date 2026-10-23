@@ -3,7 +3,7 @@
 Stack: **Astro + MDX + plain CSS (tokens + cascade layers), GitHub, Cloudflare Pages.**
 Scope found in Webflow: 14 pages (Home, About, Work index, 10 case studies, 404, 401 password), **no CMS collections**.
 Companion files: `src/styles/tokens.css` (token system), `CLAUDE.md` (rules for Claude Code), `DECISIONS.md` (decision log).
-Repo: `dawidmlynarz/portfolio`. **Status: Phase A done, awaiting review.**
+Repo: `dawidmlynarz/portfolio`. **Status: Phase A live. Phase B built, `/styleguide` awaiting approval.**
 
 > **Update (2026-10-23):** no Webflow parity is required. The site is a clean, Webflow-agnostic build; the Webflow export, inventory and token audit (section 4) are optional background, not inputs. URL pattern and domain cutover are unchanged.
 

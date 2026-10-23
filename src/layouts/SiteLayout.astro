@@ -1,0 +1,52 @@
+---
+import BaseLayout from "@/layouts/BaseLayout.astro";
+import Nav from "@/components/blocks/Nav.astro";
+import Footer from "@/components/blocks/Footer.astro";
+import type { ComponentProps } from "astro/types";
+
+type Props = ComponentProps<typeof BaseLayout>;
+---
+
+<BaseLayout {...Astro.props}>
+  <div class="site" id="top">
+    <a class="skip-link" href="#main">
+      Skip to content
+    </a>
+    <Nav />
+    <main id="main" tabindex="-1">
+      <slot />
+    </main>
+    <Footer />
+  </div>
+</BaseLayout>
+
+<style>
+  @layer components {
+    .site {
+      display: grid;
+      grid-template-rows: auto 1fr auto;
+      grid-template-columns: minmax(0, 1fr);
+      min-block-size: 100svh;
+    }
+
+    .skip-link {
+      position: fixed;
+      inset-block-start: var(--space-2);
+      inset-inline-start: var(--space-2);
+      z-index: calc(var(--z-nav) + 1);
+      padding: var(--space-2) var(--space-4);
+      border-radius: var(--radius-sm);
+      color: var(--color-bg);
+      background-color: var(--color-text);
+      translate: 0 -200%;
+    }
+
+    .skip-link:focus-visible {
+      translate: 0;
+    }
+
+    main:focus {
+      outline: none;
+    }
+  }
+</style>

@@ -1,0 +1,59 @@
+---
+import { Image } from "astro:assets";
+
+interface Props {
+  src: ImageMetadata;
+  /** Required. Describe what the image shows; use "" only for purely decorative images. */
+  alt: string;
+  caption?: string;
+  /** How wide the image renders, for responsive srcset. Defaults to the page container. */
+  sizes?: string;
+  loading?: "lazy" | "eager";
+  class?: string;
+}
+
+const {
+  src,
+  alt,
+  caption,
+  sizes = "(min-width: 84rem) 80rem, calc(100vw - 2rem)",
+  loading = "lazy",
+  class: className,
+} = Astro.props;
+
+const widths = [480, 800, 1200, 1600, 2400].filter((w) => w <= src.width);
+---
+
+<figure class:list={["figure", className]}>
+  <Image
+    class="figure__image"
+    src={src}
+    alt={alt}
+    widths={widths.length ? widths : [src.width]}
+    sizes={sizes}
+    loading={loading}
+  />
+  {caption && <figcaption class="figure__caption">{caption}</figcaption>}
+</figure>
+
+<style>
+  @layer components {
+    .figure {
+      display: grid;
+      gap: var(--space-3);
+    }
+
+    .figure__image {
+      inline-size: 100%;
+      border-radius: var(--radius-md);
+      background-color: var(--color-bg-subtle);
+    }
+
+    .figure__caption {
+      max-inline-size: var(--measure);
+      font-size: var(--text-small);
+      line-height: var(--leading-small);
+      color: var(--color-text-muted);
+    }
+  }
+</style>

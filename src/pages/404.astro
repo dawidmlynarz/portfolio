@@ -1,25 +1,13 @@
 ---
-import BaseLayout from "@/layouts/BaseLayout.astro";
+import SiteLayout from "@/layouts/SiteLayout.astro";
+import Hero from "@/components/blocks/Hero.astro";
+import Button from "@/components/ui/Button.astro";
 ---
 
-<BaseLayout title="Page not found" noindex>
-  <main class="not-found">
-    <p class="text-caption">404</p>
-    <h1>This page doesn’t exist.</h1>
-    <p>
-      <a href="/">Back to the home page</a>
-    </p>
-  </main>
-</BaseLayout>
-
-<style>
-  @layer components {
-    .not-found {
-      display: grid;
-      gap: var(--space-4);
-      max-inline-size: var(--container-max);
-      margin-inline: auto;
-      padding: var(--space-section-lg) var(--gutter);
-    }
-  }
-</style>
+<SiteLayout title="Page not found" noindex>
+  <Hero eyebrow="404" title="This page doesn’t exist." lead="It may have moved, or never existed.">
+    <Button slot="actions" href="/">
+      Back to the home page
+    </Button>
+  </Hero>
+</SiteLayout>
