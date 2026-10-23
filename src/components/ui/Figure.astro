@@ -9,6 +9,8 @@ interface Props {
   /** How wide the image renders, for responsive srcset. Defaults to the page container. */
   sizes?: string;
   loading?: "lazy" | "eager";
+  /** Inside Prose: content (reading measure), wide (page width) or full (edge to edge). */
+  width?: "content" | "wide" | "full";
   class?: string;
 }
 
@@ -16,21 +18,27 @@ const {
   src,
   alt,
   caption,
-  sizes = "(min-width: 84rem) 80rem, calc(100vw - 2rem)",
+  sizes,
   loading = "lazy",
+  width = "wide",
   class: className,
 } = Astro.props;
 
 const widths = [480, 800, 1200, 1600, 2400].filter((w) => w <= src.width);
+const defaultSizes = {
+  content: "(min-width: 44rem) 40rem, calc(100vw - 2rem)",
+  wide: "(min-width: 84rem) 80rem, calc(100vw - 2rem)",
+  full: "100vw",
+};
 ---
 
-<figure class:list={["figure", className]}>
+<figure class:list={["figure", `figure--${width}`, className]} data-width={width}>
   <Image
     class="figure__image"
     src={src}
     alt={alt}
     widths={widths.length ? widths : [src.width]}
-    sizes={sizes}
+    sizes={sizes ?? defaultSizes[width]}
     loading={loading}
   />
   {caption && <figcaption class="figure__caption">{caption}</figcaption>}
@@ -47,6 +55,14 @@ const widths = [480, 800, 1200, 1600, 2400].filter((w) => w <= src.width);
       inline-size: 100%;
       border-radius: var(--radius-md);
       background-color: var(--color-bg-subtle);
+    }
+
+    .figure--full .figure__image {
+      border-radius: 0;
+    }
+
+    .figure--full .figure__caption {
+      padding-inline: var(--gutter);
     }
 
     .figure__caption {

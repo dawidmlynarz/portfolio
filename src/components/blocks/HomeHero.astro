@@ -1,0 +1,108 @@
+---
+/**
+ * Home hero: headline on the left, the liquid portrait large on the right, running to the
+ * viewport edge (desktop) or full-bleed under the text (mobile).
+ */
+import Container from "@/components/layout/Container.astro";
+import LiquidReveal from "@/components/blocks/LiquidReveal.astro";
+import portraitPhoto from "@/assets/portrait/portrait-photo.png";
+import portraitClay from "@/assets/portrait/portrait-clay.png";
+
+interface Props {
+  title: string;
+  lead: string;
+}
+
+const { title, lead } = Astro.props;
+---
+
+<section class="home-hero" aria-labelledby="home-hero-title">
+  <Container class="home-hero__inner">
+    <div class="home-hero__content">
+      <h1 class="text-display" id="home-hero-title">
+        {title}
+      </h1>
+      <p class="text-lead home-hero__lead">{lead}</p>
+      <div class="home-hero__actions">
+        <slot name="actions" />
+      </div>
+    </div>
+  </Container>
+  <div class="home-hero__media">
+    <LiquidReveal
+      photo={portraitPhoto}
+      clay={portraitClay}
+      alt="Portrait of Dawid Młynarz"
+      fit="fill"
+      sizes="(min-width: 62em) 60vw, 100vw"
+    />
+  </div>
+</section>
+
+<style>
+  @layer components {
+    .home-hero {
+      position: relative;
+      display: grid;
+    }
+
+    .home-hero__inner {
+      position: relative;
+      z-index: 1;
+      padding-block: var(--space-section-sm) var(--space-8);
+    }
+
+    .home-hero__content {
+      display: grid;
+      justify-items: start;
+      gap: var(--space-6);
+    }
+
+    .home-hero__lead {
+      max-inline-size: 34ch;
+      color: var(--color-text-muted);
+    }
+
+    .home-hero__actions {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: var(--space-3) var(--space-6);
+      padding-block-start: var(--space-2);
+    }
+
+    .home-hero__media {
+      aspect-ratio: 1;
+    }
+
+    @media (width >= 48em) {
+      .home-hero__media {
+        aspect-ratio: 4 / 3;
+      }
+    }
+
+    /* Desktop: text column on the left, portrait anchored to the right edge and bottom. */
+    @media (width >= 62em) {
+      .home-hero {
+        min-block-size: clamp(36rem, 100svh - var(--space-16), 54rem);
+      }
+
+      .home-hero__inner {
+        align-self: center;
+        padding-block: var(--space-section-md);
+      }
+
+      .home-hero__content {
+        max-inline-size: 44%;
+      }
+
+      .home-hero__media {
+        position: absolute;
+        inset-block: 0;
+        inset-inline-end: 0;
+        inline-size: 60%;
+        aspect-ratio: auto;
+      }
+    }
+  }
+</style>

@@ -1,0 +1,45 @@
+---
+import SiteLayout from "@/layouts/SiteLayout.astro";
+import Section from "@/components/layout/Section.astro";
+import Container from "@/components/layout/Container.astro";
+import Grid from "@/components/layout/Grid.astro";
+import Stack from "@/components/layout/Stack.astro";
+import WorkCard from "@/components/blocks/WorkCard.astro";
+import { getListedWork } from "@/lib/work";
+
+const work = await getListedWork();
+---
+
+<SiteLayout
+  title="Work"
+  description="Case studies by Dawid Młynarz: AI products, design systems, conversion optimisation and product design for Newsweek, NerdWallet, BeatStars, Google and more."
+>
+  <Section space="md" aria-labelledby="work-title">
+    <Container>
+      <Stack gap="12">
+        <div class="page-head">
+          <p class="text-caption muted">Selected work 2020 – 2025</p>
+          <h1 id="work-title">Case studies</h1>
+        </div>
+        <Grid min="28rem" gap="16">
+          {work.map((entry, index) => (
+            <WorkCard entry={entry} eager={index < 2} />
+          ))}
+        </Grid>
+      </Stack>
+    </Container>
+  </Section>
+</SiteLayout>
+
+<style>
+  @layer components {
+    .page-head {
+      display: grid;
+      gap: var(--space-3);
+    }
+
+    .muted {
+      color: var(--color-text-muted);
+    }
+  }
+</style>

@@ -1,6 +1,7 @@
 ---
 import Container from "@/components/layout/Container.astro";
-import { SITE } from "@/lib/site";
+import Link from "@/components/ui/Link.astro";
+import { SITE, SOCIAL_LINKS } from "@/lib/site";
 
 const year = new Date().getFullYear();
 ---
@@ -13,6 +14,13 @@ const year = new Date().getFullYear();
         {SITE.email}
       </a>
     </p>
+    <ul class="footer__social" role="list">
+      {SOCIAL_LINKS.map(({ href, label }) => (
+        <li>
+          <Link href={href}>{label}</Link>
+        </li>
+      ))}
+    </ul>
     <div class="footer__meta text-small">
       <p>
         © {year} {SITE.name}
@@ -45,6 +53,13 @@ const year = new Date().getFullYear();
       font: var(--weight-semibold) var(--text-h3) / var(--leading-h3) var(--font-heading);
       letter-spacing: var(--tracking-h3);
       color: var(--color-text);
+    }
+
+    .footer__social {
+      display: flex;
+      flex-wrap: wrap;
+      gap: var(--space-6);
+      padding: 0;
     }
 
     .footer__meta {

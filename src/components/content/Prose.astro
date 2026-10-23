@@ -1,0 +1,90 @@
+---
+/**
+ * Long-form column for case-study MDX. Text sits at the reading measure; children marked
+ * data-width="wide" or "full" (Figure, ImageGrid, Metrics) break out to the page width or the
+ * viewport edge. Styles reach slotted MDX through :global() under the .prose root.
+ */
+interface Props {
+  class?: string;
+}
+const { class: className } = Astro.props;
+---
+
+<div class:list={["prose", className]}>
+  <slot />
+</div>
+
+<style>
+  @layer components {
+    .prose {
+      --prose-content: min(var(--measure), 100% - 2 * var(--gutter));
+      --prose-side: calc(
+        (min(var(--container-max), 100% - 2 * var(--gutter)) - var(--prose-content)) / 2
+      );
+
+      display: grid;
+      grid-template-columns:
+        [full-start] minmax(var(--gutter), 1fr)
+        [wide-start] minmax(0, var(--prose-side))
+        [content-start] var(--prose-content)
+        [content-end] minmax(0, var(--prose-side))
+        [wide-end] minmax(var(--gutter), 1fr)
+        [full-end];
+    }
+
+    .prose > :global(*) {
+      grid-column: content;
+    }
+
+    .prose > :global([data-width="wide"]) {
+      grid-column: wide;
+    }
+
+    .prose > :global([data-width="full"]) {
+      grid-column: full;
+    }
+
+    /* Vertical rhythm: generous before headings and media, tight within a paragraph run. */
+    .prose > :global(* + *) {
+      margin-block-start: var(--space-6);
+    }
+
+    .prose > :global(* + h2) {
+      margin-block-start: var(--space-section-sm);
+    }
+
+    .prose > :global(* + h3) {
+      margin-block-start: var(--space-10);
+    }
+
+    .prose > :global(h2 + *),
+    .prose > :global(h3 + *) {
+      margin-block-start: var(--space-4);
+    }
+
+    .prose > :global(* + [data-width]),
+    .prose > :global([data-width] + *) {
+      margin-block-start: var(--space-section-sm);
+    }
+
+    .prose :global(ul),
+    .prose :global(ol) {
+      display: grid;
+      gap: var(--space-3);
+      padding-inline-start: var(--space-6);
+    }
+
+    .prose :global(li::marker) {
+      color: var(--color-text-muted);
+    }
+
+    .prose :global(strong) {
+      font-weight: var(--weight-semibold);
+    }
+
+    .prose :global(p:has(> strong:only-child)) {
+      font-size: var(--text-lead);
+      line-height: var(--leading-lead);
+    }
+  }
+</style>

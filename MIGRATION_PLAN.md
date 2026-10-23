@@ -3,7 +3,7 @@
 Stack: **Astro + MDX + plain CSS (tokens + cascade layers), GitHub, Cloudflare Pages.**
 Scope found in Webflow: 14 pages (Home, About, Work index, 10 case studies, 404, 401 password), **no CMS collections**.
 Companion files: `src/styles/tokens.css` (token system), `CLAUDE.md` (rules for Claude Code), `DECISIONS.md` (decision log).
-Repo: `dawidmlynarz/portfolio`. **Status: Phase A live. Phase B built, `/styleguide` awaiting approval.**
+Repo: `dawidmlynarz/portfolio`. **Status: Phases A–B done. Phase C pilot (Newsweek AI, Home, Work, About) built and awaiting review; 7 case studies are drafts with card data only.**
 
 > **Update (2026-10-23):** no Webflow parity is required. The site is a clean, Webflow-agnostic build; the Webflow export, inventory and token audit (section 4) are optional background, not inputs. URL pattern and domain cutover are unchanged.
 
@@ -120,8 +120,8 @@ Figma variable collections Primitives / Color (Light, Dark) / Type (Mobile 375, 
 
 **Still open**
 
-1. `/401` password page: drop or Cloudflare Access.
-2. Contact: `mailto` only, or a form (Formspree / Cloudflare handler).
+1. ~~`/401` password page~~ Decided: dropped for now (Cloudflare Access later if needed).
+2. ~~Contact~~ Decided: `mailto` only.
 3. How long to keep Webflow as a fallback after cutover (suggested 2–4 weeks).
 
 ## 7. First prompt for Claude Code
