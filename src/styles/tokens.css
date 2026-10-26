@@ -107,6 +107,7 @@
     --weight-medium: 500;
     --weight-semibold: 600;
     --measure: 65ch;
+    --line-mask-bleed: 0.16em; /* room for descenders inside line-reveal masks (base.css) */
 
     /* ---------- Spacing (4px base, rem so it respects user font size) ---------- */
     --space-1: 0.25rem;

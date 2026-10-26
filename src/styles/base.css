@@ -197,6 +197,16 @@
     animation: reveal-failsafe 0s 3s forwards;
   }
 
+  /*
+   * SplitText wraps each line in a clipping mask exactly one line tall; with the tight heading
+   * leading that cuts descenders (g, y, p). Give the mask room below and pull the next line back
+   * so the spacing is unchanged.
+   */
+  .motion [data-reveal="lines"] > div {
+    padding-block-end: var(--line-mask-bleed);
+    margin-block-end: calc(-1 * var(--line-mask-bleed));
+  }
+
   @keyframes reveal-failsafe {
     to {
       visibility: visible;

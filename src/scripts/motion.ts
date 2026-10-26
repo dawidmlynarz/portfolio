@@ -120,7 +120,13 @@ function story() {
     },
     1.05,
   );
-  timeline.to({}, { duration: 0.25 });
+  // Then the client logo strip slides left to right (one copy's width), with a short hold.
+  const track = section.querySelector<HTMLElement>("[data-logo-track]");
+  if (track) {
+    timeline.fromTo(track, { xPercent: -100 / 3 }, { xPercent: 0, duration: 1.2 }, 2.45);
+    timeline.fromTo(track, { autoAlpha: 0.35 }, { autoAlpha: 1, duration: 0.3 }, 2.35);
+  }
+  timeline.to({}, { duration: 0.15 });
 }
 
 if (root.classList.contains("motion")) {

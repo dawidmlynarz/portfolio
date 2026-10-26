@@ -2,6 +2,8 @@
 /**
  * The hand-off after the home hero: an inverse (black) panel grows to fill the screen and a large
  * about-me statement lights up word by word as you scroll (the motion layer, data-story).
+ * The optional `after` slot (the client logo strip on Home) sits under the statement; the
+ * motion layer slides it left to right once the words have lit up.
  * Without the motion layer (no JS, reduced motion) it is a plain inverse section with the full
  * statement visible.
  */
@@ -35,6 +37,11 @@ const words = text.split(/\s+/);
           <a class="story__link" href={href}>
             {hrefLabel}
           </a>
+        )}
+        {Astro.slots.has("after") && (
+          <div class="story__after">
+            <slot name="after" />
+          </div>
         )}
       </div>
     </div>
@@ -81,9 +88,14 @@ const words = text.split(/\s+/);
       color: var(--color-on-inverse);
     }
 
+    .story__after {
+      justify-self: stretch;
+      padding-block-start: var(--space-8);
+    }
+
     /* Motion on: a tall track with the panel pinned while the words light up. */
     :global(.motion) .story {
-      block-size: 260svh;
+      block-size: 380svh;
     }
 
     :global(.motion) .story__sticky {

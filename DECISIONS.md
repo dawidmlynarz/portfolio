@@ -2,6 +2,14 @@
 
 Non-obvious choices, newest first. One entry per decision: what, why, and what it rules out.
 
+## 2026-10-26 · Logo strip in the story, liquid load reveal, nav pill polish
+
+- **New client logos.** There are ten, from Dawid's set, on a shared 48px artboard: Newsweek, Google, Twitch, Pearson, HolidayCheck, Pantheon, BeatStars, XWP, X-Team and Zazmic. Passion is gone. Only black is recoloured to `currentColor`, because white appears solely inside their masks and clip paths. Mask and clip ids get a per-copy suffix so repeated logos stay valid.
+- **The logos live in the About story on Home** (`ClientLogos strip` in the `after` slot of `StoryIntro`). The strip is three copies on one line, and once the words have lit up the motion layer slides it left to right by one copy's width. The story track is now 380svh to give it room. The standalone "Trusted by teams at" section was removed. Without motion the strip is a plain row.
+- **Liquid load reveal.** On load, the portrait pours in from the face: a liquid blob with drifting lobes grows over two seconds (ease in-out), using the same iso-surface and wobble as the hover liquid. The orbiting liquid then fades in. The static image waits hidden under the motion layer, and a 3s failsafe shows it if the script never gets ready. Reduced motion skips the intro.
+- **Descenders in line reveals.** SplitText's line masks were exactly one line tall and cut the "g" in "Transforming" at 0.98 leading. The masks now bleed `--line-mask-bleed` (0.16em) below, with a matching negative margin, so spacing is unchanged.
+- **Nav pill.** Every item is `--nav-item-size` (40px) tall, with an even `--space-1` inset all round. The theme switch matches the M circle. On hover the M no longer scales; it rolls up out of the circle while its twin rolls in from below.
+
 ## 2026-10-26 · Theme: light by default, switched only by the visitor
 
 - **Two states, no system mode.** The toggle switches between light and dark, and the OS preference is ignored. `:root` is `color-scheme: light` and only `data-theme="dark"` turns dark, so `light-dark()` tokens keep working. The choice is saved in `localStorage` and applied before first paint. The toggle is an `aria-pressed` "Dark mode" button, and its sun and moon icons turn into each other.

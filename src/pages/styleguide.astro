@@ -17,6 +17,7 @@ import Metrics from "@/components/content/Metrics.astro";
 import SectionIntro from "@/components/blocks/SectionIntro.astro";
 import Services from "@/components/blocks/Services.astro";
 import StoryIntro from "@/components/blocks/StoryIntro.astro";
+import ClientLogos from "@/components/blocks/ClientLogos.astro";
 import { getEntry } from "astro:content";
 import { COLOR_ROLES, SPACE } from "@/lib/tokens";
 import { SERVICES } from "@/lib/services";
@@ -337,6 +338,9 @@ const SECTIONS = [
         <Services headingLevel={4} services={[sampleService]} />
         <h3 class="text-caption muted">Services · detailed (/services), adds deliverables</h3>
         <Services headingLevel={4} services={[sampleService]} variant="detailed" />
+        <h3 class="text-caption muted">ClientLogos · row (About) and spread</h3>
+        <ClientLogos />
+        <ClientLogos spread />
         <h3 class="text-caption muted">Metrics · numbers inside case studies</h3>
         <Metrics
           items={[
@@ -349,8 +353,10 @@ const SECTIONS = [
   </Section>
   <StoryIntro
     label="StoryIntro · inverse hand-off statement"
-    text="With the motion layer on, the panel grows from an inset card to full bleed and the words light up as you scroll. Without it, or with reduced motion, the full statement simply shows."
-  />
+    text="With the motion layer on, the panel grows from an inset card to full bleed and the words light up as you scroll, then the logo strip slides left to right. Without it, or with reduced motion, the full statement and a plain row of logos show."
+  >
+    <ClientLogos slot="after" strip />
+  </StoryIntro>
 </SiteLayout>
 
 <style>

@@ -38,7 +38,9 @@ const work = (await getListedWork()).slice(0, 4);
     text="I'm Dawid Młynarz, a senior product designer with 15 years of turning complex problems into clear, useful products. I've shaped newsrooms, fintech and creator platforms, and built the design systems behind them. Today I help teams bring AI into their products in ways people understand, trust and actually use."
     href="/about"
     hrefLabel="More about me"
-  />
+  >
+    <ClientLogos slot="after" strip label="Companies I have worked with" />
+  </StoryIntro>
 
   <Section id="work" space="lg" aria-labelledby="work-title">
     <Container class="home__stack">
@@ -68,25 +70,6 @@ const work = (await getListedWork()).slice(0, 4);
       <Services services={SERVICES} />
     </Container>
   </Section>
-
-  <Section space="md" aria-label="Clients">
-    <Container class="home__stack">
-      <p class="text-caption home__muted">Trusted by teams at</p>
-      <ClientLogos
-        spread
-        clients={[
-          "newsweek",
-          "google",
-          "pantheon",
-          "xwp",
-          "beatstars",
-          "x-team",
-          "holidaycheck",
-          "pearson",
-        ]}
-      />
-    </Container>
-  </Section>
 </SiteLayout>
 
 <style>
@@ -99,10 +82,6 @@ const work = (await getListedWork()).slice(0, 4);
     .home__cta {
       display: flex;
       justify-content: center;
-    }
-
-    .home__muted {
-      color: var(--color-text-muted);
     }
   }
 </style>

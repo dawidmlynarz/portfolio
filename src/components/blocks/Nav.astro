@@ -21,9 +21,11 @@ const isCurrent = (href: string) => path === href || path.startsWith(`${href}/`)
       href="/"
       aria-current={path === "/" || path === "/index" ? "page" : undefined}
     >
-      <svg class="nav__mark" viewBox="0 0 32 24" aria-hidden="true">
-        <path d="M23.84 0 15.99 7.94 8.15 0 0 17.69h9.1l1.01-2.21L16 24l5.87-8.52 1.06 2.21H32z" />
-      </svg>
+      {[0, 1].map(() => (
+        <svg class="nav__mark" viewBox="0 0 32 24" aria-hidden="true">
+          <path d="M23.84 0 15.99 7.94 8.15 0 0 17.69h9.1l1.01-2.21L16 24l5.87-8.52 1.06 2.21H32z" />
+        </svg>
+      ))}
       <span class="visually-hidden">{SITE.name}, home</span>
     </a>
     <ul class="nav__links" role="list">
@@ -77,8 +79,8 @@ const isCurrent = (href: string) => path === href || path.startsWith(`${href}/`)
 <style>
   @layer components {
     .nav {
-      /* Space the page keeps clear above its first content (see SiteLayout). */
-      --nav-pill-size: var(--space-12);
+      /* Every item in the pill is this tall; the pill adds an even --space-1 all round. */
+      --nav-item-size: var(--space-10);
 
       position: fixed;
       inset-block-start: var(--space-4);
@@ -101,7 +103,6 @@ const isCurrent = (href: string) => path === href || path.startsWith(`${href}/`)
       display: flex;
       align-items: center;
       gap: var(--space-1);
-      min-block-size: var(--nav-pill-size);
       padding: var(--space-1);
       border: var(--border-width) solid var(--color-border-subtle);
       border-radius: var(--radius-pill);
@@ -115,24 +116,38 @@ const isCurrent = (href: string) => path === href || path.startsWith(`${href}/`)
 
       display: grid;
       place-items: center;
-      inline-size: calc(var(--nav-pill-size) - 2 * var(--space-1));
-      block-size: calc(var(--nav-pill-size) - 2 * var(--space-1));
+      inline-size: var(--nav-item-size);
+      block-size: var(--nav-item-size);
+      overflow: clip;
       border-radius: var(--radius-pill);
-      color: var(--color-on-inverse);
       background-color: var(--color-text);
-      transition: scale var(--duration-link) var(--ease-out-expo);
     }
 
     .nav__home:hover {
       --underline-size: 0%;
-
-      scale: 1.08;
     }
 
+    /* Two stacked marks: on hover the M rolls up and out while its twin rolls in from below. */
     .nav__mark {
+      grid-area: 1 / 1;
       inline-size: 1.25rem;
       block-size: auto;
       fill: var(--color-bg);
+      transition: translate var(--duration-link) var(--ease-out-expo);
+    }
+
+    .nav__mark + .nav__mark {
+      translate: 0 var(--nav-item-size);
+    }
+
+    .nav__home:hover .nav__mark,
+    .nav__home:focus-visible .nav__mark {
+      translate: 0 calc(-1 * var(--nav-item-size));
+    }
+
+    .nav__home:hover .nav__mark + .nav__mark,
+    .nav__home:focus-visible .nav__mark + .nav__mark {
+      translate: 0 0;
     }
 
     .nav__links {
@@ -144,8 +159,10 @@ const isCurrent = (href: string) => path === href || path.startsWith(`${href}/`)
     .nav__link {
       --underline-size: 0%;
 
-      display: block;
-      padding: var(--space-2) var(--space-4);
+      display: flex;
+      align-items: center;
+      block-size: var(--nav-item-size);
+      padding-inline: var(--space-4);
       border-radius: var(--radius-pill);
       color: var(--color-text-muted);
       transition:
@@ -161,14 +178,19 @@ const isCurrent = (href: string) => path === href || path.startsWith(`${href}/`)
       background-color: var(--color-bg-subtle);
     }
 
+    /* The theme switch matches the M circle: same size, round, no border. */
     .nav__pill :global(.theme-toggle) {
+      inline-size: var(--nav-item-size);
+      block-size: var(--nav-item-size);
+      padding: 0;
       border-color: transparent;
     }
 
     .nav__toggle {
       display: none;
       min-inline-size: var(--space-24);
-      padding: var(--space-2) var(--space-4);
+      block-size: var(--nav-item-size);
+      padding-inline: var(--space-4);
       border: 0;
       border-radius: var(--radius-pill);
       font: inherit;
@@ -231,7 +253,7 @@ const isCurrent = (href: string) => path === href || path.startsWith(`${href}/`)
 
       /* Same box as the Menu button: pill padding + border offset. */
       margin-block-start: calc(var(--space-1) + var(--border-width));
-      margin-inline-start: calc(var(--nav-pill-size) - var(--space-1));
+      margin-inline-start: calc(var(--nav-item-size) + var(--space-1));
     }
 
     .nav__sheet-body {
