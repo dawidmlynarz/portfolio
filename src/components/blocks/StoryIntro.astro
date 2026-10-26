@@ -1,8 +1,8 @@
 ---
 /**
- * The hand-off after the home hero: a cobalt panel grows to fill the screen and a large
+ * The hand-off after the home hero: an inverse (black) panel grows to fill the screen and a large
  * about-me statement lights up word by word as you scroll (the motion layer, data-story).
- * Without the motion layer (no JS, reduced motion) it is a plain cobalt section with the full
+ * Without the motion layer (no JS, reduced motion) it is a plain inverse section with the full
  * statement visible.
  */
 interface Props {
@@ -52,8 +52,8 @@ const words = text.split(/\s+/);
       display: grid;
       align-items: center;
       min-block-size: 100svh;
-      color: var(--color-on-brand);
-      background-color: var(--color-brand-bg);
+      color: var(--color-on-inverse);
+      background-color: var(--color-inverse-bg);
     }
 
     .story__inner {
@@ -67,7 +67,7 @@ const words = text.split(/\s+/);
     }
 
     .story__label {
-      color: var(--color-on-brand-muted);
+      color: var(--color-on-inverse-muted);
     }
 
     .story__text {
@@ -78,7 +78,7 @@ const words = text.split(/\s+/);
     }
 
     .story__link {
-      color: var(--color-on-brand);
+      color: var(--color-on-inverse);
     }
 
     /* Motion on: a tall track with the panel pinned while the words light up. */

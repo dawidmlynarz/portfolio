@@ -1,8 +1,9 @@
 ---
 /**
- * Floating top pill: the M mark (home), Work, About, Contact and the theme toggle.
- * The name is not repeated here; it lives in the page storytelling.
- * Below 48em the pill holds the mark and a Menu button that opens a full-screen cobalt sheet
+ * Floating top pill: the M mark (home), Work, Services, About and the theme toggle.
+ * The name is not repeated here; it lives in the page storytelling. Contact is not in the nav:
+ * the hero, the footer and the mobile menu carry the email.
+ * Below 48em the pill holds the mark and a Menu button that opens a full-screen inverse sheet
  * (a native popover: no JS, Esc and outside clicks close it). The sheet's Close button sits
  * exactly where Menu was.
  */
@@ -11,7 +12,6 @@ import { NAV_LINKS, SITE, SOCIAL_LINKS } from "@/lib/site";
 
 const path = Astro.url.pathname.replace(/\.html$/, "");
 const isCurrent = (href: string) => path === href || path.startsWith(`${href}/`);
-const links = [...NAV_LINKS, { href: `mailto:${SITE.email}`, label: "Contact" }];
 ---
 
 <header class="nav">
@@ -34,11 +34,6 @@ const links = [...NAV_LINKS, { href: `mailto:${SITE.email}`, label: "Contact" }]
           </a>
         </li>
       ))}
-      <li>
-        <a class="nav__link nav__contact" href={`mailto:${SITE.email}`}>
-          Contact
-        </a>
-      </li>
     </ul>
     <ThemeToggle />
     <button class="nav__toggle" type="button" popovertarget="nav-sheet">
@@ -57,14 +52,10 @@ const links = [...NAV_LINKS, { href: `mailto:${SITE.email}`, label: "Contact" }]
     </button>
     <nav class="nav__sheet-body" aria-label="Menu">
       <ul class="nav__sheet-links" role="list">
-        <li
-          style="
-
---i: 0"
-        >
+        <li style={`--i: 0`}>
           <a href="/">Home</a>
         </li>
-        {links.map(({ href, label }, i) => (
+        {NAV_LINKS.map(({ href, label }, i) => (
           <li style={`--i: ${i + 1}`}>
             <a href={href} aria-current={isCurrent(href) ? "page" : undefined}>
               {label}
@@ -126,25 +117,21 @@ const links = [...NAV_LINKS, { href: `mailto:${SITE.email}`, label: "Contact" }]
       inline-size: calc(var(--nav-pill-size) - 2 * var(--space-1));
       block-size: calc(var(--nav-pill-size) - 2 * var(--space-1));
       border-radius: var(--radius-pill);
-      color: var(--color-on-brand);
+      color: var(--color-on-inverse);
       background-color: var(--color-text);
-      transition: background-color var(--duration-fast) var(--ease-standard);
+      transition: scale var(--duration-link) var(--ease-out-expo);
     }
 
     .nav__home:hover {
       --underline-size: 0%;
 
-      background-color: var(--color-brand-bg);
+      scale: 1.08;
     }
 
     .nav__mark {
       inline-size: 1.25rem;
       block-size: auto;
       fill: var(--color-bg);
-    }
-
-    .nav__home:hover .nav__mark {
-      fill: var(--color-on-brand);
     }
 
     .nav__links {
@@ -171,16 +158,6 @@ const links = [...NAV_LINKS, { href: `mailto:${SITE.email}`, label: "Contact" }]
 
       color: var(--color-text);
       background-color: var(--color-bg-subtle);
-    }
-
-    .nav__link.nav__contact {
-      color: var(--color-on-brand);
-      background-color: var(--color-brand-bg);
-    }
-
-    .nav__link.nav__contact:hover {
-      background-color: var(--color-text);
-      color: var(--color-bg);
     }
 
     .nav__pill :global(.theme-toggle) {
@@ -229,8 +206,8 @@ const links = [...NAV_LINKS, { href: `mailto:${SITE.email}`, label: "Contact" }]
       padding: 0;
       overflow-y: auto;
       border: 0;
-      color: var(--color-on-brand);
-      background-color: var(--color-brand-bg);
+      color: var(--color-on-inverse);
+      background-color: var(--color-inverse-bg);
     }
 
     .nav__sheet:popover-open {
@@ -248,8 +225,8 @@ const links = [...NAV_LINKS, { href: `mailto:${SITE.email}`, label: "Contact" }]
 
     .nav__close {
       display: block;
-      color: var(--color-brand-bg);
-      background-color: var(--color-on-brand);
+      color: var(--color-inverse-bg);
+      background-color: var(--color-on-inverse);
 
       /* Same box as the Menu button: pill padding + border offset. */
       margin-block-start: calc(var(--space-1) + var(--border-width));
@@ -274,7 +251,7 @@ const links = [...NAV_LINKS, { href: `mailto:${SITE.email}`, label: "Contact" }]
     .nav__sheet-links a {
       --underline-size: 0%;
 
-      color: var(--color-on-brand);
+      color: var(--color-on-inverse);
     }
 
     .nav__sheet-links a[aria-current="page"] {
@@ -292,12 +269,12 @@ const links = [...NAV_LINKS, { href: `mailto:${SITE.email}`, label: "Contact" }]
     }
 
     .nav__sheet-meta a {
-      color: var(--color-on-brand);
+      color: var(--color-on-inverse);
     }
 
     .nav__sheet-meta :global(.theme-toggle) {
-      color: var(--color-on-brand);
-      border-color: var(--color-on-brand-muted);
+      color: var(--color-on-inverse);
+      border-color: var(--color-on-inverse-muted);
     }
 
     :global(html):has(.nav__sheet:popover-open) {

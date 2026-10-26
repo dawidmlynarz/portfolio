@@ -2,6 +2,24 @@
 
 Non-obvious choices, newest first. One entry per decision: what, why, and what it rules out.
 
+## 2026-10-26 · v2 revision 1: black and white, simpler work, Services page
+
+Changes from Dawid's review of the first v2 pass:
+
+- **No colour.** The palette is true neutral greys from white to near-black. `--color-brand*` now resolve to the ink. The cobalt tokens became an inverse surface: `--color-inverse-bg`, `--color-on-inverse` and `--color-on-inverse-muted` (black in light mode, white in dark), used by the story panel, the mobile menu, buttons and text selection.
+- **Case studies are simple tiles on a creative grid** (`WorkGrid` + `WorkCard`). Each tile has a cover, a "Company · Year" line and the outcome title, with no tags or summary. Desktop repeats a four-tile rhythm: wide 4:3, a narrow square set lower, a narrow square indented, then a wide 4:3 set lower. Home shows four tiles and a "View all work" button. Work shows all of them.
+- **Removed:**
+  - the follow-the-mouse "View case" cursor;
+  - the work counter;
+  - the numbers section on Home (`Metrics` stays for case studies);
+  - the hover colour on services;
+  - the Dribbble shots section, along with `ShotsMarquee` and its images;
+  - Contact from the main nav.
+- **Contact** now sits in the hero after LinkedIn and Dribbble (same link style), in the mobile menu's footer row, and in the sign-off.
+- **A dedicated `/services` page.** Data lives in `src/lib/services.ts`, shared with Home. `Services` gained a `detailed` variant that lists deliverables. The page closes with three ways of working together (project, embedded, full-time role), which serves both clients and employers. Services sits in the nav between Work and About.
+- **Link hover.** The underline no longer disappears; the hairline thickens to three times its width with an ease-out. Components that hide the line at rest still draw it in on hover.
+- **Client logos** are larger (`--space-12` tall) and use the text colour (black, or white in dark mode).
+
 ## 2026-10-26 · v2 redesign, first pass (branch `v2`)
 
 Built on `v2` so `main` stays live until the redesign is ready to swap in. The direction comes from the reference synthesis ("calm precision, one loud moment").

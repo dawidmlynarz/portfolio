@@ -21,7 +21,7 @@
  *   Toggle: set dataset.theme + localStorage.theme; "system" = remove both.
  *   Gotchas: use currentColor in the logo SVG; pass the current --color-bg to the LiquidReveal canvas
  *   (it flattens transparent PNGs onto a background) and re-init it on theme change.
- *   Dark mode is a tested design, not an inversion: brand blue gets lighter in dark for contrast.
+ *   v2 is black and white: no accent colour; emphasis comes from the inverse surface.
  */
 @layer reset, tokens, base, components, utilities;
 
@@ -29,40 +29,36 @@
   :root {
     color-scheme: light dark;
 
-    /* ---------- 1. Primitives (v2: cool, slightly green neutrals + cobalt) ---------- */
-    --neutral-0: #fbfcfa;
-    --neutral-50: #f2f4f1; /* light background */
-    --neutral-100: #e5e9e3;
-    --neutral-200: #d2d8d1;
-    --neutral-300: #b3bab4;
-    --neutral-500: #7a837e;
-    --neutral-700: #565e5a;
-    --neutral-800: #333a36;
-    --neutral-850: #242a27;
-    --neutral-900: #1b201d; /* ink */
-    --neutral-950: #0f1311; /* dark background */
-    --blue-200: #c3cdff;
-    --blue-300: #95a8ff;
-    --blue-600: #234ae8; /* cobalt */
-    --blue-700: #1c3cc4;
-    --blue-900: #0c1d6b;
+    /* ---------- 1. Primitives (v2: black and white, true neutral greys) ---------- */
+    --neutral-0: #fff;
+    --neutral-50: #f5f5f5;
+    --neutral-100: #ebebeb;
+    --neutral-200: #d9d9d9;
+    --neutral-300: #b3b3b3;
+    --neutral-500: #808080;
+    --neutral-700: #5c5c5c;
+    --neutral-800: #333;
+    --neutral-850: #242424;
+    --neutral-900: #141414;
+    --neutral-950: #0a0a0a;
 
     /* ---------- 2. Semantic color: light-dark(light, dark) ---------- */
-    --color-bg: light-dark(var(--neutral-50), var(--neutral-950));
-    --color-bg-subtle: light-dark(var(--neutral-100), var(--neutral-900));
-    --color-text: light-dark(var(--neutral-900), var(--neutral-100));
+    --color-bg: light-dark(var(--neutral-0), var(--neutral-950));
+    --color-bg-subtle: light-dark(var(--neutral-50), var(--neutral-900));
+    --color-text: light-dark(var(--neutral-950), var(--neutral-50));
     --color-text-muted: light-dark(var(--neutral-700), var(--neutral-300));
-    --color-brand: light-dark(var(--blue-600), var(--blue-300));
-    --color-brand-strong: light-dark(var(--blue-900), var(--blue-200));
+    /* No accent colour: the "brand" is the ink itself */
+    --color-brand: var(--color-text);
+    --color-brand-strong: var(--color-text);
     /* UI borders only, never text */
     --color-border: light-dark(var(--neutral-500), var(--neutral-500));
     --color-border-muted: light-dark(var(--neutral-300), var(--neutral-800));
     --color-border-subtle: light-dark(var(--neutral-200), var(--neutral-850));
-    --color-focus: light-dark(var(--blue-600), var(--blue-300));
-    /* The cobalt "flood" surface (hand-off statement, mobile menu) and the text on it */
-    --color-brand-bg: light-dark(var(--blue-600), var(--blue-700));
-    --color-on-brand: var(--neutral-0);
-    --color-on-brand-muted: color-mix(in srgb, var(--neutral-0) 38%, transparent);
+    --color-focus: var(--color-text);
+    /* Inverse surface (story panel, mobile menu, primary buttons) and the text on it */
+    --color-inverse-bg: light-dark(var(--neutral-950), var(--neutral-50));
+    --color-on-inverse: light-dark(var(--neutral-0), var(--neutral-950));
+    --color-on-inverse-muted: light-dark(var(--neutral-500), var(--neutral-700));
     --color-overlay: color-mix(in srgb, var(--color-bg) 88%, transparent); /* sticky nav */
 
     /* ---------- Typography ----------
@@ -147,7 +143,6 @@
     --duration-link: 350ms; /* animated link underline */
     --duration-reveal: 600ms; /* media fading in once ready (liquid reveal canvas) */
     --duration-zoom: 800ms; /* case-study cover zoom on hover */
-    --duration-marquee: 90s; /* one full loop of the work gallery */
     --ease-out-expo: cubic-bezier(0.19, 1, 0.22, 1);
     --duration-page: 700ms; /* page transition */
     --ease-in-out-quart: cubic-bezier(0.77, 0, 0.175, 1);

@@ -71,25 +71,25 @@
   }
 
   /*
-   * Default link: animated underline drawn as a background so it can wipe.
-   * Rest: full underline. Hover: retracts to the right, then grows back from the left.
-   * Components tune it with --underline-size / --underline-origin (e.g. nav: hidden at rest).
-   * Reduced motion: reset.css removes the transition; the underline still changes state.
+   * Default link: a hairline underline drawn as a background, so it can animate.
+   * Hover: the line thickens with an ease-out. Components tune it with --underline-size
+   * (0% hides it at rest, e.g. the nav) and --underline-origin (where it grows from).
+   * Reduced motion: reset.css removes the transition; the line still changes state.
    */
   a {
     --underline-size: 100%;
     --underline-origin: left;
+    --underline-thickness: var(--border-width);
 
     color: inherit;
     text-decoration: none;
     background: linear-gradient(currentcolor, currentcolor) no-repeat var(--underline-origin)
-      bottom / var(--underline-size) var(--border-width);
-    transition: background-size var(--duration-link) var(--ease-standard);
+      bottom / var(--underline-size) var(--underline-thickness);
+    transition: background-size var(--duration-link) var(--ease-out-expo);
   }
 
   a:hover {
-    --underline-size: 0%;
-    --underline-origin: right;
+    --underline-thickness: calc(var(--border-width) * 3);
   }
 
   :focus-visible {
@@ -99,8 +99,8 @@
   }
 
   ::selection {
-    color: var(--color-bg);
-    background: var(--color-brand);
+    color: var(--color-on-inverse);
+    background: var(--color-inverse-bg);
   }
 
   .text-lead {

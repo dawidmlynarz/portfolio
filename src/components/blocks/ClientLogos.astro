@@ -4,7 +4,7 @@ import { CLIENTS, type Client } from "@/lib/clients";
 /**
  * Row of client logos. The SVGs in src/assets/clients are single-colour (black on transparent,
  * some with white knock-outs); they are inlined with black → currentColor and white → the page
- * background, so they follow the theme and the muted text colour.
+ * background, so they follow the theme in the text colour (black in light, white in dark).
  */
 const files = import.meta.glob<string>("/src/assets/clients/*.svg", {
   query: "?raw",
@@ -58,9 +58,9 @@ const logos = clients
       display: flex;
       flex-wrap: wrap;
       align-items: center;
-      gap: var(--space-4) var(--space-8);
+      gap: var(--space-6) var(--space-10);
       padding: 0;
-      color: var(--color-text-muted);
+      color: var(--color-text);
     }
 
     .client-logos--spread {
@@ -70,7 +70,7 @@ const logos = clients
     .client-logos__item :global(svg) {
       display: block;
       inline-size: auto;
-      block-size: var(--space-10);
+      block-size: var(--space-12);
     }
 
     .client-logos__item :global(.client-logos__knockout) {

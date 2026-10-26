@@ -14,9 +14,10 @@ export const SOCIAL_LINKS = [
   { href: "https://dribbble.com/dawidmlynarz/", label: "Dribbble" },
 ] as const;
 
-/** Primary navigation. Contact is a mailto link (see MIGRATION_PLAN open decision 2). */
+/** Primary navigation. Contact is not in it: the hero, the footer and the mobile menu carry the email. */
 export const NAV_LINKS = [
   { href: "/work", label: "Work" },
+  { href: "/services", label: "Services" },
   { href: "/about", label: "About" },
 ] as const;
 

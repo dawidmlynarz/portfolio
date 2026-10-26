@@ -2,50 +2,20 @@
 import SiteLayout from "@/layouts/SiteLayout.astro";
 import Section from "@/components/layout/Section.astro";
 import Container from "@/components/layout/Container.astro";
-import Stack from "@/components/layout/Stack.astro";
 import HomeHero from "@/components/blocks/HomeHero.astro";
 import StoryIntro from "@/components/blocks/StoryIntro.astro";
 import SectionIntro from "@/components/blocks/SectionIntro.astro";
 import Services from "@/components/blocks/Services.astro";
-import Metrics from "@/components/content/Metrics.astro";
 import ClientLogos from "@/components/blocks/ClientLogos.astro";
-import WorkCard from "@/components/blocks/WorkCard.astro";
-import ShotsMarquee from "@/components/blocks/ShotsMarquee.astro";
+import WorkGrid from "@/components/blocks/WorkGrid.astro";
+import Button from "@/components/ui/Button.astro";
 import Link from "@/components/ui/Link.astro";
-import { SOCIAL_LINKS } from "@/lib/site";
+import { SITE, SOCIAL_LINKS } from "@/lib/site";
+import { SERVICES } from "@/lib/services";
 import { getListedWork } from "@/lib/work";
-import shot01 from "@/assets/gallery/shot-01.jpg";
-import shot02 from "@/assets/gallery/shot-02.jpg";
-import shot03 from "@/assets/gallery/shot-03.jpg";
-import shot04 from "@/assets/gallery/shot-04.jpg";
-import shot05 from "@/assets/gallery/shot-05.jpg";
-import shot06 from "@/assets/gallery/shot-06.jpg";
-import shot07 from "@/assets/gallery/shot-07.jpg";
-import shot08 from "@/assets/gallery/shot-08.jpg";
-import shot09 from "@/assets/gallery/shot-09.jpg";
-import shot10 from "@/assets/gallery/shot-10.jpg";
-import shot11 from "@/assets/gallery/shot-11.jpg";
-import shot12 from "@/assets/gallery/shot-12.jpg";
 
-const work = await getListedWork();
-
-const shots = [
-  { src: shot01, alt: "Onboarding screens of a personal assistant app asking about your home." },
-  { src: shot02, alt: "Dark crypto wallet app with an Ethereum stats dial and a convert button." },
-  { src: shot03, alt: "Nike store landing page concept with product grids and campaign banners." },
-  { src: shot04, alt: "Overview of dark crypto wallet screens with charts and balances." },
-  { src: shot05, alt: "Nike mobile shop concept with product cards and a filter panel." },
-  { src: shot06, alt: "Crypto portfolio list and a Bitcoin price chart in a dark mobile app." },
-  { src: shot07, alt: "Smart home app screens: room controls, thermostat and device lists." },
-  { src: shot08, alt: "Nike Air Max product page concept on desktop." },
-  {
-    src: shot09,
-    alt: "Smart home app dashboard: “Hello Alice, welcome home!” with rooms and devices.",
-  },
-  { src: shot10, alt: "Smart lock app on a phone saying “Welcome back” over a house at dusk." },
-  { src: shot11, alt: "Nike Air Max 90 Premium campaign pages laid out at an angle." },
-  { src: shot12, alt: "Dark mobile wallet screens with payments, charts and a transfer card." },
-];
+/** Home shows the first four case studies; the rest are on /work. */
+const work = (await getListedWork()).slice(0, 4);
 ---
 
 <SiteLayout navOverlap>
@@ -59,6 +29,7 @@ const shots = [
       {SOCIAL_LINKS.map(({ href, label }) => (
         <Link href={href}>{label}</Link>
       ))}
+      <Link href={`mailto:${SITE.email}`}>Contact</Link>
     </Fragment>
   </HomeHero>
 
@@ -69,15 +40,18 @@ const shots = [
     hrefLabel="More about me"
   />
 
-  <Section space="lg" aria-label="In numbers">
-    <Container>
-      <Metrics
-        items={[
-          { value: "15+", label: "Years designing products" },
-          { value: "XX", label: "Products shipped (placeholder)" },
-          { value: "XX", label: "Design systems built (placeholder)" },
-        ]}
+  <Section id="work" space="lg" aria-labelledby="work-title">
+    <Container class="home__stack">
+      <SectionIntro
+        id="work-title"
+        label="Selected work"
+        title="Products I've shaped,"
+        titleMuted="told by their outcomes."
       />
+      <WorkGrid entries={work} />
+      <div class="home__cta">
+        <Button href="/work">View all work</Button>
+      </div>
     </Container>
   </Section>
 
@@ -88,50 +62,10 @@ const shots = [
         label="What I do"
         title="Three ways I help teams"
         titleMuted="ship products that work."
+        href="/services"
+        hrefLabel="Services in detail"
       />
-      <Services
-        services={[
-          {
-            title: "Product Design",
-            promise: "From a fuzzy problem to a shipped, measurable product.",
-            description:
-              "Research, flows, interface and prototypes, end to end, working inside your team and shipping with engineering.",
-            proof: ["nerdwallet", "beatstars-product-design", "google-wordpress-plugin"],
-          },
-          {
-            title: "Design Systems",
-            promise: "Systems that let teams ship faster and stay consistent.",
-            description:
-              "Tokens, components and documentation that scale across products and brands, built to be read by people and by AI tools.",
-            proof: ["newsweek-design-system", "beatstars-design-system", "csspeeper"],
-          },
-          {
-            title: "AI and Agentic UX",
-            promise: "AI features people understand, control and trust.",
-            description:
-              "Strategy and interface for conversational products, agents and AI workflows: clear limits, visible reasoning and safe hand-offs to people.",
-            proof: ["newsweek-ai-experience"],
-          },
-        ]}
-      />
-    </Container>
-  </Section>
-
-  <Section id="work" space="lg" aria-labelledby="work-title">
-    <Container class="home__stack">
-      <SectionIntro
-        id="work-title"
-        label={`Selected work (${String(work.length).padStart(2, "0")})`}
-        title="Products I've shaped,"
-        titleMuted="told by their outcomes."
-        href="/work"
-        hrefLabel="All case studies"
-      />
-      <Stack gap="24" as="div">
-        {work.map((entry) => (
-          <WorkCard entry={entry} headingLevel={3} />
-        ))}
-      </Stack>
+      <Services services={SERVICES} />
     </Container>
   </Section>
 
@@ -153,13 +87,6 @@ const shots = [
       />
     </Container>
   </Section>
-
-  <ShotsMarquee
-    title="Explorations"
-    shots={shots}
-    href="https://dribbble.com/dawidmlynarz/"
-    hrefLabel="More on Dribbble"
-  />
 </SiteLayout>
 
 <style>
@@ -167,6 +94,11 @@ const shots = [
     .home__stack {
       display: grid;
       gap: var(--space-section-sm);
+    }
+
+    .home__cta {
+      display: flex;
+      justify-content: center;
     }
 
     .home__muted {

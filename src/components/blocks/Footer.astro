@@ -20,7 +20,7 @@ const endings = ["AI product", "design system", "product team"];
         Let's build your next {endings.slice(0, -1).join(", ")} or {endings.at(-1)}.
       </span>
       <span aria-hidden="true">
-        Let's build your next
+        Let's build your next{" "}
         <span class="footer__ticker">
           <span class="footer__ticker-track">
             {[...endings, endings[0]].map((ending) => (
@@ -54,7 +54,7 @@ const endings = ["AI product", "design system", "product team"];
 <style>
   @layer components {
     .footer {
-      padding-block: var(--space-section-lg) var(--space-8);
+      padding-block: var(--space-section-lg) var(--space-24); /* clears the floating back-to-top button */
     }
 
     .footer__inner {
@@ -81,7 +81,7 @@ const endings = ["AI product", "design system", "product team"];
       block-size: var(--ticker-line);
       overflow: clip;
       vertical-align: bottom;
-      color: var(--color-brand);
+      color: var(--color-text-muted);
     }
 
     .footer__ticker-track {
@@ -127,16 +127,12 @@ const endings = ["AI product", "design system", "product team"];
       border-radius: var(--radius-pill);
       font-size: var(--text-lead);
       overflow-wrap: anywhere;
-      color: var(--color-on-brand);
-      background-color: var(--color-brand-bg);
-      transition: background-color var(--duration-fast) var(--ease-standard);
+      color: var(--color-on-inverse);
+      background-color: var(--color-inverse-bg);
     }
 
     .footer__email:hover {
       --underline-size: 0%;
-
-      color: var(--color-bg);
-      background-color: var(--color-text);
     }
 
     .footer__arrow {
@@ -148,7 +144,7 @@ const endings = ["AI product", "design system", "product team"];
       stroke-width: 1.75;
       stroke-linecap: round;
       stroke-linejoin: round;
-      transition: translate var(--duration-fast) var(--ease-standard);
+      transition: translate var(--duration-link) var(--ease-out-expo);
     }
 
     .footer__email:hover .footer__arrow {

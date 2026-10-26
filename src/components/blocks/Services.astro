@@ -1,25 +1,20 @@
 ---
 /**
- * What I do: numbered rows, each with the service, a one-line promise, a short description and
- * links to the case studies that prove it. On hover the row's number and title turn cobalt.
+ * Services as numbered rows: the service, a one-line promise, a short description and links to
+ * the case studies that prove it. The detailed variant (the /services page) adds the list of
+ * deliverables. Data: src/lib/services.ts.
  */
 import { getEntry } from "astro:content";
 import { hasPage, workHref } from "@/lib/work";
-
-interface Service {
-  title: string;
-  promise: string;
-  description: string;
-  /** Case-study slugs that prove it (entries without a page are skipped). */
-  proof: string[];
-}
+import type { Service } from "@/lib/services";
 
 interface Props {
   services: Service[];
-  headingLevel?: 3 | 4;
+  headingLevel?: 2 | 3 | 4;
+  variant?: "summary" | "detailed";
 }
 
-const { services, headingLevel = 3 } = Astro.props;
+const { services, headingLevel = 3, variant = "summary" } = Astro.props;
 const Heading = `h${headingLevel}` as const;
 
 const rows = await Promise.all(
@@ -33,9 +28,9 @@ const rows = await Promise.all(
 );
 ---
 
-<ol class="services" role="list">
-  {rows.map(({ title, promise, description, proof }, index) => (
-    <li class="services__row" data-reveal="fade">
+<ol class:list={["services", `services--${variant}`]} role="list">
+  {rows.map(({ id, title, promise, description, deliverables, proof }, index) => (
+    <li class="services__row" id={variant === "detailed" ? id : undefined} data-reveal="fade">
       <span class="text-caption services__index" aria-hidden="true">
         {String(index + 1).padStart(2, "0")}
       </span>
@@ -43,6 +38,13 @@ const rows = await Promise.all(
       <div class="services__body">
         <p class="text-lead services__promise">{promise}</p>
         <p class="services__description">{description}</p>
+        {variant === "detailed" && (
+          <ul class="services__deliverables" role="list">
+            {deliverables.map((item) => (
+              <li>{item}</li>
+            ))}
+          </ul>
+        )}
         {proof.length > 0 && (
           <p class="text-small services__proof">
             <span class="text-caption">See it in</span>
@@ -75,13 +77,11 @@ const rows = await Promise.all(
     .services__index {
       padding-block-start: var(--space-2);
       color: var(--color-text-muted);
-      transition: color var(--duration-fast) var(--ease-standard);
     }
 
     .services__title {
       font: var(--weight-medium) var(--text-h2) / var(--leading-h2) var(--font-heading);
       letter-spacing: var(--tracking-h2);
-      transition: color var(--duration-fast) var(--ease-standard);
     }
 
     .services__body {
@@ -93,6 +93,17 @@ const rows = await Promise.all(
 
     .services__description {
       color: var(--color-text-muted);
+    }
+
+    .services__deliverables {
+      display: grid;
+      padding: 0;
+      margin-block-start: var(--space-3);
+    }
+
+    .services__deliverables li {
+      padding-block: var(--space-3);
+      border-block-start: var(--border-width) solid var(--color-border-subtle);
     }
 
     .services__proof {
@@ -107,9 +118,8 @@ const rows = await Promise.all(
       color: var(--color-text-muted);
     }
 
-    .services__row:hover .services__index,
-    .services__row:hover .services__title {
-      color: var(--color-brand);
+    .services--detailed .services__row {
+      padding-block: var(--space-section-sm);
     }
 
     @media (width >= 62em) {

@@ -5,9 +5,8 @@
  * - Lenis smooth scrolling, driven by the GSAP ticker so ScrollTrigger stays in sync.
  * - [data-reveal="lines"]: headings rise line by line from behind a mask (SplitText).
  * - [data-reveal="fade"]: blocks fade and rise in once they enter the viewport.
- * - [data-hero] + [data-story]: the hero holds while the cobalt story panel grows over it,
+ * - [data-hero] + [data-story]: the hero holds while the inverse story panel grows over it,
  *   then the statement lights up word by word.
- * - [data-cursor]: a cobalt cursor label on fine pointers ("View case").
  *
  * Elements marked [data-reveal] stay hidden by base.css until this script has set their
  * starting state (data-reveal-ready), with a 3s CSS failsafe if it never runs.
@@ -124,33 +123,10 @@ function story() {
   timeline.to({}, { duration: 0.25 });
 }
 
-function cursor() {
-  if (!matchMedia("(pointer: fine)").matches) return;
-  const targets = document.querySelectorAll<HTMLElement>("[data-cursor]");
-  const el = document.querySelector<HTMLElement>("[data-cursor-follower]");
-  const label = el?.querySelector<HTMLElement>("[data-cursor-label]");
-  if (!targets.length || !el || !label) return;
-
-  const x = gsap.quickTo(el, "x", { duration: 0.5, ease: "power3.out" });
-  const y = gsap.quickTo(el, "y", { duration: 0.5, ease: "power3.out" });
-  window.addEventListener("pointermove", (event) => {
-    x(event.clientX);
-    y(event.clientY);
-  });
-  for (const target of targets) {
-    target.addEventListener("pointerenter", () => {
-      label.textContent = target.dataset.cursor ?? "";
-      el.dataset.active = "";
-    });
-    target.addEventListener("pointerleave", () => delete el.dataset.active);
-  }
-}
-
 if (root.classList.contains("motion")) {
   gsap.registerPlugin(ScrollTrigger, SplitText);
   smoothScroll();
   revealFades();
   revealLines();
   story();
-  cursor();
 }

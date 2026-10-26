@@ -2,7 +2,6 @@
 import BaseLayout from "@/layouts/BaseLayout.astro";
 import Nav from "@/components/blocks/Nav.astro";
 import Footer from "@/components/blocks/Footer.astro";
-import Cursor from "@/components/blocks/Cursor.astro";
 import type { ComponentProps } from "astro/types";
 
 type Props = ComponentProps<typeof BaseLayout> & {
@@ -23,7 +22,6 @@ const { navOverlap = false, ...base } = Astro.props;
       <slot />
     </main>
     <Footer />
-    <Cursor />
     <a class="to-top" href="#top">
       <svg class="to-top__icon" viewBox="0 0 24 24" aria-hidden="true">
         <path d="M12 19V5M5 12l7-7 7 7" />

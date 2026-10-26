@@ -1,0 +1,113 @@
+---
+import SiteLayout from "@/layouts/SiteLayout.astro";
+import Section from "@/components/layout/Section.astro";
+import Container from "@/components/layout/Container.astro";
+import SectionIntro from "@/components/blocks/SectionIntro.astro";
+import Services from "@/components/blocks/Services.astro";
+import Button from "@/components/ui/Button.astro";
+import { SITE } from "@/lib/site";
+import { SERVICES } from "@/lib/services";
+
+/** Ways of working, for both audiences: teams hiring help and companies hiring a designer. */
+const engagements = [
+  {
+    title: "Project",
+    text: "A defined scope, such as a design system, an AI feature or a redesign, with clear outcomes and a set timeline.",
+  },
+  {
+    title: "Embedded",
+    text: "Part-time inside your team for a few months: working in your rituals, tools and codebase alongside product and engineering.",
+  },
+  {
+    title: "Full-time role",
+    text: "Open to a senior or lead product design role with a team building AI-first products.",
+  },
+];
+---
+
+<SiteLayout
+  title="Services"
+  description="Product design, design systems, and AI and agentic UX by Dawid Młynarz: what each service includes, the work that proves it, and how we can work together."
+>
+  <Section space="md" aria-labelledby="services-title">
+    <Container class="services-page">
+      <div class="services-page__head">
+        <p class="text-caption services-page__muted">Services</p>
+        <h1 id="services-title" data-reveal="lines">
+          Product, systems and AI, <span class="services-page__muted">designed to ship.</span>
+        </h1>
+        <p class="text-lead services-page__lead services-page__muted" data-reveal="fade">
+          Three services, one way of working: close to the problem, close to engineering, and
+          measured by what changes for the people using the product.
+        </p>
+      </div>
+      <Services services={SERVICES} headingLevel={2} variant="detailed" />
+    </Container>
+  </Section>
+
+  <Section space="lg" aria-labelledby="engagements-title">
+    <Container class="services-page">
+      <SectionIntro
+        id="engagements-title"
+        label="Working together"
+        title="Three ways to"
+        titleMuted="work with me."
+      />
+      <ol class="services-page__engagements" role="list">
+        {engagements.map(({ title, text }, index) => (
+          <li class="services-page__engagement" data-reveal="fade">
+            <span class="text-caption services-page__muted" aria-hidden="true">
+              {String(index + 1).padStart(2, "0")}
+            </span>
+            <h3>{title}</h3>
+            <p class="services-page__muted">{text}</p>
+          </li>
+        ))}
+      </ol>
+      <div class="services-page__cta">
+        <Button href={`mailto:${SITE.email}`}>Start a conversation</Button>
+      </div>
+    </Container>
+  </Section>
+</SiteLayout>
+
+<style>
+  @layer components {
+    .services-page {
+      display: grid;
+      gap: var(--space-section-md);
+    }
+
+    .services-page__head {
+      display: grid;
+      gap: var(--space-6);
+    }
+
+    .services-page__lead {
+      max-inline-size: var(--measure);
+    }
+
+    .services-page__muted {
+      color: var(--color-text-muted);
+    }
+
+    .services-page__engagements {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(min(18rem, 100%), 1fr));
+      gap: var(--space-10) var(--space-8);
+      padding: 0;
+    }
+
+    .services-page__engagement {
+      display: grid;
+      align-content: start;
+      gap: var(--space-3);
+      padding-block-start: var(--space-6);
+      border-block-start: var(--border-width) solid var(--color-text);
+    }
+
+    .services-page__cta {
+      display: flex;
+    }
+  }
+</style>
