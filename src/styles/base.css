@@ -72,12 +72,6 @@
     background: var(--color-brand);
   }
 
-  .text-display {
-    font: var(--weight-semibold) var(--text-display) / var(--leading-display) var(--font-heading);
-    letter-spacing: var(--tracking-display);
-    text-wrap: balance;
-  }
-
   .text-lead {
     font-size: var(--text-lead);
     line-height: var(--leading-lead);

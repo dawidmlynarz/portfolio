@@ -15,7 +15,7 @@ const hasMedia = Astro.slots.has("media");
   <Container class="hero__grid">
     <div class="hero__content">
       {eyebrow && <p class="text-caption hero__eyebrow">{eyebrow}</p>}
-      <h1 class="text-display">{title}</h1>
+      <h1>{title}</h1>
       {lead && <p class="text-lead hero__lead">{lead}</p>}
       {Astro.slots.has("actions") && (
         <div class="hero__actions">
