@@ -4,8 +4,8 @@
  * responsive <img>; once JS runs, a canvas fades in over it and a liquid mask follows the pointer
  * to reveal the bottom image (the photo). At rest the liquid orbits the face on its own.
  *
- * Both images must be transparent cutouts with identical framing. They are flattened onto
- * --color-bg, so they sit on the page in light and dark. Behaviour lives in
+ * Both images must be transparent cutouts with identical framing. They stay transparent, so
+ * whatever is behind (the hero's dotted backdrop) shows around the figure in light and dark. Behaviour lives in
  * src/scripts/liquid-reveal.ts (ported from the original Webflow embed).
  *
  * Reduced motion: no orbit, wobble or droplets; the liquid appears only while pointing.
@@ -140,7 +140,6 @@ const objectPosition = `${((face[0] + face[1]) / 2) * 100}% ${((face[2] + face[3
       position: relative;
       display: block;
       overflow: hidden;
-      background-color: var(--color-bg);
     }
 
     .liquid--image {
@@ -186,7 +185,7 @@ const objectPosition = `${((face[0] + face[1]) / 2) * 100}% ${((face[2] + face[3
     }
 
     .liquid__canvas {
-      /* Read by the script: the resolved page background the cutouts are flattened onto. */
+      /* Read by the script: the resolved page background, which picks the light or dark clay. */
       color: var(--color-bg);
       pointer-events: none;
       opacity: 0;

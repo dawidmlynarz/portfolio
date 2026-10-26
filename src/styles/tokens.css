@@ -19,8 +19,8 @@
  *   Put this inline in <head> BEFORE the CSS to avoid a flash:
  *     <script>try{if(localStorage.getItem('theme')==='dark')document.documentElement.dataset.theme='dark'}catch(e){}</script>
  *   Toggle: set dataset.theme + localStorage.theme (see ThemeToggle.astro).
- *   Gotchas: use currentColor in the logo SVG; pass the current --color-bg to the LiquidReveal canvas
- *   (it flattens transparent PNGs onto a background) and re-init it on theme change.
+ *   Gotchas: use currentColor in the logo SVG; the LiquidReveal canvas reads the current --color-bg
+ *   (to pick the light or dark clay) and re-inits on theme change.
  *   v2 is black and white: no accent colour; emphasis comes from the inverse surface.
  */
 @layer reset, tokens, base, components, utilities;
@@ -60,6 +60,8 @@
     --color-on-inverse: light-dark(var(--neutral-0), var(--neutral-950));
     --color-on-inverse-muted: light-dark(var(--neutral-500), var(--neutral-700));
     --color-overlay: color-mix(in srgb, var(--color-bg) 88%, transparent); /* sticky nav */
+    /* Hero backdrop: a faint dot grid on the page background (Home, About, every Hero) */
+    --color-pattern: color-mix(in srgb, var(--color-border-subtle) 70%, var(--color-bg));
 
     /* ---------- Typography ----------
        Roles, not sizes. Fluid between 375px and 1440px viewports.
@@ -137,6 +139,8 @@
     --radius-xl: 48px; /* verify it is used, else drop from both CSS and Figma */
     --radius-pill: 9999px;
     --border-width: 1px;
+    --pattern-dots: radial-gradient(var(--color-pattern) 1.3px, transparent 1.6px) 0 0 / 18px 18px;
+    --bg-hero: var(--pattern-dots), var(--color-bg);
     --shadow-bar: 0 12px 30px -20px light-dark(rgb(0 0 0 / 30%), rgb(0 0 0 / 70%));
     --blur-nav: 12px; /* backdrop blur behind the sticky nav */
     --ease-standard: cubic-bezier(0.4, 0, 0.2, 1);

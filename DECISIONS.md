@@ -2,6 +2,10 @@
 
 Non-obvious choices, newest first. One entry per decision: what, why, and what it rules out.
 
+## 2026-10-26 · Dotted hero backdrop by default
+
+The About hero's faint dot grid is now the default hero background: `--bg-hero` in `tokens.css` (dots in the new `--color-pattern` over `--color-bg`), used by `HomeHero`, `Hero` (404, styleguide) and the mindblown stage. To let the dots run behind the home portrait, `LiquidReveal` no longer flattens its cutouts onto `--color-bg`: the canvas stays transparent and the liquid masks both layers, so soft edges never let the photo bleed through the clay. `--color-pattern` and the pattern tokens are new; mirror them in Figma Foundations.
+
 ## 2026-10-26 · About hero: the "mindblown" experiment
 
 The About page opens with Dawid's approved HTML prototype, ported 1:1 as an isolated experiment in `src/experiments/mindblown/` (component, scoped CSS, `init(root)`/`destroy()` script, card copy in `content.ts`). The centred "Get to know me" intro sits on the same dotted backdrop above the stage, so the old intro paragraph is gone; everything else on the page follows the stripe unchanged.

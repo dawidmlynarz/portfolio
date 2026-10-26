@@ -9,7 +9,6 @@
     --mb-paper: var(--color-bg);
     --mb-ink: var(--color-text);
     --mb-mute: var(--color-text-muted);
-    --mb-dot: color-mix(in srgb, var(--color-border-subtle) 70%, var(--color-bg));
 
     /* the portrait is a sticker: white outline and fixed ink in both themes */
     --mb-sticker: #fff;
@@ -48,9 +47,7 @@
     overflow-x: clip;
     line-height: var(--leading-small);
     color: var(--mb-ink);
-    background:
-      radial-gradient(var(--mb-dot) 1.3px, transparent 1.6px) 0 0 / 18px 18px,
-      var(--mb-paper);
+    background: var(--bg-hero);
   }
 
   /* the prototype was built on content-box sizing: keep it so every size matches 1:1 */

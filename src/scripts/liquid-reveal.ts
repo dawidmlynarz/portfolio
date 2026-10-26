@@ -8,11 +8,13 @@
  * Changes from the embed:
  * - Progressive enhancement: the top image is a real responsive <img> (LCP, no-JS, alt text).
  *   The canvas fades in over it once both images are decoded.
- * - Theme-aware: both cutouts are flattened onto the resolved --color-bg and re-flattened on theme
- *   change (the `themechange` event from ThemeToggle; its waitUntil holds the theme transition until
- *   the canvas has repainted). With
- *   data-clay-dark, a dark clay replaces the light one while the background is dark; it is loaded
- *   only when first needed.
+ * - Transparent: the cutouts stay cutouts, so the hero backdrop (--bg-hero) shows around them.
+ *   The liquid masks both layers (top minus liquid, bottom inside it), so a soft edge never lets
+ *   the image below bleed through.
+ * - Theme-aware: the resolved --color-bg picks the clay, and the canvas repaints on theme change
+ *   (the `themechange` event from ThemeToggle; its waitUntil holds the theme transition until the
+ *   canvas has repainted). With data-clay-dark, a dark clay replaces the light one while the
+ *   background is dark; it is loaded only when first needed.
  * - Images come from astro:assets (AVIF with alpha, picked to the rendered size).
  * - All listeners are removed when the element leaves the DOM.
  */
@@ -76,6 +78,7 @@ class LiquidReveal extends HTMLElement {
   #ctx!: CanvasRenderingContext2D;
   #topLayer = document.createElement("canvas");
   #bottomLayer = document.createElement("canvas");
+  #mix = document.createElement("canvas");
   #field = document.createElement("canvas");
   #fctx = this.#field.getContext("2d", { willReadFrequently: true })!;
   #out = document.createElement("canvas");
@@ -307,7 +310,7 @@ class LiquidReveal extends HTMLElement {
     this.#kick();
   }
 
-  /** Flatten both transparent cutouts onto the current page background. */
+  /** Paint both cutouts at the canvas size (kept transparent around the figure). */
   #paintLayers() {
     if (!this.#L || !this.#photo || !this.#clay) return;
     const photoOnTop = this.#cfg.top !== "clay";
@@ -320,8 +323,6 @@ class LiquidReveal extends HTMLElement {
       layer.height = this.#cv.height;
       const c = layer.getContext("2d")!;
       c.setTransform(this.#dpr, 0, 0, this.#dpr, 0, 0);
-      c.fillStyle = this.#bg;
-      c.fillRect(0, 0, this.#W, this.#H);
       c.imageSmoothingQuality = "high";
       c.drawImage(img, this.#L.dx, this.#L.dy, this.#L.dw, this.#L.dh);
     }
@@ -608,7 +609,18 @@ class LiquidReveal extends HTMLElement {
 
     this.#liquidPass(rm ? 0 : this.#wobbleClock, r, m);
 
-    // Top layer with the liquid cut out, bottom layer showing through.
+    // Top layer with the liquid cut out, over the bottom layer kept only inside the liquid.
+    const W = this.#cv.width,
+      H = this.#cv.height;
+    if (this.#mix.width !== W || this.#mix.height !== H)
+      [this.#mix.width, this.#mix.height] = [W, H];
+    const mix = this.#mix.getContext("2d")!;
+    mix.globalCompositeOperation = "copy";
+    mix.drawImage(this.#bottomLayer, 0, 0);
+    mix.globalCompositeOperation = "destination-in";
+    mix.imageSmoothingEnabled = true;
+    mix.imageSmoothingQuality = "high";
+    mix.drawImage(this.#out, 0, 0, W, H);
     const ctx = this.#ctx;
     ctx.setTransform(1, 0, 0, 1, 0, 0);
     ctx.globalCompositeOperation = "copy";
@@ -616,9 +628,9 @@ class LiquidReveal extends HTMLElement {
     ctx.globalCompositeOperation = "destination-out";
     ctx.imageSmoothingEnabled = true;
     ctx.imageSmoothingQuality = "high";
-    ctx.drawImage(this.#out, 0, 0, this.#cv.width, this.#cv.height);
+    ctx.drawImage(this.#out, 0, 0, W, H);
     ctx.globalCompositeOperation = "destination-over";
-    ctx.drawImage(this.#bottomLayer, 0, 0);
+    ctx.drawImage(this.#mix, 0, 0);
     ctx.globalCompositeOperation = "source-over";
 
     // With reduced motion there is nothing to animate once the liquid has faded out.
