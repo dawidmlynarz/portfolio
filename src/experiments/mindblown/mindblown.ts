@@ -1,6 +1,6 @@
 /**
  * Mindblown About: behaviour. `init(root)` wires one [data-mindblown] section and returns
- * `destroy()`, which kills every tween, the tails ticker, the window listeners and the confetti
+ * `destroy()`, which kills every tween, the tails ticker, the window listeners and the burst
  * frame, and removes the cards it created. Copy lives in content.ts.
  *
  * States: closed -> busy (animating, clicks ignored) -> open -> busy -> closed. While open, the
@@ -18,8 +18,8 @@ type Card = HTMLButtonElement & {
 
 /** Hover peek: how far the lid lifts (share of the head's height) and where the brain rises to
     (yPercent of the brain; 4 is fully out, 130 is hidden). */
-const PEEK_LIFT = 0.09,
-  PEEK_BRAIN = 38;
+const PEEK_LIFT = 0.07,
+  PEEK_BRAIN = 30;
 
 const svg = (k: IconName) =>
   `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${ICONS[k]}</svg>`;
@@ -41,11 +41,6 @@ export function init(root: HTMLElement): () => void {
     hole = q("hole"),
     brain = q<SVGSVGElement>("brain"),
     brainBtn = q<HTMLButtonElement>("brain-btn"),
-    streamsClip = q("streams-clip"),
-    streams = q<SVGSVGElement>("streams"),
-    warp = q<SVGElement>("warp"),
-    fx = q<SVGGElement>("fx-group"),
-    blob = q("blob"),
     cardsEl = q("cards"),
     rig = q("rig"),
     headPos = q("head-pos"),
@@ -54,7 +49,7 @@ export function init(root: HTMLElement): () => void {
     tip = q("tip"),
     noteClose = q("note-close"),
     cursor = q("cursor"),
-    canvas = q<HTMLCanvasElement>("confetti"),
+    canvas = q<HTMLCanvasElement>("burst"),
     pop = q("pop"),
     scrim = q("pop-scrim"),
     panel = q("pop-panel"),
@@ -290,7 +285,6 @@ export function init(root: HTMLElement): () => void {
     peeking = false;
     peekTl?.kill();
     cut(true);
-    trip(false, true);
     head.setAttribute("aria-expanded", "true");
     head.setAttribute("aria-label", "Close my head");
     idle?.pause();
@@ -324,7 +318,7 @@ export function init(root: HTMLElement): () => void {
         )
         .add(() => {
           shake();
-          confetti(o.x, o.y);
+          blast(o.x, o.y);
           say("ow.");
         }, "pop")
         .to(
@@ -434,7 +428,7 @@ export function init(root: HTMLElement): () => void {
     pickActive(false);
     layout();
     shake();
-    confetti(o.x, o.y);
+    blast(o.x, o.y);
     say(gsap.utils.random(["more!", "again?!", "ow!"]));
     run(() =>
       erupt(
@@ -544,65 +538,14 @@ export function init(root: HTMLElement): () => void {
     },
     on,
   );
-  /* ---------- the trip: streams, burst and blob while the lid hovers ---------- */
-  const fxLines = [...root.querySelectorAll(".mindblown__fx-line")],
-    fxBits = [...root.querySelectorAll(".mindblown__fx-dot, .mindblown__fx-spark")];
-  let tripTl: gsap.core.Timeline | null = null,
-    warpTw: gsap.core.Tween | null = null;
-  run(() => gsap.set(blob, { scale: 0.7 }));
-  function trip(on: boolean, fast = false) {
-    tripTl?.kill();
-    warpTw?.kill();
-    if (on) rig.classList.add("mindblown__rig--trip");
-    run(() => {
-      const d = fast ? 0.2 : 1;
-      tripTl = gsap.timeline({
-        onComplete: () => !on && rig.classList.remove("mindblown__rig--trip"),
-      });
-      if (on) {
-        tripTl
-          .to(blob, { opacity: 1, scale: 1, duration: T(0.7), ease: "power3.out" }, 0)
-          .to(streamsClip, { opacity: 1, duration: T(0.4) }, 0.1)
-          .fromTo(
-            fxLines,
-            { strokeDashoffset: 1, opacity: 1 },
-            { strokeDashoffset: 0, duration: T(0.45), ease: "power2.out", stagger: 0.02 },
-            0.15,
-          )
-          .to(fxBits, { opacity: 1, duration: T(0.3), stagger: 0.025 }, 0.25);
-        // the trippy part: the streams' turbulence drifts forever while the lid hovers
-        if (!RM)
-          warpTw = gsap.to(warp, {
-            attr: { baseFrequency: "0.05 0.13" },
-            duration: 1.4,
-            yoyo: true,
-            repeat: -1,
-            ease: "sine.inOut",
-          });
-      } else
-        tripTl
-          .to([streamsClip, ...fxBits], { opacity: 0, duration: T(0.25 * d) }, 0)
-          .to(fxLines, { opacity: 0, duration: T(0.25 * d) }, 0)
-          .to(blob, { opacity: 0, scale: 0.7, duration: T(0.45 * d), ease: "power2.in" }, 0);
-    });
-  }
-
-  /* while the lid hovers, it, the streams and the burst lean towards the pointer */
+  /* while the lid hovers, it leans and drifts towards the pointer */
   const lean = {
-    lid: run(() => gsap.quickTo(lid, "rotation", { duration: 0.8, ease: "power3" })),
-    lidX: run(() => gsap.quickTo(lid, "x", { duration: 0.8, ease: "power3" })),
-    fxR: run(() => gsap.quickTo(fx, "rotation", { duration: 1, ease: "power3" })),
-    fxX: run(() => gsap.quickTo(fx, "x", { duration: 1, ease: "power3" })),
-    fxY: run(() => gsap.quickTo(fx, "y", { duration: 1, ease: "power3" })),
-    sk: run(() => gsap.quickTo(streams, "skewX", { duration: 0.9, ease: "power3" })),
+    r: run(() => gsap.quickTo(lid, "rotation", { duration: 0.8, ease: "power3" })),
+    x: run(() => gsap.quickTo(lid, "x", { duration: 0.8, ease: "power3" })),
   };
-  function leanTo(mx: number, my: number) {
-    lean.lid(-1.5 + mx * 4);
-    lean.lidX(mx * 8);
-    lean.fxR(mx * 6);
-    lean.fxX(mx * 10);
-    lean.fxY(my * 5);
-    lean.sk(mx * -14);
+  function leanTo(mx: number) {
+    lean.r(-1.5 + mx * 4);
+    lean.x(mx * 8);
   }
   stage.addEventListener(
     "pointermove",
@@ -610,16 +553,12 @@ export function init(root: HTMLElement): () => void {
       if (!peeking || RM) return;
       const r = head.getBoundingClientRect(),
         clamp = gsap.utils.clamp(-1, 1);
-      leanTo(
-        clamp((e.clientX - (r.left + r.width * 0.455)) / (r.width * 0.6)),
-        clamp((e.clientY - (r.top + r.height * 0.3)) / (r.height * 0.5)),
-      );
+      leanTo(clamp((e.clientX - (r.left + r.width * 0.455)) / (r.width * 0.6)));
     },
     on,
   );
 
-  /* closed head, mouse hover or keyboard focus: the lid floats up, the brain peeks out and the
-     trip starts */
+  /* closed head, mouse hover or keyboard focus: the lid floats up and the brain peeks out */
   const cut = (on: boolean) => head.classList.toggle("mindblown__head--cut", on);
   function peek(on: boolean) {
     if (state !== "closed" || on === peeking) return;
@@ -627,22 +566,22 @@ export function init(root: HTMLElement): () => void {
     setFace(on ? "shock" : "rest", false);
     peekTl?.kill();
     if (on) cut(true);
-    trip(on);
     run(() => {
       const tl = (peekTl = gsap.timeline({ onComplete: () => !peeking && cut(false) }));
       // the lid covers the top of the brain: only its eyes show above the rim
       if (on) {
-        leanTo(0, 0);
+        leanTo(0);
         tl.to(lid, { yPercent: -PEEK_LIFT * 100, duration: T(0.8), ease: "power3.out" }, 0).to(
           brain,
           { yPercent: PEEK_BRAIN, duration: T(0.8), ease: "power3.out", onUpdate: () => look() },
           0.1,
         );
       } else
-        tl.to(brain, { yPercent: 130, duration: T(0.35), ease: "power2.in" }, 0)
-          .to(lid, { yPercent: 0, x: 0, rotation: 0, duration: T(0.5), ease: "power2.inOut" }, 0.05)
-          .to(fx, { x: 0, y: 0, rotation: 0, duration: T(0.5) }, 0)
-          .to(streams, { skewX: 0, duration: T(0.5) }, 0);
+        tl.to(brain, { yPercent: 130, duration: T(0.35), ease: "power2.in" }, 0).to(
+          lid,
+          { yPercent: 0, x: 0, rotation: 0, duration: T(0.5), ease: "power2.inOut" },
+          0.05,
+        );
     });
   }
   head.addEventListener("pointerenter", (e) => e.pointerType === "mouse" && peek(true), on);
@@ -849,18 +788,17 @@ export function init(root: HTMLElement): () => void {
     on,
   );
 
-  /* ---------- confetti ---------- */
+  /* ---------- the burst: energy beams, dots and sparkles fly out with the thoughts ---------- */
   const c2d = canvas.getContext("2d")!;
   const styles = getComputedStyle(root);
-  const COLORS = [1, 2, 3, 4, 5, 6].map((n) => styles.getPropertyValue(`--mb-cf-${n}`).trim());
-  const INK = styles.getPropertyValue("--mb-art-ink").trim();
+  const COLORS = [1, 2, 3, 4, 5].map((n) => styles.getPropertyValue(`--mb-fx-${n}`).trim());
   type Part = {
+    kind: "beam" | "dot" | "spark";
     x: number;
     y: number;
     vx: number;
     vy: number;
-    w: number;
-    h: number;
+    size: number;
     r: number;
     vr: number;
     c: string;
@@ -868,50 +806,94 @@ export function init(root: HTMLElement): () => void {
   };
   let parts: Part[] = [],
     raf = 0;
-  function confetti(x: number, y: number) {
+  const pick = () => COLORS[Math.floor(Math.random() * COLORS.length)]!;
+  function blast(x: number, y: number) {
     if (RM) return;
     const dpr = Math.min(2, devicePixelRatio || 1);
     canvas.width = stage.clientWidth * dpr;
     canvas.height = stage.clientHeight * dpr;
     c2d.setTransform(dpr, 0, 0, dpr, 0, 0);
-    for (let i = 0; i < 90; i++) {
-      const a = -Math.PI / 2 + (Math.random() - 0.5) * 2.2,
-        v = 6 + Math.random() * 11;
-      parts.push({
-        x,
-        y,
-        vx: Math.cos(a) * v,
-        vy: Math.sin(a) * v,
-        w: 6 + Math.random() * 10,
-        h: 4 + Math.random() * 8,
-        r: Math.random() * 6,
-        vr: (Math.random() - 0.5) * 0.4,
-        c: COLORS[i % COLORS.length]!,
-        life: 1,
-      });
-    }
+    const add = (kind: Part["kind"], n: number, spread: number, v0: number, v1: number) => {
+      for (let i = 0; i < n; i++) {
+        const a = -Math.PI / 2 + (Math.random() - 0.5) * spread,
+          v = v0 + Math.random() * (v1 - v0);
+        parts.push({
+          kind,
+          x,
+          y,
+          vx: Math.cos(a) * v,
+          vy: Math.sin(a) * v,
+          size:
+            kind === "beam"
+              ? 1.5 + Math.random() * 2.5
+              : kind === "dot"
+                ? 2 + Math.random() * 3.5
+                : 5 + Math.random() * 7,
+          r: Math.random() * Math.PI,
+          vr: (Math.random() - 0.5) * 0.25,
+          c: pick(),
+          life: 1,
+        });
+      }
+    };
+    // beams shoot out fast and fade; dots and sparkles arc up and drift down
+    add("beam", 30, 3.4, 16, 30);
+    add("dot", 40, 2.6, 5, 15);
+    add("spark", 16, 2.4, 4, 11);
     if (!raf) raf = requestAnimationFrame(tick);
+  }
+  function star(size: number) {
+    const k = size * 0.24;
+    c2d.beginPath();
+    c2d.moveTo(0, -size);
+    c2d.lineTo(k, -k);
+    c2d.lineTo(size, 0);
+    c2d.lineTo(k, k);
+    c2d.lineTo(0, size);
+    c2d.lineTo(-k, k);
+    c2d.lineTo(-size, 0);
+    c2d.lineTo(-k, -k);
+    c2d.closePath();
+    c2d.fill();
   }
   function tick() {
     c2d.clearRect(0, 0, canvas.width, canvas.height);
     for (const p of parts) {
-      p.vy += 0.32;
-      p.vx *= 0.985;
+      if (p.kind === "beam") {
+        p.vx *= 0.92;
+        p.vy *= 0.92;
+        p.life -= 0.028;
+      } else {
+        p.vy += p.kind === "dot" ? 0.26 : 0.12;
+        p.vx *= 0.985;
+        p.life -= p.kind === "dot" ? 0.008 : 0.01;
+      }
       p.x += p.vx;
       p.y += p.vy;
       p.r += p.vr;
-      p.life -= 0.006;
-      c2d.save();
-      c2d.translate(p.x, p.y);
-      c2d.rotate(p.r);
-      c2d.globalAlpha = Math.max(0, p.life);
-      c2d.fillStyle = p.c;
-      c2d.strokeStyle = INK;
-      c2d.lineWidth = 2;
-      c2d.fillRect(-p.w / 2, -p.h / 2, p.w, p.h);
-      c2d.strokeRect(-p.w / 2, -p.h / 2, p.w, p.h);
-      c2d.restore();
+      c2d.globalAlpha = Math.max(0, Math.min(1, p.life * 1.5));
+      c2d.fillStyle = c2d.strokeStyle = p.c;
+      if (p.kind === "beam") {
+        const len = 2.4 + p.life * 3;
+        c2d.lineWidth = p.size;
+        c2d.lineCap = "round";
+        c2d.beginPath();
+        c2d.moveTo(p.x, p.y);
+        c2d.lineTo(p.x - p.vx * len, p.y - p.vy * len);
+        c2d.stroke();
+      } else if (p.kind === "dot") {
+        c2d.beginPath();
+        c2d.arc(p.x, p.y, p.size, 0, Math.PI * 2);
+        c2d.fill();
+      } else {
+        c2d.save();
+        c2d.translate(p.x, p.y);
+        c2d.rotate(p.r);
+        star(p.size * (0.75 + 0.25 * Math.sin(p.life * 30)));
+        c2d.restore();
+      }
     }
+    c2d.globalAlpha = 1;
     parts = parts.filter((p) => p.life > 0 && p.y < stage.clientHeight + 40);
     raf = parts.length ? requestAnimationFrame(tick) : 0;
   }
