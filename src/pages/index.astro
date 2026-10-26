@@ -89,13 +89,13 @@ const jsonLd = {
     </Container>
   </Section>
 
-  <Section space="md" aria-labelledby="clients-title">
-    <Container class="home__stack">
+  <Section space="md" aria-labelledby="clients-title" class="home__clients">
+    <Container>
       <p class="text-caption home__muted" id="clients-title">
         Trusted by teams at
       </p>
-      <ClientLogos spread />
     </Container>
+    <ClientLogos marquee />
   </Section>
 </SiteLayout>
 
@@ -108,6 +108,11 @@ const jsonLd = {
 
     .home__muted {
       color: var(--color-text-muted);
+    }
+
+    .home__clients {
+      display: grid;
+      gap: var(--space-section-sm);
     }
 
     .home__cta {

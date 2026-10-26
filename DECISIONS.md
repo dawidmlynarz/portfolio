@@ -2,6 +2,14 @@
 
 Non-obvious choices, newest first. One entry per decision: what, why, and what it rules out.
 
+## 2026-10-26 · Client logos as an endless marquee
+
+Above the footer on Home, the logos loop endlessly, full width, at every screen size (`ClientLogos marquee`).
+
+- **How it loops:** pure CSS. The list renders twice (the copy is `aria-hidden`, with its own SVG ids) and slides left by one copy over `--duration-marquee` (40s). Each copy ends with the same gap it has between logos (`--space-24`, or `--space-16` below 48em), so the seam is invisible.
+- **Polish:** the edges fade into the page with a mask, and hovering pauses it.
+- **Reduced motion:** one static, centred, wrapping row.
+
 ## 2026-10-26 · Logos back above the footer
 
 On Dawid's call, the About story is back to its original form: the panel grows, the statement lights up word by word, and nothing else is in it (260svh track, no "More about me"). The client logos are a "Trusted by teams at" section again, the last one on Home before the footer, spread across the width in the text colour. `ClientLogos` lost its strip variant and `StoryIntro` its `after` slot, since nothing uses them now.

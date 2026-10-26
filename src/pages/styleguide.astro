@@ -338,7 +338,7 @@ const SECTIONS = [
         <Services headingLevel={4} services={[sampleService]} />
         <h3 class="text-caption muted">Services · detailed (/services), adds deliverables</h3>
         <Services headingLevel={4} services={[sampleService]} variant="detailed" />
-        <h3 class="text-caption muted">ClientLogos · row (About) and spread</h3>
+        <h3 class="text-caption muted">ClientLogos · row (About) and spread; marquee below</h3>
         <ClientLogos />
         <ClientLogos spread />
         <h3 class="text-caption muted">Metrics · numbers inside case studies</h3>
@@ -350,6 +350,9 @@ const SECTIONS = [
         />
       </Stack>
     </Container>
+  </Section>
+  <Section aria-label="Client logo marquee" space="sm">
+    <ClientLogos marquee />
   </Section>
   <StoryIntro
     label="StoryIntro · inverse hand-off statement"

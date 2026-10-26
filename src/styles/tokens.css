@@ -145,6 +145,7 @@
     --duration-fade: 1200ms; /* portrait fade-in on page load */
     --duration-reveal: 600ms; /* media fading in once ready (liquid reveal canvas) */
     --duration-zoom: 800ms; /* case-study cover zoom on hover */
+    --duration-marquee: 40s; /* one full loop of the client logo marquee */
     --ease-out-expo: cubic-bezier(0.19, 1, 0.22, 1);
     --duration-page: 700ms; /* page transition */
     --ease-in-out-quart: cubic-bezier(0.77, 0, 0.175, 1);
