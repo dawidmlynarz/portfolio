@@ -10,19 +10,28 @@
     --mb-ink: var(--color-text);
     --mb-mute: var(--color-text-muted);
 
-    /* the portrait is a sticker: white outline and fixed ink in both themes */
-    --mb-sticker: #fff;
+    /* fixed ink in both themes */
     --mb-art-ink: #141414;
     --mb-art-paper: #fff;
 
-    /* inside the head */
-    --mb-flesh: #c93a63;
-    --mb-flesh-dark: #3b0b1c;
+    /* inside the head: a flat, illustrated cut (orange rim, coral inside) */
+    --mb-rim: #ffb15e;
+    --mb-flesh: #ff8a6b;
+    --mb-flesh-dark: #e2504d;
     --mb-brain: #f6a3b0;
     --mb-brain-light: #f9c6d0;
     --mb-brain-dark: #f07f9b;
     --mb-brain-fold: #ef8da0;
     --mb-brain-ink: #1b4a85;
+
+    /* the hover trip: streams, speed lines, dots, sparkles and a soft blob behind the head */
+    --mb-fx-0: #9447e8;
+    --mb-fx-1: #f27fef;
+    --mb-fx-2: #c9a6ff;
+    --mb-stream-0: #ffb8f6;
+    --mb-stream-1: #f59cf0;
+    --mb-stream-2: #d9c2ff;
+    --mb-blob: light-dark(#e3eefc, #1d1a3a);
 
     /* confetti only */
     --mb-cf-1: #ff73b0;
@@ -122,9 +131,12 @@
        follows its lower half, and the face below is masked to match */
     --mb-cut: ellipse 20.2% 3.62% at 45.5% 34.49%;
 
-    /* one white sticker outline around face, lid and brain together */
-    filter: drop-shadow(3px 0 0 var(--mb-sticker)) drop-shadow(-3px 0 0 var(--mb-sticker))
-      drop-shadow(0 3px 0 var(--mb-sticker)) drop-shadow(0 -3px 0 var(--mb-sticker));
+    /* its layers stack among themselves, between the blob behind and the burst in front */
+    isolation: isolate;
+
+    /* the hole's rim scales with the head, so the masks below can be plain percentages (Chrome
+       drops a mask whose ellipse size mixes % and px) */
+    --mb-rim-w: calc(var(--hw) * 0.0055);
   }
 
   /* keyboard focus also lifts the lid (mindblown.ts); the ring makes it unmistakable */
@@ -197,9 +209,22 @@
     position: absolute;
     left: 25.3%;
     top: 34.49%;
-    z-index: 2;
     inline-size: 40.4%;
     block-size: 0;
+  }
+
+  /* the hole, trimmed to the head's outline (all expressions together), so the cut never sticks
+     out past the face at the sides */
+  .mindblown__ring {
+    position: absolute;
+    inset: 0;
+    z-index: 2;
+    mask: var(--mb-silhouette) 0 0 / 100% 100% no-repeat;
+  }
+
+  /* the streams and the brain, over the hole and under the lid */
+  .mindblown__inside--front {
+    z-index: 3;
   }
 
   .mindblown__hole {
@@ -213,12 +238,12 @@
     /* half the hole's height (a percentage margin is of the parent's width); no translate,
        which the CSS minifier drops next to transform */
     margin-block-start: calc(-100% / 12);
-    border: 3px solid var(--mb-art-ink);
+    border: var(--mb-rim-w) solid var(--mb-rim);
     border-radius: 50%;
     background: radial-gradient(
-      ellipse at 50% 35%,
-      var(--mb-flesh-dark) 0 45%,
-      var(--mb-flesh) 82%
+      ellipse at 50% 30%,
+      var(--mb-flesh-dark) 0 40%,
+      var(--mb-flesh) 85%
     );
     visibility: hidden;
   }
@@ -228,8 +253,8 @@
   }
 
   /* the brain fills most of the hole and is masked by the inner edge of the hole's front rim
-     (a half-ellipse), so it sits IN the head. The rim ellipse in clip units: the hole is
-     100/88 of the clip wide and 1/12 of its own width tall, less its 3px border */
+     (a half-ellipse), so it sits IN the head. In clip units (the clip is 88% of the hole wide,
+     64:43.5): rx (0.202 - 0.0055) / 0.3555 hw, ry (0.404 / 12 - 0.0055) / 0.2416 hw */
   .mindblown__brain-clip {
     position: absolute;
     left: 6%;
@@ -240,11 +265,7 @@
     pointer-events: none;
     mask:
       linear-gradient(#000 0 0) top / 100% 82% no-repeat,
-      radial-gradient(
-        ellipse calc(56.82% - 3px) calc(13.93% - 3px) at 50% 82%,
-        #000 98%,
-        transparent 100%
-      );
+      radial-gradient(ellipse 55.27% 11.66% at 50% 82%, #000 98%, transparent 100%);
   }
 
   .mindblown__brain {
@@ -272,6 +293,178 @@
 
     95% {
       transform: scaleY(0.1);
+    }
+  }
+
+  /* ---------- the hover trip (shown while the lid hovers; gone once it pops off) ---------- */
+
+  /* energy streams rising from the hole into the lid on both sides of the brain's face: cut by
+     the rim's inner edge like the brain, they flow (dashes) and warp (animated turbulence) */
+  .mindblown__streams-clip {
+    position: absolute;
+    left: 0;
+    top: 0;
+    inline-size: 100%;
+    aspect-ratio: 100 / 60;
+    translate: 0 -80%;
+    pointer-events: none;
+    opacity: 0;
+    mask:
+      linear-gradient(#000 0 0) top / 100% 80% no-repeat,
+      radial-gradient(ellipse 48.64% 11.62% at 50% 80%, #000 98%, transparent 100%);
+  }
+
+  .mindblown__streams {
+    display: block;
+    inline-size: 100%;
+    block-size: 100%;
+    max-inline-size: none;
+    overflow: visible;
+    transform-origin: 50% 100%;
+  }
+
+  .mindblown__stream {
+    fill: none;
+    stroke-width: 5;
+    stroke-linecap: round;
+    stroke-dasharray: 12 7;
+    opacity: 0.85;
+    animation: mindblown-flow 1.1s linear infinite paused;
+    animation-delay: var(--mb-delay, 0s);
+  }
+
+  .mindblown__stream--0 {
+    stroke: var(--mb-stream-0);
+  }
+
+  .mindblown__stream--1 {
+    stroke: var(--mb-stream-1);
+    stroke-width: 6.5;
+  }
+
+  .mindblown__stream--2 {
+    stroke: var(--mb-stream-2);
+    stroke-width: 4;
+  }
+
+  @keyframes mindblown-flow {
+    to {
+      stroke-dashoffset: 38;
+    }
+  }
+
+  /* speed lines, dots and sparkles fanning out from the gap */
+  .mindblown__fx {
+    position: absolute;
+    left: calc(45.5% - 90%);
+    top: calc(30% - 36.27%); /* centred on the gap: 72.5% of the head's height tall */
+    z-index: 6;
+    inline-size: 180%;
+    max-inline-size: none;
+    aspect-ratio: 320 / 120;
+    overflow: visible;
+    pointer-events: none;
+  }
+
+  .mindblown__fx-group {
+    transform-box: view-box;
+    transform-origin: 50% 50%;
+  }
+
+  .mindblown__fx-line {
+    fill: none;
+    stroke-linecap: round;
+    stroke-dasharray: 1;
+    stroke-dashoffset: 1;
+  }
+
+  .mindblown__fx-dot,
+  .mindblown__fx-spark {
+    transform-box: fill-box;
+    transform-origin: center;
+    opacity: 0;
+  }
+
+  .mindblown__fx-line.mindblown__fx--0 {
+    stroke: var(--mb-fx-0);
+  }
+
+  .mindblown__fx-line.mindblown__fx--1 {
+    stroke: var(--mb-fx-1);
+  }
+
+  .mindblown__fx-line.mindblown__fx--2 {
+    stroke: var(--mb-fx-2);
+  }
+
+  .mindblown__fx-dot.mindblown__fx--0,
+  .mindblown__fx-spark.mindblown__fx--0 {
+    fill: var(--mb-fx-0);
+  }
+
+  .mindblown__fx-dot.mindblown__fx--1,
+  .mindblown__fx-spark.mindblown__fx--1 {
+    fill: var(--mb-fx-1);
+  }
+
+  .mindblown__fx-dot.mindblown__fx--2,
+  .mindblown__fx-spark.mindblown__fx--2 {
+    fill: var(--mb-fx-2);
+  }
+
+  .mindblown__rig--trip .mindblown__fx-dot {
+    animation: mindblown-twinkle 1.6s ease-in-out infinite alternate;
+    animation-delay: var(--mb-delay, 0s);
+  }
+
+  .mindblown__rig--trip .mindblown__fx-spark {
+    animation: mindblown-spin 3s linear infinite;
+  }
+
+  .mindblown__rig--trip .mindblown__stream {
+    animation-play-state: running;
+  }
+
+  @keyframes mindblown-twinkle {
+    from {
+      scale: 0.5;
+    }
+
+    to {
+      scale: 1.2;
+    }
+  }
+
+  @keyframes mindblown-spin {
+    to {
+      rotate: 1turn;
+    }
+  }
+
+  /* a soft blob behind the head that slowly changes shape */
+  .mindblown__blob {
+    position: absolute;
+    left: calc(45.5% - 62%);
+    top: -6%;
+    inline-size: 124%;
+    block-size: 82%;
+    border-radius: 58% 42% 52% 48% / 48% 58% 42% 52%;
+    background: var(--mb-blob);
+    opacity: 0;
+    pointer-events: none;
+  }
+
+  .mindblown__rig--trip .mindblown__blob {
+    animation: mindblown-morph 6s ease-in-out infinite alternate;
+  }
+
+  @keyframes mindblown-morph {
+    50% {
+      border-radius: 44% 56% 40% 60% / 58% 44% 56% 42%;
+    }
+
+    100% {
+      border-radius: 52% 48% 62% 38% / 42% 52% 48% 58%;
     }
   }
 
@@ -908,7 +1101,11 @@
     .mindblown__belt-track,
     .mindblown__note,
     .mindblown__note-close,
-    .mindblown__eye {
+    .mindblown__eye,
+    .mindblown__stream,
+    .mindblown__fx-dot,
+    .mindblown__fx-spark,
+    .mindblown__blob {
       animation: none !important;
     }
   }

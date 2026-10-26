@@ -18,8 +18,8 @@ type Card = HTMLButtonElement & {
 
 /** Hover peek: how far the lid lifts (share of the head's height) and where the brain rises to
     (yPercent of the brain; 4 is fully out, 130 is hidden). */
-const PEEK_LIFT = 0.05,
-  PEEK_BRAIN = 30;
+const PEEK_LIFT = 0.09,
+  PEEK_BRAIN = 38;
 
 const svg = (k: IconName) =>
   `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${ICONS[k]}</svg>`;
@@ -41,6 +41,11 @@ export function init(root: HTMLElement): () => void {
     hole = q("hole"),
     brain = q<SVGSVGElement>("brain"),
     brainBtn = q<HTMLButtonElement>("brain-btn"),
+    streamsClip = q("streams-clip"),
+    streams = q<SVGSVGElement>("streams"),
+    warp = q<SVGElement>("warp"),
+    fx = q<SVGGElement>("fx-group"),
+    blob = q("blob"),
     cardsEl = q("cards"),
     rig = q("rig"),
     headPos = q("head-pos"),
@@ -285,6 +290,7 @@ export function init(root: HTMLElement): () => void {
     peeking = false;
     peekTl?.kill();
     cut(true);
+    trip(false, true);
     head.setAttribute("aria-expanded", "true");
     head.setAttribute("aria-label", "Close my head");
     idle?.pause();
@@ -469,7 +475,15 @@ export function init(root: HTMLElement): () => void {
       tl.to(brain, { yPercent: 130, duration: T(0.3), ease: "power2.in" }, "-=.3")
         .to(
           lid,
-          { y: 0, yPercent: 0, xPercent: 0, rotation: 0, duration: T(0.45), ease: "bounce.out" },
+          {
+            x: 0,
+            y: 0,
+            yPercent: 0,
+            xPercent: 0,
+            rotation: 0,
+            duration: T(0.45),
+            ease: "bounce.out",
+          },
           ">-0.05",
         )
         .add(() => {
@@ -530,7 +544,82 @@ export function init(root: HTMLElement): () => void {
     },
     on,
   );
-  /* closed head, mouse hover or keyboard focus: the lid lifts a little and the brain peeks out */
+  /* ---------- the trip: streams, burst and blob while the lid hovers ---------- */
+  const fxLines = [...root.querySelectorAll(".mindblown__fx-line")],
+    fxBits = [...root.querySelectorAll(".mindblown__fx-dot, .mindblown__fx-spark")];
+  let tripTl: gsap.core.Timeline | null = null,
+    warpTw: gsap.core.Tween | null = null;
+  run(() => gsap.set(blob, { scale: 0.7 }));
+  function trip(on: boolean, fast = false) {
+    tripTl?.kill();
+    warpTw?.kill();
+    if (on) rig.classList.add("mindblown__rig--trip");
+    run(() => {
+      const d = fast ? 0.2 : 1;
+      tripTl = gsap.timeline({
+        onComplete: () => !on && rig.classList.remove("mindblown__rig--trip"),
+      });
+      if (on) {
+        tripTl
+          .to(blob, { opacity: 1, scale: 1, duration: T(0.7), ease: "power3.out" }, 0)
+          .to(streamsClip, { opacity: 1, duration: T(0.4) }, 0.1)
+          .fromTo(
+            fxLines,
+            { strokeDashoffset: 1, opacity: 1 },
+            { strokeDashoffset: 0, duration: T(0.45), ease: "power2.out", stagger: 0.02 },
+            0.15,
+          )
+          .to(fxBits, { opacity: 1, duration: T(0.3), stagger: 0.025 }, 0.25);
+        // the trippy part: the streams' turbulence drifts forever while the lid hovers
+        if (!RM)
+          warpTw = gsap.to(warp, {
+            attr: { baseFrequency: "0.05 0.13" },
+            duration: 1.4,
+            yoyo: true,
+            repeat: -1,
+            ease: "sine.inOut",
+          });
+      } else
+        tripTl
+          .to([streamsClip, ...fxBits], { opacity: 0, duration: T(0.25 * d) }, 0)
+          .to(fxLines, { opacity: 0, duration: T(0.25 * d) }, 0)
+          .to(blob, { opacity: 0, scale: 0.7, duration: T(0.45 * d), ease: "power2.in" }, 0);
+    });
+  }
+
+  /* while the lid hovers, it, the streams and the burst lean towards the pointer */
+  const lean = {
+    lid: run(() => gsap.quickTo(lid, "rotation", { duration: 0.8, ease: "power3" })),
+    lidX: run(() => gsap.quickTo(lid, "x", { duration: 0.8, ease: "power3" })),
+    fxR: run(() => gsap.quickTo(fx, "rotation", { duration: 1, ease: "power3" })),
+    fxX: run(() => gsap.quickTo(fx, "x", { duration: 1, ease: "power3" })),
+    fxY: run(() => gsap.quickTo(fx, "y", { duration: 1, ease: "power3" })),
+    sk: run(() => gsap.quickTo(streams, "skewX", { duration: 0.9, ease: "power3" })),
+  };
+  function leanTo(mx: number, my: number) {
+    lean.lid(-1.5 + mx * 4);
+    lean.lidX(mx * 8);
+    lean.fxR(mx * 6);
+    lean.fxX(mx * 10);
+    lean.fxY(my * 5);
+    lean.sk(mx * -14);
+  }
+  stage.addEventListener(
+    "pointermove",
+    (e) => {
+      if (!peeking || RM) return;
+      const r = head.getBoundingClientRect(),
+        clamp = gsap.utils.clamp(-1, 1);
+      leanTo(
+        clamp((e.clientX - (r.left + r.width * 0.455)) / (r.width * 0.6)),
+        clamp((e.clientY - (r.top + r.height * 0.3)) / (r.height * 0.5)),
+      );
+    },
+    on,
+  );
+
+  /* closed head, mouse hover or keyboard focus: the lid floats up, the brain peeks out and the
+     trip starts */
   const cut = (on: boolean) => head.classList.toggle("mindblown__head--cut", on);
   function peek(on: boolean) {
     if (state !== "closed" || on === peeking) return;
@@ -538,26 +627,22 @@ export function init(root: HTMLElement): () => void {
     setFace(on ? "shock" : "rest", false);
     peekTl?.kill();
     if (on) cut(true);
+    trip(on);
     run(() => {
       const tl = (peekTl = gsap.timeline({ onComplete: () => !peeking && cut(false) }));
-      // the lid covers the brain, so only the band between its curved edge and the hole's
-      // front rim shows: the eyes and a sliver of brain
-      if (on)
-        tl.to(
-          lid,
-          { yPercent: -PEEK_LIFT * 100, rotation: -1.5, duration: T(0.7), ease: "power3.out" },
-          0,
-        ).to(
+      // the lid covers the top of the brain: only its eyes show above the rim
+      if (on) {
+        leanTo(0, 0);
+        tl.to(lid, { yPercent: -PEEK_LIFT * 100, duration: T(0.8), ease: "power3.out" }, 0).to(
           brain,
           { yPercent: PEEK_BRAIN, duration: T(0.8), ease: "power3.out", onUpdate: () => look() },
-          0.05,
+          0.1,
         );
-      else
-        tl.to(brain, { yPercent: 130, duration: T(0.35), ease: "power2.in" }, 0).to(
-          lid,
-          { yPercent: 0, rotation: 0, duration: T(0.5), ease: "power2.inOut" },
-          0.05,
-        );
+      } else
+        tl.to(brain, { yPercent: 130, duration: T(0.35), ease: "power2.in" }, 0)
+          .to(lid, { yPercent: 0, x: 0, rotation: 0, duration: T(0.5), ease: "power2.inOut" }, 0.05)
+          .to(fx, { x: 0, y: 0, rotation: 0, duration: T(0.5) }, 0)
+          .to(streams, { skewX: 0, duration: T(0.5) }, 0);
     });
   }
   head.addEventListener("pointerenter", (e) => e.pointerType === "mouse" && peek(true), on);
