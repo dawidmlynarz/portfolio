@@ -1,0 +1,88 @@
+---
+import type { HTMLAttributes } from "astro/types";
+
+interface Props extends Omit<HTMLAttributes<"button">, "class" | "type"> {
+  /** Renders an <a> when set, otherwise a <button>. */
+  href?: string;
+  type?: "button" | "submit" | "reset";
+  variant?: "primary" | "secondary" | "ghost";
+  size?: "md" | "sm";
+  class?: string;
+}
+
+const {
+  href,
+  type = "button",
+  variant = "primary",
+  size = "md",
+  class: className,
+  ...attrs
+} = Astro.props;
+const classes = ["button", `button--${variant}`, `button--${size}`, className];
+---
+
+{href ? (
+  <a class:list={classes} href={href} {...(attrs as HTMLAttributes<"a">)}>
+    <slot />
+  </a>
+) : (
+  <button class:list={classes} type={type} {...attrs}>
+    <slot />
+  </button>
+)}
+
+<style>
+  @layer components {
+    .button {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: var(--space-2);
+      padding: var(--space-3) var(--space-6);
+      border: var(--border-width) solid transparent;
+      border-radius: var(--radius-pill);
+      font-weight: var(--weight-medium);
+      line-height: 1.2;
+      text-align: center;
+      background-color: transparent;
+      background-image: none;
+      transition:
+        background-color var(--duration-fast) var(--ease-standard),
+        border-color var(--duration-fast) var(--ease-standard),
+        color var(--duration-fast) var(--ease-standard);
+    }
+
+    .button--sm {
+      padding: var(--space-2) var(--space-4);
+      font-size: var(--text-small);
+    }
+
+    .button--primary {
+      color: var(--color-bg);
+      background-color: var(--color-brand);
+    }
+
+    .button--primary:hover {
+      background-color: var(--color-brand-strong);
+    }
+
+    .button--secondary {
+      color: var(--color-text);
+      border-color: var(--color-border);
+    }
+
+    .button--ghost {
+      color: var(--color-text);
+    }
+
+    .button--secondary:hover,
+    .button--ghost:hover {
+      background-color: var(--color-bg-subtle);
+    }
+
+    .button:disabled {
+      cursor: not-allowed;
+      opacity: 0.5;
+    }
+  }
+</style>

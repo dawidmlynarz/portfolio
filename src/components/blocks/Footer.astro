@@ -1,0 +1,73 @@
+---
+import Container from "@/components/layout/Container.astro";
+import Link from "@/components/ui/Link.astro";
+import { SITE, SOCIAL_LINKS } from "@/lib/site";
+
+const year = new Date().getFullYear();
+---
+
+<footer class="footer">
+  <Container class="footer__inner">
+    <p class="footer__contact">
+      <span class="text-caption">Get in touch</span>
+      <a class="footer__email" href={`mailto:${SITE.email}`}>
+        {SITE.email}
+      </a>
+    </p>
+    <ul class="footer__social" role="list">
+      {SOCIAL_LINKS.map(({ href, label }) => (
+        <li>
+          <Link href={href}>{label}</Link>
+        </li>
+      ))}
+    </ul>
+    <div class="footer__meta text-small">
+      <p>
+        © {year} {SITE.name}
+      </p>
+      <a href="#top">Back to top</a>
+    </div>
+  </Container>
+</footer>
+
+<style>
+  @layer components {
+    .footer {
+      border-block-start: var(--border-width) solid var(--color-border-subtle);
+      padding-block: var(--space-section-sm);
+    }
+
+    .footer__inner {
+      display: grid;
+      gap: var(--space-8);
+    }
+
+    .footer__contact {
+      display: grid;
+      gap: var(--space-2);
+      color: var(--color-text-muted);
+    }
+
+    .footer__email {
+      justify-self: start;
+      font: var(--weight-semibold) var(--text-h3) / var(--leading-h3) var(--font-heading);
+      letter-spacing: var(--tracking-h3);
+      color: var(--color-text);
+    }
+
+    .footer__social {
+      display: flex;
+      flex-wrap: wrap;
+      gap: var(--space-6);
+      padding: 0;
+    }
+
+    .footer__meta {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: space-between;
+      gap: var(--space-4);
+      color: var(--color-text-muted);
+    }
+  }
+</style>

@@ -1,0 +1,43 @@
+---
+interface Props {
+  author?: string;
+  role?: string;
+}
+const { author, role } = Astro.props;
+---
+
+<figure class="quote">
+  <blockquote class="quote__text">
+    <slot />
+  </blockquote>
+  {author && (
+    <figcaption class="quote__source text-small">
+      <span class="quote__author">{author}</span>
+      {role && <span>, {role}</span>}
+    </figcaption>
+  )}
+</figure>
+
+<style>
+  @layer components {
+    .quote {
+      display: grid;
+      gap: var(--space-4);
+    }
+
+    .quote__text {
+      font: var(--weight-medium) var(--text-h3) / var(--leading-h3) var(--font-heading);
+      letter-spacing: var(--tracking-h3);
+      text-wrap: balance;
+    }
+
+    .quote__source {
+      color: var(--color-text-muted);
+    }
+
+    .quote__author {
+      color: var(--color-text);
+      font-weight: var(--weight-semibold);
+    }
+  }
+</style>

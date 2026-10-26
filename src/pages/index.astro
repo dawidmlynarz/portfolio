@@ -1,31 +1,86 @@
 ---
-import BaseLayout from "@/layouts/BaseLayout.astro";
+import SiteLayout from "@/layouts/SiteLayout.astro";
+import Section from "@/components/layout/Section.astro";
+import Container from "@/components/layout/Container.astro";
+import Grid from "@/components/layout/Grid.astro";
+import Stack from "@/components/layout/Stack.astro";
+import HomeHero from "@/components/blocks/HomeHero.astro";
+import ClientLogos from "@/components/blocks/ClientLogos.astro";
+import WorkCard from "@/components/blocks/WorkCard.astro";
+import Button from "@/components/ui/Button.astro";
+import Link from "@/components/ui/Link.astro";
+import { SITE, SOCIAL_LINKS } from "@/lib/site";
+import { getListedWork } from "@/lib/work";
+
+const work = await getListedWork();
 ---
 
-<BaseLayout>
-  <main class="scaffold">
-    <p class="text-caption">Phase A · technical foundation</p>
-    <h1 class="text-display">Dawid Młynarz</h1>
-    <p class="text-lead">
-      Placeholder home page. Tokens, fonts, layers and tooling are wired up; components and pages
-      arrive in Phases B and C.
-    </p>
-  </main>
-</BaseLayout>
+<SiteLayout>
+  <HomeHero
+    title="AI makes output cheap. Design makes it work."
+    lead="I bring 15 years of product experience to the AI era, helping you architect AI-ready design systems, safe agentic workflows, and impactful product strategies."
+  >
+    <Fragment slot="actions">
+      <Button href="#work">See my work</Button>
+      <Button href={`mailto:${SITE.email}`} variant="secondary">
+        Get in touch
+      </Button>
+      {SOCIAL_LINKS.map(({ href, label }) => (
+        <Link href={href}>{label}</Link>
+      ))}
+    </Fragment>
+  </HomeHero>
+
+  <Section space="sm" aria-label="Clients">
+    <Container>
+      <ClientLogos
+        clients={[
+          "newsweek",
+          "google",
+          "pantheon",
+          "xwp",
+          "beatstars",
+          "x-team",
+          "holidaycheck",
+          "pearson",
+        ]}
+      />
+    </Container>
+  </Section>
+
+  <Section id="work" aria-labelledby="work-title">
+    <Container>
+      <Stack gap="12">
+        <div class="section-head">
+          <p class="text-caption muted">Selected work</p>
+          <h2 id="work-title">Case studies</h2>
+        </div>
+        <Grid min="28rem" gap="16">
+          {work.map((entry) => (
+            <WorkCard entry={entry} headingLevel={3} />
+          ))}
+        </Grid>
+        <Button href="/work" variant="secondary">
+          All case studies
+        </Button>
+      </Stack>
+    </Container>
+  </Section>
+</SiteLayout>
 
 <style>
   @layer components {
-    .scaffold {
+    .section-head {
       display: grid;
-      gap: var(--space-6);
-      max-inline-size: var(--container-max);
-      margin-inline: auto;
-      padding: var(--space-section-md) var(--gutter);
+      gap: var(--space-3);
     }
 
-    .text-lead {
-      max-inline-size: var(--measure);
+    .muted {
       color: var(--color-text-muted);
+    }
+
+    .home-all {
+      align-self: flex-start;
     }
   }
 </style>

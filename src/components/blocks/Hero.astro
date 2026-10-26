@@ -1,0 +1,75 @@
+---
+import Container from "@/components/layout/Container.astro";
+
+interface Props {
+  eyebrow?: string;
+  title: string;
+  lead?: string;
+}
+
+const { eyebrow, title, lead } = Astro.props;
+const hasMedia = Astro.slots.has("media");
+---
+
+<section class:list={["hero", { "hero--split": hasMedia }]}>
+  <Container class="hero__grid">
+    <div class="hero__content">
+      {eyebrow && <p class="text-caption hero__eyebrow">{eyebrow}</p>}
+      <h1 class="text-display">{title}</h1>
+      {lead && <p class="text-lead hero__lead">{lead}</p>}
+      {Astro.slots.has("actions") && (
+        <div class="hero__actions">
+          <slot name="actions" />
+        </div>
+      )}
+    </div>
+    {hasMedia && (
+      <div class="hero__media">
+        <slot name="media" />
+      </div>
+    )}
+  </Container>
+</section>
+
+<style>
+  @layer components {
+    .hero {
+      padding-block: var(--space-section-md) var(--space-section-lg);
+    }
+
+    .hero__grid {
+      display: grid;
+      align-items: center;
+      gap: var(--space-12);
+    }
+
+    .hero__content {
+      display: grid;
+      justify-items: start;
+      gap: var(--space-6);
+    }
+
+    .hero__eyebrow,
+    .hero__lead {
+      color: var(--color-text-muted);
+    }
+
+    .hero__lead {
+      max-inline-size: var(--measure);
+    }
+
+    .hero__actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: var(--space-3);
+      padding-block-start: var(--space-2);
+    }
+
+    @media (width >= 62em) {
+      .hero--split .hero__grid {
+        grid-template-columns: 1.15fr 1fr;
+        gap: var(--space-16);
+      }
+    }
+  }
+</style>

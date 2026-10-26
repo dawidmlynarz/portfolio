@@ -1,0 +1,159 @@
+---
+title: Fueling Newsweek’s historic redesign and driving 70% traffic growth through design system architecture
+description: Newsweek’s digital experience was fragmented across legacy components. I helped lead the transformation to a unified visual language and token-driven design system.
+lead: "Newsweek has been around for nearly a century, but its digital presence was feeling the weight of that history. To support a massive brand-wide redesign and consolidate a fragmented user experience, I co-led the creation of the first ever Newsweek Design System."
+company: Newsweek
+role: Senior Product Designer (Design Systems)
+industry: Media
+business: Publishing
+tags: [Product Design, Design Ops, UX Design, Design System Architecture, Brand Transformation]
+cover: ./cover.jpg
+coverAlt: The redesigned Newsweek homepage on a desktop monitor and a phone.
+link:
+  href: https://www.newsweek.com/
+  label: See it live
+order: 2
+next: beatstars-design-system
+draft: false
+---
+
+import nwHome from "./nw-home.jpg";
+import nwResearch from "./nw-research.jpg";
+import nwDocs from "./nw-docs.jpg";
+import nwTokens from "./nw-tokens.jpg";
+import nwRwd from "./nw-rwd.jpg";
+import nwComparison from "./nw-comparison.jpg";
+import nwMobilePreview from "./nw-mobile-preview.jpg";
+import nwPresentation from "./nw-presentation.jpg";
+
+## My role
+
+When I joined Newsweek, the digital experience was fragmented with legacy components. My mission was to help **lead the design-to-engineering transformation**, creating a unified visual language and a token-driven infrastructure.
+
+As one of the initiative leads, **I partnered across teams to architect the Newsweek Design System from the ground up, enabling us to serve millions of readers** while empowering the product team to move faster and more efficiently.
+
+I collaborated with our internal team, and a brand agency to **translate new brand guidelines into a digital-first system**, conducted internal user research with developers and PMs, and architected the technical solution for a design system (Figma, Tokens Studio, Zeroheight).
+
+### Key achievements
+
+- Newsweek’s traffic jumped from **27M to 46M+ monthly visitors** (nearly 70% increase) leading into this redesign, creating the business case for a system that could handle that scale.
+- Engineered a single source of truth by using **Tokens Studio**, syncing design decisions directly to **GitHub**.
+- **Reduced design-to-development handoff cycles by an estimated 40%** through standardized components.
+- Successfully shifted the brand from a cluttered, red-heavy aesthetic to an elegant, high-contrast visual language that improved scannability and legibility.
+
+<Figure
+  src={nwHome}
+  alt="Newsweek homepage designs: a long scrolling desktop page with Science, Videos and magazine sections, next to the homepage in a browser window."
+/>
+
+## Project background
+
+Newsweek has been around for nearly a century, but its digital presence was feeling the weight of that history. **When the brand decided on its boldest redesign ever, I was brought in to lead the design system forefront.** Not just to make things look better, but to fix the broken system underneath.
+
+As [Newsweek’s Editor-in-Chief Jennifer Cunningham stated](https://pressgazette.co.uk/publishers/magazines/newsweek-editor-jennifer-cunningham-redesign-magazine/), the brand needed to be **more reflective of the modern era.** While traffic was booming, the user experience was struggling. User research conducted internally and externally revealed that users found the homepage overwhelming and competing for attention.
+
+Before the redesign, **Newsweek suffered from significant design debt**. We had to build this system in-flight, by innovating and scaling the architecture while simultaneously delivering the core brand redesign in an agile, fast-paced environment.
+
+### Objectives
+
+- **Simplify the experience.** User research revealed that users found the website overwhelming and too many elements were competing for attention.
+- **Eliminate the inconsistencies.** Multiple versions of buttons, typography scales, and navigation patterns led to a fragmented experience and a weakened brand identity.
+- **Improve inclusivity and accessibility.** Ensure that our digital journalism is accessible to everyone, regardless of how they consume content.
+- **Speed to market improvement.** Without a central library, engineers were hard-coding layouts, making global updates nearly impossible.
+
+<Figure
+  src={nwResearch}
+  alt="Research summary: 49 desktop and 53 mobile participants, a homepage heatmap, and a chart of how users described the homepage."
+/>
+
+## Research
+
+To ensure the redesign was rooted in objective data rather than subjective preference, we collaborated with a third-party UX research firm to conduct a comprehensive **WEVO study**.
+
+The research provided a blunt reality check: **our legacy homepage was suffering from extreme 'visual noise' that distracted from our premium journalism.** By synthesizing these external insights, I was able to advocate for the high-hierarchy, clean typographic scales that became the backbone of the new system.
+
+This data-driven approach allowed us to move from a cluttered 'mass-market' feel to a sophisticated, editorial-first experience that respected the reader’s focus.
+
+## People first, pixels second
+
+I’ve always believed that **a design system is a service, not just a library.** I started by talking to the people who would actually use it.
+
+I sat down with designers, engineers and PMs to find out where they were getting stuck. I learned that the handoff was a major bottleneck, and they needed a "source of truth" that spoke their language.
+
+Simultaneously, while working with an outside brand agency, my job was to take their high-level creative direction and turn it into a living, breathing digital language that worked on a phone just as well as it did on a 27-inch monitor.
+
+<Figure
+  src={nwDocs}
+  alt="Design system documentation pages for global colours, buttons and typography."
+/>
+
+## Fragmentation at scale
+
+Before the Newsweek Design System, our engineers were frustrated by constant CSS overrides, and **designers were spending 30% of their time on 'pixel-pushing' rather than solving actual user problems**. We weren't just fixing a website anymore. We were fixing our culture of building.
+
+We regrouped to prioritize the work and divided it into a logical sequence of improvements to ensure the overall UX of the site was not impacted.
+
+### Challenges
+
+- User research confirmed our hypothesis that users found the interface overwhelming with too many elements competing for attention.
+- Designers were working on file duplicates, without a proper Figma structure, and without component libraries in place.
+- Developers were manually overriding CSS for every new section, causing the entire website to become hard-coded, instead of flexible organism.
+- We had to build the system "in-flight", by innovating and scaling the architecture while simultaneously delivering the core brand redesign in an agile, fast-paced environment.
+
+<Figure
+  src={nwTokens}
+  alt="Tokens Studio setup preview: global tokens mapped to semantic and theme tokens."
+/>
+
+## Engineering the "brain" of the redesign
+
+We moved Newsweek away from static assets and into a living, tokenized ecosystem. We've architected a **multi-tier token strategy** (Global > Semantic > Theme). The new design system was built to support light and dark mode, as well as custom theming for multiple Newsweek IP's in future.
+
+Using **Tokens Studio**, I created a pipeline where design changes in Figma were pushed to GitHub as JSON files. This ensured that brand-level updates could be deployed globally in minutes, not days.
+
+We developed a modular Figma library ranging from atoms (e.g. buttons, inputs) to complex patterns (e.g. content tiles, carousels). Every component was built with variants and properties to ensure the new brand felt consistent across mobile, desktop, and tablet.
+
+We established a **Zeroheight** documentation hub, providing the "Why" behind the "What" ensuring the system could scale even as the team grew.
+
+<Figure
+  src={nwRwd}
+  alt="The Artificial Intelligence section page on desktop, tablet and smartphone with layout grid overlays."
+/>
+
+## Governance & collaboration
+
+We established a cross-functional communication bridge via a dedicated **Microsoft Teams** infrastructure, creating a real-time sync with the engineering team. This was bolstered by **weekly component syncs**, where we reviewed technical constraints and implementation progress.
+
+Beyond the documentation, I acted as a mentor, leading **pair-design sessions** and providing **strategic coaching** to other designers. This ensured that the system wasn't just 'handed off' but was co-authored by the people using it, fostering a culture of shared ownership and design excellence.
+
+<Figure src={nwComparison} alt="Newsweek homepage before (2024) and after (2025) the redesign." />
+
+## Inclusivity by design
+
+In a global newsroom, accessibility is a fundamental requirement of modern publishing. Through the design system, we overhauled our digital foundations to ensure **Newsweek became fully compliant with WCAG standards**.
+
+By baking accessibility directly into our **design tokens**, we standardized color contrast ratios, touch targets, and semantic HTML structures across the entire platform. **This shift didn't just fix the UI, but it ensured that our journalism was now accessible to everyone**, regardless of how they consume content, positioning Newsweek as a leader in inclusive digital media.
+
+<Figure
+  src={nwMobilePreview}
+  alt="Redesigned Newsweek mobile pages: homepage, rankings and magazine sections."
+/>
+
+## The Results
+
+We successfully shifted the brand towards a sophisticated, premium aesthetic. The new system improved accessibility and hierarchy, directly solving the visual overload identified in early research.
+
+Newsweek’s traffic jumped from **27M to 46M+ monthly visitors** (nearly 70% increase) leading into this redesign, creating the business case for a system that could handle that scale.
+
+**By introducing a formal governance model** (including a dedicated Microsoft Teams channel for system requests), I professionalized how design and engineering collaborate.
+
+<Figure
+  src={nwPresentation}
+  alt="Design system presentation slides: impact map, a day in the life with a design system, deprecation and adoption, and benefits."
+/>
+
+## Building a design system is 20% UI, and 80% change management.
+
+This project was a massive challenge in terms of Agile Design Ops. By treating the Design System as a product, we helped Newsweek move away from "mass-market clutter" toward a premium experience that respects the reader's time and the journalist's craft.
+
+This project proved that **a design system is 20% UI and 80% communication.** By aligning the brand agency’s vision, the engineering team’s technical constraints, and the users’ need for clarity, we didn't just change how Newsweek looks—we changed how Newsweek _builds_.

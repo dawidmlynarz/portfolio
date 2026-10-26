@@ -39,8 +39,26 @@
     text-wrap: pretty;
   }
 
+  /*
+   * Default link: animated underline drawn as a background so it can wipe.
+   * Rest: full underline. Hover: retracts to the right, then grows back from the left.
+   * Components tune it with --underline-size / --underline-origin (e.g. nav: hidden at rest).
+   * Reduced motion: reset.css removes the transition; the underline still changes state.
+   */
   a {
+    --underline-size: 100%;
+    --underline-origin: left;
+
     color: inherit;
+    text-decoration: none;
+    background: linear-gradient(currentcolor, currentcolor) no-repeat var(--underline-origin)
+      bottom / var(--underline-size) var(--border-width);
+    transition: background-size var(--duration-link) var(--ease-standard);
+  }
+
+  a:hover {
+    --underline-size: 0%;
+    --underline-origin: right;
   }
 
   :focus-visible {

@@ -1,0 +1,27 @@
+---
+/** Two or more Figures side by side; stacks on narrow screens. */
+interface Props {
+  columns?: 2 | 3;
+  width?: "content" | "wide" | "full";
+}
+const { columns = 2, width = "wide" } = Astro.props;
+---
+
+<div class="image-grid" data-width={width} style={`--image-grid-columns: ${columns}`}>
+  <slot />
+</div>
+
+<style>
+  @layer components {
+    .image-grid {
+      display: grid;
+      gap: var(--space-6);
+    }
+
+    @media (width >= 48em) {
+      .image-grid {
+        grid-template-columns: repeat(var(--image-grid-columns), minmax(0, 1fr));
+      }
+    }
+  }
+</style>

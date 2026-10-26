@@ -1,0 +1,138 @@
+---
+title: Cross-platform design system for a global B2C e-commerce music licensing platform
+description: I joined BeatStars to elevate the user experience across multiple platforms (iOS, Android, web). My role encompassed introduction of cross-platform design system, designing new product features and continuous UX improvements.
+lead: "BeatStars is a digital production marketplace that allows music producers to license, sell, and giveaway free beats to creators."
+company: BeatStars
+role: Sr. Product Designer
+industry: Music, E-commerce
+business: B2C
+tags: [Design System, Governance, Documentation, iOS, Android, web]
+cover: ./cover.jpg
+coverAlt: BeatStars Studio screens with dashboards, charts and track lists.
+link:
+  href: https://www.beatstars.com/
+  label: See it live
+order: 6
+next: beatstars-product-design
+draft: false
+---
+
+import beatstarsComponents2 from "./beatstars-components-2.jpg";
+import beatstarsInconsistenciesBefore from "./beatstars-inconsistencies-before.jpg";
+import beatstarsInconsistenciesAfter from "./beatstars-inconsistencies-after.jpg";
+import beatstarsLibraries from "./beatstars-libraries.jpg";
+import beatstarsComponents from "./beatstars-components.jpg";
+import beatstarsDocumentation from "./beatstars-documentation.jpg";
+
+## My role
+
+My role encompassed the introduction of a cross-platform design system, designing new product features, and continuous UX improvements.
+
+Some other projects I worked on included increasing the conversion rate of product listing pages, improving cross-platform filtering and search experience, and continuous work on the Studio platform.
+
+### Key achievements
+
+- Established a cross-platform design system for Marketplace and Studio with design tokens shared between web, iOS, and Android platforms.
+- Centralized all styles in a single library for easier management and control.
+- Worked on the feature expansion and continuous UX improvements of the Studio app for selling beats (web, iOS, and Android).
+
+## Project Background
+
+BeatStars is a global subscription-based music licensing platform where recording artists and producers collaborate, license, and distribute their work to multiple parties through a variety of non-exclusive and exclusive license types.
+
+Marketplace addresses the needs of creators (buyers), and Studio was built with music producers (sellers) in mind. I joined the team during the migration of features from Marketplace to the Studio app.
+
+### Objectives
+
+- Establish a cross-platform design system for Marketplace and Studio with design tokens shared between web, iOS, and Android platforms.
+- Design audit of the product to discover inconsistencies and to analyse existing components in use.
+- Migration of old design files from Sketch to Figma.
+- Documentation in Zeroheight and Storybook, governance, and designer-developer communication.
+
+<Figure
+  src={beatstarsComponents2}
+  alt="Figma input field component with its variant properties: size, status, label, hint and error."
+/>
+
+## The Challenge
+
+BeatStars Marketplace (e-commerce platform) and Studio (powerful CRM and CMS app) were based on a similar foundation, sharing typography, colors, and icons. Unfortunately, there were some problems with consistency and the amount of colors in use.
+
+Additionally, the main product was designed in Sketch, with a manual versioning system. As the very first step, we decided to migrate all the designs and existing components from Sketch to Figma and build a scalable design system from scratch.
+
+**The challenge was to carefully divide the user journeys of buyers and sellers and create a solid foundation to maximize the scalability of Marketplace and Studio.** The additional complexity was added by the cross-platform design of the products, which required collaboration with dedicated web, iOS, and Android teams.
+
+<Figure
+  src={beatstarsInconsistenciesBefore}
+  alt="Before: inconsistent typography scales in Marketplace and Studio."
+/>
+
+<Figure
+  src={beatstarsInconsistenciesAfter}
+  alt="After: one typography scale shared by Marketplace and Studio."
+/>
+
+## Inventory and Audit
+
+The first thing I did was an in-depth audit of the product and comparison with the existing Sketch designs. **I created an inventory of all styles, including typography, colors, spacings, and grid system.** This helped us uncover many inconsistencies that we were able to tackle before starting to work on the new system.
+
+I proposed moving all the styles into a single library to control all design tokens from one place. I convinced internal stakeholders by presenting how to handle the library structure in Figma and afterwards translate that into Storybook.
+
+<Figure
+  src={beatstarsLibraries}
+  alt="Library structure: a Foundations library feeding Studio, Marketplace and landing-page libraries for iOS, Android and web."
+/>
+
+## Structure & Organization
+
+Next, we started to build the Figma libraries by migrating components from Sketch and recreating them in Figma using best practices such as variants and auto layouts.
+
+### Foundation library
+
+- Typography
+- Colors
+- Spacings
+- Elevation
+- Grid System
+
+Unfortunately, variables weren't available in Figma yet, therefore we had to solve that problem ourselves. We decided to build one global library holding all the design foundations. We connected that global library to dedicated product libraries for web, iOS, and Android.
+
+The global library gave us control over all the core styles from one place, and it has proven to be a good decision, especially when the projects scaled up significantly.
+
+### Global components library
+
+- Buttons
+- Form elements
+- Dividers / Separators
+- Thumbnails
+- Icons
+
+We decided to keep dedicated libraries per product and per platform (iOS, Android, web). This allowed us to work independently on dedicated libraries. My area of focus was mainly Studio, where **I created components using atomic design methodology**.
+
+The next big thing was to bring Figma libraries to life and create a Storybook. We collaborated with the engineering team to bring to life Vibe Design System – BeatStars' first official cross-platform design system for Marketplace and Studio.
+
+<Figure
+  src={beatstarsComponents}
+  alt="Studio components for tracks, licenses, rights management and services."
+/>
+
+## Governance and Communication
+
+Additionally, we decided to build detailed documentation of the components using Zeroheight. We also included marketing brand guidelines together with product guidelines, which resulted in better brand coherence and awareness across the company.
+
+With Zeroheight, **we were able to document the existing components from Figma, as well as include a live preview of the Storybook components**. This created a great connection between the worlds of design and development. Later, it helped with communication and design system governance.
+
+To stay up-to-date with the evolving system and to maintain a high level of consistency across projects, we created a dedicated Slack channel. The goal of the channel was to keep track of changes and requests, share feedback, and keep everyone well-informed.
+
+<Figure
+  src={beatstarsDocumentation}
+  alt="Documentation of modal layouts with spacing annotations: upload a sound file and find your track."
+/>
+
+## Key Takeaways
+
+Introduction of the design system improved many areas of the products and helped to spark better designer-developer collaboration. We found a common language through design tokens and components.
+
+Migration from Sketch to Figma was a huge productivity boost for the designers, and combined with a well-organized Figma library it has helped to increase our efficiency when working on the projects.
+
+**If you are interested in my product design work for BeatStars, feel free to check out the related case study below.**

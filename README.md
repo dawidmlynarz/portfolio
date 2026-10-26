@@ -21,9 +21,14 @@ npm run build    # static output in dist/
 ```
 src/
   styles/     global.css (entry) → reset, tokens, base; layer order: reset, tokens, base, components, utilities
-  layouts/    BaseLayout.astro: head, meta, theme bootstrap, robots
-  lib/        site.ts: site constants, production detection
-  pages/      routes (file = URL)
+  components/
+    layout/   Container, Stack, Grid, Section
+    ui/       Link, Button, Tag, Figure
+    blocks/   Nav, ThemeToggle, Footer, Hero, LiquidReveal
+  layouts/    BaseLayout.astro (head, meta, theme bootstrap) · SiteLayout.astro (nav, main, footer)
+  lib/        site.ts: site constants, nav, production detection · tokens.ts: token keys for props
+  assets/     images processed by astro:assets
+  pages/      routes (file = URL); /styleguide shows every token and component
 public/       static files; _headers for Cloudflare Pages
 tooling/      repo-local lint plugins
 ```

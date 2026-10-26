@@ -1,0 +1,406 @@
+---
+// Living styleguide: every token and component, in both themes (use the toggle in the nav).
+// noindex and excluded from the sitemap. If a component exists, it should appear here.
+import SiteLayout from "@/layouts/SiteLayout.astro";
+import Container from "@/components/layout/Container.astro";
+import Stack from "@/components/layout/Stack.astro";
+import Grid from "@/components/layout/Grid.astro";
+import Section from "@/components/layout/Section.astro";
+import Link from "@/components/ui/Link.astro";
+import Button from "@/components/ui/Button.astro";
+import Tag from "@/components/ui/Tag.astro";
+import Figure from "@/components/ui/Figure.astro";
+import Hero from "@/components/blocks/Hero.astro";
+import LiquidReveal from "@/components/blocks/LiquidReveal.astro";
+import { COLOR_ROLES, SPACE } from "@/lib/tokens";
+import portraitPhoto from "@/assets/portrait/portrait-photo.png";
+import portraitClay from "@/assets/portrait/portrait-clay.png";
+import figureSample from "@/assets/placeholders/figure-sample.jpg";
+
+const TYPE_ROLES = [
+  { role: "display", className: "text-display", sample: "Designing calm products" },
+  { role: "h1", tag: "h1", sample: "Designing calm products" },
+  { role: "h2", tag: "h2", sample: "Research that changes the roadmap" },
+  { role: "h3", tag: "h3", sample: "From insight to interface" },
+  { role: "h4", tag: "h4", sample: "Measured outcomes" },
+  {
+    role: "lead",
+    className: "text-lead",
+    sample: "A lead paragraph introduces a page or case study in one or two sentences.",
+  },
+  {
+    role: "body",
+    tag: "p",
+    sample:
+      "Body copy sits at a comfortable measure. It is used for case-study writing, so it needs to stay readable over long stretches.",
+  },
+  {
+    role: "small",
+    className: "text-small",
+    sample: "Small text for captions, metadata and footnotes.",
+  },
+  { role: "caption", className: "text-caption", sample: "Caption · eyebrow" },
+] as const;
+
+const RADII = ["sm", "md", "lg", "xl", "pill"] as const;
+
+const SECTIONS = [
+  ["color", "Color"],
+  ["type", "Typography"],
+  ["space", "Spacing"],
+  ["shape", "Shape & depth"],
+  ["layout", "Layout"],
+  ["components", "Components"],
+  ["blocks", "Blocks"],
+] as const;
+---
+
+<SiteLayout title="Styleguide" description="Tokens and components of mlynarz.com." noindex>
+  <Section space="md">
+    <Container>
+      <Stack gap="6">
+        <p class="text-caption muted">Internal · not indexed</p>
+        <h1>Styleguide</h1>
+        <p class="text-lead muted measure">
+          Every token and component on the site. Switch the theme with the button in the nav;
+          everything here must look right in light and dark.
+        </p>
+        <nav aria-label="Styleguide sections">
+          <ul class="toc" role="list">
+            {SECTIONS.map(([id, label]) => (
+              <li>
+                <Link href={`#${id}`} variant="quiet">
+                  {label}
+                </Link>
+              </li>
+            ))}
+          </ul>
+        </nav>
+      </Stack>
+    </Container>
+  </Section>
+
+  <Section id="color" aria-labelledby="color-title" tone="subtle">
+    <Container>
+      <Stack gap="8">
+        <h2 id="color-title">Color</h2>
+        <p class="muted measure">
+          Semantic roles only. Each one is a <code>light-dark()</code> pair over the primitives in
+          <code>tokens.css</code>. Components never use primitives.
+        </p>
+        <Grid min="12rem" gap="6" as="ul" class="plain-list">
+          {COLOR_ROLES.map((role) => (
+            <li class="swatch">
+              <span class="swatch__chip" style={`--swatch: var(--color-${role})`} />
+              <code>--color-{role}</code>
+            </li>
+          ))}
+        </Grid>
+      </Stack>
+    </Container>
+  </Section>
+
+  <Section id="type" aria-labelledby="type-title">
+    <Container>
+      <Stack gap="8">
+        <h2 id="type-title">Typography</h2>
+        <p class="muted measure">
+          Roles, not sizes. Fluid from 375px to 1440px; resize the window to see it scale.
+        </p>
+        <Stack gap="10" as="ul" class="plain-list">
+          {TYPE_ROLES.map((item) => {
+            const Tag = "tag" in item ? item.tag : "p";
+            return (
+              <li class="type-row">
+                <code class="type-row__name">--text-{item.role}</code>
+                <Tag class:list={["className" in item && item.className, "measure-wide"]}>
+                  {item.sample}
+                </Tag>
+              </li>
+            );
+          })}
+        </Stack>
+      </Stack>
+    </Container>
+  </Section>
+
+  <Section id="space" aria-labelledby="space-title" tone="subtle">
+    <Container>
+      <Stack gap="8">
+        <h2 id="space-title">Spacing</h2>
+        <p class="muted measure">
+          4px base, in rem. Section spacing and the gutter are fluid:{" "}
+          <code>--space-section-sm</code>, <code>-md</code>, <code>-lg</code>, <code>--gutter</code>
+          .
+        </p>
+        <Stack gap="3" as="ul" class="plain-list">
+          {SPACE.map((key) => (
+            <li class="space-row">
+              <code>--space-{key}</code>
+              <span class="space-row__bar" style={`--bar: var(--space-${key})`} />
+            </li>
+          ))}
+          {(["sm", "md", "lg"] as const).map((key) => (
+            <li class="space-row">
+              <code>--space-section-{key}</code>
+              <span class="space-row__bar" style={`--bar: var(--space-section-${key})`} />
+            </li>
+          ))}
+        </Stack>
+      </Stack>
+    </Container>
+  </Section>
+
+  <Section id="shape" aria-labelledby="shape-title">
+    <Container>
+      <Stack gap="8">
+        <h2 id="shape-title">Shape &amp; depth</h2>
+        <Grid min="9rem" gap="6" as="ul" class="plain-list">
+          {RADII.map((key) => (
+            <li class="shape">
+              <span class="shape__box" style={`--shape-radius: var(--radius-${key})`} />
+              <code>--radius-{key}</code>
+            </li>
+          ))}
+          <li class="shape">
+            <span class="shape__box shape__box--shadow"></span>
+            <code>--shadow-bar</code>
+          </li>
+        </Grid>
+      </Stack>
+    </Container>
+  </Section>
+
+  <Section id="layout" aria-labelledby="layout-title" tone="subtle">
+    <Container>
+      <Stack gap="8">
+        <h2 id="layout-title">Layout</h2>
+        <p class="muted measure">
+          <code>Container</code> (default · narrow · full), <code>Stack</code> (vertical rhythm),
+          <code>Grid</code> (auto-fill columns with a minimum width) and <code>Section</code> (fluid
+          vertical padding, optional subtle tone).
+        </p>
+        <Stack gap="4">
+          <h3 class="text-caption muted">Grid · min 14rem · gap 6</h3>
+          <Grid min="14rem" gap="6">
+            {[1, 2, 3, 4].map((n) => (
+              <div class="demo-box">
+                <Stack gap="2">
+                  <strong>Card {n}</strong>
+                  <span class="text-small muted">Stack gap 2 inside</span>
+                </Stack>
+              </div>
+            ))}
+          </Grid>
+        </Stack>
+      </Stack>
+    </Container>
+    <Container width="narrow" class="demo-narrow">
+      <p class="text-small muted">Container width="narrow": the reading measure, used for prose.</p>
+    </Container>
+  </Section>
+
+  <Section id="components" aria-labelledby="components-title">
+    <Container>
+      <Stack gap="12">
+        <h2 id="components-title">Components</h2>
+
+        <Stack gap="4">
+          <h3>Link</h3>
+          <p class="measure">
+            Every plain <a href="#components">link in text</a> has the animated underline by
+            default. The{" "}
+            <Link href="#components" variant="quiet">
+              quiet variant
+            </Link>{" "}
+            shows it only on hover. External links get an arrow:{" "}
+            <Link href="https://www.figma.com">Figma</Link>.
+          </p>
+        </Stack>
+
+        <Stack gap="4">
+          <h3>Button</h3>
+          <div class="row">
+            <Button>Primary</Button>
+            <Button variant="secondary">Secondary</Button>
+            <Button variant="ghost">Ghost</Button>
+            <Button disabled>Disabled</Button>
+          </div>
+          <div class="row">
+            <Button size="sm">Primary small</Button>
+            <Button size="sm" variant="secondary">
+              Secondary small
+            </Button>
+            <Button href="#components" variant="secondary">
+              As a link
+            </Button>
+          </div>
+        </Stack>
+
+        <Stack gap="4">
+          <h3>Tag</h3>
+          <ul class="row plain-list" role="list">
+            <Tag as="li">Product design</Tag>
+            <Tag as="li">Research</Tag>
+            <Tag as="li" variant="solid">
+              AI
+            </Tag>
+            <Tag as="li" variant="solid">
+              2025
+            </Tag>
+          </ul>
+        </Stack>
+
+        <Stack gap="4">
+          <h3>Figure</h3>
+          <Figure
+            src={figureSample}
+            alt="Placeholder layout: a page with a heading, two text lines and three cards."
+            caption="Figure with a caption. Images go through astro:assets and require alt text."
+          />
+        </Stack>
+      </Stack>
+    </Container>
+  </Section>
+
+  <Section id="blocks" aria-labelledby="blocks-title" tone="subtle" space="sm">
+    <Container>
+      <Stack gap="4">
+        <h2 id="blocks-title">Blocks</h2>
+        <p class="muted measure">
+          Nav and Footer frame this page. Below: the split Hero with the LiquidReveal. At rest the
+          liquid orbits the face; point at the portrait and it is pulled towards the cursor (tap on
+          touch). With reduced motion it only appears while pointing, without orbit or wobble.
+        </p>
+      </Stack>
+    </Container>
+  </Section>
+  <Hero
+    eyebrow="Product designer"
+    title="Design that makes complex products feel simple."
+    lead="Hero block, split layout. Content on the left, media slot on the right; stacks on small screens."
+  >
+    <Fragment slot="actions">
+      <Button href="#blocks">See work</Button>
+      <Button href="#blocks" variant="secondary">
+        About me
+      </Button>
+    </Fragment>
+    <LiquidReveal
+      slot="media"
+      photo={portraitPhoto}
+      clay={portraitClay}
+      alt="Portrait of Dawid Młynarz"
+      loading="lazy"
+    />
+  </Hero>
+</SiteLayout>
+
+<style>
+  @layer components {
+    .muted {
+      color: var(--color-text-muted);
+    }
+
+    .measure {
+      max-inline-size: var(--measure);
+    }
+
+    .measure-wide {
+      max-inline-size: calc(var(--measure) * 1.4);
+    }
+
+    .plain-list {
+      padding: 0;
+      list-style: none;
+    }
+
+    .toc,
+    .row {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: var(--space-3) var(--space-6);
+    }
+
+    .row {
+      gap: var(--space-3);
+    }
+
+    .toc {
+      padding: 0;
+    }
+
+    code {
+      font-family: var(--font-mono);
+      font-size: var(--text-small);
+    }
+
+    .swatch {
+      display: grid;
+      gap: var(--space-2);
+    }
+
+    .swatch__chip {
+      block-size: var(--space-16);
+      border: var(--border-width) solid var(--color-border-subtle);
+      border-radius: var(--radius-md);
+      background: var(--swatch);
+    }
+
+    .type-row {
+      display: grid;
+      gap: var(--space-2);
+    }
+
+    .type-row__name {
+      color: var(--color-text-muted);
+    }
+
+    .space-row {
+      display: grid;
+      grid-template-columns: 12rem 1fr;
+      align-items: center;
+      gap: var(--space-4);
+    }
+
+    .space-row__bar {
+      inline-size: var(--bar);
+      block-size: var(--space-3);
+      border-radius: var(--radius-sm);
+      background-color: var(--color-brand);
+    }
+
+    .shape {
+      display: grid;
+      gap: var(--space-2);
+    }
+
+    .shape__box {
+      aspect-ratio: 1;
+      border: var(--border-width) solid var(--color-border-muted);
+      border-radius: var(--shape-radius, var(--radius-md));
+      background-color: var(--color-bg-subtle);
+    }
+
+    .shape__box--shadow {
+      border-color: var(--color-border-subtle);
+      background-color: var(--color-bg);
+      box-shadow: var(--shadow-bar);
+    }
+
+    .demo-box {
+      padding: var(--space-6);
+      border: var(--border-width) solid var(--color-border-subtle);
+      border-radius: var(--radius-md);
+      background-color: var(--color-bg);
+    }
+
+    .demo-narrow {
+      margin-block-start: var(--space-8);
+      padding-block: var(--space-4);
+      border: var(--border-width) dashed var(--color-border-muted);
+      border-radius: var(--radius-md);
+    }
+  }
+</style>

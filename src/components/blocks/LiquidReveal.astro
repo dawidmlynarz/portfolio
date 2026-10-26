@@ -1,0 +1,161 @@
+---
+/**
+ * LiquidReveal: the portrait hero. The top image (photo by default) is a real responsive <img>;
+ * once JS runs, a canvas fades in over it and a liquid mask follows the pointer to reveal the
+ * bottom image (the clay sculpture). At rest the liquid orbits the face on its own.
+ *
+ * Both images must be transparent cutouts with identical framing. They are flattened onto
+ * --color-bg, so they sit on the page in light and dark. Behaviour lives in
+ * src/scripts/liquid-reveal.ts (ported from the original Webflow embed).
+ *
+ * Reduced motion: no orbit, wobble or droplets; the liquid appears only while pointing.
+ * No JS: the top image alone.
+ */
+import { Image, getImage } from "astro:assets";
+
+interface Props {
+  photo: ImageMetadata;
+  clay: ImageMetadata;
+  /** Describes the portrait. */
+  alt: string;
+  top?: "photo" | "clay";
+  /** Blob size, 6–60. */
+  size?: number;
+  /** Edge softness, 0–100. */
+  soft?: number;
+  /** Magnet pull towards the pointer, 0–100. */
+  pull?: number;
+  /** Edge wobble, 0–100. */
+  wobble?: number;
+  /** Trail heal time in seconds. */
+  fade?: number;
+  /** Resting orbit speed, 0–100. */
+  orbit?: number;
+  /** Part of the image always kept in frame: [x0, x1, y0, y1], 0–1. */
+  face?: [number, number, number, number];
+  /** image: the box takes the image's aspect ratio · fill: fills its parent (full-bleed heroes). */
+  fit?: "image" | "fill";
+  loading?: "eager" | "lazy";
+  sizes?: string;
+  class?: string;
+}
+
+const {
+  photo,
+  clay,
+  alt,
+  top = "photo",
+  size = 22,
+  soft = 30,
+  pull = 55,
+  wobble = 55,
+  fade = 1.8,
+  orbit = 40,
+  face = [0.27, 0.71, 0.04, 0.86],
+  fit = "image",
+  loading = "eager",
+  sizes = "(min-width: 62em) 50vw, 100vw",
+  class: className,
+} = Astro.props;
+
+const WIDTHS = [480, 800, 1200, 1600, 2400];
+const widthsFor = (img: ImageMetadata) => {
+  const fits = WIDTHS.filter((w) => w < img.width);
+  return [...fits, img.width];
+};
+
+// Same widths and format for both layers, so the canvas can pick a matching pair.
+const sourcesFor = async (img: ImageMetadata) =>
+  Promise.all(
+    widthsFor(img).map(async (w) => ({
+      url: (await getImage({ src: img, width: w, format: "webp", quality: 82 })).src,
+      w,
+    })),
+  );
+
+const [photoSources, claySources] = await Promise.all([sourcesFor(photo), sourcesFor(clay)]);
+const topImage = top === "clay" ? clay : photo;
+const config = { top, size, soft, pull, wobble, fade, orbit, face };
+
+// The static <img> mirrors the canvas framing: cover, centred on the face.
+const objectPosition = `${((face[0] + face[1]) / 2) * 100}% ${((face[2] + face[3]) / 2) * 100}%`;
+---
+
+<liquid-reveal
+  class:list={["liquid", `liquid--${fit}`, className]}
+  data-config={JSON.stringify(config)}
+  data-photo={JSON.stringify(photoSources)}
+  data-clay={JSON.stringify(claySources)}
+  data-ratio={photo.width / photo.height}
+  style={`--liquid-ratio: ${photo.width} / ${photo.height}`}
+>
+  <Image
+    class="liquid__image"
+    src={topImage}
+    alt={alt}
+    widths={widthsFor(topImage)}
+    sizes={sizes}
+    format="webp"
+    quality={82}
+    loading={loading}
+    fetchpriority={loading === "eager" ? "high" : undefined}
+    style={`object-position: ${objectPosition}`}
+  />
+  <canvas class="liquid__canvas" aria-hidden="true"></canvas>
+</liquid-reveal>
+
+<script>
+  import "@/scripts/liquid-reveal";
+</script>
+
+<style>
+  @layer components {
+    .liquid {
+      position: relative;
+      display: block;
+      overflow: hidden;
+      background-color: var(--color-bg);
+    }
+
+    .liquid--image {
+      aspect-ratio: var(--liquid-ratio);
+    }
+
+    /* Narrow screens: a square box crops the cutout's empty sides so the face reads larger.
+       The canvas framing keeps the face in frame at any aspect ratio. */
+    @media (width < 48em) {
+      .liquid--image {
+        aspect-ratio: 1;
+      }
+    }
+
+    .liquid--fill {
+      inline-size: 100%;
+      block-size: 100%;
+    }
+
+    .liquid__image,
+    .liquid__canvas {
+      position: absolute;
+      inset: 0;
+      inline-size: 100%;
+      block-size: 100%;
+    }
+
+    .liquid__image {
+      object-fit: cover;
+    }
+
+    .liquid__canvas {
+      /* Read by the script: the resolved page background the cutouts are flattened onto. */
+      color: var(--color-bg);
+      pointer-events: none;
+      opacity: 0;
+      transition: opacity var(--duration-reveal) var(--ease-standard);
+    }
+
+    [data-ready] > .liquid__canvas {
+      opacity: 1;
+    }
+  }
+</style>

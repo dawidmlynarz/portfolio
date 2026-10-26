@@ -1,0 +1,205 @@
+---
+import { Image } from "astro:assets";
+import SiteLayout from "@/layouts/SiteLayout.astro";
+import Section from "@/components/layout/Section.astro";
+import Container from "@/components/layout/Container.astro";
+import Stack from "@/components/layout/Stack.astro";
+import ClientLogos from "@/components/blocks/ClientLogos.astro";
+import Tag from "@/components/ui/Tag.astro";
+import Link from "@/components/ui/Link.astro";
+import about01 from "@/assets/about/about-01.jpg";
+import about02 from "@/assets/about/about-02.jpg";
+import about03 from "@/assets/about/about-03.jpg";
+import about04 from "@/assets/about/about-04.jpg";
+
+const photos = [
+  {
+    src: about01,
+    alt: "Smart-home app concept on a phone: a “Welcome back” screen over a house at dusk.",
+  },
+  {
+    src: about02,
+    alt: "Dawid on a laptop screen next to the Produktanci design system page, a YouTube series he co-created.",
+  },
+  {
+    src: about03,
+    alt: "Workshop table covered in paper sketches and sticky notes of a newsletter flow.",
+  },
+  { src: about04, alt: "Dawid in the office wearing a horse-head mask, holding a mug." },
+];
+
+const skills = [
+  "Product design for B2C, B2B, enterprise and SaaS",
+  "Lean UX, Agile and design thinking methodologies",
+  "Human-centered (HCD) and customer-focused (CX) design solutions",
+  "Establishing and scaling design systems",
+  "Design team management and mentorship",
+  "Native app design for iOS and Android",
+  "Information architecture and interaction design",
+  "Qualitative and quantitative UX research",
+  "Usability testing and A/B testing",
+  "Internal/external stakeholder management",
+];
+
+const interests = [
+  ["🧬", "INTJ"],
+  ["❤️", "Father & Husband"],
+  ["💡", "Startup Founder"],
+  ["🐶", "Dog owner"],
+  ["🏰", "LEGO Fan"],
+  ["🕹", "Gamer"],
+] as const;
+---
+
+<SiteLayout
+  title="About me"
+  description="Dawid Młynarz, a self-taught product designer based in Poland. I help companies build meaningful & user-centered digital experiences."
+>
+  <Section space="md" aria-labelledby="about-title">
+    <Container>
+      <Stack gap="6" class="about-intro">
+        <p class="text-caption muted">Get to know me</p>
+        <h1 id="about-title">Hello! Thanks for stopping by.</h1>
+        <p class="text-lead muted">
+          I’m Dawid, a self-taught product designer based in Poland. I help companies build
+          meaningful &amp; user-centered digital experiences. I’ve worked on products and services
+          used by millions.
+        </p>
+      </Stack>
+    </Container>
+  </Section>
+
+  <Section space="sm" aria-label="Photos">
+    <Container>
+      <ul class="photos" role="list">
+        {photos.map(({ src, alt }) => (
+          <li>
+            <Image
+              class="photos__image"
+              src={src}
+              alt={alt}
+              widths={[400, 800]}
+              sizes="(min-width: 62em) 20rem, 50vw"
+            />
+          </li>
+        ))}
+      </ul>
+    </Container>
+  </Section>
+
+  <Section space="sm" aria-label="Clients">
+    <Container>
+      <ClientLogos />
+    </Container>
+  </Section>
+
+  <Section aria-labelledby="skills-title">
+    <Container>
+      <div class="split">
+        <div class="split__head">
+          <p class="text-caption muted">What I’ve learned and practiced</p>
+          <h2 id="skills-title">Skills &amp; expertise</h2>
+        </div>
+        <ul class="skills" role="list">
+          {skills.map((skill) => (
+            <li class="skills__item">{skill}</li>
+          ))}
+        </ul>
+      </div>
+    </Container>
+  </Section>
+
+  <Section tone="subtle" aria-labelledby="personal-title">
+    <Container>
+      <div class="split">
+        <div class="split__head">
+          <p class="text-caption muted">Who I am outside design</p>
+          <h2 id="personal-title">Personal life</h2>
+        </div>
+        <Stack gap="8">
+          <p class="text-lead">
+            When I’m not designing, I’m a family guy. I love spending time with my wife and
+            daughter. And we have a dog. In my free time I love assembling LEGO and late-night
+            gaming. I used to make <Link href="https://youtu.be/9ITPaRkldDU">YouTube videos</Link>{" "}
+            in the past.
+          </p>
+          <ul class="interests" role="list">
+            {interests.map(([emoji, label]) => (
+              <Tag as="li">
+                <span aria-hidden="true">{emoji}</span>
+                <span>{label}</span>
+              </Tag>
+            ))}
+          </ul>
+        </Stack>
+      </div>
+    </Container>
+  </Section>
+</SiteLayout>
+
+<style>
+  @layer components {
+    .muted {
+      color: var(--color-text-muted);
+    }
+
+    .about-intro {
+      max-inline-size: 48rem;
+    }
+
+    .photos {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: var(--space-4);
+      padding: 0;
+    }
+
+    .photos__image {
+      inline-size: 100%;
+      block-size: auto;
+      aspect-ratio: 1;
+      object-fit: cover;
+      border-radius: var(--radius-lg);
+    }
+
+    .split {
+      display: grid;
+      gap: var(--space-8);
+    }
+
+    .split__head {
+      display: grid;
+      align-content: start;
+      gap: var(--space-3);
+    }
+
+    .skills {
+      display: grid;
+      padding: 0;
+      border-block-start: var(--border-width) solid var(--color-border-subtle);
+    }
+
+    .skills__item {
+      padding-block: var(--space-4);
+      border-block-end: var(--border-width) solid var(--color-border-subtle);
+    }
+
+    .interests {
+      display: flex;
+      flex-wrap: wrap;
+      gap: var(--space-2);
+      padding: 0;
+    }
+
+    @media (width >= 62em) {
+      .photos {
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+      }
+
+      .split {
+        grid-template-columns: 1fr 1.6fr;
+        gap: var(--space-16);
+      }
+    }
+  }
+</style>

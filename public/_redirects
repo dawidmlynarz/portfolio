@@ -1,0 +1,4 @@
+# Cloudflare Pages redirects. https://developers.cloudflare.com/pages/configuration/redirects/
+# Old Webflow URLs that no longer have a page.
+
+/work/ui-design-showcase /work 301

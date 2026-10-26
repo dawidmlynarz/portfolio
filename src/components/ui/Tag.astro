@@ -1,0 +1,38 @@
+---
+import type { HTMLTag } from "astro/types";
+
+interface Props {
+  as?: HTMLTag;
+  /** outline (default) · solid: filled with the subtle background */
+  variant?: "outline" | "solid";
+  class?: string;
+}
+
+const { as: Tag = "span", variant = "outline", class: className } = Astro.props;
+---
+
+<Tag class:list={["tag", `tag--${variant}`, className]}>
+  <slot />
+</Tag>
+
+<style>
+  @layer components {
+    .tag {
+      display: inline-flex;
+      align-items: center;
+      gap: var(--space-1);
+      padding: var(--space-1) var(--space-3);
+      border: var(--border-width) solid var(--color-border-muted);
+      border-radius: var(--radius-pill);
+      font-size: var(--text-small);
+      line-height: var(--leading-small);
+      color: var(--color-text-muted);
+      white-space: nowrap;
+    }
+
+    .tag--solid {
+      border-color: transparent;
+      background-color: var(--color-bg-subtle);
+    }
+  }
+</style>

@@ -1,0 +1,151 @@
+---
+import { Image } from "astro:assets";
+import SiteLayout from "@/layouts/SiteLayout.astro";
+import Container from "@/components/layout/Container.astro";
+import Tag from "@/components/ui/Tag.astro";
+import Link from "@/components/ui/Link.astro";
+import Prose from "@/components/content/Prose.astro";
+import Metrics from "@/components/content/Metrics.astro";
+import NextProject from "@/components/content/NextProject.astro";
+import type { Work } from "@/lib/work";
+
+interface Props {
+  entry: Work;
+  next?: Work;
+}
+
+const { entry, next } = Astro.props;
+const { data } = entry;
+
+const facts = [
+  { term: "Role", detail: data.via ? `${data.role} (via ${data.via})` : data.role },
+  { term: "Company", detail: data.company },
+  { term: "Industry", detail: data.industry },
+  { term: "Business", detail: data.business },
+  ...(data.year ? [{ term: "Year", detail: String(data.year) }] : []),
+];
+---
+
+<SiteLayout title={data.seoTitle ?? data.title} description={data.description}>
+  <article class="case-study">
+    <header class="case-study__header">
+      <Container class="case-study__intro">
+        <p class="text-caption case-study__eyebrow">Case study · {data.company}</p>
+        <h1 class="case-study__title">{data.title}</h1>
+        <p class="text-lead case-study__lead">{data.lead ?? data.description}</p>
+        <ul class="case-study__tags" role="list">
+          {data.tags.map((tag) => (
+            <Tag as="li">{tag}</Tag>
+          ))}
+        </ul>
+      </Container>
+
+      <Container>
+        <Image
+          class="case-study__cover"
+          src={data.cover}
+          alt={data.coverAlt}
+          widths={[800, 1200, 1600, 2400, 3200].filter((w) => w <= data.cover.width)}
+          sizes="(min-width: 84rem) 80rem, calc(100vw - 2rem)"
+          loading="eager"
+          fetchpriority="high"
+        />
+      </Container>
+
+      <Container>
+        <dl class="case-study__facts">
+          {facts.map(({ term, detail }) => (
+            <div class="case-study__fact">
+              <dt class="text-caption">{term}</dt>
+              <dd>{detail}</dd>
+            </div>
+          ))}
+          {data.link && (
+            <div class="case-study__fact">
+              <dt class="text-caption">Project</dt>
+              <dd>
+                <Link href={data.link.href}>{data.link.label}</Link>
+              </dd>
+            </div>
+          )}
+        </dl>
+      </Container>
+    </header>
+
+    <Prose class="case-study__body">
+      {data.metrics.length > 0 && <Metrics items={data.metrics} />}
+      <slot />
+    </Prose>
+  </article>
+
+  {next && <NextProject entry={next} />}
+</SiteLayout>
+
+<style>
+  @layer components {
+    .case-study__header {
+      display: grid;
+      gap: var(--space-12);
+      padding-block: var(--space-section-sm) var(--space-section-sm);
+    }
+
+    .case-study__intro {
+      display: grid;
+      justify-items: start;
+      gap: var(--space-6);
+    }
+
+    .case-study__eyebrow,
+    .case-study__lead {
+      color: var(--color-text-muted);
+    }
+
+    .case-study__title {
+      max-inline-size: 22ch;
+    }
+
+    .case-study__lead {
+      max-inline-size: var(--measure);
+    }
+
+    .case-study__tags {
+      display: flex;
+      flex-wrap: wrap;
+      gap: var(--space-2);
+      padding: 0;
+    }
+
+    .case-study__cover {
+      inline-size: 100%;
+      block-size: auto;
+      border-radius: var(--radius-lg);
+      background-color: var(--color-bg-subtle);
+    }
+
+    .case-study__facts {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(min(11rem, 100%), 1fr));
+      gap: var(--space-6) var(--space-8);
+      padding-block-end: var(--space-8);
+      border-block-end: var(--border-width) solid var(--color-border-subtle);
+    }
+
+    .case-study__fact {
+      display: grid;
+      gap: var(--space-1);
+      align-content: start;
+    }
+
+    .case-study__fact dt {
+      color: var(--color-text-muted);
+    }
+
+    .case-study__fact dd {
+      margin: 0;
+    }
+
+    .case-study__body {
+      padding-block-end: var(--space-section-md);
+    }
+  }
+</style>

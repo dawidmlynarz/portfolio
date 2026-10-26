@@ -1,0 +1,35 @@
+---
+interface Props {
+  title?: string;
+}
+const { title } = Astro.props;
+---
+
+<aside class="callout">
+  {title && <p class="callout__title">{title}</p>}
+  <div class="callout__body">
+    <slot />
+  </div>
+</aside>
+
+<style>
+  @layer components {
+    .callout {
+      display: grid;
+      gap: var(--space-3);
+      padding: var(--space-6);
+      border-inline-start: calc(var(--border-width) * 3) solid var(--color-brand);
+      border-radius: var(--radius-md);
+      background-color: var(--color-bg-subtle);
+    }
+
+    .callout__title {
+      font-weight: var(--weight-semibold);
+    }
+
+    .callout__body {
+      display: grid;
+      gap: var(--space-3);
+    }
+  }
+</style>

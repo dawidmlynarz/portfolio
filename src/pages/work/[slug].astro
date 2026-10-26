@@ -1,0 +1,38 @@
+---
+import { getEntry, render } from "astro:content";
+import CaseStudyLayout from "@/layouts/CaseStudyLayout.astro";
+import Figure from "@/components/ui/Figure.astro";
+import ImageGrid from "@/components/content/ImageGrid.astro";
+import Metrics from "@/components/content/Metrics.astro";
+import Callout from "@/components/content/Callout.astro";
+import Quote from "@/components/content/Quote.astro";
+import { getPagedWork, hasPage, type Work } from "@/lib/work";
+
+export async function getStaticPaths() {
+  const visible = await getPagedWork();
+  return visible.map((entry, index) => ({
+    params: { slug: entry.id },
+    props: { entry, fallbackNext: visible[(index + 1) % visible.length] },
+  }));
+}
+
+interface Props {
+  entry: Work;
+  fallbackNext?: Work;
+}
+
+const { entry, fallbackNext } = Astro.props;
+const { Content } = await render(entry);
+
+// Prefer the curated "next" link; fall back to the next published case study.
+const curated = entry.data.next ? await getEntry(entry.data.next) : undefined;
+const nextCandidate = curated && hasPage(curated) ? curated : fallbackNext;
+const next = nextCandidate && nextCandidate.id !== entry.id ? nextCandidate : undefined;
+
+// MDX files use these without importing them.
+const components = { Figure, ImageGrid, Metrics, Callout, Quote };
+---
+
+<CaseStudyLayout entry={entry} next={next}>
+  <Content components={components} />
+</CaseStudyLayout>

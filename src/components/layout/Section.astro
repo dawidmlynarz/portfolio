@@ -1,0 +1,35 @@
+---
+import type { HTMLAttributes } from "astro/types";
+
+interface Props extends HTMLAttributes<"section"> {
+  /** Vertical rhythm: fluid --space-section-* */
+  space?: "sm" | "md" | "lg";
+  tone?: "default" | "subtle";
+}
+
+const { space = "md", tone = "default", class: className, ...attrs } = Astro.props;
+---
+
+<section class:list={["section", `section--${space}`, `section--${tone}`, className]} {...attrs}>
+  <slot />
+</section>
+
+<style>
+  @layer components {
+    .section--sm {
+      padding-block: var(--space-section-sm);
+    }
+
+    .section--md {
+      padding-block: var(--space-section-md);
+    }
+
+    .section--lg {
+      padding-block: var(--space-section-lg);
+    }
+
+    .section--subtle {
+      background-color: var(--color-bg-subtle);
+    }
+  }
+</style>
