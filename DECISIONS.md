@@ -2,6 +2,13 @@
 
 Non-obvious choices, newest first. One entry per decision: what, why, and what it rules out.
 
+## 2026-10-26 · Black clay for the dark theme
+
+`LiquidReveal` takes an optional `clayDark` image (`portrait-clay-dark.avif`, Dawid's `clay-black.avif` from Webflow, same 2400×1792 framing). It blends into the black page where the white clay looked cut out.
+
+- **Static image:** both clays are rendered, and CSS shows the one for the resolved theme (OS setting, or the toggle's `data-theme`). Both are `loading="lazy"` with high fetch priority, so the hidden one is never fetched.
+- **Canvas:** it loads only the clay its theme needs and swaps on `themechange` or an OS scheme flip, fetching the other variant the first time it is needed.
+
 ## 2026-10-26 · Portrait sources: 2400px AVIF from Webflow
 
 The liquid reveal now uses the higher-quality pair Dawid uploaded to Webflow (`realphoto.avif`, `clay.avif`). They are 2400×1792 with transparency and use the same framing as the old 1200px PNGs (the alpha masks match), so the face crop is unchanged. Both layers are now served as AVIF at quality 70 rather than WebP, since WebP re-encodes of the new sources were larger. The largest photo variant is 140 KB.

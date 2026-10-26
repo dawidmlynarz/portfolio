@@ -16,6 +16,8 @@ import { Image, getImage } from "astro:assets";
 interface Props {
   photo: ImageMetadata;
   clay: ImageMetadata;
+  /** Optional clay variant for the dark theme (same framing), so it blends into a black page. */
+  clayDark?: ImageMetadata;
   /** Describes the top image (what shows before and without the reveal). */
   alt: string;
   top?: "photo" | "clay";
@@ -43,6 +45,7 @@ interface Props {
 const {
   photo,
   clay,
+  clayDark,
   alt,
   top = "clay",
   size = 22,
@@ -73,8 +76,16 @@ const sourcesFor = async (img: ImageMetadata) =>
     })),
   );
 
-const [photoSources, claySources] = await Promise.all([sourcesFor(photo), sourcesFor(clay)]);
+const [photoSources, claySources, clayDarkSources] = await Promise.all([
+  sourcesFor(photo),
+  sourcesFor(clay),
+  clayDark ? sourcesFor(clayDark) : undefined,
+]);
 const topImage = top === "clay" ? clay : photo;
+// With a dark clay on top, two static images are rendered and CSS shows the one for the resolved
+// theme. Both are lazy so the hidden one (display: none) is never fetched.
+const topImageDark = top === "clay" ? clayDark : undefined;
+const imageLoading = topImageDark ? "lazy" : loading;
 const config = { top, size, soft, pull, wobble, fade, orbit, face };
 
 // The static <img> and the canvas share this crop: cover, positioned on the face centre.
@@ -86,21 +97,36 @@ const objectPosition = `${((face[0] + face[1]) / 2) * 100}% ${((face[2] + face[3
   data-config={JSON.stringify(config)}
   data-photo={JSON.stringify(photoSources)}
   data-clay={JSON.stringify(claySources)}
+  data-clay-dark={clayDarkSources && JSON.stringify(clayDarkSources)}
   data-ratio={photo.width / photo.height}
   style={`--liquid-ratio: ${photo.width} / ${photo.height}`}
 >
   <Image
-    class="liquid__image"
+    class:list={["liquid__image", { "liquid__image--light": topImageDark }]}
     src={topImage}
     alt={alt}
     widths={widthsFor(topImage)}
     sizes={sizes}
     format="avif"
     quality={70}
-    loading={loading}
+    loading={imageLoading}
     fetchpriority={loading === "eager" ? "high" : undefined}
     style={`object-position: ${objectPosition}`}
   />
+  {topImageDark && (
+    <Image
+      class="liquid__image liquid__image--dark"
+      src={topImageDark}
+      alt={alt}
+      widths={widthsFor(topImageDark)}
+      sizes={sizes}
+      format="avif"
+      quality={70}
+      loading="lazy"
+      fetchpriority={loading === "eager" ? "high" : undefined}
+      style={`object-position: ${objectPosition}`}
+    />
+  )}
   <canvas class="liquid__canvas" aria-hidden="true"></canvas>
 </liquid-reveal>
 
@@ -144,6 +170,29 @@ const objectPosition = `${((face[0] + face[1]) / 2) * 100}% ${((face[2] + face[3
 
     .liquid__image {
       object-fit: cover;
+    }
+
+    /* Light/dark pair: show the image for the resolved theme (OS setting or the toggle). */
+    .liquid__image--dark {
+      display: none;
+    }
+
+    :global(:root[data-theme="dark"]) .liquid__image--dark {
+      display: block;
+    }
+
+    :global(:root[data-theme="dark"]) .liquid__image--light {
+      display: none;
+    }
+
+    @media (prefers-color-scheme: dark) {
+      :global(:root:not([data-theme="light"])) .liquid__image--dark {
+        display: block;
+      }
+
+      :global(:root:not([data-theme="light"])) .liquid__image--light {
+        display: none;
+      }
     }
 
     .liquid__canvas {
