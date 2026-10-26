@@ -6,7 +6,7 @@
  * States: closed -> busy (animating, clicks ignored) -> open -> busy -> closed.
  */
 import { gsap } from "gsap";
-import { BELT, ICONS, ITEMS, SLOTS_NARROW, SLOTS_WIDE, type IconName } from "./content";
+import { BELT, ICONS, ITEMS, MOBILE_COUNT, type IconName } from "./content";
 
 type Card = HTMLButtonElement & {
   _i: number;
@@ -48,7 +48,8 @@ export function init(root: HTMLElement): () => void {
     pop = q("pop"),
     scrim = q("pop-scrim"),
     panel = q("pop-panel"),
-    beltTrack = q("belt-track");
+    beltTrack = q("belt-track"),
+    intro = root.querySelector<HTMLElement>(".mindblown__intro");
   const layers = root.querySelectorAll(".mindblown__layer");
 
   const RM = matchMedia("(prefers-reduced-motion: reduce)").matches;
@@ -147,20 +148,109 @@ export function init(root: HTMLElement): () => void {
       r = el.getBoundingClientRect();
     return { x: r.left - s.left + r.width / 2, y: r.top - s.top + r.height / 2 };
   };
-  const slots = () => (narrow() ? SLOTS_NARROW : SLOTS_WIDE);
-  function target(card: Card, i: number) {
-    const W = stage.clientWidth,
-      H = stage.clientHeight,
-      w = card.offsetWidth,
-      h = card.offsetHeight,
-      s = slots()[i % slots().length]!;
-    const step = W < 720 ? 72 : 82;
-    const cy = narrow() ? 48 + s[1] * step + (s[0] === 0.5 ? -8 : 0) : s[1] * H;
-    return {
-      x: gsap.utils.clamp(8, W - w - 8, s[0] * W - w / 2),
-      y: gsap.utils.clamp(12, H - h - 8, cy - h / 2),
-    };
+  /* ---------- where the thoughts land (new random spots on every open) ---------- */
+  type Box = { l: number; t: number; r: number; b: number };
+  const box = (el: Element): Box => {
+    const s = stage.getBoundingClientRect(),
+      r = el.getBoundingClientRect();
+    return { l: r.left - s.left, t: r.top - s.top, r: r.right - s.left, b: r.bottom - s.top };
+  };
+  const hits = (a: Box, b: Box) => a.l < b.r && a.r > b.l && a.t < b.b && a.b > b.t;
+  const phone = () => stage.clientWidth < 720;
+  const TOP = 80; // clear of the floating nav
+  let active: Card[] = cards;
+  let shown = new Set<Card>(cards);
+  let spots = new Map<Card, { x: number; y: number }>();
+  /* phones show a random handful; wider stages show every thought */
+  function pickActive() {
+    active = phone() ? gsap.utils.shuffle(cards.slice()).slice(0, MOBILE_COUNT) : cards;
+    shown = new Set(active);
   }
+  function layout() {
+    spots = new Map();
+    const W = stage.clientWidth,
+      H = stage.clientHeight;
+    if (phone()) {
+      // 3 columns, rows from the top of the stage, in random order
+      gsap.utils.shuffle(active.slice()).forEach((c, i) => {
+        const col = i % 3,
+          w = c.offsetWidth,
+          h = c.offsetHeight;
+        const cy = TOP + Math.floor(i / 3) * 72 + (col === 1 ? -8 : 0);
+        spots.set(c, {
+          x: gsap.utils.clamp(8, W - w - 8, [0.19, 0.5, 0.81][col]! * W - w / 2),
+          y: gsap.utils.clamp(12, H - h - 8, cy),
+        });
+      });
+      return;
+    }
+    // Scatter around the head, clear of the face, the flying lid, the shoulders and the notes.
+    // Start in a tight band around the head and widen it only if the thoughts don't fit.
+    const hp = box(headPos),
+      hw = hp.r - hp.l,
+      hh = hp.b - hp.t,
+      o = rel(hole);
+    const note = {
+      l: hp.l + noteClose.offsetLeft,
+      t: hp.t + noteClose.offsetTop,
+      r: hp.l + noteClose.offsetLeft + noteClose.offsetWidth,
+      b: hp.t + noteClose.offsetTop + noteClose.offsetHeight,
+    };
+    const avoid: Box[] = [
+      { l: hp.l + 0.22 * hw, r: hp.l + 0.7 * hw, t: o.y - 0.14 * hh, b: H },
+      { l: hp.l - 0.05 * hw, r: hp.l + 0.43 * hw, t: o.y - 0.5 * hh, b: o.y - 0.06 * hh },
+      { l: hp.l, r: hp.r, t: o.y + 0.33 * hh, b: H },
+      note,
+      box(tip),
+    ];
+    const GAP = 10,
+      yMax = H - 16;
+    for (let pass = 0; pass < 5; pass++) {
+      const half = Math.min(W - 16, hw * (1.75 + pass * 0.3)) / 2,
+        xMin = Math.max(8, o.x - half),
+        xMax = Math.min(W - 8, o.x + half);
+      const placed: Box[] = [];
+      const next = new Map<Card, { x: number; y: number }>();
+      for (const c of gsap.utils.shuffle(active.slice())) {
+        const w = c.offsetWidth,
+          h = c.offsetHeight;
+        for (let k = 0; k < 400; k++) {
+          const x = gsap.utils.random(xMin, Math.max(xMin, xMax - w)),
+            y = gsap.utils.random(TOP, Math.max(TOP, yMax - h));
+          const b = { l: x - GAP, t: y - GAP, r: x + w + GAP, b: y + h + GAP };
+          if (avoid.some((a) => hits(a, b)) || placed.some((p) => hits(p, b))) continue;
+          placed.push(b);
+          next.set(c, { x, y });
+          break;
+        }
+        // last pass: a thought that still has no room overlaps another thought, never the head
+        if (!next.has(c) && pass === 4) {
+          let best = { x: xMin, y: TOP },
+            least = Infinity;
+          for (let k = 0; k < 200; k++) {
+            const x = gsap.utils.random(xMin, Math.max(xMin, xMax - w)),
+              y = gsap.utils.random(TOP, Math.max(TOP, yMax - h));
+            const b = { l: x, t: y, r: x + w, b: y + h };
+            if (avoid.some((a) => hits(a, b))) continue;
+            const n = placed.filter((p) => hits(p, b)).length;
+            if (n < least) [best, least] = [{ x, y }, n];
+          }
+          placed.push({
+            l: best.x - GAP,
+            t: best.y - GAP,
+            r: best.x + w + GAP,
+            b: best.y + h + GAP,
+          });
+          next.set(c, best);
+        }
+      }
+      if (next.size === active.length) {
+        spots = next;
+        return;
+      }
+    }
+  }
+  const target = (c: Card) => spots.get(c) ?? { x: 0, y: 0 };
   function say(text: string, delay = 0) {
     bubble.textContent = text;
     run(() =>
@@ -203,14 +293,21 @@ export function init(root: HTMLElement): () => void {
     rig.classList.add("mindblown__rig--armed");
     setFace("super");
     const o = rel(hole);
+    pickActive();
+    layout();
     run(() => {
       const tl = gsap.timeline({
         onComplete() {
           state = "open";
           startFloats();
-          for (const c of cards) c.tabIndex = 0;
+          for (const c of active) c.tabIndex = 0;
         },
       });
+      // the heading fades away to make room for the thoughts
+      if (intro)
+        tl.to(intro, { opacity: 0, y: -24, duration: T(0.6), ease: "power2.inOut" }, 0).set(intro, {
+          pointerEvents: "none",
+        });
       // 1. scissors cut along the line
       tl.to(note, { scale: 0, rotation: 20, duration: T(0.25), ease: "back.in(2)" }, 0)
         .set(scissors, { transition: "none" }, 0)
@@ -248,10 +345,10 @@ export function init(root: HTMLElement): () => void {
         );
       // 3. thoughts erupt
       const P = tl.labels.pop!;
-      cards.forEach((c, i) => {
+      active.forEach((c, i) => {
         const w = c.offsetWidth,
           h = c.offsetHeight,
-          t = target(c, i),
+          t = target(c),
           sx = o.x - w / 2,
           sy = o.y - h / 2,
           at = P + (RM ? 0 : 0.05 + i * 0.06);
@@ -288,7 +385,7 @@ export function init(root: HTMLElement): () => void {
     closePop(true);
     head.setAttribute("aria-expanded", "false");
     head.setAttribute("aria-label", "Open my head to see what's inside");
-    for (const c of cards) c.tabIndex = -1;
+    for (const c of active) c.tabIndex = -1;
     const o = rel(hole);
     run(() => {
       const tl = gsap.timeline({
@@ -300,7 +397,7 @@ export function init(root: HTMLElement): () => void {
       tl.to(tip, { autoAlpha: 0, duration: T(0.2) }, 0)
         .to(noteClose, { scale: 0, rotation: -20, duration: T(0.25), ease: "back.in(2)" }, 0)
         .set(noteClose, { autoAlpha: 0 });
-      cards
+      active
         .slice()
         .reverse()
         .forEach((c, i) => {
@@ -337,13 +434,19 @@ export function init(root: HTMLElement): () => void {
         .set(scissors, { left: 0, x: 0, rotation: 0, clearProps: "opacity,transition,transform" })
         .set(dash, { clearProps: "opacity" })
         .to(note, { scale: 1, rotation: 0, duration: T(0.5), ease: "back.out(2.5)" });
+      if (intro)
+        tl.set(intro, { clearProps: "pointerEvents" }, "<").to(
+          intro,
+          { opacity: 1, y: 0, duration: T(0.6), ease: "power2.out" },
+          "<",
+        );
     });
   }
 
   function startFloats() {
     if (RM) return;
     floats = run(() =>
-      cards.map((c) =>
+      active.map((c) =>
         gsap.to(c._in, {
           y: "random(-9,9)",
           rotation: "random(-3,3)",
@@ -360,7 +463,7 @@ export function init(root: HTMLElement): () => void {
     floats = [];
     run(() =>
       gsap.to(
-        cards.map((c) => c._in),
+        active.map((c) => c._in),
         { y: 0, rotation: 0, duration: 0.2 },
       ),
     );
@@ -767,9 +870,11 @@ export function init(root: HTMLElement): () => void {
         Math.abs(ux) > 1e-3 ? w / 2 / Math.abs(ux) : 1e9,
         Math.abs(uy) > 1e-3 ? ht / 2 / Math.abs(uy) : 1e9,
       );
-      const op = d > edge + 50 ? String(gsap.getProperty(c, "opacity")) : "0";
-      c._tails[0]!.style.transform = `translate(${cx + ux * (edge + 13)}px, ${cy + uy * (edge + 13)}px)`;
-      c._tails[1]!.style.transform = `translate(${cx + ux * (edge + 28)}px, ${cy + uy * (edge + 28)}px)`;
+      // the dots grow with the cards (50% bigger on desktop): the first dot is 11px at 1x
+      const k = c._tails[0]!.clientWidth / 11;
+      const op = shown.has(c) && d > edge + 50 ? String(gsap.getProperty(c, "opacity")) : "0";
+      c._tails[0]!.style.transform = `translate(${cx + ux * (edge + 13 * k)}px, ${cy + uy * (edge + 13 * k)}px)`;
+      c._tails[1]!.style.transform = `translate(${cx + ux * (edge + 28 * k)}px, ${cy + uy * (edge + 28 * k)}px)`;
       c._tails[0]!.style.opacity = c._tails[1]!.style.opacity = op;
     }
   };
@@ -784,10 +889,11 @@ export function init(root: HTMLElement): () => void {
       rz = window.setTimeout(() => {
         labelSize();
         if (state !== "open") return;
-        cards.forEach((c, i) => {
-          const t = target(c, i);
+        layout();
+        for (const c of active) {
+          const t = target(c);
           run(() => gsap.to(c, { x: t.x, y: t.y, duration: 0.6, ease: "power3.out" }));
-        });
+        }
       }, 150);
     },
     on,

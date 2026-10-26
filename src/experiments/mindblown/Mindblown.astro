@@ -8,7 +8,8 @@
  * reads only semantic site tokens; illustration colours are local.
  *
  * Without JS (or before it runs) the resting portrait, the note and the stripe still render.
- * The default slot sits above the stage, on the same dotted backdrop (the page intro).
+ * The default slot is the page intro: it sits at the top of the stage and fades out when the
+ * head opens, so the thoughts can land where it was.
  */
 import "@fontsource/gochi-hand/latin-400.css";
 import "./mindblown.css";
@@ -25,15 +26,16 @@ const belt = [...BELT, ...BELT];
 ---
 
 <div class="mindblown" data-mindblown>
-  {Astro.slots.has("default") && (
-    <div class="mindblown__intro">
-      <slot />
-    </div>
-  )}
   <section class="mindblown__stage" aria-labelledby="mindblown-title">
+    {Astro.slots.has("default") && (
+      <div class="mindblown__intro">
+        <slot />
+      </div>
+    )}
     <h2 class="visually-hidden" id="mindblown-title">
       About Dawid Młynarz
     </h2>
+    <div class="mindblown__head-space"></div>
 
     <div class="mindblown__head-pos">
       <div class="mindblown__rig">

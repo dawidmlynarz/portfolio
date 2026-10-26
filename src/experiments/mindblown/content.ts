@@ -1,6 +1,7 @@
 /**
  * Mindblown About: the thought cards and the stripe. Edit copy here; the animation lives in
- * mindblown.ts. `short` is the label on screens under 1000px wide; `icon` is a key of ICONS.
+ * mindblown.ts, which also places the cards at random on every open. `short` is the label on
+ * screens under 1000px wide; `icon` is a key of ICONS.
  */
 export type IconName = keyof typeof ICONS;
 
@@ -142,41 +143,8 @@ export const ITEMS: Thought[] = [
   },
 ];
 
-/** Card landing spots above 1000px, as fractions of the stage (centre of card). */
-export const SLOTS_WIDE: [number, number][] = [
-  [0.1, 0.14],
-  [0.29, 0.1],
-  [0.5, 0.08],
-  [0.71, 0.1],
-  [0.9, 0.14],
-  [0.11, 0.37],
-  [0.27, 0.25],
-  [0.71, 0.3],
-  [0.89, 0.37],
-  [0.24, 0.5],
-  [0.76, 0.5],
-  [0.11, 0.62],
-  [0.89, 0.62],
-  [0.13, 0.8],
-];
-
-/** Phones and tablets: 3 columns (fraction of the width) by row number. */
-export const SLOTS_NARROW: [number, number][] = [
-  [0.19, 0],
-  [0.5, 0],
-  [0.81, 0],
-  [0.19, 1],
-  [0.5, 1],
-  [0.81, 1],
-  [0.19, 2],
-  [0.5, 2],
-  [0.81, 2],
-  [0.19, 3],
-  [0.5, 3],
-  [0.81, 3],
-  [0.3, 4],
-  [0.7, 4],
-];
+/** Phones (stage under 720px) show this many thoughts, picked at random on every open. */
+export const MOBILE_COUNT = 6;
 
 export const BELT = [
   "Self-taught product designer",
