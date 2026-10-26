@@ -10,7 +10,9 @@ export const isListed = ({ data }: Work) => !data.draft || !isProduction;
 
 /** Gets a page on this build. Protected drafts stay unlinked cards unless previews are behind Access. */
 export const hasPage = (entry: Work) =>
-  isListed(entry) && (!entry.data.draft || !entry.data.protected || showProtectedDrafts);
+  entry.data.page &&
+  isListed(entry) &&
+  (!entry.data.draft || !entry.data.protected || showProtectedDrafts);
 
 export async function getListedWork() {
   return (await getCollection("work", isListed)).sort(byOrder);

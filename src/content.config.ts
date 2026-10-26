@@ -29,6 +29,8 @@ const work = defineCollection({
       year: z.number().int().optional(),
       industry: z.string(),
       business: z.string(),
+      /** Label shown before `business` on cards ("Model" for SaaS/agency/product work). */
+      businessLabel: z.enum(["Business", "Model"]).default("Business"),
       tags: z.array(z.string()).default([]),
       cover: image(),
       coverAlt: z.string().min(1, "Cover images need alt text."),
@@ -43,6 +45,8 @@ const work = defineCollection({
        * (unlinked) so the migration can be reviewed.
        */
       draft: z.boolean().default(false),
+      /** false: listed as a card without its own case-study page (no write-up exists). */
+      page: z.boolean().default(true),
       /**
        * Was password-protected on Webflow. A protected draft gets no page on previews either
        * (preview URLs are public) unless SHOW_PROTECTED_DRAFTS is set for an Access-protected

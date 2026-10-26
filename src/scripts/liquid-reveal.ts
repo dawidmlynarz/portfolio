@@ -221,26 +221,25 @@ class LiquidReveal extends HTMLElement {
 
   // ---------- layout ----------
 
+  /**
+   * Same crop as the static <img> (object-fit: cover; object-position at the face centre), so the
+   * canvas lines up with it exactly when it fades in. Keep in sync with LiquidReveal.astro.
+   */
   #computeLayout(iw: number, ih: number): Layout {
     const [x0, x1, y0, y1] = this.#cfg.face;
     const W = this.#W;
     const H = this.#H;
-    let s = Math.max(W / iw, H / ih);
-    const maxS = Math.min((W * 0.98) / ((x1 - x0) * iw), (H * 0.94) / ((y1 - y0) * ih));
-    if (s > maxS) s = maxS;
+    const s = Math.max(W / iw, H / ih);
     const dw = iw * s;
     const dh = ih * s;
-    let dx = W / 2 - ((x0 + x1) / 2) * dw;
-    if (dw >= W) dx = Math.min(0, Math.max(W - dw, dx));
-    const dy = dh >= H ? Math.min(0, Math.max(H - dh, H * 0.5 - ((y0 + y1) / 2) * dh)) : H - dh;
-    return { dx, dy, dw, dh };
+    return { dx: (W - dw) * ((x0 + x1) / 2), dy: (H - dh) * ((y0 + y1) / 2), dw, dh };
   }
 
   #resize() {
     if (!this.#photo || !this.#clay) return;
     const rect = this.getBoundingClientRect();
-    this.#W = Math.max(1, Math.round(rect.width));
-    this.#H = Math.max(1, Math.round(rect.height));
+    this.#W = Math.max(1, rect.width);
+    this.#H = Math.max(1, rect.height);
     this.#dpr = Math.min(devicePixelRatio || 1, 2);
     this.#cv.width = Math.round(this.#W * this.#dpr);
     this.#cv.height = Math.round(this.#H * this.#dpr);

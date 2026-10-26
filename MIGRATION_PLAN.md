@@ -112,7 +112,7 @@ Plain CSS is not a bottleneck here because tokens are CSS custom properties, whi
 
 - **Dark mode from day one.** Implemented with `color-scheme: light dark` + `light-dark()` semantic tokens, OS preference by default, manual toggle (light / dark / system) persisted in localStorage, inline head script to prevent flash. The liquid reveal and logo must be theme-aware.
 - **Softer text color** (`#161616` instead of pure black).
-- **Typography:** role-based fluid scale (display, h1–h4, lead, body, small, caption), 375 → 1440px. Defined in `tokens.css` and mirrored in Figma.
+- **Typography:** role-based fluid scale (h1–h4, lead, body, small, caption); the scale starts at h1, there is no display role, 375 → 1440px. Defined in `tokens.css` and mirrored in Figma.
 - **Font face and brand colors are placeholders.** Dawid is choosing them. Treat `--font-heading`, `--font-body` and the primitives as the only things that change.
 
 **Figma ↔ code consistency** (Figma file: https://www.figma.com/design/vzoYNuNujywTubNYgLt10d)

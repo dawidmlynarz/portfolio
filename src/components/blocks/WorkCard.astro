@@ -1,7 +1,11 @@
 ---
+/**
+ * Case-study row for Home and Work: role line, title, summary, labelled tags, then the cover.
+ * One per row, full container width (matches the original site's list).
+ */
 import { Image } from "astro:assets";
 import Tag from "@/components/ui/Tag.astro";
-import { hasPage, roleLine, workHref, type Work } from "@/lib/work";
+import { hasPage, workHref, type Work } from "@/lib/work";
 
 interface Props {
   entry: Work;
@@ -17,39 +21,44 @@ const Heading = `h${headingLevel}` as const;
 const href = hasPage(entry) ? workHref(entry) : undefined;
 ---
 
-<article class:list={["work-card", { "work-card--draft": data.draft }]}>
-  <Image
-    class="work-card__cover"
-    src={data.cover}
-    alt={data.coverAlt}
-    widths={[480, 800, 1200, 1600]}
-    sizes="(min-width: 62em) 40rem, calc(100vw - 2rem)"
-    loading={eager ? "eager" : "lazy"}
-  />
+<article class:list={["work-card", { "work-card--linked": href }]}>
   <div class="work-card__body">
-    <p class="work-card__role text-small">{roleLine(entry)}</p>
+    <p class="work-card__role text-small">
+      {data.role} at <strong>{data.company}</strong>
+      {data.via && ` (via ${data.via})`}
+    </p>
     <Heading class="work-card__title">
       {href ? <a href={href}>{data.title}</a> : data.title}
     </Heading>
     <p class="work-card__summary">{data.description}</p>
     <ul class="work-card__tags" role="list">
-      {data.draft && data.protected && !href && (
-        <Tag as="li" variant="solid">
-          Protected · no preview page
-        </Tag>
-      )}
       {data.draft && (
         <Tag as="li" variant="solid">
           Draft · preview only
         </Tag>
       )}
       <Tag as="li" variant="solid">
+        <span class="work-card__label">Industry:</span>
         {data.industry}
       </Tag>
-      {data.tags.slice(0, 3).map((tag) => (
+      <Tag as="li" variant="solid">
+        <span class="work-card__label">{data.businessLabel}:</span>
+        {data.business}
+      </Tag>
+      {data.tags.map((tag) => (
         <Tag as="li">{tag}</Tag>
       ))}
     </ul>
+  </div>
+  <div class="work-card__media">
+    <Image
+      class="work-card__cover"
+      src={data.cover}
+      alt={data.coverAlt}
+      widths={[480, 800, 1200, 1600, 2400].filter((w) => w <= data.cover.width)}
+      sizes="(min-width: 84rem) 80rem, calc(100vw - 2rem)"
+      loading={eager ? "eager" : "lazy"}
+    />
   </div>
 </article>
 
@@ -58,8 +67,48 @@ const href = hasPage(entry) ? workHref(entry) : undefined;
     .work-card {
       position: relative;
       display: grid;
-      align-content: start;
-      gap: var(--space-6);
+      gap: var(--space-8);
+    }
+
+    .work-card__body {
+      display: grid;
+      justify-items: start;
+      gap: var(--space-4);
+      max-inline-size: 48rem;
+    }
+
+    .work-card__role,
+    .work-card__summary,
+    .work-card__label {
+      color: var(--color-text-muted);
+    }
+
+    .work-card__role strong {
+      color: var(--color-text);
+      font-weight: var(--weight-semibold);
+    }
+
+    .work-card__title {
+      font: var(--weight-semibold) var(--text-h2) / var(--leading-h2) var(--font-heading);
+      letter-spacing: var(--tracking-h2);
+      text-wrap: balance;
+    }
+
+    .work-card__summary {
+      max-inline-size: var(--measure);
+    }
+
+    .work-card__tags {
+      display: flex;
+      flex-wrap: wrap;
+      gap: var(--space-2);
+      padding: 0;
+    }
+
+    .work-card__media {
+      overflow: hidden;
+      border-radius: var(--radius-lg);
+      background-color: var(--color-bg-subtle);
     }
 
     .work-card__cover {
@@ -67,28 +116,10 @@ const href = hasPage(entry) ? workHref(entry) : undefined;
       block-size: auto;
       aspect-ratio: 3 / 2;
       object-fit: cover;
-      border-radius: var(--radius-lg);
-      background-color: var(--color-bg-subtle);
-      transition: opacity var(--duration-fast) var(--ease-standard);
+      transition: scale var(--duration-zoom) var(--ease-out-expo);
     }
 
-    .work-card__body {
-      display: grid;
-      gap: var(--space-3);
-    }
-
-    .work-card__role,
-    .work-card__summary {
-      color: var(--color-text-muted);
-    }
-
-    .work-card__title {
-      font: var(--weight-semibold) var(--text-h3) / var(--leading-h3) var(--font-heading);
-      letter-spacing: var(--tracking-h3);
-      text-wrap: balance;
-    }
-
-    /* The whole card is the link target; the visible link stays the title (one tab stop). */
+    /* The whole row is the link target; the visible link stays the title (one tab stop). */
     .work-card__title a {
       --underline-size: 0%;
       --underline-origin: right;
@@ -98,29 +129,16 @@ const href = hasPage(entry) ? workHref(entry) : undefined;
       content: "";
       position: absolute;
       inset: 0;
-      border-radius: var(--radius-lg);
     }
 
-    .work-card:hover .work-card__title a,
+    .work-card--linked:hover .work-card__title a,
     .work-card__title a:focus-visible {
       --underline-size: 100%;
       --underline-origin: left;
     }
 
-    .work-card:hover .work-card__cover {
-      opacity: 0.88;
-    }
-
-    .work-card__tags {
-      display: flex;
-      flex-wrap: wrap;
-      gap: var(--space-2);
-      padding: 0;
-      padding-block-start: var(--space-2);
-    }
-
-    .work-card--draft .work-card__cover {
-      opacity: 0.6;
+    .work-card--linked:hover .work-card__cover {
+      scale: 1.03;
     }
   }
 </style>

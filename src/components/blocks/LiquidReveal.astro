@@ -1,8 +1,8 @@
 ---
 /**
- * LiquidReveal: the portrait hero. The top image (photo by default) is a real responsive <img>;
- * once JS runs, a canvas fades in over it and a liquid mask follows the pointer to reveal the
- * bottom image (the clay sculpture). At rest the liquid orbits the face on its own.
+ * LiquidReveal: the portrait hero. The top image (the clay sculpture by default) is a real
+ * responsive <img>; once JS runs, a canvas fades in over it and a liquid mask follows the pointer
+ * to reveal the bottom image (the photo). At rest the liquid orbits the face on its own.
  *
  * Both images must be transparent cutouts with identical framing. They are flattened onto
  * --color-bg, so they sit on the page in light and dark. Behaviour lives in
@@ -16,7 +16,7 @@ import { Image, getImage } from "astro:assets";
 interface Props {
   photo: ImageMetadata;
   clay: ImageMetadata;
-  /** Describes the portrait. */
+  /** Describes the top image (what shows before and without the reveal). */
   alt: string;
   top?: "photo" | "clay";
   /** Blob size, 6–60. */
@@ -44,7 +44,7 @@ const {
   photo,
   clay,
   alt,
-  top = "photo",
+  top = "clay",
   size = 22,
   soft = 30,
   pull = 55,
@@ -77,7 +77,7 @@ const [photoSources, claySources] = await Promise.all([sourcesFor(photo), source
 const topImage = top === "clay" ? clay : photo;
 const config = { top, size, soft, pull, wobble, fade, orbit, face };
 
-// The static <img> mirrors the canvas framing: cover, centred on the face.
+// The static <img> and the canvas share this crop: cover, positioned on the face centre.
 const objectPosition = `${((face[0] + face[1]) / 2) * 100}% ${((face[2] + face[3]) / 2) * 100}%`;
 ---
 

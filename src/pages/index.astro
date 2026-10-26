@@ -2,85 +2,91 @@
 import SiteLayout from "@/layouts/SiteLayout.astro";
 import Section from "@/components/layout/Section.astro";
 import Container from "@/components/layout/Container.astro";
-import Grid from "@/components/layout/Grid.astro";
 import Stack from "@/components/layout/Stack.astro";
 import HomeHero from "@/components/blocks/HomeHero.astro";
 import ClientLogos from "@/components/blocks/ClientLogos.astro";
 import WorkCard from "@/components/blocks/WorkCard.astro";
-import Button from "@/components/ui/Button.astro";
+import ShotsMarquee from "@/components/blocks/ShotsMarquee.astro";
 import Link from "@/components/ui/Link.astro";
-import { SITE, SOCIAL_LINKS } from "@/lib/site";
+import { SOCIAL_LINKS } from "@/lib/site";
 import { getListedWork } from "@/lib/work";
+import shot01 from "@/assets/gallery/shot-01.jpg";
+import shot02 from "@/assets/gallery/shot-02.jpg";
+import shot03 from "@/assets/gallery/shot-03.jpg";
+import shot04 from "@/assets/gallery/shot-04.jpg";
+import shot05 from "@/assets/gallery/shot-05.jpg";
+import shot06 from "@/assets/gallery/shot-06.jpg";
+import shot07 from "@/assets/gallery/shot-07.jpg";
+import shot08 from "@/assets/gallery/shot-08.jpg";
+import shot09 from "@/assets/gallery/shot-09.jpg";
+import shot10 from "@/assets/gallery/shot-10.jpg";
+import shot11 from "@/assets/gallery/shot-11.jpg";
+import shot12 from "@/assets/gallery/shot-12.jpg";
 
 const work = await getListedWork();
+
+const shots = [
+  { src: shot01, alt: "Onboarding screens of a personal assistant app asking about your home." },
+  { src: shot02, alt: "Dark crypto wallet app with an Ethereum stats dial and a convert button." },
+  { src: shot03, alt: "Nike store landing page concept with product grids and campaign banners." },
+  { src: shot04, alt: "Overview of dark crypto wallet screens with charts and balances." },
+  { src: shot05, alt: "Nike mobile shop concept with product cards and a filter panel." },
+  { src: shot06, alt: "Crypto portfolio list and a Bitcoin price chart in a dark mobile app." },
+  { src: shot07, alt: "Smart home app screens: room controls, thermostat and device lists." },
+  { src: shot08, alt: "Nike Air Max product page concept on desktop." },
+  {
+    src: shot09,
+    alt: "Smart home app dashboard: “Hello Alice, welcome home!” with rooms and devices.",
+  },
+  { src: shot10, alt: "Smart lock app on a phone saying “Welcome back” over a house at dusk." },
+  { src: shot11, alt: "Nike Air Max 90 Premium campaign pages laid out at an angle." },
+  { src: shot12, alt: "Dark mobile wallet screens with payments, charts and a transfer card." },
+];
 ---
 
 <SiteLayout>
   <HomeHero
-    title="AI makes output cheap. Design makes it work."
+    title="Transforming AI capability into products people actually trust."
     lead="I bring 15 years of product experience to the AI era, helping you architect AI-ready design systems, safe agentic workflows, and impactful product strategies."
   >
     <Fragment slot="actions">
-      <Button href="#work">See my work</Button>
-      <Button href={`mailto:${SITE.email}`} variant="secondary">
-        Get in touch
-      </Button>
       {SOCIAL_LINKS.map(({ href, label }) => (
         <Link href={href}>{label}</Link>
       ))}
     </Fragment>
+    <ClientLogos
+      slot="after"
+      spread
+      clients={[
+        "newsweek",
+        "google",
+        "pantheon",
+        "xwp",
+        "beatstars",
+        "x-team",
+        "holidaycheck",
+        "pearson",
+      ]}
+    />
   </HomeHero>
 
-  <Section space="sm" aria-label="Clients">
+  <Section id="work" space="md" aria-labelledby="work-title">
     <Container>
-      <ClientLogos
-        clients={[
-          "newsweek",
-          "google",
-          "pantheon",
-          "xwp",
-          "beatstars",
-          "x-team",
-          "holidaycheck",
-          "pearson",
-        ]}
-      />
-    </Container>
-  </Section>
-
-  <Section id="work" aria-labelledby="work-title">
-    <Container>
-      <Stack gap="12">
-        <div class="section-head">
-          <p class="text-caption muted">Selected work</p>
-          <h2 id="work-title">Case studies</h2>
-        </div>
-        <Grid min="28rem" gap="16">
-          {work.map((entry) => (
-            <WorkCard entry={entry} headingLevel={3} />
-          ))}
-        </Grid>
-        <Button href="/work" variant="secondary">
-          All case studies
-        </Button>
+      <h2 class="visually-hidden" id="work-title">
+        Case studies
+      </h2>
+      <Stack gap="24" as="div">
+        {work.map((entry, index) => (
+          <WorkCard entry={entry} headingLevel={3} eager={index === 0} />
+        ))}
       </Stack>
     </Container>
   </Section>
+
+  <ShotsMarquee
+    title="Selected work"
+    shots={shots}
+    href="https://dribbble.com/dawidmlynarz/"
+    hrefLabel="More on Dribbble"
+  />
 </SiteLayout>
-
-<style>
-  @layer components {
-    .section-head {
-      display: grid;
-      gap: var(--space-3);
-    }
-
-    .muted {
-      color: var(--color-text-muted);
-    }
-
-    .home-all {
-      align-self: flex-start;
-    }
-  }
-</style>
