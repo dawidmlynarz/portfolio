@@ -2,6 +2,10 @@
 
 Non-obvious choices, newest first. One entry per decision: what, why, and what it rules out.
 
+## 2026-10-26 · Work tiles cropped to 4:3
+
+Every case-study cover in the work grid is cropped to 4:3 (`object-fit: cover`, centred), so tiles of different widths read as one set. This replaces "covers keep their original ratio" from v2 revision 2. The case-study page still shows the cover uncropped. If a cover crops badly, set a per-entry focal point (an `object-position` field in the schema) rather than changing the ratio.
+
 ## 2026-10-26 · Client logos as an endless marquee
 
 Above the footer on Home, the logos loop endlessly, full width, at every screen size (`ClientLogos marquee`).
