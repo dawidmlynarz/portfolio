@@ -158,17 +158,20 @@
   }
 
   .mindblown__piece--shock,
-  .mindblown__piece--super {
+  .mindblown__piece--super,
+  .mindblown__piece--pain {
     visibility: hidden;
   }
 
   .mindblown__head--shock .mindblown__piece--shock,
-  .mindblown__head--super .mindblown__piece--super {
+  .mindblown__head--super .mindblown__piece--super,
+  .mindblown__head--pain .mindblown__piece--pain {
     visibility: visible;
   }
 
   .mindblown__head--shock .mindblown__piece--rest,
-  .mindblown__head--super .mindblown__piece--rest {
+  .mindblown__head--super .mindblown__piece--rest,
+  .mindblown__head--pain .mindblown__piece--rest {
     visibility: hidden;
   }
 
@@ -242,6 +245,30 @@
     95% {
       transform: scaleY(0.1);
     }
+  }
+
+  /* the risen brain is its own button ("new thoughts"); it covers the brain, not the hole */
+  .mindblown__brain-btn {
+    position: absolute;
+    left: 32.6%;
+    top: 19%;
+    z-index: 7;
+    inline-size: 25.8%;
+    block-size: 15.5%;
+    padding: 0;
+    border: 0;
+    border-radius: 50% 50% 40% 40%;
+    background: none;
+    cursor: pointer;
+  }
+
+  .mindblown__brain-btn[hidden] {
+    display: none;
+  }
+
+  .mindblown__brain-btn:focus-visible {
+    outline: 3px solid var(--color-focus);
+    outline-offset: 4px;
   }
 
   .mindblown__cutline {

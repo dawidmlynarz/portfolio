@@ -3,7 +3,8 @@
  * `destroy()`, which kills every tween, the tails ticker, the window listeners and the confetti
  * frame, and removes the cards it created. Copy lives in content.ts.
  *
- * States: closed -> busy (animating, clicks ignored) -> open -> busy -> closed.
+ * States: closed -> busy (animating, clicks ignored) -> open -> busy -> closed. While open, the
+ * brain button runs open -> busy -> open: the thoughts get sucked in and a fresh batch bursts out.
  */
 import { gsap } from "gsap";
 import { BELT, DESKTOP_COUNT, ICONS, ITEMS, MOBILE_COUNT, type IconName } from "./content";
@@ -34,6 +35,7 @@ export function init(root: HTMLElement): () => void {
     lid = q("layer--lid"),
     hole = q("hole"),
     brain = q<SVGSVGElement>("brain"),
+    brainBtn = q<HTMLButtonElement>("brain-btn"),
     cardsEl = q("cards"),
     scissors = q<SVGSVGElement>("scissors"),
     dash = q("dash"),
@@ -81,11 +83,11 @@ export function init(root: HTMLElement): () => void {
 
   /* ---------- expressions ---------- */
   let face = "rest";
-  function setFace(name: "rest" | "shock" | "super", squash = true) {
+  function setFace(name: "rest" | "shock" | "super" | "pain", squash = true) {
     if (name === face) return;
     face = name;
-    head.classList.toggle("mindblown__head--shock", name === "shock");
-    head.classList.toggle("mindblown__head--super", name === "super");
+    for (const f of ["shock", "super", "pain"])
+      head.classList.toggle(`mindblown__head--${f}`, name === f);
     if (squash && !RM)
       run(() =>
         gsap.fromTo(
@@ -161,12 +163,15 @@ export function init(root: HTMLElement): () => void {
   let active: Card[] = cards;
   let shown = new Set<Card>(cards);
   let spots = new Map<Card, { x: number; y: number }>();
-  /* every open: the pinned thoughts plus a fresh random pick of the rest */
-  function pickActive() {
+  /* every open: the pinned thoughts plus a fresh random pick of the rest. Every brain click after
+     that: no pinned ones, thoughts that weren't just shown first, topped up at random if too few */
+  function pickActive(first: boolean) {
     const count = phone() ? MOBILE_COUNT : DESKTOP_COUNT,
-      pinned = cards.filter((c) => ITEMS[c._i]!.pinned),
-      rest = gsap.utils.shuffle(cards.filter((c) => !ITEMS[c._i]!.pinned));
-    active = gsap.utils.shuffle([...pinned, ...rest].slice(0, count));
+      pinned = first ? cards.filter((c) => ITEMS[c._i]!.pinned) : [],
+      rest = cards.filter((c) => !ITEMS[c._i]!.pinned),
+      fresh = gsap.utils.shuffle(rest.filter((c) => first || !shown.has(c))),
+      again = gsap.utils.shuffle(rest.filter((c) => !fresh.includes(c)));
+    active = gsap.utils.shuffle([...pinned, ...fresh, ...again].slice(0, count));
     shown = new Set(active);
   }
   function layout() {
@@ -279,15 +284,11 @@ export function init(root: HTMLElement): () => void {
     rig.classList.add("mindblown__rig--armed");
     setFace("super");
     const o = rel(hole);
-    pickActive();
+    pickActive(true);
     layout();
     run(() => {
       const tl = gsap.timeline({
-        onComplete() {
-          state = "open";
-          startFloats();
-          for (const c of active) c.tabIndex = 0;
-        },
+        onComplete: opened,
       });
       // the heading fades away to make room for the thoughts
       if (intro)
@@ -330,29 +331,7 @@ export function init(root: HTMLElement): () => void {
           "pop+=.9",
         );
       // 3. thoughts erupt
-      const P = tl.labels.pop!;
-      active.forEach((c, i) => {
-        const w = c.offsetWidth,
-          h = c.offsetHeight,
-          t = target(c),
-          sx = o.x - w / 2,
-          sy = o.y - h / 2,
-          at = P + (RM ? 0 : 0.05 + i * 0.06);
-        const apex = Math.min(t.y, sy) - gsap.utils.random(70, 170);
-        gsap.set(c, {
-          x: sx,
-          y: sy,
-          scale: 0.15,
-          rotation: gsap.utils.random(-90, 90),
-          autoAlpha: 0,
-        });
-        tl.to(c, { autoAlpha: 1, duration: 0.05 }, at)
-          .to(c, { x: t.x, duration: T(1.05), ease: "power2.out" }, at)
-          .to(c, { y: apex, duration: T(0.42), ease: "power2.out" }, at)
-          .to(c, { y: t.y, duration: T(0.7), ease: "bounce.out" }, at + T(0.42))
-          .to(c, { scale: 1, duration: T(0.5), ease: "back.out(2)" }, at)
-          .to(c, { rotation: gsap.utils.random(-7, 7), duration: T(1.1), ease: "power3.out" }, at);
-      });
+      erupt(tl, tl.labels.pop!, o);
       tl.add(() => rig.classList.remove("mindblown__rig--armed"), "-=.5")
         .to(tip, { opacity: 1, duration: T(0.4) }, "-=.4")
         .fromTo(
@@ -364,6 +343,113 @@ export function init(root: HTMLElement): () => void {
     });
   }
 
+  /* the active thoughts fly out of the hole one after another and bounce into their spots */
+  function erupt(tl: gsap.core.Timeline, P: number, o: { x: number; y: number }) {
+    active.forEach((c, i) => {
+      const w = c.offsetWidth,
+        h = c.offsetHeight,
+        t = target(c),
+        sx = o.x - w / 2,
+        sy = o.y - h / 2,
+        at = P + (RM ? 0 : 0.05 + i * 0.06);
+      const apex = Math.min(t.y, sy) - gsap.utils.random(70, 170);
+      gsap.set(c, {
+        x: sx,
+        y: sy,
+        scale: 0.15,
+        rotation: gsap.utils.random(-90, 90),
+        autoAlpha: 0,
+      });
+      tl.to(c, { autoAlpha: 1, duration: 0.05 }, at)
+        .to(c, { x: t.x, duration: T(1.05), ease: "power2.out" }, at)
+        .to(c, { y: apex, duration: T(0.42), ease: "power2.out" }, at)
+        .to(c, { y: t.y, duration: T(0.7), ease: "bounce.out" }, at + T(0.42))
+        .to(c, { scale: 1, duration: T(0.5), ease: "back.out(2)" }, at)
+        .to(c, { rotation: gsap.utils.random(-7, 7), duration: T(1.1), ease: "power3.out" }, at);
+    });
+  }
+  /* the active thoughts spin back into the hole, last one first */
+  function suck(tl: gsap.core.Timeline, o: { x: number; y: number }) {
+    active
+      .slice()
+      .reverse()
+      .forEach((c, i) => {
+        const w = c.offsetWidth,
+          h = c.offsetHeight;
+        tl.to(
+          c,
+          {
+            x: o.x - w / 2,
+            y: o.y - h / 2,
+            scale: 0.1,
+            rotation: "+=200",
+            duration: T(0.55),
+            ease: "power3.in",
+          },
+          RM ? 0 : i * 0.035,
+        ).set(c, { autoAlpha: 0 });
+      });
+  }
+  function opened() {
+    state = "open";
+    startFloats();
+    for (const c of active) c.tabIndex = 0;
+    brainBtn.hidden = false;
+  }
+
+  /* brain click: suck every thought in (pained face, the brain strains), then the super-shocked
+     face and the original explosion with a fresh batch */
+  function rethink() {
+    if (state !== "open") return;
+    state = "busy";
+    const refocus = document.activeElement === brainBtn;
+    stopFloats();
+    closePop(true);
+    for (const c of active) c.tabIndex = -1;
+    setFace("pain");
+    const o = rel(hole);
+    run(() => {
+      const tl = gsap.timeline({ onComplete: () => burst(o, refocus) });
+      suck(tl, o);
+      if (!RM)
+        tl.fromTo(
+          brain,
+          { rotation: -4, scaleX: 1, scaleY: 1, transformOrigin: "50% 100%" },
+          {
+            rotation: 4,
+            scaleX: 1.06,
+            scaleY: 0.94,
+            duration: 0.08,
+            repeat: 9,
+            yoyo: true,
+            ease: "sine.inOut",
+          },
+          0,
+        ).set(brain, { rotation: 0, scaleX: 1, scaleY: 1 });
+      tl.to({}, { duration: T(0.15) });
+    });
+  }
+  function burst(o: { x: number; y: number }, refocus: boolean) {
+    setFace("super");
+    pickActive(false);
+    layout();
+    shake();
+    confetti(o.x, o.y);
+    say(gsap.utils.random(["more!", "again?!", "ow!"]));
+    run(() =>
+      erupt(
+        gsap.timeline({
+          onComplete() {
+            opened();
+            if (refocus) brainBtn.focus({ preventScroll: true });
+          },
+        }),
+        0,
+        o,
+      ),
+    );
+  }
+
   function closeHead() {
     if (state !== "open") return;
     state = "busy";
@@ -372,6 +458,8 @@ export function init(root: HTMLElement): () => void {
     head.setAttribute("aria-expanded", "false");
     head.setAttribute("aria-label", "Open my head to see what's inside");
     for (const c of active) c.tabIndex = -1;
+    if (document.activeElement === brainBtn) head.focus({ preventScroll: true });
+    brainBtn.hidden = true;
     const o = rel(hole);
     run(() => {
       const tl = gsap.timeline({
@@ -383,25 +471,7 @@ export function init(root: HTMLElement): () => void {
       tl.to(tip, { autoAlpha: 0, duration: T(0.2) }, 0)
         .to(noteClose, { scale: 0, rotation: -20, duration: T(0.25), ease: "back.in(2)" }, 0)
         .set(noteClose, { autoAlpha: 0 });
-      active
-        .slice()
-        .reverse()
-        .forEach((c, i) => {
-          const w = c.offsetWidth,
-            h = c.offsetHeight;
-          tl.to(
-            c,
-            {
-              x: o.x - w / 2,
-              y: o.y - h / 2,
-              scale: 0.1,
-              rotation: "+=200",
-              duration: T(0.55),
-              ease: "power3.in",
-            },
-            RM ? 0 : i * 0.035,
-          ).set(c, { autoAlpha: 0 });
-        });
+      suck(tl, o);
       tl.to(brain, { yPercent: 130, duration: T(0.3), ease: "power2.in" }, "-=.3")
         .to(
           lid,
@@ -456,6 +526,7 @@ export function init(root: HTMLElement): () => void {
   }
 
   /* ---------- head interactions ---------- */
+  brainBtn.addEventListener("click", rethink, on);
   head.addEventListener("click", () => (state === "closed" ? openHead() : closeHead()), on);
   head.addEventListener(
     "keydown",
@@ -819,6 +890,8 @@ export function init(root: HTMLElement): () => void {
         const t = e.target instanceof Element ? e.target : null;
         let label = "";
         if (t?.closest(".mindblown__card")) label = "open · drag";
+        else if (t?.closest(".mindblown__brain-btn"))
+          label = state === "open" ? "new thoughts" : "";
         else if (t?.closest(".mindblown__head") && root.contains(t))
           label = state === "closed" ? "snip snip" : "close it";
         if (label) cursor.textContent = label;

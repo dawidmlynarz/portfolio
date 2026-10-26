@@ -1,7 +1,8 @@
 ---
 /**
  * Mindblown: the About hero. A dotted stage with Dawid's cut-out portrait; clicking the head
- * snips it open and 14 "thought" cards burst out, each opening a popover. A tilted ticker
+ * snips it open and a random batch of "thought" cards bursts out, each opening a popover;
+ * clicking the brain sucks them back in and throws a fresh batch. A tilted ticker
  * stripe closes the section. Behaviour: mindblown.ts. Copy: content.ts. Styles: mindblown.css.
  *
  * Isolated experiment (CLAUDE.md rule 6): every class lives under .mindblown and the section
@@ -19,6 +20,8 @@ import superFace from "./assets/super-face.webp";
 import restTop from "./assets/rest-top.webp";
 import shockedTop from "./assets/shocked-top.webp";
 import superTop from "./assets/super-top.webp";
+import painFace from "./assets/pain-face.webp";
+import painTop from "./assets/pain-top.webp";
 import { BELT } from "./content";
 
 const img = { width: restFace.width, height: restFace.height, decoding: "async" } as const;
@@ -65,6 +68,12 @@ const belt = [...BELT, ...BELT];
               alt=""
               {...img}
             />
+            <img
+              class="mindblown__piece mindblown__piece--pain"
+              src={painFace.src}
+              alt=""
+              {...img}
+            />
           </div>
           <div class="mindblown__inside" aria-hidden="true">
             <div class="mindblown__hole"></div>
@@ -85,6 +94,12 @@ const belt = [...BELT, ...BELT];
             <img
               class="mindblown__piece mindblown__piece--super"
               src={superTop.src}
+              alt=""
+              {...img}
+            />
+            <img
+              class="mindblown__piece mindblown__piece--pain"
+              src={painTop.src}
               alt=""
               {...img}
             />
@@ -148,6 +163,12 @@ const belt = [...BELT, ...BELT];
             </div>
           </div>
         </div>
+        <button
+          class="mindblown__brain-btn"
+          type="button"
+          aria-label="Show new thoughts"
+          hidden
+        ></button>
         <div class="mindblown__cutline" aria-hidden="true">
           <div class="mindblown__dash"></div>
           <svg
@@ -283,6 +304,8 @@ const belt = [...BELT, ...BELT];
       click a thought.
       <br />
       drag it around.
+      <br />
+      poke my brain for more.
     </p>
   </section>
 
