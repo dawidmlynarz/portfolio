@@ -10,6 +10,9 @@ const isCurrent = (href: string) => path === href || path.startsWith(`${href}/`)
 <header class="nav">
   <Container class="nav__inner">
     <a class="nav__home" href="/">
+      <svg class="nav__mark" viewBox="0 0 32 24" aria-hidden="true">
+        <path d="M23.84 0 15.99 7.94 8.15 0 0 17.69h9.1l1.01-2.21L16 24l5.87-8.52 1.06 2.21H32z" />
+      </svg>
       {SITE.name}
     </a>
     <nav class="nav__menu" aria-label="Primary">
@@ -22,8 +25,9 @@ const isCurrent = (href: string) => path === href || path.startsWith(`${href}/`)
           </li>
         ))}
         <li>
-          <a class="nav__link" href={`mailto:${SITE.email}`}>
-            Contact
+          <a class="nav__link nav__contact" href={`mailto:${SITE.email}`}>
+            <span class="nav__contact-short">Contact</span>
+            <span class="nav__contact-full">{SITE.email}</span>
           </a>
         </li>
       </ul>
@@ -80,9 +84,55 @@ const isCurrent = (href: string) => path === href || path.startsWith(`${href}/`)
     .nav__home {
       --underline-size: 0%;
 
+      display: inline-flex;
+      align-items: center;
+      gap: var(--space-2);
       font-weight: var(--weight-semibold);
       letter-spacing: var(--tracking-h4);
       white-space: nowrap;
+    }
+
+    .nav__mark {
+      inline-size: 1.25em;
+      block-size: auto;
+      fill: currentcolor;
+    }
+
+    .nav__contact-full {
+      display: none;
+    }
+
+    /* Below ~416px the mark would push the menu onto a second line. */
+    @media (width < 26em) {
+      .nav__mark {
+        display: none;
+      }
+    }
+
+    @media (width >= 62em) {
+      .nav__link.nav__contact {
+        --underline-size: 0%;
+
+        padding: var(--space-2) var(--space-4);
+        border: var(--border-width) solid var(--color-border-muted);
+        border-radius: var(--radius-pill);
+        color: var(--color-text);
+        transition: background-color var(--duration-fast) var(--ease-standard);
+      }
+
+      .nav__link.nav__contact:hover {
+        --underline-size: 0%;
+
+        background-color: var(--color-bg-subtle);
+      }
+
+      .nav__contact-short {
+        display: none;
+      }
+
+      .nav__contact-full {
+        display: inline;
+      }
     }
 
     .nav__menu {

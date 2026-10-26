@@ -2,6 +2,30 @@
 
 Non-obvious choices, newest first. One entry per decision: what, why, and what it rules out.
 
+## 2026-10-26 · Homepage brought in line with the original site
+
+Compared against the Webflow homepage. The structure is matched and the markup is still written from scratch:
+
+- the split hero, with the portrait bleeding to the right edge
+- client logos spread across the row
+- the case studies as a one-column list: the text first, then a 3:2 cover that zooms on hover, plus Industry and Business/Model tags
+- the "Selected work" shot marquee
+- the large email under "Contact me"
+- the M logo mark and an email pill in the nav
+- a floating back-to-top button
+
+XWP is listed with no page (the new `page: false` field), as on Webflow. These were left out on purpose:
+
+- the "Home" nav link (the logo links home)
+- the Resume link (it pointed to `#`)
+- the padlocks (the work is public now)
+- the hidden profile photo
+- the serif heading font (fonts are placeholders)
+
+The clay portrait is now on top, and the liquid reveals the photo.
+
+**Hero photo nudge.** The canvas crop now matches the `<img>` exactly: cover, positioned at the face centre, unrounded box size. There is also a metric-matched fallback for DM Sans and a font preload, so the swap no longer shifts the layout (CLS was 0.22 at 1440px, now 0).
+
 ## 2026-10-26 · No display role: the type scale starts at h1
 
 `--text-display`, `--leading-display`, `--tracking-display` and the `.text-display` class are removed. The largest size is now `--text-h1` (34 → 64px); the Home and generic Hero headlines are plain `h1`s. Figma: remove the display style/variables from `mlynarz.com — Foundations` to keep both sides in sync.

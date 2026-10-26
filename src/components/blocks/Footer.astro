@@ -9,7 +9,7 @@ const year = new Date().getFullYear();
 <footer class="footer">
   <Container class="footer__inner">
     <p class="footer__contact">
-      <span class="text-caption">Get in touch</span>
+      <span class="text-caption">Contact me</span>
       <a class="footer__email" href={`mailto:${SITE.email}`}>
         {SITE.email}
       </a>
@@ -23,9 +23,8 @@ const year = new Date().getFullYear();
     </ul>
     <div class="footer__meta text-small">
       <p>
-        © {year} {SITE.name}
+        {SITE.name}. All rights reserved © 2011 – {year}
       </p>
-      <a href="#top">Back to top</a>
     </div>
   </Container>
 </footer>
@@ -50,8 +49,9 @@ const year = new Date().getFullYear();
 
     .footer__email {
       justify-self: start;
-      font: var(--weight-semibold) var(--text-h3) / var(--leading-h3) var(--font-heading);
-      letter-spacing: var(--tracking-h3);
+      font: var(--weight-semibold) var(--text-h1) / var(--leading-h1) var(--font-heading);
+      letter-spacing: var(--tracking-h1);
+      overflow-wrap: anywhere;
       color: var(--color-text);
     }
 

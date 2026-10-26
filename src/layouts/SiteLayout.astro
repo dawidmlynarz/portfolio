@@ -17,6 +17,12 @@ type Props = ComponentProps<typeof BaseLayout>;
       <slot />
     </main>
     <Footer />
+    <a class="to-top" href="#top">
+      <svg class="to-top__icon" viewBox="0 0 24 24" aria-hidden="true">
+        <path d="M12 19V5M5 12l7-7 7 7" />
+      </svg>
+      <span class="visually-hidden">Back to top</span>
+    </a>
   </div>
 </BaseLayout>
 
@@ -43,6 +49,67 @@ type Props = ComponentProps<typeof BaseLayout>;
 
     .skip-link:focus-visible {
       translate: 0;
+    }
+
+    .to-top {
+      --underline-size: 0%;
+
+      position: fixed;
+      inset-block-end: var(--space-8);
+      inset-inline-end: var(--space-8);
+      z-index: var(--z-nav);
+      display: grid;
+      place-items: center;
+      padding: var(--space-3);
+      border: var(--border-width) solid var(--color-border-subtle);
+      border-radius: var(--radius-pill);
+      color: var(--color-text);
+      background-color: var(--color-overlay);
+      backdrop-filter: blur(var(--blur-nav));
+      transition: background-color var(--duration-fast) var(--ease-standard);
+    }
+
+    .to-top:hover {
+      background-color: var(--color-bg-subtle);
+    }
+
+    .to-top__icon {
+      inline-size: 1.25em;
+      block-size: 1.25em;
+      fill: none;
+      stroke: currentcolor;
+      stroke-width: 1.75;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+    }
+
+    /* Hidden at the top of the page, fades in after the first screen of scrolling. */
+    @supports (animation-timeline: scroll()) {
+      .to-top {
+        opacity: 0;
+        visibility: hidden;
+        animation-name: to-top-show;
+        animation-duration: auto;
+        animation-timing-function: linear;
+        animation-fill-mode: both;
+        animation-range: 50vh 80vh;
+      }
+
+      .to-top:where(a) {
+        animation-timeline: scroll(root);
+      }
+
+      .to-top:focus-visible {
+        opacity: 1;
+        visibility: visible;
+      }
+    }
+
+    @keyframes to-top-show {
+      to {
+        opacity: 1;
+        visibility: visible;
+      }
     }
 
     main:focus {

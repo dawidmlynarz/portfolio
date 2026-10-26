@@ -12,6 +12,13 @@ import Tag from "@/components/ui/Tag.astro";
 import Figure from "@/components/ui/Figure.astro";
 import Hero from "@/components/blocks/Hero.astro";
 import LiquidReveal from "@/components/blocks/LiquidReveal.astro";
+import WorkCard from "@/components/blocks/WorkCard.astro";
+import ShotsMarquee from "@/components/blocks/ShotsMarquee.astro";
+import { getEntry } from "astro:content";
+import shot01 from "@/assets/gallery/shot-01.jpg";
+import shot03 from "@/assets/gallery/shot-03.jpg";
+import shot07 from "@/assets/gallery/shot-07.jpg";
+import shot10 from "@/assets/gallery/shot-10.jpg";
 import { COLOR_ROLES, SPACE } from "@/lib/tokens";
 import portraitPhoto from "@/assets/portrait/portrait-photo.png";
 import portraitClay from "@/assets/portrait/portrait-clay.png";
@@ -40,6 +47,14 @@ const TYPE_ROLES = [
   },
   { role: "caption", className: "text-caption", sample: "Caption · eyebrow" },
 ] as const;
+
+const sampleWork = await getEntry("work", "nerdwallet");
+const sampleShots = [
+  { src: shot01, alt: "Onboarding screens of a personal assistant app asking about your home." },
+  { src: shot03, alt: "Nike store landing page concept with product grids and campaign banners." },
+  { src: shot07, alt: "Smart home app screens: room controls, thermostat and device lists." },
+  { src: shot10, alt: "Smart lock app on a phone saying “Welcome back” over a house at dusk." },
+];
 
 const RADII = ["sm", "md", "lg", "xl", "pill"] as const;
 
@@ -293,6 +308,15 @@ const SECTIONS = [
       loading="lazy"
     />
   </Hero>
+  <Section aria-label="Work card">
+    <Container>
+      <Stack gap="6">
+        <h3 class="text-caption muted">WorkCard · one per row on Home and Work</h3>
+        {sampleWork && <WorkCard entry={sampleWork} headingLevel={3} />}
+      </Stack>
+    </Container>
+  </Section>
+  <ShotsMarquee title="ShotsMarquee" shots={sampleShots} />
 </SiteLayout>
 
 <style>

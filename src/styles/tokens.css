@@ -141,6 +141,9 @@
     --duration-fast: 150ms;
     --duration-link: 350ms; /* animated link underline */
     --duration-reveal: 600ms; /* media fading in once ready (liquid reveal canvas) */
+    --duration-zoom: 800ms; /* case-study cover zoom on hover */
+    --duration-marquee: 90s; /* one full loop of the work gallery */
+    --ease-out-expo: cubic-bezier(0.19, 1, 0.22, 1);
     --z-nav: 100;
   }
 
