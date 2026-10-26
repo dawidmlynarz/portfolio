@@ -3,7 +3,7 @@
 Stack: **Astro + MDX + plain CSS (tokens + cascade layers), GitHub, Cloudflare Pages.**
 Scope found in Webflow: 14 pages (Home, About, Work index, 10 case studies, 404, 401 password), **no CMS collections**.
 Companion files: `src/styles/tokens.css` (token system), `CLAUDE.md` (rules for Claude Code), `DECISIONS.md` (decision log).
-Repo: `dawidmlynarz/portfolio`. **Status: Phases A–B done. Phase C: all case studies migrated; Newsweek AI published, the rest are drafts awaiting review (4 were password-protected on Webflow and need clearance).**
+Repo: `dawidmlynarz/portfolio`. **Status: Phases A–B done. Phase C: all case studies migrated; 5 published (Newsweek AI, Newsweek Design System, NerdWallet, Google Material Design, Pantheon); BeatStars ×2, CSS Peeper and UI Design Showcase are drafts awaiting review.**
 
 > **Update (2026-10-23):** no Webflow parity is required. The site is a clean, Webflow-agnostic build; the Webflow export, inventory and token audit (section 4) are optional background, not inputs. URL pattern and domain cutover are unchanged.
 
