@@ -18,8 +18,8 @@ type Card = HTMLButtonElement & {
 
 /** Hover peek: how far the lid lifts (share of the head's height) and where the brain rises to
     (yPercent of the brain; 4 is fully out, 130 is hidden). */
-const PEEK_LIFT = 0.045,
-  PEEK_BRAIN = 26;
+const PEEK_LIFT = 0.05,
+  PEEK_BRAIN = 30;
 
 const svg = (k: IconName) =>
   `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${ICONS[k]}</svg>`;
@@ -834,8 +834,8 @@ export function init(root: HTMLElement): () => void {
   /* ---------- brain eyes follow the pointer ---------- */
   const pupils = [...brain.querySelectorAll(".mindblown__pupil")];
   const eyeC = [
-    [60, 56],
-    [84, 56],
+    [58, 48],
+    [82, 48],
   ] as const;
   let lookX = innerWidth / 2,
     lookY = 0,
@@ -851,7 +851,7 @@ export function init(root: HTMLElement): () => void {
       const dx = lookX - ex,
         dy = lookY - ey,
         d = Math.hypot(dx, dy) || 1,
-        m = Math.min(4.5, d / 30);
+        m = Math.min(3, d / 30);
       p.setAttribute(
         "transform",
         `translate(${((dx / d) * m).toFixed(2)} ${((dy / d) * m * 1.1).toFixed(2)})`,

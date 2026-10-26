@@ -79,56 +79,54 @@ const belt = [...BELT, ...BELT];
             <div class="mindblown__hole"></div>
             <div class="mindblown__brain-clip">
               <svg class="mindblown__brain" viewBox="0 0 140 78">
+                <!-- a soft, cloudy cartoon brain: flat pink, lighter and darker blobs, little
+                     folds, navy eyes and a smile. The bottom is hidden by the hole's rim. -->
                 <path
-                  d="M18 78 C2 76 4 52 20 48 C14 28 36 16 50 26 C56 8 86 6 92 24 C108 14 130 28 122 46 C140 52 138 76 122 78 Z"
+                  d="M9 78 C1 70 1 56 10 49 A13 13 0 0 1 15 31 A16 16 0 0 1 37 16 A17 17 0 0 1 62 8 A17 17 0 0 1 87 9 A16 16 0 0 1 109 17 A15 15 0 0 1 126 33 A13 13 0 0 1 131 51 C139 58 139 71 131 78 Z"
                   fill="var(--mb-brain)"
-                  stroke="var(--mb-art-ink)"
-                  stroke-width="3.5"
-                  stroke-linejoin="round"
                 ></path>
                 <path
-                  d="M38 40 q8 -8 16 0 M76 24 q4 10 14 8 M104 44 q-8 4 -6 14 M28 62 q6 -6 12 0"
+                  d="M14 44 q-4 -10 5 -14 q6 -2 6 4 q0 5 -6 6 q-3 1 -5 4z M12 58 q-3 -6 2 -8 q4 0 3 5 q-1 4 -5 3z"
+                  fill="var(--mb-brain-light)"
+                ></path>
+                <path
+                  d="M124 44 q6 -2 6 6 q-1 8 -7 9 q-4 0 -3 -6 q1 -8 4 -9z M112 66 q8 -9 12 -4 q2 5 -6 9 q-7 4 -6 -5z"
+                  fill="var(--mb-brain-dark)"
+                ></path>
+                <path
+                  d="M30 30 q5 -5 10 0 M50 22 q2 6 8 6 q4 0 4 -6 M57 28 q0 6 -3 9 M82 18 q5 -4 10 1 M96 30 q6 -4 10 2 M101 31 q0 6 -3 9 M28 52 q5 3 9 -1 M40 66 q5 -5 10 0 M94 64 q4 -4 9 -1 M72 30 q-3 4 0 8 M104 50 q4 2 7 -1"
                   fill="none"
-                  stroke="var(--mb-art-ink)"
-                  stroke-width="3"
+                  stroke="var(--mb-brain-fold)"
+                  stroke-width="2.6"
                   stroke-linecap="round"
                 ></path>
                 <g class="mindblown__eye">
                   <ellipse
-                    cx="60"
-                    cy="56"
-                    rx="9"
-                    ry="10"
-                    fill="var(--mb-art-paper)"
-                    stroke="var(--mb-art-ink)"
-                    stroke-width="3"
-                  ></ellipse>
-                  <circle
                     class="mindblown__pupil"
-                    cx="60"
-                    cy="56"
-                    r="4"
-                    fill="var(--mb-art-ink)"
-                  ></circle>
+                    cx="58"
+                    cy="48"
+                    rx="4.6"
+                    ry="7"
+                    fill="var(--mb-brain-ink)"
+                  ></ellipse>
                 </g>
                 <g class="mindblown__eye">
                   <ellipse
-                    cx="84"
-                    cy="56"
-                    rx="9"
-                    ry="10"
-                    fill="var(--mb-art-paper)"
-                    stroke="var(--mb-art-ink)"
-                    stroke-width="3"
-                  ></ellipse>
-                  <circle
                     class="mindblown__pupil"
-                    cx="84"
-                    cy="56"
-                    r="4"
-                    fill="var(--mb-art-ink)"
-                  ></circle>
+                    cx="82"
+                    cy="48"
+                    rx="4.6"
+                    ry="7"
+                    fill="var(--mb-brain-ink)"
+                  ></ellipse>
                 </g>
+                <path
+                  d="M64 60 q6 6 12 0"
+                  fill="none"
+                  stroke="var(--mb-brain-ink)"
+                  stroke-width="2.4"
+                  stroke-linecap="round"
+                ></path>
               </svg>
             </div>
           </div>

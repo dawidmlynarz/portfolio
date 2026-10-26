@@ -18,7 +18,11 @@
     /* inside the head */
     --mb-flesh: #c93a63;
     --mb-flesh-dark: #3b0b1c;
-    --mb-brain: #ff9cc6;
+    --mb-brain: #f6a3b0;
+    --mb-brain-light: #f9c6d0;
+    --mb-brain-dark: #f07f9b;
+    --mb-brain-fold: #ef8da0;
+    --mb-brain-ink: #1b4a85;
 
     /* confetti only */
     --mb-cf-1: #ff73b0;
@@ -223,18 +227,24 @@
     visibility: visible;
   }
 
-  /* the brain is masked by the hole's front rim (a half-ellipse), so it sits IN the head */
+  /* the brain fills most of the hole and is masked by the inner edge of the hole's front rim
+     (a half-ellipse), so it sits IN the head. The rim ellipse in clip units: the hole is
+     100/88 of the clip wide and 1/12 of its own width tall, less its 3px border */
   .mindblown__brain-clip {
     position: absolute;
-    left: 18%;
+    left: 6%;
     top: 0;
-    inline-size: 64%;
+    inline-size: 88%;
     aspect-ratio: 64 / 43.5;
     translate: 0 -82%;
     pointer-events: none;
     mask:
       linear-gradient(#000 0 0) top / 100% 82% no-repeat,
-      radial-gradient(ellipse 71% 15% at 50% 82%, #000 98%, transparent 100%);
+      radial-gradient(
+        ellipse calc(56.82% - 3px) calc(13.93% - 3px) at 50% 82%,
+        #000 98%,
+        transparent 100%
+      );
   }
 
   .mindblown__brain {
@@ -268,11 +278,11 @@
   /* the risen brain is its own button ("new thoughts"); it covers the brain, not the hole */
   .mindblown__brain-btn {
     position: absolute;
-    left: 32.6%;
-    top: 19%;
+    left: 28%;
+    top: 14%;
     z-index: 7;
-    inline-size: 25.8%;
-    block-size: 15.5%;
+    inline-size: 35%;
+    block-size: 19.5%;
     padding: 0;
     border: 0;
     border-radius: 50% 50% 40% 40%;
