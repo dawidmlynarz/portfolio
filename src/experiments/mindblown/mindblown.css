@@ -34,7 +34,7 @@
 
     /* type: the site face; the handwritten face and its sizes are local */
     --mb-font-hand: "Gochi Hand", "Comic Sans MS", "Marker Felt", cursive;
-    --mb-hand-note: 26px;
+    --mb-hand-note: 22px; /* the hints keep clear of the head: their arrow tips stop past its outline */
     --mb-hand-bubble: 24px;
     --mb-hand-tip: 22px;
     --mb-hand-cursor: 18px;
@@ -364,7 +364,7 @@
   /* both hints hang above the right shoulder, the arrow pointing at the head */
   .mindblown__note {
     position: absolute;
-    left: 73%;
+    left: 76%;
     top: 40%;
     z-index: 6;
     inline-size: 220px;
@@ -379,7 +379,7 @@
   .mindblown__note svg {
     inline-size: 110px;
     max-inline-size: none;
-    margin: 0 0 4px -70px;
+    margin: 0 0 4px -16px;
     overflow: visible;
   }
 
@@ -400,7 +400,7 @@
   /* sits above the right shoulder, relative to the head */
   .mindblown__note-close {
     position: absolute;
-    left: 73%;
+    left: 76%;
     top: 47%;
     z-index: 20;
     inline-size: 220px;
@@ -416,7 +416,7 @@
   .mindblown__note-close svg {
     inline-size: 110px;
     max-inline-size: none;
-    margin: 0 0 4px -70px;
+    margin: 0 0 4px -16px;
     overflow: visible;
   }
 
