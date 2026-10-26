@@ -120,7 +120,17 @@
     outline: none;
     filter: drop-shadow(3px 0 0 var(--mb-sticker)) drop-shadow(-3px 0 0 var(--mb-sticker))
       drop-shadow(0 3px 0 var(--mb-sticker)) drop-shadow(0 -3px 0 var(--mb-sticker))
-      drop-shadow(6px 5px 0 var(--mb-ink));
+      drop-shadow(6px 5px 0 var(--mb-art-ink));
+  }
+
+  /* the brain sits outside .mindblown__head so it gets the white outline but no hard shadow */
+  .mindblown__brain-layer {
+    position: absolute;
+    inset: 0;
+    z-index: 5;
+    pointer-events: none;
+    filter: drop-shadow(3px 0 0 var(--mb-sticker)) drop-shadow(-3px 0 0 var(--mb-sticker))
+      drop-shadow(0 3px 0 var(--mb-sticker)) drop-shadow(0 -3px 0 var(--mb-sticker));
   }
 
   .mindblown__layer {
@@ -292,12 +302,12 @@
   }
 
   .mindblown__rig--armed .mindblown__dash,
-  .mindblown__head:focus-visible + .mindblown__cutline .mindblown__dash {
+  .mindblown__head:focus-visible ~ .mindblown__cutline .mindblown__dash {
     transform: scaleX(1);
   }
 
   .mindblown__rig--armed .mindblown__scissors,
-  .mindblown__head:focus-visible + .mindblown__cutline .mindblown__scissors {
+  .mindblown__head:focus-visible ~ .mindblown__cutline .mindblown__scissors {
     opacity: 1;
     transform: none;
   }

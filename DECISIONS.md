@@ -13,6 +13,7 @@ The About page opens with Dawid's approved HTML prototype, ported 1:1 as an isol
 - Not on `/styleguide`: it is a one-off page section, not a reusable component.
 - Review round 1: the intro now sits inside the stage and fades out when the head opens; the stage is only as tall as intro plus head. Thoughts no longer use fixed slots: on every open they scatter at random in a band around the head (widening only if they don't fit), clear of the face, lid and notes. Phones (stage under 720px) show 6 random thoughts in a 3-column grid. Above 1000px the pills and their dots are 50% bigger.
 - Review round 2: 10 random thoughts on desktop, 4 on phones (also scattered at random, at the desktop size); both hand-written hints sit right of the head above the shoulder; the hole spans the full cut; stars sit between ribbon items with equal space; the popover close is a plain X; client logos are off the About page.
+- Review round 3: thoughts take the best of a few random free spots (farthest from those already placed), so they spread evenly above and around the head and may cover the flying lid. The brain lives outside the head's filter: white outline, no hard shadow. The portrait's offset shadow is black in both themes.
 - The prototype relied on content-box sizing, so the stage keeps it. No CSS `translate` next to `transform` in this file: the production minifier drops it (that is what moved the hole and made the brain sit low).
 
 ## 2026-10-26 · Work tiles cropped to 4:3

@@ -170,72 +170,67 @@ export function init(root: HTMLElement): () => void {
     spots = new Map();
     const W = stage.clientWidth,
       H = stage.clientHeight;
-    // Scatter around the head, clear of the face, the flying lid, the shoulders and the notes.
-    // Start in a tight band around the head and widen it only if the thoughts don't fit.
+    // Spread the thoughts out above and around the head (they may cover the flying lid), clear
+    // of the face, the brain and the "seen enough?" note. Each one takes the best of a few
+    // random free spots: the one farthest from the thoughts already placed, so they spread
+    // out evenly but land somewhere new on every open.
     const hp = box(headPos),
       hw = hp.r - hp.l,
       hh = hp.b - hp.t,
       o = rel(hole);
-    const note = {
-      l: hp.l + noteClose.offsetLeft,
-      t: hp.t + noteClose.offsetTop,
-      r: hp.l + noteClose.offsetLeft + noteClose.offsetWidth,
-      b: hp.t + noteClose.offsetTop + noteClose.offsetHeight,
-    };
     const avoid: Box[] = [
       { l: hp.l + 0.22 * hw, r: hp.l + 0.7 * hw, t: o.y - 0.14 * hh, b: H },
-      { l: hp.l - 0.05 * hw, r: hp.l + 0.43 * hw, t: o.y - 0.5 * hh, b: o.y - 0.06 * hh },
-      { l: hp.l, r: hp.r, t: o.y + 0.33 * hh, b: H },
-      note,
-      box(tip),
+      {
+        l: hp.l + noteClose.offsetLeft,
+        t: hp.t + noteClose.offsetTop,
+        r: hp.l + noteClose.offsetLeft + noteClose.offsetWidth,
+        b: hp.t + noteClose.offsetTop + noteClose.offsetHeight,
+      },
     ];
     // clear of the nav (a floating pill on desktop, a 56px bar on phones); phones pack tighter
     const TOP = phone() ? 64 : 80,
-      GAP = phone() ? 4 : 10,
-      yMax = H - 16;
-    for (let pass = 0; pass < 5; pass++) {
-      const half = Math.min(W - 16, hw * (1.75 + pass * 0.3)) / 2,
-        xMin = Math.max(8, o.x - half),
-        xMax = Math.min(W - 8, o.x + half);
-      const placed: Box[] = [];
-      const next = new Map<Card, { x: number; y: number }>();
-      for (const c of gsap.utils.shuffle(active.slice())) {
-        const w = c.offsetWidth,
-          h = c.offsetHeight;
-        for (let k = 0; k < 400; k++) {
-          const x = gsap.utils.random(xMin, Math.max(xMin, xMax - w)),
-            y = gsap.utils.random(TOP, Math.max(TOP, yMax - h));
-          const b = { l: x - GAP, t: y - GAP, r: x + w + GAP, b: y + h + GAP };
-          if (avoid.some((a) => hits(a, b)) || placed.some((p) => hits(p, b))) continue;
-          placed.push(b);
-          next.set(c, { x, y });
-          break;
-        }
-        // last pass: a thought that still has no room overlaps another thought, never the head
-        if (!next.has(c) && pass === 4) {
-          let best = { x: xMin, y: TOP },
-            least = Infinity;
-          for (let k = 0; k < 200; k++) {
-            const x = gsap.utils.random(xMin, Math.max(xMin, xMax - w)),
-              y = gsap.utils.random(TOP, Math.max(TOP, yMax - h));
-            const b = { l: x, t: y, r: x + w, b: y + h };
-            if (avoid.some((a) => hits(a, b))) continue;
-            const n = placed.filter((p) => hits(p, b)).length;
-            if (n < least) [best, least] = [{ x, y }, n];
-          }
-          placed.push({
-            l: best.x - GAP,
-            t: best.y - GAP,
-            r: best.x + w + GAP,
-            b: best.y + h + GAP,
-          });
-          next.set(c, best);
-        }
+      GAP = phone() ? 6 : 12,
+      half = Math.min(W - 16, hw * 2.4) / 2,
+      xMin = Math.max(8, o.x - half),
+      xMax = Math.min(W - 8, o.x + half),
+      yMax = Math.min(H - 16, o.y + 0.2 * hh);
+    const placed: { box: Box; x: number; y: number }[] = [];
+    const randomSpot = (w: number, h: number) => {
+      const x = gsap.utils.random(xMin, Math.max(xMin, xMax - w)),
+        y = gsap.utils.random(TOP, Math.max(TOP, yMax - h));
+      return { x, y, box: { l: x - GAP, t: y - GAP, r: x + w + GAP, b: y + h + GAP } };
+    };
+    for (const c of gsap.utils.shuffle(active.slice())) {
+      const w = c.offsetWidth,
+        h = c.offsetHeight;
+      let best: ReturnType<typeof randomSpot> | null = null,
+        bestScore = -1,
+        found = 0;
+      for (let k = 0; k < 600 && found < 12; k++) {
+        const spot = randomSpot(w, h);
+        if (avoid.some((a) => hits(a, spot.box)) || placed.some((p) => hits(p.box, spot.box)))
+          continue;
+        found++;
+        const cx = spot.x + w / 2,
+          cy = spot.y + h / 2;
+        const score = placed.length
+          ? Math.min(...placed.map((p) => Math.hypot(p.x - cx, p.y - cy)))
+          : Math.random();
+        if (score > bestScore) [best, bestScore] = [spot, score];
       }
-      if (next.size === active.length) {
-        spots = next;
-        return;
+      // no free spot left: take the one that covers the fewest thoughts, never the face
+      if (!best) {
+        let least = Infinity;
+        for (let k = 0; k < 200; k++) {
+          const spot = randomSpot(w, h);
+          if (avoid.some((a) => hits(a, spot.box))) continue;
+          const n = placed.filter((p) => hits(p.box, spot.box)).length;
+          if (n < least) [best, least] = [spot, n];
+        }
+        best ??= randomSpot(w, h);
       }
+      placed.push({ box: best.box, x: best.x + w / 2, y: best.y + h / 2 });
+      spots.set(c, { x: best.x, y: best.y });
     }
   }
   const target = (c: Card) => spots.get(c) ?? { x: 0, y: 0 };
