@@ -7,10 +7,7 @@ import { CLIENTS, nextLogoId, type Client } from "@/lib/clients";
  * (white is only used inside their masks and clip paths and stays as is). Mask and clip ids get a
  * unique suffix so several sets on one page stay valid.
  *
- * Variants: a wrapping row (default), spread across the width, or a strip: one finite line
- * ([data-logo-strip], used in the About story). The strip fits the width from 62em up; below that
- * it scrolls sideways. The motion layer lights the logos up one by one as the page scrolls (and
- * slides the line along on narrow screens); without it the strip is a plain, swipeable row.
+ * Variants: a wrapping row (default) or spread across the width (Home, above the footer).
  */
 const files = import.meta.glob<string>("/src/assets/clients/*.svg", {
   query: "?raw",
@@ -24,8 +21,6 @@ interface Props {
   label?: string;
   /** Distribute across the full width instead of packing from the start. */
   spread?: boolean;
-  /** One finite line that lights up logo by logo with the page scroll (motion layer). */
-  strip?: boolean;
   class?: string;
 }
 
@@ -33,7 +28,6 @@ const {
   clients = Object.keys(CLIENTS) as Client[],
   label = "Companies I have worked with",
   spread = false,
-  strip = false,
   class: className,
 } = Astro.props;
 
@@ -51,29 +45,17 @@ const logos = clients
   .map((logo) => ({ ...logo, svg: themed(logo.svg, logo.name, nextLogoId()) }));
 ---
 
-{strip ? (
-  <div class:list={["client-logos-strip", className]} data-logo-strip>
-    <ul class="client-logos client-logos--strip" role="list" aria-label={label} data-logo-track>
-      {logos.map(({ key, svg }) => (
-        <li class="client-logos__item" data-client={key}>
-          <Fragment set:html={svg} />
-        </li>
-      ))}
-    </ul>
-  </div>
-) : (
-  <ul
-    class:list={["client-logos", { "client-logos--spread": spread }, className]}
-    role="list"
-    aria-label={label}
-  >
-    {logos.map(({ key, svg }) => (
-      <li class="client-logos__item" data-client={key}>
-        <Fragment set:html={svg} />
-      </li>
-    ))}
-  </ul>
-)}
+<ul
+  class:list={["client-logos", { "client-logos--spread": spread }, className]}
+  role="list"
+  aria-label={label}
+>
+  {logos.map(({ key, svg }) => (
+    <li class="client-logos__item" data-client={key}>
+      <Fragment set:html={svg} />
+    </li>
+  ))}
+</ul>
 
 <style>
   @layer components {
@@ -95,54 +77,8 @@ const logos = clients
       block-size: var(--space-12);
     }
 
-    /* Strip: one line. Narrow screens scroll it sideways (swipe, or the motion layer). */
-    .client-logos-strip {
-      margin-inline: calc(-1 * var(--gutter));
-      padding-inline: var(--gutter);
-      overflow-x: auto;
-      scrollbar-width: none;
-    }
-
-    :global(.motion) .client-logos-strip {
-      overflow-x: clip;
-    }
-
-    .client-logos--strip {
-      flex-wrap: nowrap;
-      inline-size: max-content;
-    }
-
-    .client-logos--strip .client-logos__item {
-      flex-shrink: 0;
-    }
-
     @media (width < 48em) {
       .client-logos__item :global(svg) {
-        block-size: var(--space-10);
-      }
-    }
-
-    /* Wide screens: the whole set fits the width. */
-    @media (width >= 62em) {
-      .client-logos-strip {
-        margin-inline: 0;
-        padding-inline: 0;
-        overflow: visible;
-      }
-
-      .client-logos--strip {
-        inline-size: auto;
-        justify-content: space-between;
-        gap: var(--space-6);
-      }
-
-      .client-logos--strip .client-logos__item :global(svg) {
-        block-size: var(--space-8);
-      }
-    }
-
-    @media (width >= 80em) {
-      .client-logos--strip .client-logos__item :global(svg) {
         block-size: var(--space-10);
       }
     }

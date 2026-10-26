@@ -2,9 +2,13 @@
 
 Non-obvious choices, newest first. One entry per decision: what, why, and what it rules out.
 
+## 2026-10-26 · Logos back above the footer
+
+On Dawid's call, the About story is back to its original form: the panel grows, the statement lights up word by word, and nothing else is in it (260svh track, no "More about me"). The client logos are a "Trusted by teams at" section again, the last one on Home before the footer, spread across the width in the text colour. `ClientLogos` lost its strip variant and `StoryIntro` its `after` slot, since nothing uses them now.
+
 ## 2026-10-26 · v2 revision 2: logo highlight, mobile bar, fade, SEO
 
-- **Logos light up one by one** in the About story after the statement, using the same dim-to-bright treatment as the words. The repeated, sliding strip is gone. From 62em the ten logos fit the width (32px tall, 40px from 80em). Below that, the one finite line slides along as the logos light up (or swipes, without motion). `.story__inner` uses `minmax(0, 1fr)`, so the wide line can't widen the text column.
+- **Logos light up one by one** (superseded: see "Logos back above the footer") in the About story after the statement, using the same dim-to-bright treatment as the words. The repeated, sliding strip is gone. From 62em the ten logos fit the width (32px tall, 40px from 80em). Below that, the one finite line slides along as the logos light up (or swipes, without motion). `.story__inner` uses `minmax(0, 1fr)`, so the wide line can't widen the text column.
 - **Mobile nav is a full-width bar**: the M on the left and a two-line menu button on the right. The menu opens with the theme switch's "ink spread", now shared as `src/scripts/spread.ts`. It grows from the button and closes by shrinking back into it. The sheet repeats the bar, so the close button replaces the menu button in place. Without JS it is still a native popover.
 - **Content changes:**
   - "More about me" is removed from the story.
