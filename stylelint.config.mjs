@@ -52,7 +52,11 @@ export default {
 
     // Components use semantic tokens, never primitives (--neutral-*, --blue-*).
     "declaration-property-value-disallowed-list": [
-      { "/.*/": ["/var\\(\\s*--(neutral|blue)-/"] },
+      {
+        "/.*/": [
+          "/var\\(\\s*--(neutral|blue|pink|green|orange|violet|cyan|yellow|red|steel|flesh)-/",
+        ],
+      },
       { message: "Use a semantic token (e.g. --color-text), not a primitive." },
     ],
 

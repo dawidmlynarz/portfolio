@@ -4,7 +4,7 @@ import SiteLayout from "@/layouts/SiteLayout.astro";
 import Section from "@/components/layout/Section.astro";
 import Container from "@/components/layout/Container.astro";
 import Stack from "@/components/layout/Stack.astro";
-import ClientLogos from "@/components/blocks/ClientLogos.astro";
+import Mindblown from "@/components/blocks/Mindblown.astro";
 import Tag from "@/components/ui/Tag.astro";
 import Link from "@/components/ui/Link.astro";
 import about01 from "@/assets/about/about-01.jpg";
@@ -55,25 +55,17 @@ const interests = [
   title="About me"
   description="Dawid Młynarz, a self-taught product designer based in Poland. I help companies build meaningful & user-centered digital experiences."
 >
-  <Section space="md" aria-labelledby="about-title">
-    <Container>
-      <Stack gap="6" class="about-intro">
-        <p class="text-caption muted">Get to know me</p>
-        <h1 id="about-title">Hello! Thanks for stopping by.</h1>
-        <p class="text-lead muted">
-          I’m Dawid, a self-taught product designer based in Poland. I help companies build
-          meaningful &amp; user-centered digital experiences. I’ve worked on products and services
-          used by millions.
-        </p>
-      </Stack>
-    </Container>
-  </Section>
-
-  <Section space="sm" aria-label="Clients">
-    <Container>
-      <ClientLogos />
-    </Container>
-  </Section>
+  <Mindblown labelledby="about-title">
+    <Stack gap="6">
+      <p class="text-caption muted">Get to know me</p>
+      <h1 id="about-title">Hello! Thanks for stopping by.</h1>
+      <p class="text-lead muted">
+        I’m Dawid, a self-taught product designer based in Poland. I help companies build meaningful
+        &amp; user-centered digital experiences. I’ve worked on products and services used by
+        millions.
+      </p>
+    </Stack>
+  </Mindblown>
 
   <Section space="sm" aria-label="Photos">
     <Container>
@@ -141,10 +133,6 @@ const interests = [
   @layer components {
     .muted {
       color: var(--color-text-muted);
-    }
-
-    .about-intro {
-      max-inline-size: 48rem;
     }
 
     .photos {

@@ -45,6 +45,26 @@
     --blue-300: #8da2ff;
     --blue-600: #1735ca;
     --blue-900: #0a2277;
+    /* Tints: pastel for light mode, deep for dark mode. Used by the About "thoughts" (Mindblown). */
+    --pink-200: #ffc2dc;
+    --pink-300: #ff9cc6; /* brain illustration, same in both themes */
+    --pink-800: #6e2446;
+    --blue-800: #22348a;
+    --green-200: #b1ecd0;
+    --green-800: #1c5a3d;
+    --orange-200: #ffcfab;
+    --orange-800: #74380f;
+    --violet-200: #dccfff;
+    --violet-800: #47338a;
+    --cyan-200: #b0eef6;
+    --cyan-800: #16595f;
+    --yellow-200: #ffe68f;
+    --yellow-800: #5f4c0c;
+    --red-400: #ff5c5c; /* scissor handles, same in both themes */
+    --steel-100: #e4e9ef;
+    --steel-300: #aeb8c4;
+    --flesh-500: #c93a63;
+    --flesh-900: #3b0b1c;
 
     /* ---------- 2. Semantic color: light-dark(light, dark) ---------- */
     --color-bg: light-dark(var(--neutral-0), var(--neutral-950));
@@ -59,6 +79,32 @@
     --color-border-subtle: light-dark(var(--neutral-100), var(--neutral-850));
     --color-focus: light-dark(var(--blue-600), var(--blue-300));
     --color-overlay: color-mix(in srgb, var(--color-bg) 88%, transparent); /* sticky nav */
+    --color-scrim: light-dark(
+      color-mix(in srgb, var(--neutral-900) 55%, transparent),
+      color-mix(in srgb, var(--neutral-950) 80%, transparent)
+    ); /* behind modal dialogs */
+
+    /* Tints: soft accent fills for playful surfaces (About thoughts). Text on them is --color-text. */
+    --color-tint-pink: light-dark(var(--pink-200), var(--pink-800));
+    --color-tint-blue: light-dark(var(--blue-200), var(--blue-800));
+    --color-tint-green: light-dark(var(--green-200), var(--green-800));
+    --color-tint-orange: light-dark(var(--orange-200), var(--orange-800));
+    --color-tint-violet: light-dark(var(--violet-200), var(--violet-800));
+    --color-tint-cyan: light-dark(var(--cyan-200), var(--cyan-800));
+    --color-tint-yellow: light-dark(var(--yellow-200), var(--yellow-800));
+
+    /* Illustration: drawn on top of the photo, so it keeps one look in both themes. */
+    --color-ink: var(--neutral-900);
+    --color-sticker: light-dark(
+      var(--neutral-0),
+      var(--neutral-100)
+    ); /* paper edge round cutouts */
+    --color-illo-brain: var(--pink-300);
+    --color-illo-handle: var(--red-400);
+    --color-illo-steel: var(--steel-100);
+    --color-illo-steel-shade: var(--steel-300);
+    --color-illo-flesh: var(--flesh-500);
+    --color-illo-flesh-dark: var(--flesh-900);
 
     /* ---------- Typography ----------
        Roles, not sizes. Fluid between 375px and 1440px viewports.
@@ -79,6 +125,8 @@
       "DM Sans Variable", "DM Sans Fallback", system-ui, sans-serif; /* swap when the new face is chosen */
     --font-body: "DM Sans Variable", "DM Sans Fallback", system-ui, sans-serif;
     --font-mono: ui-monospace, "SF Mono", "Menlo", monospace;
+    /* Handwritten notes and labels (About page). Latin only: Polish letters fall back. */
+    --font-script: "Gochi Hand", "Comic Sans MS", "Marker Felt", cursive;
 
     --text-h1: clamp(2.125rem, 1.465rem + 2.817vw, 4rem);
     --text-h2: clamp(1.75rem, 1.398rem + 1.502vw, 2.75rem);
@@ -88,6 +136,11 @@
     --text-body: clamp(1rem, 0.956rem + 0.188vw, 1.125rem);
     --text-small: clamp(0.875rem, 0.853rem + 0.094vw, 0.9375rem);
     --text-caption: clamp(0.75rem, 0.728rem + 0.094vw, 0.8125rem);
+    --text-script: clamp(
+      1.3125rem,
+      1.225rem + 0.376vw,
+      1.5625rem
+    ); /* 21 -> 25, Gochi Hand runs small */
 
     --leading-h1: 1.05;
     --tracking-h1: -0.025em;
@@ -134,7 +187,9 @@
     --radius-lg: 20px;
     --radius-xl: 48px; /* verify it is used, else drop from both CSS and Figma */
     --radius-pill: 9999px;
+    --radius-round: 50%; /* circles and ellipses */
     --border-width: 1px;
+    --border-width-bold: 3px; /* paper-cutout outlines (About thoughts) */
     --shadow-bar: 0 12px 30px -20px light-dark(rgb(0 0 0 / 30%), rgb(0 0 0 / 70%));
     --blur-nav: 12px; /* backdrop blur behind the sticky nav */
     --ease-standard: cubic-bezier(0.4, 0, 0.2, 1);

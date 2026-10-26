@@ -14,6 +14,7 @@ import Hero from "@/components/blocks/Hero.astro";
 import LiquidReveal from "@/components/blocks/LiquidReveal.astro";
 import WorkCard from "@/components/blocks/WorkCard.astro";
 import ShotsMarquee from "@/components/blocks/ShotsMarquee.astro";
+import Mindblown from "@/components/blocks/Mindblown.astro";
 import { getEntry } from "astro:content";
 import shot01 from "@/assets/gallery/shot-01.jpg";
 import shot03 from "@/assets/gallery/shot-03.jpg";
@@ -317,6 +318,17 @@ const SECTIONS = [
     </Container>
   </Section>
   <ShotsMarquee title="ShotsMarquee" shots={sampleShots} />
+  <Mindblown labelledby="mindblown-demo-title">
+    <Stack gap="4">
+      <p class="text-caption muted">Mindblown · About page hero</p>
+      <h3 id="mindblown-demo-title">Click the head.</h3>
+      <p class="muted">
+        The intro goes in the slot. Hover for the cut line, click to open; cards come from
+        src/lib/thoughts.ts and open a dialog. Tints, outlines and the script font are tokens, so it
+        follows light and dark.
+      </p>
+    </Stack>
+  </Mindblown>
 </SiteLayout>
 
 <style>

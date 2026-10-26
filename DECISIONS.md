@@ -2,6 +2,17 @@
 
 Non-obvious choices, newest first. One entry per decision: what, why, and what it rules out.
 
+## 2026-10-26 · About hero: the "Mindblown" head replaces the intro and client logos
+
+Dawid's Mindblown prototype (paper-cutout portrait; scissors cut the head open and 14 "thoughts" burst out) is now the About page hero, as the `Mindblown` block. The existing intro ("Get to know me", the h1 and the lead) sits in its slot: top-left beside the head from 62em, above it on narrower screens. When the head opens, the intro fades out and the cards land where it was; closing brings it back. Client logos are removed from About (they stay on Home).
+
+- **No yellow, light and dark.** The prototype's yellow paper became the subtle background with a dot grid. Card colours are new `--color-tint-*` tokens (pastel in light, deep in dark) with `--color-text` outlines and hard shadows. Drawn parts that sit on the photo (brain, scissors, the hole, the paper edge round the cutout) use `--color-ink`, `--color-sticker` and `--color-illo-*`, which look the same in both themes.
+- **Script font.** Gochi Hand (`@fontsource/gochi-hand`, Latin) is `--font-script`, with `--text-script` (21 → 25px) for notes and bubbles. Labels and titles use the site's heading font.
+- **Other new tokens:** `--color-scrim` (dialog backdrop), `--border-width-bold` (3px outlines), `--radius-round` (50%, circles and the head's ellipse). The new primitives (`--pink-*`, `--green-*` …) are blocked in components by Stylelint like `--neutral-*`. All of these need mirroring in Figma.
+- **Built the site's way, not copied.** Cards and dialog content are rendered by Astro from `src/lib/thoughts.ts` (edit cards there). The popover is a native `<dialog>`. The script (`src/scripts/mindblown.ts`, GSAP 3.12.5 from npm) is a custom element: every tween runs in a `gsap.context()` and every listener on an `AbortController`, both undone when the element leaves the page, so remounting never duplicates anything.
+- **Changes from the prototype:** the hidden h1 is gone (the page's h1 labels the section); the note says "psst… wanna see inside?" because the intro already says "I'm Dawid"; the YouTube card links to a video; the black ticker ("belt") and the prototype's top bar are left out; reduced motion resolves the whole sequence at once.
+- **No JS:** the intro and the resting portrait only.
+
 ## 2026-10-26 · Mobile nav is a hamburger menu
 
 Below 48em the bar shows the M mark, the name and a menu button. Work, About, Contact and the theme toggle open in a sheet under the bar. The sheet is a native `popover`, so it needs no JS: Esc and outside clicks close it, and the button exposes its expanded state. The bar now has a fixed height (`--nav-block-size`), so the sheet can sit right below it. Browsers without popover support hide the button and keep the inline menu, which wraps. This replaces the earlier "nav wraps below 375px" behaviour.

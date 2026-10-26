@@ -1,0 +1,1172 @@
+---
+/**
+ * Mindblown: the About page hero. A paper-cutout portrait sits under the page intro (the default
+ * slot). Hovering shows a cut line and scissors; clicking cuts the top of the head off, a brain
+ * peeks out and the "thoughts" (src/lib/thoughts.ts) burst out and land around the head. Each
+ * thought opens a dialog. Clicking the head again (or Esc) puts everything back.
+ *
+ * Behaviour lives in src/scripts/mindblown.ts (GSAP). The six cutouts in src/assets/mindblown/
+ * share one 963×896 canvas, split at y = 309, so they stack pixel for pixel; changing expression
+ * only toggles visibility, never `src`.
+ *
+ * No JS: the intro and the resting portrait, nothing interactive.
+ * Reduced motion: everything resolves at once; no bobbing, floating, shaking or confetti.
+ */
+import { Image } from "astro:assets";
+import Container from "@/components/layout/Container.astro";
+import { THOUGHTS, THOUGHT_ICONS } from "@/lib/thoughts";
+import restFace from "@/assets/mindblown/rest-face.webp";
+import restTop from "@/assets/mindblown/rest-top.webp";
+import shockedFace from "@/assets/mindblown/shocked-face.webp";
+import shockedTop from "@/assets/mindblown/shocked-top.webp";
+import superFace from "@/assets/mindblown/super-face.webp";
+import superTop from "@/assets/mindblown/super-top.webp";
+
+interface Props {
+  /** id of the heading in the slot, used to label the section. */
+  labelledby?: string;
+  /** Alt text for the portrait. */
+  alt?: string;
+  class?: string;
+}
+
+const {
+  labelledby,
+  alt = "Dawid, black and white portrait with round glasses, cut out like paper",
+  class: className,
+} = Astro.props;
+
+// Matches --mindblown-head below: 86vw up to 600px under 62em, then 44vw between 600 and 760px.
+const sizes = "(min-width: 62em) clamp(37.5rem, 44vw, 47.5rem), min(86vw, 37.5rem)";
+const faces = [
+  { face: restFace, top: restTop, name: "rest" },
+  { face: shockedFace, top: shockedTop, name: "shock" },
+  { face: superFace, top: superTop, name: "super" },
+] as const;
+const imageProps = { widths: [480, 760, 963], sizes, format: "webp" as const, quality: 82 };
+---
+
+<mind-blown class:list={["mindblown", className]}>
+  <section class="mindblown__stage" aria-labelledby={labelledby}>
+    <Container class="mindblown__intro">
+      <slot />
+    </Container>
+
+    <div class="mindblown__head-pos">
+      <div class="mindblown__rig">
+        <div class="mindblown__head" aria-label="Open my head to see what’s inside">
+          <div class="mindblown__layer mindblown__layer--base">
+            {faces.map(({ face, name }) => (
+              <Image
+                class={`mindblown__piece mindblown__piece--${name}`}
+                src={face}
+                alt={name === "rest" ? alt : ""}
+                loading="eager"
+                fetchpriority={name === "rest" ? "high" : "low"}
+                {...imageProps}
+              />
+            ))}
+          </div>
+          <div class="mindblown__inside" aria-hidden="true">
+            <div class="mindblown__hole"></div>
+            <div class="mindblown__brain-clip">
+              <svg class="mindblown__brain" viewBox="0 0 140 78">
+                <path
+                  class="mindblown__brain-body"
+                  d="M18 78 C2 76 4 52 20 48 C14 28 36 16 50 26 C56 8 86 6 92 24 C108 14 130 28 122 46 C140 52 138 76 122 78 Z"
+                ></path>
+                <path
+                  class="mindblown__brain-folds"
+                  d="M38 40 q8 -8 16 0 M76 24 q4 10 14 8 M104 44 q-8 4 -6 14 M28 62 q6 -6 12 0"
+                ></path>
+                {[60, 84].map((cx) => (
+                  <g class="mindblown__eye">
+                    <ellipse class="mindblown__eye-white" cx={cx} cy="56" rx="9" ry="10" />
+                    <circle class="mindblown__pupil" cx={cx} cy="56" r="4" />
+                  </g>
+                ))}
+              </svg>
+            </div>
+          </div>
+          <div class="mindblown__layer mindblown__layer--lid">
+            {faces.map(({ top, name }) => (
+              <Image
+                class={`mindblown__piece mindblown__piece--${name}`}
+                src={top}
+                alt=""
+                loading="eager"
+                fetchpriority={name === "rest" ? "high" : "low"}
+                {...imageProps}
+              />
+            ))}
+          </div>
+        </div>
+        <div class="mindblown__cutline" aria-hidden="true">
+          <div class="mindblown__dash"></div>
+          <svg
+            class="mindblown__scissors"
+            viewBox="0 0 120 52"
+            stroke-linejoin="round"
+            stroke-linecap="round"
+          >
+            <g class="mindblown__blade mindblown__blade--a">
+              <path class="mindblown__s-outline" d="M44 30 L28 40" stroke-width="9"></path>
+              <path class="mindblown__s-handle" d="M44 30 L28 40" stroke-width="4.5"></path>
+              <ellipse
+                class="mindblown__s-outline"
+                cx="16"
+                cy="42"
+                rx="12"
+                ry="8.5"
+                stroke-width="10"
+              ></ellipse>
+              <ellipse
+                class="mindblown__s-handle"
+                cx="16"
+                cy="42"
+                rx="12"
+                ry="8.5"
+                stroke-width="5"
+              ></ellipse>
+              <path
+                class="mindblown__s-steel"
+                d="M38 26 L38 19.5 Q42 14.5 52 15.5 L111 23.4 Q117 25 111 26 Z"
+                stroke-width="2.8"
+              ></path>
+              <path class="mindblown__s-shine" d="M55 19 L102 24" stroke-width="2"></path>
+            </g>
+            <g class="mindblown__blade mindblown__blade--b">
+              <path class="mindblown__s-outline" d="M44 22 L28 12" stroke-width="9"></path>
+              <path class="mindblown__s-handle" d="M44 22 L28 12" stroke-width="4.5"></path>
+              <ellipse
+                class="mindblown__s-outline"
+                cx="16"
+                cy="10"
+                rx="12"
+                ry="8.5"
+                stroke-width="10"
+              ></ellipse>
+              <ellipse
+                class="mindblown__s-handle"
+                cx="16"
+                cy="10"
+                rx="12"
+                ry="8.5"
+                stroke-width="5"
+              ></ellipse>
+              <path
+                class="mindblown__s-shine"
+                d="M8.5 6.5 q4 -3.5 10 -2.5"
+                stroke-width="1.8"
+              ></path>
+              <path
+                class="mindblown__s-steel mindblown__s-steel--shade"
+                d="M38 26 L38 32.5 Q42 37.5 52 36.5 L111 28.6 Q117 27 111 26 Z"
+                stroke-width="2.8"
+              ></path>
+            </g>
+            <circle class="mindblown__s-pivot" cx="44" cy="26" r="4.6" stroke-width="2.6"></circle>
+            <circle class="mindblown__s-pin" cx="44" cy="26" r="1.3"></circle>
+          </svg>
+        </div>
+      </div>
+      <p class="mindblown__note mindblown__note--open" aria-hidden="true">
+        psst… wanna
+        <br />
+        see inside?
+        <svg viewBox="0 0 120 70">
+          <path d="M96 4 C 80 40, 50 52, 10 58 M10 58 l14 -12 M10 58 l16 6"></path>
+        </svg>
+      </p>
+      <p class="mindblown__bubble" aria-hidden="true"></p>
+      <p class="mindblown__note mindblown__note--close" aria-hidden="true">
+        <svg viewBox="0 0 120 70">
+          <path d="M100 64 C 82 30, 52 14, 10 10 M10 10 l17 10 M10 10 l18 -5"></path>
+        </svg>
+        <span>
+          seen enough?
+          <br />
+          <span class="mindblown__verb">click</span> my head to close it.
+        </span>
+      </p>
+    </div>
+
+    <canvas class="mindblown__confetti" aria-hidden="true"></canvas>
+    <ul class="mindblown__cards" role="list" aria-label="What’s on my mind">
+      {THOUGHTS.map((t, i) => (
+        <li class="mindblown__card-item">
+          <button
+            class={`mindblown__card mindblown__card--${t.tint}`}
+            type="button"
+            tabindex="-1"
+            data-index={i}
+            aria-label={`${t.label}: ${t.title}`}
+          >
+            <span class="mindblown__card-in">
+              <span class="mindblown__icon">
+                <svg viewBox="0 0 24 24" aria-hidden="true" set:html={THOUGHT_ICONS[t.icon]} />
+              </span>
+              <span class="mindblown__label">
+                <b class="mindblown__label-text">
+                  <span class="mindblown__label-long">{t.label}</span>
+                  <span class="mindblown__label-short">{t.short}</span>
+                </b>
+                <i class="mindblown__label-tag">{t.tag}</i>
+              </span>
+            </span>
+          </button>
+        </li>
+      ))}
+    </ul>
+    <p class="mindblown__tip" aria-hidden="true">
+      click a thought.
+      <br />
+      drag it around.
+    </p>
+  </section>
+
+  <dialog class="mindblown__dialog" aria-labelledby="mindblown-dialog-title">
+    <div class="mindblown__dialog-head">
+      <span class="mindblown__icon mindblown__icon--large"></span>
+      <div>
+        <p class="mindblown__kicker"></p>
+        <h2 class="mindblown__dialog-title" id="mindblown-dialog-title"></h2>
+      </div>
+      <button class="mindblown__close" type="button" aria-label="Close">
+        <svg viewBox="0 0 16 16" aria-hidden="true">
+          <path d="M3 3l10 10M13 3L3 13"></path>
+        </svg>
+      </button>
+    </div>
+    <div class="mindblown__dialog-body"></div>
+  </dialog>
+
+  {THOUGHTS.map((t, i) => (
+    <template data-thought={i}>
+      {t.stat && (
+        <p class="mindblown__stat">
+          <b>{t.stat[0]}</b>
+          <span>{t.stat[1]}</span>
+        </p>
+      )}
+      <p class="mindblown__text">{t.body}</p>
+      {t.chips && (
+        <ul class="mindblown__chips" role="list">
+          {t.chips.map((chip) => (
+            <li>{chip}</li>
+          ))}
+        </ul>
+      )}
+      {t.email && (
+        <div class="mindblown__mail">
+          <a class="mindblown__pill mindblown__pill--strong" href={`mailto:${t.email}`}>
+            {t.email}
+          </a>
+          <button class="mindblown__pill mindblown__copy" type="button" data-email={t.email}>
+            Copy
+          </button>
+        </div>
+      )}
+      {t.links && (
+        <div class="mindblown__links">
+          {t.links.map(({ label, href }) => (
+            <a class="mindblown__pill" href={href} target="_blank" rel="noopener">
+              {label} <span aria-hidden="true">↗</span>
+            </a>
+          ))}
+        </div>
+      )}
+    </template>
+  ))}
+
+  <div class="mindblown__cursor" aria-hidden="true"></div>
+</mind-blown>
+
+<script>
+  import "@/scripts/mindblown";
+</script>
+
+<style>
+  @layer components {
+    .mindblown {
+      /* Head width; the stage grows to fit it and the cards. */
+      --mindblown-head: min(86vw, 37.5rem);
+      --mindblown-shadow: var(--space-1) var(--space-1) 0 var(--color-text);
+      --mindblown-shadow-lift: calc(var(--space-1) * 1.75) calc(var(--space-1) * 1.75) 0
+        var(--color-text);
+
+      display: block;
+      position: relative;
+    }
+
+    .mindblown__stage {
+      position: relative;
+      display: flex;
+      flex-direction: column;
+      overflow: clip;
+      background:
+        radial-gradient(var(--color-border-muted) 1.4px, transparent 1.6px) 0 0 / var(--space-4)
+          var(--space-4),
+        var(--color-bg-subtle);
+      user-select: none;
+    }
+
+    /* ---------- intro (slot) ---------- */
+    .mindblown__intro {
+      position: relative;
+      z-index: 8;
+      padding-block: var(--space-section-md) var(--space-24);
+      transition: opacity var(--duration-link) var(--ease-standard);
+    }
+
+    .mindblown--open .mindblown__intro {
+      opacity: 0;
+      pointer-events: none;
+    }
+
+    /* ---------- head ----------
+       The face centre sits at 45.5% of the photo width: shift by that to centre the face. */
+    .mindblown__head-pos {
+      position: relative;
+      z-index: 5;
+      flex: none;
+      inline-size: var(--mindblown-head);
+      aspect-ratio: 963 / 896;
+      margin-block-start: auto;
+      margin-inline-start: calc(50% - var(--mindblown-head) * 0.455);
+    }
+
+    .mindblown__rig {
+      position: absolute;
+      inset: 0;
+    }
+
+    .mindblown__head {
+      position: absolute;
+      inset: 0;
+      filter: drop-shadow(var(--border-width-bold) 0 0 var(--color-sticker))
+        drop-shadow(calc(var(--border-width-bold) * -1) 0 0 var(--color-sticker))
+        drop-shadow(0 var(--border-width-bold) 0 var(--color-sticker))
+        drop-shadow(0 calc(var(--border-width-bold) * -1) 0 var(--color-sticker))
+        drop-shadow(calc(var(--space-2) - 1px) calc(var(--space-2) - 2px) 0 var(--color-ink));
+    }
+
+    .mindblown--ready .mindblown__head {
+      cursor: pointer;
+    }
+
+    .mindblown__head:focus-visible {
+      outline: none;
+    }
+
+    .mindblown__layer {
+      position: absolute;
+      inset: 0;
+    }
+
+    .mindblown__layer--base {
+      z-index: 1;
+    }
+
+    .mindblown__layer--lid {
+      z-index: 4;
+      translate: 0 1px; /* overlap the face by a pixel so no seam shows at the cut */
+      transform-origin: 26% 34.5%;
+    }
+
+    .mindblown__piece {
+      position: absolute;
+      inset: 0;
+      inline-size: 100%;
+      block-size: 100%;
+      max-inline-size: none;
+      pointer-events: none;
+      -webkit-user-drag: none;
+    }
+
+    .mindblown__piece--shock,
+    .mindblown__piece--super,
+    .mindblown__head--shock .mindblown__piece--rest,
+    .mindblown__head--super .mindblown__piece--rest {
+      visibility: hidden;
+    }
+
+    .mindblown__head--shock .mindblown__piece--shock,
+    .mindblown__head--super .mindblown__piece--super {
+      visibility: visible;
+    }
+
+    /* The cut: straight across at 309/896, x 244..633 of 963. */
+    .mindblown__inside {
+      position: absolute;
+      inset-inline-start: 25.3%;
+      inset-block-start: 34.49%;
+      z-index: 2;
+      inline-size: 40.4%;
+      block-size: 0;
+    }
+
+    .mindblown__hole {
+      position: absolute;
+      inset-inline-start: 3%;
+      inset-block-start: 0;
+      inline-size: 94%;
+      aspect-ratio: 6 / 1;
+      translate: 0 -50%;
+      border: var(--border-width-bold) solid var(--color-ink);
+      border-radius: var(--radius-round);
+      background: radial-gradient(
+        ellipse at 50% 35%,
+        var(--color-illo-flesh-dark) 0 45%,
+        var(--color-illo-flesh) 82%
+      );
+      transform: scaleY(0);
+    }
+
+    .mindblown__brain-clip {
+      position: absolute;
+      inset-inline-start: 18%;
+      inset-block-end: 0;
+      inline-size: 64%;
+      aspect-ratio: 140 / 78;
+      overflow: hidden;
+      pointer-events: none;
+    }
+
+    .mindblown__brain {
+      position: absolute;
+      inset: 0;
+      inline-size: 100%;
+      block-size: 100%;
+      translate: 0 100%;
+    }
+
+    .mindblown__brain-body {
+      fill: var(--color-illo-brain);
+      stroke: var(--color-ink);
+      stroke-width: 3.5;
+      stroke-linejoin: round;
+    }
+
+    .mindblown__brain-folds {
+      fill: none;
+      stroke: var(--color-ink);
+      stroke-width: 3;
+      stroke-linecap: round;
+    }
+
+    .mindblown__eye-white {
+      fill: var(--color-sticker);
+      stroke: var(--color-ink);
+      stroke-width: 3;
+    }
+
+    .mindblown__pupil {
+      fill: var(--color-ink);
+    }
+
+    .mindblown__eye {
+      transform-box: fill-box;
+      transform-origin: center;
+      animation: mindblown-blink 4s infinite;
+    }
+
+    @keyframes mindblown-blink {
+      0%,
+      92%,
+      100% {
+        transform: scaleY(1);
+      }
+
+      95% {
+        transform: scaleY(0.1);
+      }
+    }
+
+    /* ---------- cut line + scissors ---------- */
+    .mindblown__cutline {
+      position: absolute;
+      inset-inline-start: 23.5%;
+      inset-block-start: 34.49%;
+      z-index: 6;
+      inline-size: 44%;
+      block-size: 0;
+      pointer-events: none;
+    }
+
+    .mindblown__dash {
+      position: absolute;
+      inset-inline: 0;
+      inset-block-start: calc(var(--space-1) / -2);
+      block-size: var(--space-1);
+      transform-origin: left;
+      transform: scaleX(0);
+      transition: transform 0.45s cubic-bezier(0.6, 0, 0.2, 1);
+      background: repeating-linear-gradient(90deg, var(--color-ink) 0 10px, transparent 10px 17px);
+      filter: drop-shadow(0 1.5px 0 var(--color-sticker))
+        drop-shadow(0 -1.5px 0 var(--color-sticker));
+    }
+
+    .mindblown__scissors {
+      position: absolute;
+      inset-inline-start: 0;
+      inset-block-start: 0;
+      inline-size: clamp(5.25rem, 9vw, 8.5rem);
+      translate: -37% -50%;
+      overflow: visible;
+      opacity: 0;
+      transform: translateX(-1.625rem) rotate(-8deg);
+      transition:
+        opacity 0.25s,
+        transform 0.45s cubic-bezier(0.3, 1.6, 0.5, 1);
+      filter: drop-shadow(3px 3px 0 color-mix(in srgb, var(--color-ink) 35%, transparent));
+    }
+
+    .mindblown__s-outline {
+      fill: none;
+      stroke: var(--color-ink);
+    }
+
+    .mindblown__s-handle {
+      fill: none;
+      stroke: var(--color-illo-handle);
+    }
+
+    .mindblown__s-steel {
+      fill: var(--color-illo-steel);
+      stroke: var(--color-ink);
+    }
+
+    .mindblown__s-steel--shade {
+      fill: var(--color-illo-steel-shade);
+    }
+
+    .mindblown__s-shine {
+      fill: none;
+      stroke: var(--color-sticker);
+      opacity: 0.9;
+    }
+
+    .mindblown__s-pivot {
+      fill: var(--color-sticker);
+      stroke: var(--color-ink);
+    }
+
+    .mindblown__s-pin {
+      fill: var(--color-ink);
+    }
+
+    .mindblown__blade {
+      transform-box: view-box;
+      transform-origin: 44px 26px;
+      transition: transform 0.14s;
+    }
+
+    .mindblown__blade--a {
+      transform: rotate(-15deg);
+    }
+
+    .mindblown__blade--b {
+      transform: rotate(15deg);
+    }
+
+    .mindblown__rig--armed .mindblown__dash,
+    .mindblown__head:focus-visible + .mindblown__cutline .mindblown__dash {
+      transform: scaleX(1);
+    }
+
+    .mindblown__rig--armed .mindblown__scissors,
+    .mindblown__head:focus-visible + .mindblown__cutline .mindblown__scissors {
+      opacity: 1;
+      transform: none;
+    }
+
+    .mindblown__scissors--snip .mindblown__blade--a {
+      animation: mindblown-snip-a 0.2s infinite alternate;
+    }
+
+    .mindblown__scissors--snip .mindblown__blade--b {
+      animation: mindblown-snip-b 0.2s infinite alternate;
+    }
+
+    .mindblown__rig--armed
+      .mindblown__scissors:not(.mindblown__scissors--snip)
+      .mindblown__blade--a {
+      animation: mindblown-snip-a 0.6s 2 alternate;
+    }
+
+    .mindblown__rig--armed
+      .mindblown__scissors:not(.mindblown__scissors--snip)
+      .mindblown__blade--b {
+      animation: mindblown-snip-b 0.6s 2 alternate;
+    }
+
+    @keyframes mindblown-snip-a {
+      from {
+        transform: rotate(-15deg);
+      }
+
+      to {
+        transform: rotate(-1deg);
+      }
+    }
+
+    @keyframes mindblown-snip-b {
+      from {
+        transform: rotate(15deg);
+      }
+
+      to {
+        transform: rotate(1deg);
+      }
+    }
+
+    @media (pointer: coarse) {
+      .mindblown--ready .mindblown__dash {
+        transform: scaleX(1);
+      }
+
+      .mindblown--ready .mindblown__scissors {
+        opacity: 1;
+        transform: none;
+      }
+    }
+
+    /* ---------- notes + bubble ---------- */
+    .mindblown__note {
+      position: absolute;
+      z-index: 6;
+      font: var(--text-script) / 1.05 var(--font-script);
+      pointer-events: none;
+      visibility: hidden;
+      animation: mindblown-boil 0.5s steps(1) infinite;
+    }
+
+    .mindblown__note svg {
+      display: block;
+      inline-size: 6.875rem;
+      overflow: visible;
+    }
+
+    .mindblown__note path {
+      fill: none;
+      stroke: currentcolor;
+      stroke-width: 3;
+      stroke-linecap: round;
+    }
+
+    .mindblown--ready .mindblown__note--open {
+      visibility: visible;
+    }
+
+    .mindblown__note--open {
+      inset-inline-start: 86%;
+      inset-block-start: -2%;
+      inline-size: 12rem;
+      rotate: 5deg;
+    }
+
+    .mindblown__note--open svg {
+      margin-block-start: var(--space-2);
+      margin-inline-start: calc(var(--space-8) * -1);
+    }
+
+    /* Above the right shoulder, relative to the head. */
+    .mindblown__note--close {
+      inset-inline-start: 73%;
+      inset-block-start: 47%;
+      z-index: 20;
+      inline-size: 13.75rem;
+      rotate: -4deg;
+    }
+
+    .mindblown__note--close svg {
+      margin-block-end: var(--space-1);
+      margin-inline-start: calc(var(--space-16) * -1);
+    }
+
+    @keyframes mindblown-boil {
+      0% {
+        translate: 0 0;
+      }
+
+      33% {
+        translate: 1.5px -1px;
+      }
+
+      66% {
+        translate: -1px 0.5px;
+      }
+    }
+
+    .mindblown__bubble {
+      position: absolute;
+      inset-inline-end: 86%;
+      inset-block-start: 60%;
+      z-index: 7;
+      padding: var(--space-1) var(--space-3);
+      font: var(--text-script) / 1.2 var(--font-script);
+      white-space: nowrap;
+      color: var(--color-text);
+      background: var(--color-bg);
+      border: var(--border-width-bold) solid var(--color-text);
+      border-radius: var(--radius-lg) var(--radius-lg) var(--radius-sm) var(--radius-lg);
+      box-shadow: var(--mindblown-shadow);
+      opacity: 0;
+      pointer-events: none;
+    }
+
+    /* ---------- cards ---------- */
+    .mindblown__cards {
+      position: absolute;
+      inset: 0;
+      z-index: 10;
+      padding: 0;
+      margin: 0;
+      pointer-events: none;
+    }
+
+    .mindblown__card-item {
+      display: contents;
+    }
+
+    .mindblown__card {
+      --card-fill: var(--color-tint-pink);
+      --card-text: var(--color-text);
+
+      position: absolute;
+      inset-inline-start: 0;
+      inset-block-start: 0;
+      padding: 0;
+      border: 0;
+      background: none;
+      font: inherit;
+      color: inherit;
+      cursor: grab;
+      pointer-events: auto;
+      touch-action: none;
+      visibility: hidden;
+    }
+
+    .mindblown__card:active {
+      cursor: grabbing;
+    }
+
+    .mindblown__card:focus-visible {
+      outline: none;
+    }
+
+    .mindblown__card--pink {
+      --card-fill: var(--color-tint-pink);
+    }
+
+    .mindblown__card--blue {
+      --card-fill: var(--color-tint-blue);
+    }
+
+    .mindblown__card--green {
+      --card-fill: var(--color-tint-green);
+    }
+
+    .mindblown__card--orange {
+      --card-fill: var(--color-tint-orange);
+    }
+
+    .mindblown__card--violet {
+      --card-fill: var(--color-tint-violet);
+    }
+
+    .mindblown__card--cyan {
+      --card-fill: var(--color-tint-cyan);
+    }
+
+    .mindblown__card--yellow {
+      --card-fill: var(--color-tint-yellow);
+    }
+
+    .mindblown__card--ink {
+      --card-fill: var(--color-text);
+      --card-text: var(--color-bg);
+    }
+
+    .mindblown__card-in {
+      display: flex;
+      align-items: center;
+      gap: var(--space-2);
+      padding: var(--space-2) var(--space-4) var(--space-2) var(--space-2);
+      color: var(--card-text);
+      background: var(--card-fill);
+      border: var(--border-width-bold) solid var(--color-text);
+      border-radius: var(--radius-lg) var(--radius-md) var(--radius-lg) var(--radius-md);
+      box-shadow: var(--mindblown-shadow);
+      transition:
+        box-shadow 0.2s,
+        translate 0.2s;
+    }
+
+    .mindblown__card:hover .mindblown__card-in,
+    .mindblown__card:focus-visible .mindblown__card-in {
+      box-shadow: var(--mindblown-shadow-lift);
+      translate: -3px -3px;
+    }
+
+    .mindblown__card:focus-visible .mindblown__card-in {
+      outline: calc(var(--border-width) * 2) solid var(--color-focus);
+      outline-offset: var(--space-1);
+    }
+
+    .mindblown__icon {
+      display: grid;
+      flex: none;
+      place-items: center;
+      inline-size: 2.375rem;
+      block-size: 2.375rem;
+      color: var(--color-text);
+      background: var(--color-bg);
+      border: calc(var(--border-width-bold) - 0.5px) solid var(--color-text);
+      border-radius: var(--radius-round);
+    }
+
+    .mindblown__icon svg {
+      inline-size: 1.375rem;
+      block-size: 1.375rem;
+      fill: none;
+      stroke: currentcolor;
+      stroke-width: 2.2;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+    }
+
+    .mindblown__label {
+      display: flex;
+      flex-direction: column;
+      align-items: flex-start;
+      line-height: 1.05;
+      text-align: start;
+      white-space: nowrap;
+    }
+
+    .mindblown__label-text {
+      font-size: var(--text-body);
+      font-weight: var(--weight-semibold);
+      letter-spacing: -0.01em;
+    }
+
+    .mindblown__label-short {
+      display: none;
+    }
+
+    .mindblown__label-tag {
+      font: var(--text-small) / 1.1 var(--font-script);
+      opacity: 0.8;
+    }
+
+    /* ---------- tip, confetti, cursor ---------- */
+    .mindblown__tip {
+      position: absolute;
+      inset-inline-start: var(--gutter);
+      inset-block-end: var(--space-6);
+      z-index: 20;
+      max-inline-size: 12.5rem;
+      font: var(--text-script) / 1.1 var(--font-script);
+      rotate: -4deg;
+      opacity: 0;
+      pointer-events: none;
+    }
+
+    .mindblown__confetti {
+      position: absolute;
+      inset: 0;
+      z-index: 9;
+      inline-size: 100%;
+      block-size: 100%;
+      pointer-events: none;
+    }
+
+    .mindblown__cursor {
+      position: fixed;
+      inset-inline-start: 0;
+      inset-block-start: 0;
+      z-index: calc(var(--z-nav) + 1);
+      padding: var(--space-1) var(--space-3);
+      font: var(--text-lead) / 1.3 var(--font-script);
+      white-space: nowrap;
+      color: var(--color-bg);
+      background: var(--color-text);
+      border-radius: var(--radius-pill);
+      pointer-events: none;
+      transform: translate(-50%, -50%) scale(0);
+      transition: transform 0.25s cubic-bezier(0.3, 1.6, 0.5, 1);
+    }
+
+    .mindblown__cursor--on {
+      transform: translate(1.125rem, 1.125rem) scale(1);
+    }
+
+    @media (pointer: coarse) {
+      .mindblown__cursor {
+        display: none;
+      }
+    }
+
+    /* ---------- dialog ---------- */
+    .mindblown__dialog {
+      --card-fill: var(--color-tint-pink);
+      --card-text: var(--color-text);
+
+      inline-size: min(28.75rem, 100% - 2 * var(--gutter));
+      max-block-size: calc(100% - 2 * var(--space-6));
+      padding: 0;
+      margin: auto;
+      overflow: auto;
+      color: var(--color-text);
+      background: var(--color-bg);
+      border: var(--border-width-bold) solid var(--color-text);
+      border-radius: var(--radius-lg) var(--radius-md) var(--radius-lg) var(--radius-md);
+      box-shadow: var(--space-3) var(--space-3) 0 var(--color-text);
+    }
+
+    .mindblown__dialog::backdrop {
+      background: var(--color-scrim);
+    }
+
+    .mindblown__dialog-head {
+      display: flex;
+      align-items: center;
+      gap: var(--space-4);
+      padding: var(--space-6);
+      color: var(--card-text);
+      background: var(--card-fill);
+      border-block-end: var(--border-width-bold) solid var(--color-text);
+    }
+
+    .mindblown__icon--large {
+      inline-size: 3.5rem;
+      block-size: 3.5rem;
+    }
+
+    .mindblown__icon--large svg {
+      inline-size: 2rem;
+      block-size: 2rem;
+    }
+
+    .mindblown__kicker {
+      font: var(--text-lead) / 1 var(--font-script);
+    }
+
+    .mindblown__dialog-title {
+      margin-block-start: var(--space-1);
+      font-size: var(--text-h3);
+      line-height: var(--leading-h3);
+    }
+
+    .mindblown__close {
+      display: grid;
+      flex: none;
+      place-items: center;
+      align-self: flex-start;
+      inline-size: 2.5rem;
+      block-size: 2.5rem;
+      margin-inline-start: auto;
+      padding: 0;
+      color: var(--color-text);
+      background: var(--color-bg);
+      border: var(--border-width-bold) solid var(--color-text);
+      border-radius: var(--radius-round);
+      cursor: pointer;
+      transition: rotate 0.3s;
+    }
+
+    .mindblown__close:hover {
+      rotate: 90deg;
+    }
+
+    .mindblown__close svg {
+      inline-size: 1rem;
+      block-size: 1rem;
+      fill: none;
+      stroke: currentcolor;
+      stroke-width: 3;
+      stroke-linecap: round;
+    }
+
+    .mindblown__dialog-body {
+      display: flex;
+      flex-direction: column;
+      gap: var(--space-4);
+      padding: var(--space-6);
+    }
+
+    .mindblown__dialog-body :global(.mindblown__stat) {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: baseline;
+      column-gap: var(--space-3);
+    }
+
+    .mindblown__dialog-body :global(.mindblown__stat b) {
+      font-size: var(--text-h1);
+      font-weight: var(--weight-semibold);
+      line-height: 0.95;
+      letter-spacing: var(--tracking-h1);
+    }
+
+    .mindblown__dialog-body :global(.mindblown__stat span) {
+      font: var(--text-script) / 1.1 var(--font-script);
+    }
+
+    .mindblown__dialog-body :global(.mindblown__chips),
+    .mindblown__dialog-body :global(.mindblown__links),
+    .mindblown__dialog-body :global(.mindblown__mail) {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: var(--space-2);
+      padding: 0;
+    }
+
+    .mindblown__dialog-body :global(.mindblown__chips li),
+    .mindblown__dialog-body :global(.mindblown__pill) {
+      padding: var(--space-1) var(--space-3);
+      font-size: var(--text-small);
+      font-weight: var(--weight-semibold);
+      color: var(--color-text);
+      background: var(--color-bg-subtle);
+      border: calc(var(--border-width) * 2) solid var(--color-text);
+      border-radius: var(--radius-pill);
+    }
+
+    .mindblown__dialog-body :global(.mindblown__pill) {
+      --underline-size: 0%;
+
+      font-family: inherit;
+      cursor: pointer;
+    }
+
+    .mindblown__dialog-body :global(.mindblown__pill:hover),
+    .mindblown__dialog-body :global(.mindblown__pill--strong) {
+      color: var(--color-bg);
+      background: var(--color-text);
+    }
+
+    .mindblown__dialog-body :global(.mindblown__pill--strong:hover) {
+      color: var(--color-text);
+      background: var(--color-bg-subtle);
+    }
+
+    /* ---------- wide ---------- */
+    @media (width >= 62em) {
+      .mindblown {
+        --mindblown-head: clamp(37.5rem, 44vw, 47.5rem);
+      }
+
+      /* The head sits at the bottom; the intro shares the top-left with its hair. */
+      .mindblown__stage {
+        min-block-size: max(
+          min(100svh - var(--space-16), 62.5rem),
+          calc(var(--mindblown-head) * 1.37)
+        );
+      }
+
+      .mindblown__intro {
+        position: absolute;
+        inset: 0 0 auto;
+      }
+
+      /* Stops short of the hair, which starts ~20% left of the face centre. */
+      .mindblown__intro > :global(*) {
+        max-inline-size: clamp(20rem, 50vw - var(--mindblown-head) * 0.25 - 6rem, 34rem);
+      }
+    }
+
+    /* ---------- narrow: smaller cards, notes above the head ---------- */
+    @media (width < 62em) {
+      .mindblown__label-long,
+      .mindblown__label-tag {
+        display: none;
+      }
+
+      .mindblown__label-short {
+        display: inline;
+      }
+    }
+
+    @media (width < 45em) {
+      .mindblown__card-in {
+        gap: calc(var(--space-1) * 1.5);
+        padding: var(--space-1) var(--space-2) var(--space-1) var(--space-1);
+        border-width: calc(var(--border-width-bold) - 0.5px);
+        box-shadow: calc(var(--space-1) - 1px) calc(var(--space-1) - 1px) 0 var(--color-text);
+      }
+
+      .mindblown__card-in .mindblown__icon {
+        inline-size: 1.625rem;
+        block-size: 1.625rem;
+        border-width: calc(var(--border-width) * 2);
+      }
+
+      .mindblown__card-in .mindblown__icon svg {
+        inline-size: 0.9375rem;
+        block-size: 0.9375rem;
+      }
+
+      .mindblown__label-text {
+        font-size: var(--text-small);
+      }
+
+      .mindblown__note--open {
+        inset-inline-start: 50%;
+        inset-block-start: -24%;
+        inline-size: 12.5rem;
+        translate: -50% 0;
+        rotate: -3deg;
+        text-align: center;
+        animation: none;
+      }
+
+      .mindblown__note--open svg {
+        inline-size: 3.75rem;
+        margin: var(--space-1) auto 0;
+        rotate: 75deg;
+      }
+
+      .mindblown__bubble {
+        inset-inline-end: 78%;
+      }
+
+      .mindblown__tip {
+        display: none;
+      }
+
+      .mindblown__note--close {
+        display: flex;
+        flex-direction: column-reverse;
+        align-items: flex-end;
+        inset-inline: auto 3%;
+        inset-block-start: -38%;
+        inline-size: 10.625rem;
+        text-align: end;
+        rotate: 3deg;
+        animation: none;
+      }
+
+      .mindblown__note--close svg {
+        inline-size: 4rem;
+        margin: var(--space-1) var(--space-16) 0 0;
+        scale: 1 -1;
+      }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      .mindblown__note,
+      .mindblown__eye,
+      .mindblown__blade {
+        animation: none !important;
+      }
+
+      .mindblown__intro {
+        transition: none;
+      }
+    }
+  }
+</style>

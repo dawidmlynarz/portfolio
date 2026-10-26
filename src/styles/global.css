@@ -6,6 +6,7 @@
 
 @import "@fontsource-variable/dm-sans";
 @import "@fontsource-variable/dm-sans/wght-italic.css";
+@import "@fontsource/gochi-hand/latin-400.css";
 @import "./reset.css";
 @import "./tokens.css";
 @import "./base.css";
