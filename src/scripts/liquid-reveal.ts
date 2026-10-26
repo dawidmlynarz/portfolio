@@ -9,7 +9,8 @@
  * - Progressive enhancement: the top image is a real responsive <img> (LCP, no-JS, alt text).
  *   The canvas fades in over it once both images are decoded.
  * - Theme-aware: both cutouts are flattened onto the resolved --color-bg and re-flattened on theme
- *   change (the `themechange` event from ThemeToggle, or the OS scheme flipping). With
+ *   change (the `themechange` event from ThemeToggle; its waitUntil holds the theme transition until
+ *   the canvas has repainted). With
  *   data-clay-dark, a dark clay replaces the light one while the background is dark; it is loaded
  *   only when first needed.
  * - Images come from astro:assets (AVIF with alpha, picked to the rendered size).
@@ -186,8 +187,14 @@ class LiquidReveal extends HTMLElement {
       this.#paintLayers();
       this.#kick();
     };
-    document.addEventListener("themechange", onTheme, { signal });
-    matchMedia("(prefers-color-scheme: dark)").addEventListener("change", onTheme, { signal });
+    document.addEventListener(
+      "themechange",
+      (event) => {
+        const detail = (event as CustomEvent<{ waitUntil?: (p: Promise<unknown>) => void }>).detail;
+        detail?.waitUntil?.(onTheme());
+      },
+      { signal },
+    );
     document.addEventListener("visibilitychange", () => this.#kick(), { signal });
 
     // Pointer is tracked on the window so text or buttons over the image don't block it.

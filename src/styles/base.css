@@ -162,6 +162,33 @@
   }
 
   /*
+   * Theme switch (ThemeToggle): the new theme spreads as a circle from the toggle over the old
+   * one. Named elements are flattened into the page for this transition so everything switches
+   * together.
+   */
+  :root[data-theme-transition] * {
+    view-transition-name: none !important;
+  }
+
+  :root[data-theme-transition]::view-transition-old(root) {
+    animation: none;
+  }
+
+  :root[data-theme-transition]::view-transition-new(root) {
+    animation: theme-spread var(--duration-page) var(--ease-in-out-quart) both;
+  }
+
+  @keyframes theme-spread {
+    from {
+      clip-path: circle(0 at var(--theme-x) var(--theme-y));
+    }
+
+    to {
+      clip-path: circle(var(--theme-r) at var(--theme-x) var(--theme-y));
+    }
+  }
+
+  /*
    * Motion layer (src/scripts/motion.ts): reveal targets wait hidden until the script has set
    * their starting state. If it never runs, the failsafe shows them after 3s.
    */

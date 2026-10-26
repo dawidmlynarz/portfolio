@@ -2,11 +2,18 @@
 
 Non-obvious choices, newest first. One entry per decision: what, why, and what it rules out.
 
+## 2026-10-26 · Theme: light by default, switched only by the visitor
+
+- **Two states, no system mode.** The toggle switches between light and dark, and the OS preference is ignored. `:root` is `color-scheme: light` and only `data-theme="dark"` turns dark, so `light-dark()` tokens keep working. The choice is saved in `localStorage` and applied before first paint. The toggle is an `aria-pressed` "Dark mode" button, and its sun and moon icons turn into each other.
+- **Transition: "ink spread".** The new theme grows as a circle from the toggle over the old one (a same-document View Transition, `theme-spread` in base.css, `--duration-page`). Named transition elements are flattened for this transition so everything switches together. `themechange` carries `waitUntil` so the liquid portrait can repaint with the right clay before the new state is captured (capped at 400 ms). With reduced motion, or no View Transitions, the switch is instant.
+- **Light clay updated** to Dawid's latest `clay.avif` from Webflow (same framing).
+- **Fix:** the mobile menu sheet inherited `pointer-events: none` from the floating nav wrapper, so its links, Close and theme toggle could not be tapped. It now takes pointer input like the pill.
+
 ## 2026-10-26 · Black clay for the dark theme
 
 `LiquidReveal` takes an optional `clayDark` image (`portrait-clay-dark.avif`, Dawid's `clay-black.avif` from Webflow, same 2400×1792 framing). It blends into the black page where the white clay looked cut out.
 
-- **Static image:** both clays are rendered, and CSS shows the one for the resolved theme (OS setting, or the toggle's `data-theme`). Both are `loading="lazy"` with high fetch priority, so the hidden one is never fetched.
+- **Static image:** both clays are rendered, and CSS shows the one for the current theme. Both are `loading="lazy"` with high fetch priority, so the hidden one is never fetched.
 - **Canvas:** it loads only the clay its theme needs and swaps on `themechange` or an OS scheme flip, fetching the other variant the first time it is needed.
 
 ## 2026-10-26 · Portrait sources: 2400px AVIF from Webflow

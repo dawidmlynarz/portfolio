@@ -15,10 +15,10 @@
  * Base element styles live in base.css; the reset in reset.css; global.css wires the layers.
  *
  * THEMING
- *   Default follows the OS (color-scheme: light dark). A toggle sets <html data-theme="light|dark">.
+ *   Light by default; the OS preference is ignored. The toggle sets <html data-theme="light|dark">.
  *   Put this inline in <head> BEFORE the CSS to avoid a flash:
- *     <script>try{var t=localStorage.getItem('theme');if(t)document.documentElement.dataset.theme=t}catch(e){}</script>
- *   Toggle: set dataset.theme + localStorage.theme; "system" = remove both.
+ *     <script>try{if(localStorage.getItem('theme')==='dark')document.documentElement.dataset.theme='dark'}catch(e){}</script>
+ *   Toggle: set dataset.theme + localStorage.theme (see ThemeToggle.astro).
  *   Gotchas: use currentColor in the logo SVG; pass the current --color-bg to the LiquidReveal canvas
  *   (it flattens transparent PNGs onto a background) and re-init it on theme change.
  *   v2 is black and white: no accent colour; emphasis comes from the inverse surface.
@@ -27,7 +27,7 @@
 
 @layer tokens {
   :root {
-    color-scheme: light dark;
+    color-scheme: light; /* dark only when the visitor picks it (data-theme="dark") */
 
     /* ---------- 1. Primitives (v2: black and white, true neutral greys) ---------- */
     --neutral-0: #fff;
@@ -149,7 +149,7 @@
     --z-nav: 100;
   }
 
-  /* Manual override from the theme toggle (beats OS preference) */
+  /* The visitor's choice from the theme toggle */
   :root[data-theme="light"] {
     color-scheme: light;
   }

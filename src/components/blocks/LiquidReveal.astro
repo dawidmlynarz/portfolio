@@ -172,7 +172,7 @@ const objectPosition = `${((face[0] + face[1]) / 2) * 100}% ${((face[2] + face[3
       object-fit: cover;
     }
 
-    /* Light/dark pair: show the image for the resolved theme (OS setting or the toggle). */
+    /* Light/dark pair: show the image for the theme the visitor picked. */
     .liquid__image--dark {
       display: none;
     }
@@ -183,16 +183,6 @@ const objectPosition = `${((face[0] + face[1]) / 2) * 100}% ${((face[2] + face[3
 
     :global(:root[data-theme="dark"]) .liquid__image--light {
       display: none;
-    }
-
-    @media (prefers-color-scheme: dark) {
-      :global(:root:not([data-theme="light"])) .liquid__image--dark {
-        display: block;
-      }
-
-      :global(:root:not([data-theme="light"])) .liquid__image--light {
-        display: none;
-      }
     }
 
     .liquid__canvas {

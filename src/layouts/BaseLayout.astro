@@ -25,16 +25,16 @@ const robots = noindex || !isProduction ? "noindex, nofollow" : undefined;
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <meta name="color-scheme" content="light dark" />
+    <meta name="color-scheme" content="light" />
     <!-- Fix the cascade layer order before any stylesheet loads, whatever order bundles arrive in. -->
     <style is:inline>
       @layer reset, tokens, base, components, utilities;
     </style>
-    <!-- Before first paint: apply a saved theme ("system" = no attribute) and flag the motion layer. -->
+    <!-- Before first paint: apply a saved dark theme (light is the default) and flag the motion layer. -->
     <script is:inline>
       try {
-        const theme = localStorage.getItem("theme");
-        if (theme === "light" || theme === "dark") document.documentElement.dataset.theme = theme;
+        if (localStorage.getItem("theme") === "dark")
+          document.documentElement.dataset.theme = "dark";
       } catch {}
       // Opt in to the motion layer (src/scripts/motion.ts) unless the visitor prefers less motion.
       if (!matchMedia("(prefers-reduced-motion: reduce)").matches) {
