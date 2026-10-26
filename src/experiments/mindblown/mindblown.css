@@ -15,13 +15,10 @@
     --mb-art-ink: #141414;
     --mb-art-paper: #fff;
 
-    /* inside the head + scissors */
+    /* inside the head */
     --mb-flesh: #c93a63;
     --mb-flesh-dark: #3b0b1c;
     --mb-brain: #ff9cc6;
-    --mb-steel: #e4e9ef;
-    --mb-steel-shade: #aeb8c4;
-    --mb-handle: #ff5c5c;
 
     /* confetti only */
     --mb-cf-1: #ff73b0;
@@ -120,6 +117,13 @@
       drop-shadow(6px 5px 0 var(--mb-art-ink));
   }
 
+  /* keyboard focus also lifts the lid (mindblown.ts); the ring makes it unmistakable */
+  .mindblown__head:focus-visible {
+    outline: 2px dashed var(--color-focus);
+    outline-offset: 6px;
+    border-radius: var(--radius-lg);
+  }
+
   /* the brain sits outside .mindblown__head so it gets the white outline but no hard shadow */
   .mindblown__brain-layer {
     position: absolute;
@@ -211,8 +215,13 @@
     aspect-ratio: 64 / 43.5;
     translate: 0 -82%;
     pointer-events: none;
+
+    /* --mb-peek: how much of the brain shows above the rim (82% = all of it). On hover the
+       lid lifts only a little, so the brain is cut off at the lid's edge instead of covering it */
+    --mb-peek: 82%;
+
     mask:
-      linear-gradient(#000 0 0) top / 100% 82% no-repeat,
+      linear-gradient(transparent calc(82% - var(--mb-peek)), #000 0 82%, transparent 0),
       radial-gradient(ellipse 71% 15% at 50% 82%, #000 98%, transparent 100%);
   }
 
@@ -266,121 +275,6 @@
   .mindblown__brain-btn:focus-visible {
     outline: 3px solid var(--color-focus);
     outline-offset: 4px;
-  }
-
-  .mindblown__cutline {
-    position: absolute;
-    left: 23.5%;
-    top: 34.49%;
-    z-index: 6;
-    inline-size: 44%;
-    block-size: 0;
-    pointer-events: none;
-  }
-
-  .mindblown__dash {
-    position: absolute;
-    left: 0;
-    right: 0;
-    top: -2px;
-    block-size: 4px;
-    background: repeating-linear-gradient(90deg, var(--mb-art-ink) 0 10px, transparent 10px 17px);
-    filter: drop-shadow(0 1.5px 0 var(--mb-art-paper)) drop-shadow(0 -1.5px 0 var(--mb-art-paper));
-    transform: scaleX(0);
-    transform-origin: left;
-    transition: transform 0.45s cubic-bezier(0.6, 0, 0.2, 1);
-  }
-
-  .mindblown__scissors {
-    position: absolute;
-    left: 0;
-    top: 0;
-
-    --mb-scissors: clamp(96px, 9vw, 136px);
-
-    inline-size: var(--mb-scissors);
-    max-inline-size: none;
-    margin-block-start: calc(var(--mb-scissors) * -52 / 240);
-    margin-inline-start: calc(var(--mb-scissors) * -0.37);
-    overflow: visible;
-    opacity: 0;
-    transform: translateX(-26px) rotate(-8deg);
-    filter: drop-shadow(3px 3px 0 rgb(20 20 20 / 30%));
-    transition:
-      opacity 0.25s,
-      transform 0.45s cubic-bezier(0.3, 1.6, 0.5, 1);
-  }
-
-  .mindblown__blade {
-    transform-box: view-box;
-    transform-origin: 44px 26px;
-    transition: transform 0.14s;
-  }
-
-  .mindblown__blade--a {
-    transform: rotate(-15deg);
-  }
-
-  .mindblown__blade--b {
-    transform: rotate(15deg);
-  }
-
-  .mindblown__rig--armed .mindblown__dash,
-  .mindblown__head:focus-visible ~ .mindblown__cutline .mindblown__dash {
-    transform: scaleX(1);
-  }
-
-  .mindblown__rig--armed .mindblown__scissors,
-  .mindblown__head:focus-visible ~ .mindblown__cutline .mindblown__scissors {
-    opacity: 1;
-    transform: none;
-  }
-
-  .mindblown__scissors--snip .mindblown__blade--a {
-    animation: mindblown-snip-a 0.2s infinite alternate;
-  }
-
-  .mindblown__scissors--snip .mindblown__blade--b {
-    animation: mindblown-snip-b 0.2s infinite alternate;
-  }
-
-  .mindblown__rig--armed .mindblown__scissors:not(.mindblown__scissors--snip) .mindblown__blade--a {
-    animation: mindblown-snip-a 0.6s 2 alternate;
-  }
-
-  .mindblown__rig--armed .mindblown__scissors:not(.mindblown__scissors--snip) .mindblown__blade--b {
-    animation: mindblown-snip-b 0.6s 2 alternate;
-  }
-
-  @keyframes mindblown-snip-a {
-    from {
-      transform: rotate(-15deg);
-    }
-
-    to {
-      transform: rotate(-1deg);
-    }
-  }
-
-  @keyframes mindblown-snip-b {
-    from {
-      transform: rotate(15deg);
-    }
-
-    to {
-      transform: rotate(1deg);
-    }
-  }
-
-  @media (pointer: coarse) {
-    .mindblown__dash {
-      transform: scaleX(1);
-    }
-
-    .mindblown__scissors {
-      opacity: 1;
-      transform: none;
-    }
   }
 
   /* ---------- handwritten notes + speech bubble ---------- */
@@ -979,10 +873,6 @@
       font-size: calc(var(--mb-hand-bubble) - 4px);
     }
 
-    .mindblown__scissors {
-      --mb-scissors: 84px;
-    }
-
     .mindblown__stage {
       --mb-head-gap: calc(var(--hw) * 0.15);
     }
@@ -996,8 +886,7 @@
     .mindblown__belt-track,
     .mindblown__note,
     .mindblown__note-close,
-    .mindblown__eye,
-    .mindblown__blade {
+    .mindblown__eye {
       animation: none !important;
     }
   }

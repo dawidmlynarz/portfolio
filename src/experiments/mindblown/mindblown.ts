@@ -16,6 +16,9 @@ type Card = HTMLButtonElement & {
   _dragged?: boolean;
 };
 
+/** How far the lid lifts on hover, as a share of the head's height. */
+const PEEK_LIFT = 0.06;
+
 const svg = (k: IconName) =>
   `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${ICONS[k]}</svg>`;
 const esc = (s: string) =>
@@ -37,8 +40,7 @@ export function init(root: HTMLElement): () => void {
     brain = q<SVGSVGElement>("brain"),
     brainBtn = q<HTMLButtonElement>("brain-btn"),
     cardsEl = q("cards"),
-    scissors = q<SVGSVGElement>("scissors"),
-    dash = q("dash"),
+    brainClip = q("brain-clip"),
     rig = q("rig"),
     headPos = q("head-pos"),
     note = q("note"),
@@ -130,6 +132,7 @@ export function init(root: HTMLElement): () => void {
   let idle: gsap.core.Tween | null = null;
   run(() => {
     gsap.set(brain, { yPercent: 130 });
+    gsap.set(brainClip, { "--mb-peek": "0%" });
     gsap.from(headPos, { yPercent: 40, duration: T(1), ease: "back.out(1.4)", delay: 0.1 });
     gsap.from(note, {
       scale: 0,
@@ -145,6 +148,8 @@ export function init(root: HTMLElement): () => void {
 
   /* ---------- state ---------- */
   let state: "closed" | "busy" | "open" = "closed";
+  let peeking = false,
+    peekTl: gsap.core.Timeline | null = null;
   let floats: gsap.core.Tween[] = [];
   const rel = (el: Element) => {
     const s = stage.getBoundingClientRect(),
@@ -277,11 +282,12 @@ export function init(root: HTMLElement): () => void {
   function openHead() {
     if (state !== "closed") return;
     state = "busy";
+    peeking = false;
+    peekTl?.kill();
     head.setAttribute("aria-expanded", "true");
     head.setAttribute("aria-label", "Close my head");
     idle?.pause();
     gsap.killTweensOf(note);
-    rig.classList.add("mindblown__rig--armed");
     setFace("super");
     const o = rel(hole);
     pickActive(true);
@@ -295,18 +301,10 @@ export function init(root: HTMLElement): () => void {
         tl.to(intro, { opacity: 0, y: -24, duration: T(0.6), ease: "power2.inOut" }, 0).set(intro, {
           pointerEvents: "none",
         });
-      // 1. scissors cut along the line
+      // 1. the lid pops straight off (from wherever the hover peek left it)
       tl.to(note, { scale: 0, rotation: 20, duration: T(0.25), ease: "back.in(2)" }, 0)
-        .set(scissors, { transition: "none" }, 0)
-        .fromTo(scissors, { opacity: 1, x: 0, rotation: 0 }, { opacity: 1, duration: 0.01 }, 0)
-        .add(() => scissors.classList.add("mindblown__scissors--snip"), 0)
-        .to(scissors, { left: "100%", duration: T(0.7), ease: "power1.inOut" }, 0.05)
-        .to(scissors, { y: -3, duration: T(0.07), repeat: 9, yoyo: true, ease: "sine.inOut" }, 0.05)
-        .add(() => scissors.classList.remove("mindblown__scissors--snip"))
-        .to(scissors, { x: 60, rotation: 25, opacity: 0, duration: T(0.3), ease: "power2.in" })
-        .to(dash, { opacity: 0, duration: T(0.12) }, "<")
-        // 2. lid pops
-        .add("pop")
+        .add("pop", 0.1)
+        .set(brainClip, { "--mb-peek": "82%" }, "pop")
         .to(
           lid,
           {
@@ -324,22 +322,19 @@ export function init(root: HTMLElement): () => void {
           confetti(o.x, o.y);
           say("ow.");
         }, "pop")
-        .fromTo(
+        .to(
           brain,
-          { yPercent: 130 },
           { yPercent: 4, duration: T(0.7), ease: "back.out(2.2)", onUpdate: () => look() },
-          "pop+=.9",
+          "pop+=.5",
         );
-      // 3. thoughts erupt
+      // 2. thoughts erupt
       erupt(tl, tl.labels.pop!, o);
-      tl.add(() => rig.classList.remove("mindblown__rig--armed"), "-=.5")
-        .to(tip, { opacity: 1, duration: T(0.4) }, "-=.4")
-        .fromTo(
-          noteClose,
-          { autoAlpha: 1, scale: 0, rotation: 20 },
-          { scale: 1, rotation: 0, duration: T(0.5), ease: "back.out(2.5)" },
-          "<",
-        );
+      tl.to(tip, { opacity: 1, duration: T(0.4) }, "-=.4").fromTo(
+        noteClose,
+        { autoAlpha: 1, scale: 0, rotation: 20 },
+        { scale: 1, rotation: 0, duration: T(0.5), ease: "back.out(2.5)" },
+        "<",
+      );
     });
   }
 
@@ -487,8 +482,7 @@ export function init(root: HTMLElement): () => void {
           setFace("rest");
           say("much better.");
         }, "+=.45")
-        .set(scissors, { left: 0, x: 0, rotation: 0, clearProps: "opacity,transition,transform" })
-        .set(dash, { clearProps: "opacity" })
+        .set(brainClip, { "--mb-peek": "0%" })
         .to(note, { scale: 1, rotation: 0, duration: T(0.5), ease: "back.out(2.5)" });
       if (intro)
         tl.set(intro, { clearProps: "pointerEvents" }, "<").to(
@@ -538,42 +532,43 @@ export function init(root: HTMLElement): () => void {
     },
     on,
   );
-  head.addEventListener(
-    "pointerenter",
-    (e) => {
-      if (state !== "closed" || e.pointerType !== "mouse") return;
-      rig.classList.add("mindblown__rig--armed");
-      setFace("shock");
-      run(() =>
-        gsap.to(lid, {
-          y: -8,
-          rotation: -2,
-          duration: T(0.4),
-          ease: "back.out(3)",
-          overwrite: "auto",
-        }),
-      );
-    },
-    on,
-  );
-  head.addEventListener(
-    "pointerleave",
-    () => {
-      if (state !== "closed") return;
-      rig.classList.remove("mindblown__rig--armed");
-      setFace("rest");
-      run(() =>
-        gsap.to(lid, {
-          y: 0,
-          rotation: 0,
-          duration: T(0.5),
-          ease: "elastic.out(1,.4)",
-          overwrite: "auto",
-        }),
-      );
-    },
-    on,
-  );
+  /* closed head, mouse hover or keyboard focus: the lid lifts a little and the brain peeks out */
+  function peek(on: boolean) {
+    if (state !== "closed" || on === peeking) return;
+    peeking = on;
+    setFace(on ? "shock" : "rest");
+    peekTl?.kill();
+    run(() => {
+      const tl = (peekTl = gsap.timeline());
+      if (on) {
+        // the brain shows only in the gap under the lid: its height (less the sticker
+        // outline) as a share of the brain's clip box
+        const gap = PEEK_LIFT * head.offsetHeight,
+          share = Math.max(0, (gap - 6) / brainClip.offsetHeight) * 100;
+        tl.to(
+          lid,
+          { yPercent: -PEEK_LIFT * 100, rotation: 0, duration: T(0.45), ease: "back.out(2.5)" },
+          0,
+        )
+          .to(brainClip, { "--mb-peek": `${share}%`, duration: T(0.45), ease: "back.out(2.5)" }, 0)
+          .to(hole, { scaleY: 1, duration: T(0.3), ease: "back.out(2)" }, 0)
+          .to(
+            brain,
+            { yPercent: 18, duration: T(0.5), ease: "back.out(2)", onUpdate: () => look() },
+            0.08,
+          );
+      } else {
+        tl.to(brain, { yPercent: 130, duration: T(0.2), ease: "power2.in" }, 0)
+          .to(brainClip, { "--mb-peek": "0%", duration: T(0.25), ease: "power2.in" }, 0)
+          .to(lid, { yPercent: 0, rotation: 0, duration: T(0.45), ease: "bounce.out" }, 0.05)
+          .to(hole, { scaleY: 0, duration: T(0.15) }, 0.25);
+      }
+    });
+  }
+  head.addEventListener("pointerenter", (e) => e.pointerType === "mouse" && peek(true), on);
+  head.addEventListener("pointerleave", () => peek(false), on);
+  head.addEventListener("focus", () => head.matches(":focus-visible") && peek(true), on);
+  head.addEventListener("blur", () => peek(false), on);
 
   /* ---------- drag + click on cards ---------- */
   for (const c of cards) {
@@ -893,7 +888,7 @@ export function init(root: HTMLElement): () => void {
         else if (t?.closest(".mindblown__brain-btn"))
           label = state === "open" ? "new thoughts" : "";
         else if (t?.closest(".mindblown__head") && root.contains(t))
-          label = state === "closed" ? "snip snip" : "close it";
+          label = state === "closed" ? "pop it open" : "close it";
         if (label) cursor.textContent = label;
         cursor.classList.toggle("mindblown__cursor--on", !!label && !popOpen);
       },

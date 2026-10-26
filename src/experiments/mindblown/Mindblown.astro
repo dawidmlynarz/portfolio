@@ -1,7 +1,7 @@
 ---
 /**
- * Mindblown: the About hero. A dotted stage with Dawid's cut-out portrait; clicking the head
- * snips it open and a random batch of "thought" cards bursts out, each opening a popover;
+ * Mindblown: the About hero. A dotted stage with Dawid's cut-out portrait; hovering lifts the lid
+ * so the brain peeks out, clicking pops it off and a random batch of "thought" cards bursts out, each opening a popover;
  * clicking the brain sucks them back in and throws a fresh batch. A tilted ticker
  * stripe closes the section. Behaviour: mindblown.ts. Copy: content.ts. Styles: mindblown.css.
  *
@@ -169,96 +169,6 @@ const belt = [...BELT, ...BELT];
           aria-label="Show new thoughts"
           hidden
         ></button>
-        <div class="mindblown__cutline" aria-hidden="true">
-          <div class="mindblown__dash"></div>
-          <svg
-            class="mindblown__scissors"
-            viewBox="0 0 120 52"
-            stroke-linejoin="round"
-            stroke-linecap="round"
-          >
-            <!-- upper blade + lower handle -->
-            <g class="mindblown__blade mindblown__blade--a">
-              <path d="M44 30 L28 40" stroke="var(--mb-art-ink)" stroke-width="9"></path>
-              <path d="M44 30 L28 40" stroke="var(--mb-handle)" stroke-width="4.5"></path>
-              <ellipse
-                cx="16"
-                cy="42"
-                rx="12"
-                ry="8.5"
-                fill="none"
-                stroke="var(--mb-art-ink)"
-                stroke-width="10"
-              ></ellipse>
-              <ellipse
-                cx="16"
-                cy="42"
-                rx="12"
-                ry="8.5"
-                fill="none"
-                stroke="var(--mb-handle)"
-                stroke-width="5"
-              ></ellipse>
-              <path
-                d="M38 26 L38 19.5 Q42 14.5 52 15.5 L111 23.4 Q117 25 111 26 Z"
-                fill="var(--mb-steel)"
-                stroke="var(--mb-art-ink)"
-                stroke-width="2.8"
-              ></path>
-              <path
-                d="M55 19 L102 24"
-                stroke="var(--mb-art-paper)"
-                stroke-width="2"
-                opacity=".95"
-              ></path>
-            </g>
-            <!-- lower blade + upper handle -->
-            <g class="mindblown__blade mindblown__blade--b">
-              <path d="M44 22 L28 12" stroke="var(--mb-art-ink)" stroke-width="9"></path>
-              <path d="M44 22 L28 12" stroke="var(--mb-handle)" stroke-width="4.5"></path>
-              <ellipse
-                cx="16"
-                cy="10"
-                rx="12"
-                ry="8.5"
-                fill="none"
-                stroke="var(--mb-art-ink)"
-                stroke-width="10"
-              ></ellipse>
-              <ellipse
-                cx="16"
-                cy="10"
-                rx="12"
-                ry="8.5"
-                fill="none"
-                stroke="var(--mb-handle)"
-                stroke-width="5"
-              ></ellipse>
-              <path
-                d="M8.5 6.5 q4 -3.5 10 -2.5"
-                fill="none"
-                stroke="var(--mb-art-paper)"
-                stroke-width="1.8"
-                opacity=".85"
-              ></path>
-              <path
-                d="M38 26 L38 32.5 Q42 37.5 52 36.5 L111 28.6 Q117 27 111 26 Z"
-                fill="var(--mb-steel-shade)"
-                stroke="var(--mb-art-ink)"
-                stroke-width="2.8"
-              ></path>
-            </g>
-            <circle
-              cx="44"
-              cy="26"
-              r="4.6"
-              fill="var(--mb-art-paper)"
-              stroke="var(--mb-art-ink)"
-              stroke-width="2.6"
-            ></circle>
-            <circle cx="44" cy="26" r="1.3" fill="var(--mb-art-ink)" stroke="none"></circle>
-          </svg>
-        </div>
       </div>
       <div class="mindblown__note" aria-hidden="true">
         <svg viewBox="0 0 120 70">
