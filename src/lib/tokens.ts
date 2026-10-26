@@ -20,4 +20,5 @@ export const COLOR_ROLES = [
   "on-inverse",
   "on-inverse-muted",
   "overlay",
+  "pattern",
 ] as const;
