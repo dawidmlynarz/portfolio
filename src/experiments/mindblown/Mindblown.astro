@@ -236,18 +236,20 @@ const belt = [...BELT, ...BELT];
         </div>
       </div>
       <div class="mindblown__note" aria-hidden="true">
-        hi, I'm Dawid.
-        <br />
-        wanna see inside?
         <svg viewBox="0 0 120 70">
           <path
-            d="M96 4 C 80 40, 50 52, 10 58 M10 58 l14 -12 M10 58 l16 6"
+            d="M100 64 C 82 30, 52 14, 10 10 M10 10 l17 10 M10 10 l18 -5"
             fill="none"
             stroke="currentcolor"
             stroke-width="3"
             stroke-linecap="round"
           ></path>
         </svg>
+        <span>
+          hi, I'm Dawid.
+          <br />
+          wanna see inside?
+        </span>
       </div>
       <div class="mindblown__bubble" aria-hidden="true">
         ow.
@@ -283,7 +285,10 @@ const belt = [...BELT, ...BELT];
   <div class="mindblown__belt" aria-hidden="true">
     <div class="mindblown__belt-track">
       {belt.map((item) => (
-        <span class="mindblown__belt-item">{item} ✶</span>
+        <>
+          <span class="mindblown__belt-item">{item}</span>
+          <span class="mindblown__belt-star">✶</span>
+        </>
       ))}
     </div>
   </div>

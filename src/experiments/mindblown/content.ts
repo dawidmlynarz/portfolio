@@ -143,8 +143,9 @@ export const ITEMS: Thought[] = [
   },
 ];
 
-/** Phones (stage under 720px) show this many thoughts, picked at random on every open. */
-export const MOBILE_COUNT = 6;
+/** How many thoughts pop out, picked at random on every open: phones (stage under 720px) / wider. */
+export const MOBILE_COUNT = 4;
+export const DESKTOP_COUNT = 10;
 
 export const BELT = [
   "Self-taught product designer",

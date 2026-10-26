@@ -6,7 +6,7 @@
  * States: closed -> busy (animating, clicks ignored) -> open -> busy -> closed.
  */
 import { gsap } from "gsap";
-import { BELT, ICONS, ITEMS, MOBILE_COUNT, type IconName } from "./content";
+import { BELT, DESKTOP_COUNT, ICONS, ITEMS, MOBILE_COUNT, type IconName } from "./content";
 
 type Card = HTMLButtonElement & {
   _i: number;
@@ -72,9 +72,10 @@ export function init(root: HTMLElement): () => void {
 
   /* belt: rendered by Astro; keep it in sync with content.ts if this runs on stale markup */
   if (!beltTrack.children.length) {
-    const beltTxt = BELT.map((b) => `<span class="mindblown__belt-item">${esc(b)} ✶</span>`).join(
-      "",
-    );
+    const beltTxt = BELT.map(
+      (b) =>
+        `<span class="mindblown__belt-item">${esc(b)}</span><span class="mindblown__belt-star">✶</span>`,
+    ).join("");
     beltTrack.innerHTML = beltTxt + beltTxt;
   }
 
@@ -157,33 +158,18 @@ export function init(root: HTMLElement): () => void {
   };
   const hits = (a: Box, b: Box) => a.l < b.r && a.r > b.l && a.t < b.b && a.b > b.t;
   const phone = () => stage.clientWidth < 720;
-  const TOP = 80; // clear of the floating nav
   let active: Card[] = cards;
   let shown = new Set<Card>(cards);
   let spots = new Map<Card, { x: number; y: number }>();
-  /* phones show a random handful; wider stages show every thought */
+  /* a random handful of thoughts on every open */
   function pickActive() {
-    active = phone() ? gsap.utils.shuffle(cards.slice()).slice(0, MOBILE_COUNT) : cards;
+    active = gsap.utils.shuffle(cards.slice()).slice(0, phone() ? MOBILE_COUNT : DESKTOP_COUNT);
     shown = new Set(active);
   }
   function layout() {
     spots = new Map();
     const W = stage.clientWidth,
       H = stage.clientHeight;
-    if (phone()) {
-      // 3 columns, rows from the top of the stage, in random order
-      gsap.utils.shuffle(active.slice()).forEach((c, i) => {
-        const col = i % 3,
-          w = c.offsetWidth,
-          h = c.offsetHeight;
-        const cy = TOP + Math.floor(i / 3) * 72 + (col === 1 ? -8 : 0);
-        spots.set(c, {
-          x: gsap.utils.clamp(8, W - w - 8, [0.19, 0.5, 0.81][col]! * W - w / 2),
-          y: gsap.utils.clamp(12, H - h - 8, cy),
-        });
-      });
-      return;
-    }
     // Scatter around the head, clear of the face, the flying lid, the shoulders and the notes.
     // Start in a tight band around the head and widen it only if the thoughts don't fit.
     const hp = box(headPos),
@@ -203,7 +189,9 @@ export function init(root: HTMLElement): () => void {
       note,
       box(tip),
     ];
-    const GAP = 10,
+    // clear of the nav (a floating pill on desktop, a 56px bar on phones); phones pack tighter
+    const TOP = phone() ? 64 : 80,
+      GAP = phone() ? 4 : 10,
       yMax = H - 16;
     for (let pass = 0; pass < 5; pass++) {
       const half = Math.min(W - 16, hw * (1.75 + pass * 0.3)) / 2,

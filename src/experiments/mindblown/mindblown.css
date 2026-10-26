@@ -38,6 +38,7 @@
     --mb-hand-bubble: 24px;
     --mb-hand-tip: 22px;
     --mb-hand-cursor: 18px;
+    --mb-hand-hint: 17px;
     --mb-stat: 52px;
     --mb-line: 1.5px;
     --mb-gut-l: max(16px, env(safe-area-inset-left, 0px));
@@ -173,14 +174,14 @@
 
   .mindblown__hole {
     position: absolute;
-    left: 3%;
+    left: 0;
     top: 0;
-    inline-size: 94%;
+    inline-size: 100%;
     aspect-ratio: 6 / 1;
 
     /* half the hole's height (a percentage margin is of the parent's width); no translate,
        which the CSS minifier drops next to transform */
-    margin-block-start: calc(-94% / 12 - 3px);
+    margin-block-start: calc(-100% / 12 - 3px);
     border: 3px solid var(--mb-art-ink);
     border-radius: 50%;
     background: radial-gradient(
@@ -349,16 +350,18 @@
   }
 
   /* ---------- handwritten notes + speech bubble ---------- */
+
+  /* both hints hang above the right shoulder, the arrow pointing at the head */
   .mindblown__note {
     position: absolute;
-    left: 86%;
-    top: -2%;
+    left: 73%;
+    top: 40%;
     z-index: 6;
-    inline-size: 210px;
+    inline-size: 220px;
     font-family: var(--mb-font-hand);
     font-size: var(--mb-hand-note);
     line-height: 1.05;
-    rotate: 5deg;
+    rotate: -4deg;
     pointer-events: none;
     animation: mindblown-boil 0.5s steps(1) infinite;
   }
@@ -366,8 +369,7 @@
   .mindblown__note svg {
     inline-size: 110px;
     max-inline-size: none;
-    margin-block-start: 6px;
-    margin-inline-start: -34px;
+    margin: 0 0 4px -70px;
     overflow: visible;
   }
 
@@ -675,27 +677,24 @@
     align-self: flex-start;
     inline-size: 38px;
     block-size: 38px;
-    margin-inline-start: auto;
-    border: var(--mb-line) solid var(--mb-ink);
+    margin-inline: auto -8px;
+    padding: 0;
+    border: 0;
     border-radius: 50%;
     color: var(--mb-ink);
-    background: var(--mb-paper);
+    background: none;
     cursor: pointer;
-    transition:
-      rotate 0.3s,
-      background-color 0.2s,
-      color 0.2s;
+    transition: color 0.2s;
   }
 
+  /* no opacity here: GSAP fades the button in when the popover opens */
   .mindblown__pop-close:hover {
-    rotate: 90deg;
-    color: var(--mb-paper);
-    background: var(--mb-ink);
+    color: var(--mb-mute);
   }
 
   .mindblown__pop-close svg {
-    inline-size: 14px;
-    block-size: 14px;
+    inline-size: 16px;
+    block-size: 16px;
   }
 
   .mindblown__pop-body {
@@ -815,12 +814,17 @@
     animation: mindblown-belt 30s linear infinite;
   }
 
-  .mindblown__belt-item {
-    padding-inline-end: 28px;
+  .mindblown__belt-item,
+  .mindblown__belt-star {
     font-size: var(--text-h3);
     font-weight: var(--weight-semibold);
     letter-spacing: var(--tracking-h3);
     white-space: nowrap;
+  }
+
+  /* the same space on both sides of every star */
+  .mindblown__belt-star {
+    padding-inline: 0.6em;
   }
 
   @keyframes mindblown-belt {
@@ -882,40 +886,58 @@
   }
 
   @media (width <= 720px) {
-    .mindblown__note {
-      left: 50%;
-      top: -24%;
-      inline-size: 200px;
-      font-size: calc(var(--mb-hand-note) - 3px);
-      text-align: center;
-      translate: -50% 0;
-      rotate: -3deg;
-      animation: none;
-    }
-
-    .mindblown__note svg {
-      inline-size: 60px;
-      margin: 2px auto 0;
-      rotate: 75deg;
-    }
-
+    /* phones: thoughts the same size as desktop's (50% up), hints small, right of the head,
+       the arrow pointing down at the shoulder */
     .mindblown__card-in {
-      gap: 6px;
-      padding: 3px 11px 3px 3px;
+      gap: 9px;
+      padding: 4.5px 16.5px 4.5px 4.5px;
     }
 
-    .mindblown__icon {
-      inline-size: 25px;
-      block-size: 25px;
+    .mindblown__card .mindblown__icon {
+      inline-size: 37.5px;
+      block-size: 37.5px;
     }
 
-    .mindblown__icon svg {
-      inline-size: 14px;
-      block-size: 14px;
+    .mindblown__card .mindblown__icon svg {
+      inline-size: 21px;
+      block-size: 21px;
     }
 
     .mindblown__label-text {
-      font-size: var(--text-caption);
+      font-size: var(--text-lead);
+    }
+
+    .mindblown__tail--t1 {
+      inline-size: 16.5px;
+      block-size: 16.5px;
+      margin: -8.25px 0 0 -8.25px;
+    }
+
+    .mindblown__tail--t2 {
+      inline-size: 9px;
+      block-size: 9px;
+      margin: -4.5px 0 0 -4.5px;
+    }
+
+    .mindblown__note,
+    .mindblown__note-close {
+      left: 72%;
+      top: 22%;
+      display: flex;
+      flex-direction: column-reverse;
+      align-items: flex-start;
+      inline-size: calc(var(--hw) * 0.3);
+      font-size: var(--mb-hand-hint);
+      rotate: 3deg;
+      animation: none;
+    }
+
+    .mindblown__note svg,
+    .mindblown__note-close svg {
+      inline-size: 40px;
+      margin: 4px 0 0 2px;
+      scale: 1 -1;
+      rotate: -35deg;
     }
 
     .mindblown__bubble {
@@ -927,33 +949,12 @@
       --mb-scissors: 84px;
     }
 
-    /* room for the "hi" note above the head */
     .mindblown__stage {
-      --mb-head-gap: calc(var(--hw) * 0.3);
+      --mb-head-gap: calc(var(--hw) * 0.15);
     }
 
     .mindblown__tip {
       display: none;
-    }
-
-    .mindblown__note-close {
-      left: auto;
-      right: 3%;
-      top: -38%;
-      display: flex;
-      flex-direction: column-reverse;
-      align-items: flex-end;
-      inline-size: 170px;
-      font-size: calc(var(--mb-hand-note) - 5px);
-      text-align: right;
-      rotate: 3deg;
-      animation: none;
-    }
-
-    .mindblown__note-close svg {
-      inline-size: 64px;
-      margin: 4px 70px 0 0;
-      scale: 1 -1;
     }
   }
 
