@@ -2,6 +2,16 @@
 
 Non-obvious choices, newest first. One entry per decision: what, why, and what it rules out.
 
+## 2026-10-26 · About hero: the "mindblown" experiment
+
+The About page opens with Dawid's approved HTML prototype, ported 1:1 as an isolated experiment in `src/experiments/mindblown/` (component, scoped CSS, `init(root)`/`destroy()` script, card copy in `content.ts`). The centred "Get to know me" intro sits on the same dotted backdrop above the stage, so the old intro paragraph is gone; everything else on the page follows the stripe unchanged.
+
+- Theme colours map by role to semantic tokens (ink → `--color-text`, paper → `--color-bg`, mute → `--color-text-muted`, dots → `--color-border-subtle` mixed into the background, stripe → inverse surface), so the section follows light/dark. The portrait is a sticker: its white outline and the brain, scissors and hole art keep fixed local colours in both themes. Confetti colours are local.
+- Type uses the site face and type tokens by role (labels `--text-small`, tags/kicker `--text-caption`, popover title and stripe `--text-h3`, body `--text-body`). Gochi Hand (self-hosted via Fontsource, loaded only on this page), the handwritten sizes and the big stat number stay local.
+- Stylelint relaxes hex, `rgb()` and raw lengths for `src/experiments/**` only; layers, BEM and the primitive ban still apply. Everything is under `.mindblown`, so nothing leaks into the site.
+- Uses the site's GSAP 3.15 instead of the prototype's 3.12.5. The popover panel has `data-lenis-prevent` so it scrolls natively under Lenis.
+- Not on `/styleguide`: it is a one-off page section, not a reusable component.
+
 ## 2026-10-26 · Work tiles cropped to 4:3
 
 Every case-study cover in the work grid is cropped to 4:3 (`object-fit: cover`, centred), so tiles of different widths read as one set. This replaces "covers keep their original ratio" from v2 revision 2. The case-study page still shows the cover uncropped. If a cover crops badly, set a per-entry focal point (an `object-position` field in the schema) rather than changing the ratio.
