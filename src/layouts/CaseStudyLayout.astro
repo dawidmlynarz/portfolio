@@ -31,7 +31,9 @@ const facts = [
     <header class="case-study__header">
       <Container class="case-study__intro">
         <p class="text-caption case-study__eyebrow">Case study · {data.company}</p>
-        <h1 class="case-study__title">{data.title}</h1>
+        <h1 class="case-study__title" data-reveal="lines">
+          {data.title}
+        </h1>
         <p class="text-lead case-study__lead">{data.lead ?? data.description}</p>
         <ul class="case-study__tags" role="list">
           {data.tags.map((tag) => (
@@ -49,6 +51,7 @@ const facts = [
           sizes="(min-width: 84rem) 80rem, calc(100vw - 2rem)"
           loading="eager"
           fetchpriority="high"
+          style={`view-transition-name: cover-${entry.id}`}
         />
       </Container>
 

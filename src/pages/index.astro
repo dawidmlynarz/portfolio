@@ -4,6 +4,10 @@ import Section from "@/components/layout/Section.astro";
 import Container from "@/components/layout/Container.astro";
 import Stack from "@/components/layout/Stack.astro";
 import HomeHero from "@/components/blocks/HomeHero.astro";
+import StoryIntro from "@/components/blocks/StoryIntro.astro";
+import SectionIntro from "@/components/blocks/SectionIntro.astro";
+import Services from "@/components/blocks/Services.astro";
+import Metrics from "@/components/content/Metrics.astro";
 import ClientLogos from "@/components/blocks/ClientLogos.astro";
 import WorkCard from "@/components/blocks/WorkCard.astro";
 import ShotsMarquee from "@/components/blocks/ShotsMarquee.astro";
@@ -44,9 +48,11 @@ const shots = [
 ];
 ---
 
-<SiteLayout>
+<SiteLayout navOverlap>
   <HomeHero
-    title="Transforming AI capability into products people actually trust."
+    label="Senior Product Designer · Product, systems and AI"
+    title="Transforming AI capability"
+    titleMuted="into products people actually trust."
     lead="I bring 15 years of product experience to the AI era, helping you architect AI-ready design systems, safe agentic workflows, and impactful product strategies."
   >
     <Fragment slot="actions">
@@ -54,39 +60,117 @@ const shots = [
         <Link href={href}>{label}</Link>
       ))}
     </Fragment>
-    <ClientLogos
-      slot="after"
-      spread
-      clients={[
-        "newsweek",
-        "google",
-        "pantheon",
-        "xwp",
-        "beatstars",
-        "x-team",
-        "holidaycheck",
-        "pearson",
-      ]}
-    />
   </HomeHero>
 
-  <Section id="work" space="md" aria-labelledby="work-title">
+  <StoryIntro
+    label="About"
+    text="I'm Dawid Młynarz, a senior product designer with 15 years of turning complex problems into clear, useful products. I've shaped newsrooms, fintech and creator platforms, and built the design systems behind them. Today I help teams bring AI into their products in ways people understand, trust and actually use."
+    href="/about"
+    hrefLabel="More about me"
+  />
+
+  <Section space="lg" aria-label="In numbers">
     <Container>
-      <h2 class="visually-hidden" id="work-title">
-        Case studies
-      </h2>
+      <Metrics
+        items={[
+          { value: "15+", label: "Years designing products" },
+          { value: "XX", label: "Products shipped (placeholder)" },
+          { value: "XX", label: "Design systems built (placeholder)" },
+        ]}
+      />
+    </Container>
+  </Section>
+
+  <Section space="lg" aria-labelledby="services-title">
+    <Container class="home__stack">
+      <SectionIntro
+        id="services-title"
+        label="What I do"
+        title="Three ways I help teams"
+        titleMuted="ship products that work."
+      />
+      <Services
+        services={[
+          {
+            title: "Product Design",
+            promise: "From a fuzzy problem to a shipped, measurable product.",
+            description:
+              "Research, flows, interface and prototypes, end to end, working inside your team and shipping with engineering.",
+            proof: ["nerdwallet", "beatstars-product-design", "google-wordpress-plugin"],
+          },
+          {
+            title: "Design Systems",
+            promise: "Systems that let teams ship faster and stay consistent.",
+            description:
+              "Tokens, components and documentation that scale across products and brands, built to be read by people and by AI tools.",
+            proof: ["newsweek-design-system", "beatstars-design-system", "csspeeper"],
+          },
+          {
+            title: "AI and Agentic UX",
+            promise: "AI features people understand, control and trust.",
+            description:
+              "Strategy and interface for conversational products, agents and AI workflows: clear limits, visible reasoning and safe hand-offs to people.",
+            proof: ["newsweek-ai-experience"],
+          },
+        ]}
+      />
+    </Container>
+  </Section>
+
+  <Section id="work" space="lg" aria-labelledby="work-title">
+    <Container class="home__stack">
+      <SectionIntro
+        id="work-title"
+        label={`Selected work (${String(work.length).padStart(2, "0")})`}
+        title="Products I've shaped,"
+        titleMuted="told by their outcomes."
+        href="/work"
+        hrefLabel="All case studies"
+      />
       <Stack gap="24" as="div">
-        {work.map((entry, index) => (
-          <WorkCard entry={entry} headingLevel={3} eager={index === 0} />
+        {work.map((entry) => (
+          <WorkCard entry={entry} headingLevel={3} />
         ))}
       </Stack>
     </Container>
   </Section>
 
+  <Section space="md" aria-label="Clients">
+    <Container class="home__stack">
+      <p class="text-caption home__muted">Trusted by teams at</p>
+      <ClientLogos
+        spread
+        clients={[
+          "newsweek",
+          "google",
+          "pantheon",
+          "xwp",
+          "beatstars",
+          "x-team",
+          "holidaycheck",
+          "pearson",
+        ]}
+      />
+    </Container>
+  </Section>
+
   <ShotsMarquee
-    title="Selected work"
+    title="Explorations"
     shots={shots}
     href="https://dribbble.com/dawidmlynarz/"
     hrefLabel="More on Dribbble"
   />
 </SiteLayout>
+
+<style>
+  @layer components {
+    .home__stack {
+      display: grid;
+      gap: var(--space-section-sm);
+    }
+
+    .home__muted {
+      color: var(--color-text-muted);
+    }
+  }
+</style>

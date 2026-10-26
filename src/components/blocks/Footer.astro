@@ -1,27 +1,49 @@
 ---
+/**
+ * Sign-off on every page: a giant closing line whose last words cycle (CSS only; static with
+ * reduced motion; screen readers get the full sentence), the email as the main action,
+ * social links and the copyright line.
+ */
 import Container from "@/components/layout/Container.astro";
 import Link from "@/components/ui/Link.astro";
 import { SITE, SOCIAL_LINKS } from "@/lib/site";
 
 const year = new Date().getFullYear();
+const endings = ["AI product", "design system", "product team"];
 ---
 
 <footer class="footer">
   <Container class="footer__inner">
-    <p class="footer__contact">
-      <span class="text-caption">Contact me</span>
-      <a class="footer__email" href={`mailto:${SITE.email}`}>
-        {SITE.email}
-      </a>
-    </p>
-    <ul class="footer__social" role="list">
-      {SOCIAL_LINKS.map(({ href, label }) => (
-        <li>
-          <Link href={href}>{label}</Link>
-        </li>
-      ))}
-    </ul>
+    <p class="text-caption footer__label">Contact</p>
+    <h2 class="footer__title">
+      <span class="visually-hidden">
+        Let's build your next {endings.slice(0, -1).join(", ")} or {endings.at(-1)}.
+      </span>
+      <span aria-hidden="true">
+        Let's build your next
+        <span class="footer__ticker">
+          <span class="footer__ticker-track">
+            {[...endings, endings[0]].map((ending) => (
+              <span>{ending}</span>
+            ))}
+          </span>
+        </span>
+      </span>
+    </h2>
+    <a class="footer__email" href={`mailto:${SITE.email}`}>
+      {SITE.email}
+      <svg class="footer__arrow" viewBox="0 0 24 24" aria-hidden="true">
+        <path d="M5 12h14M13 6l6 6-6 6"></path>
+      </svg>
+    </a>
     <div class="footer__meta text-small">
+      <ul class="footer__social" role="list">
+        {SOCIAL_LINKS.map(({ href, label }) => (
+          <li>
+            <Link href={href}>{label}</Link>
+          </li>
+        ))}
+      </ul>
       <p>
         {SITE.name}. All rights reserved © 2011 – {year}
       </p>
@@ -32,34 +54,105 @@ const year = new Date().getFullYear();
 <style>
   @layer components {
     .footer {
-      border-block-start: var(--border-width) solid var(--color-border-subtle);
-      padding-block: var(--space-section-sm);
+      padding-block: var(--space-section-lg) var(--space-8);
     }
 
     .footer__inner {
       display: grid;
+      justify-items: start;
       gap: var(--space-8);
     }
 
-    .footer__contact {
-      display: grid;
-      gap: var(--space-2);
+    .footer__label {
       color: var(--color-text-muted);
     }
 
-    .footer__email {
-      justify-self: start;
-      font: var(--weight-semibold) var(--text-h1) / var(--leading-h1) var(--font-heading);
+    .footer__title {
+      font: var(--weight-medium) var(--text-h1) / var(--leading-h1) var(--font-heading);
       letter-spacing: var(--tracking-h1);
-      overflow-wrap: anywhere;
-      color: var(--color-text);
+      max-inline-size: 14em;
     }
 
-    .footer__social {
+    /* One line tall window over a column of endings that steps upward. */
+    .footer__ticker {
+      --ticker-line: 1.12em;
+
+      display: inline-block;
+      block-size: var(--ticker-line);
+      overflow: clip;
+      vertical-align: bottom;
+      color: var(--color-brand);
+    }
+
+    .footer__ticker-track {
       display: flex;
-      flex-wrap: wrap;
-      gap: var(--space-6);
-      padding: 0;
+      flex-direction: column;
+      line-height: var(--ticker-line);
+    }
+
+    @media (prefers-reduced-motion: no-preference) {
+      .footer__ticker-track {
+        animation: footer-ticker 7.5s var(--ease-in-out-quart) infinite;
+      }
+    }
+
+    @keyframes footer-ticker {
+      0%,
+      28% {
+        translate: 0 0;
+      }
+
+      33%,
+      61% {
+        translate: 0 calc(-1 * var(--ticker-line));
+      }
+
+      66%,
+      94% {
+        translate: 0 calc(-2 * var(--ticker-line));
+      }
+
+      100% {
+        translate: 0 calc(-3 * var(--ticker-line));
+      }
+    }
+
+    .footer__email {
+      --underline-size: 0%;
+
+      display: inline-flex;
+      align-items: center;
+      gap: var(--space-3);
+      padding: var(--space-4) var(--space-6);
+      border-radius: var(--radius-pill);
+      font-size: var(--text-lead);
+      overflow-wrap: anywhere;
+      color: var(--color-on-brand);
+      background-color: var(--color-brand-bg);
+      transition: background-color var(--duration-fast) var(--ease-standard);
+    }
+
+    .footer__email:hover {
+      --underline-size: 0%;
+
+      color: var(--color-bg);
+      background-color: var(--color-text);
+    }
+
+    .footer__arrow {
+      flex-shrink: 0;
+      inline-size: 1.25em;
+      block-size: 1.25em;
+      fill: none;
+      stroke: currentcolor;
+      stroke-width: 1.75;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+      transition: translate var(--duration-fast) var(--ease-standard);
+    }
+
+    .footer__email:hover .footer__arrow {
+      translate: var(--space-1) 0;
     }
 
     .footer__meta {
@@ -67,7 +160,17 @@ const year = new Date().getFullYear();
       flex-wrap: wrap;
       justify-content: space-between;
       gap: var(--space-4);
+      inline-size: 100%;
+      padding-block-start: var(--space-8);
+      border-block-start: var(--border-width) solid var(--color-border-subtle);
       color: var(--color-text-muted);
+    }
+
+    .footer__social {
+      display: flex;
+      flex-wrap: wrap;
+      gap: var(--space-6);
+      padding: 0;
     }
   }
 </style>

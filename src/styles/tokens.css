@@ -29,26 +29,27 @@
   :root {
     color-scheme: light dark;
 
-    /* ---------- 1. Primitives (placeholders until the new palette is chosen) ---------- */
-    --neutral-0: #fff;
-    --neutral-50: #f6f6f6;
-    --neutral-100: #ebebeb;
-    --neutral-200: #d6d6d6;
-    --neutral-300: #b3b3b3;
-    --neutral-500: #7a7a7a;
-    --neutral-700: #636363;
-    --neutral-800: #3a3a3a;
-    --neutral-850: #262626;
-    --neutral-900: #161616; /* softened "black" for text (was pure #000) */
-    --neutral-950: #0e0e0e; /* dark-mode background */
-    --blue-200: #b9c5ff;
-    --blue-300: #8da2ff;
-    --blue-600: #1735ca;
-    --blue-900: #0a2277;
+    /* ---------- 1. Primitives (v2: cool, slightly green neutrals + cobalt) ---------- */
+    --neutral-0: #fbfcfa;
+    --neutral-50: #f2f4f1; /* light background */
+    --neutral-100: #e5e9e3;
+    --neutral-200: #d2d8d1;
+    --neutral-300: #b3bab4;
+    --neutral-500: #7a837e;
+    --neutral-700: #565e5a;
+    --neutral-800: #333a36;
+    --neutral-850: #242a27;
+    --neutral-900: #1b201d; /* ink */
+    --neutral-950: #0f1311; /* dark background */
+    --blue-200: #c3cdff;
+    --blue-300: #95a8ff;
+    --blue-600: #234ae8; /* cobalt */
+    --blue-700: #1c3cc4;
+    --blue-900: #0c1d6b;
 
     /* ---------- 2. Semantic color: light-dark(light, dark) ---------- */
-    --color-bg: light-dark(var(--neutral-0), var(--neutral-950));
-    --color-bg-subtle: light-dark(var(--neutral-50), var(--neutral-900));
+    --color-bg: light-dark(var(--neutral-50), var(--neutral-950));
+    --color-bg-subtle: light-dark(var(--neutral-100), var(--neutral-900));
     --color-text: light-dark(var(--neutral-900), var(--neutral-100));
     --color-text-muted: light-dark(var(--neutral-700), var(--neutral-300));
     --color-brand: light-dark(var(--blue-600), var(--blue-300));
@@ -56,32 +57,36 @@
     /* UI borders only, never text */
     --color-border: light-dark(var(--neutral-500), var(--neutral-500));
     --color-border-muted: light-dark(var(--neutral-300), var(--neutral-800));
-    --color-border-subtle: light-dark(var(--neutral-100), var(--neutral-850));
+    --color-border-subtle: light-dark(var(--neutral-200), var(--neutral-850));
     --color-focus: light-dark(var(--blue-600), var(--blue-300));
+    /* The cobalt "flood" surface (hand-off statement, mobile menu) and the text on it */
+    --color-brand-bg: light-dark(var(--blue-600), var(--blue-700));
+    --color-on-brand: var(--neutral-0);
+    --color-on-brand-muted: color-mix(in srgb, var(--neutral-0) 38%, transparent);
     --color-overlay: color-mix(in srgb, var(--color-bg) 88%, transparent); /* sticky nav */
 
     /* ---------- Typography ----------
        Roles, not sizes. Fluid between 375px and 1440px viewports.
        clamp(min, intercept + slope*vw, max)  ->  min/max are the Figma Mobile/Desktop values.
          role      min -> max    line-height  tracking   weight
-         h1        34 -> 64      1.05         -0.025em   600
-         h2        28 -> 44      1.10         -0.02em    600
-         h3        22 -> 30      1.20         -0.01em    600
-         h4        19 -> 22      1.30         -0.005em   600
+         h1        40 -> 88      0.98         -0.04em    500
+         h2        30 -> 56      1.05         -0.03em    500
+         h3        22 -> 30      1.20         -0.015em   500
+         h4        19 -> 22      1.30         -0.005em   500
          lead      18 -> 22      1.50          0         400
          body      16 -> 18      1.60          0         400
          small     14 -> 15      1.50          0         400
-         caption   12 -> 13      1.40         +0.04em    500, uppercase
+         caption   12 -> 13      1.40         +0.04em    500, uppercase, mono
     */
-    /* "DM Sans Fallback" (base.css) is Arial resized to DM Sans metrics, so the font swap on
-       first load doesn't move the layout. Regenerate it with Capsize when the face changes. */
-    --font-heading:
-      "DM Sans Variable", "DM Sans Fallback", system-ui, sans-serif; /* swap when the new face is chosen */
-    --font-body: "DM Sans Variable", "DM Sans Fallback", system-ui, sans-serif;
-    --font-mono: ui-monospace, "SF Mono", "Menlo", monospace;
+    /* "Geist Fallback" / "Geist Mono Fallback" (base.css) are system fonts resized to Geist's
+       metrics, so the font swap on first load doesn't move the layout. Regenerate with Capsize
+       when the face changes. */
+    --font-heading: "Geist Variable", "Geist Fallback", system-ui, sans-serif;
+    --font-body: "Geist Variable", "Geist Fallback", system-ui, sans-serif;
+    --font-mono: "Geist Mono Variable", "Geist Mono Fallback", ui-monospace, monospace;
 
-    --text-h1: clamp(2.125rem, 1.465rem + 2.817vw, 4rem);
-    --text-h2: clamp(1.75rem, 1.398rem + 1.502vw, 2.75rem);
+    --text-h1: clamp(2.5rem, 1.444rem + 4.507vw, 5.5rem);
+    --text-h2: clamp(1.875rem, 1.303rem + 2.441vw, 3.5rem);
     --text-h3: clamp(1.375rem, 1.199rem + 0.751vw, 1.875rem);
     --text-h4: clamp(1.1875rem, 1.122rem + 0.282vw, 1.375rem);
     --text-lead: clamp(1.125rem, 1.037rem + 0.376vw, 1.375rem);
@@ -89,12 +94,12 @@
     --text-small: clamp(0.875rem, 0.853rem + 0.094vw, 0.9375rem);
     --text-caption: clamp(0.75rem, 0.728rem + 0.094vw, 0.8125rem);
 
-    --leading-h1: 1.05;
-    --tracking-h1: -0.025em;
-    --leading-h2: 1.1;
-    --tracking-h2: -0.02em;
+    --leading-h1: 0.98;
+    --tracking-h1: -0.04em;
+    --leading-h2: 1.05;
+    --tracking-h2: -0.03em;
     --leading-h3: 1.2;
-    --tracking-h3: -0.01em;
+    --tracking-h3: -0.015em;
     --leading-h4: 1.3;
     --tracking-h4: -0.005em;
     --leading-lead: 1.5;
@@ -144,6 +149,8 @@
     --duration-zoom: 800ms; /* case-study cover zoom on hover */
     --duration-marquee: 90s; /* one full loop of the work gallery */
     --ease-out-expo: cubic-bezier(0.19, 1, 0.22, 1);
+    --duration-page: 700ms; /* page transition */
+    --ease-in-out-quart: cubic-bezier(0.77, 0, 0.175, 1);
     --z-nav: 100;
   }
 

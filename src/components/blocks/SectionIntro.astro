@@ -1,0 +1,67 @@
+---
+/**
+ * Section opener: a mono label, a two-tone heading (ink, then muted) and an optional link
+ * aligned to the right on wide screens.
+ */
+interface Props {
+  label: string;
+  title: string;
+  titleMuted?: string;
+  id?: string;
+  href?: string;
+  hrefLabel?: string;
+}
+
+const { label, title, titleMuted, id, href, hrefLabel } = Astro.props;
+---
+
+<div class="section-intro">
+  <p class="text-caption section-intro__label">{label}</p>
+  <h2 class="section-intro__title" id={id} data-reveal="lines">
+    {title}
+    {titleMuted && " "}
+    {titleMuted && <span class="section-intro__muted">{titleMuted}</span>}
+  </h2>
+  {href && (
+    <a class="section-intro__link" href={href}>
+      {hrefLabel}
+    </a>
+  )}
+</div>
+
+<style>
+  @layer components {
+    .section-intro {
+      display: grid;
+      gap: var(--space-4) var(--space-8);
+      align-items: end;
+    }
+
+    .section-intro__label,
+    .section-intro__muted {
+      color: var(--color-text-muted);
+    }
+
+    .section-intro__title {
+      max-inline-size: 18em;
+    }
+
+    .section-intro__link {
+      justify-self: start;
+    }
+
+    @media (width >= 62em) {
+      .section-intro {
+        grid-template-columns: 1fr auto;
+      }
+
+      .section-intro__label {
+        grid-column: 1 / -1;
+      }
+
+      .section-intro__link {
+        justify-self: end;
+      }
+    }
+  }
+</style>

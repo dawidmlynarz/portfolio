@@ -2,6 +2,27 @@
 
 Non-obvious choices, newest first. One entry per decision: what, why, and what it rules out.
 
+## 2026-10-26 · v2 redesign, first pass (branch `v2`)
+
+Built on `v2` so `main` stays live until the redesign is ready to swap in. The direction comes from the reference synthesis ("calm precision, one loud moment").
+
+- **Audience and offers.** The site speaks to clients and employers. It has three offers: Product Design, Design Systems, and AI and Agentic UX.
+- **Type: Geist and Geist Mono** (free, self-hosted with fontsource). Headings use weight 500; the boldness comes from size. h1 is now 40 → 88px and h2 is 30 → 56px. Captions use the mono face. Metric-matched fallbacks keep the font swap shift-free.
+- **Colour: cool green-tinted neutrals and cobalt** (`--blue-600` #234AE8). New semantic tokens `--color-brand-bg`, `--color-on-brand` and `--color-on-brand-muted` cover the cobalt surfaces. Figma `mlynarz.com — Foundations` still needs these values.
+- **Navigation is a floating top pill.** It holds the M mark, Work, About, a cobalt Contact chip and the theme toggle. The name moved out of the nav into the story. On mobile the pill shows the mark and a Menu button, which opens a full-screen cobalt sheet (a native popover). Close sits where Menu was.
+- **Home tells a story.** The order is:
+  1. A two-tone hero with the liquid portrait.
+  2. A cobalt "About" panel that grows over the held hero, where the about-me statement (with the name) lights up word by word.
+  3. Numbers. Two are placeholders (`XX`) until real figures arrive.
+  4. Services, each linked to the case studies that prove it.
+  5. Work told by outcomes, with a "View case" cursor.
+  6. Clients.
+  7. Explorations.
+  8. A sign-off whose last words cycle.
+- **Motion layer replaces "zero JS by default".** One module (`src/scripts/motion.ts`) runs Lenis, GSAP, ScrollTrigger and SplitText on every page, about 50 KB gzipped. It runs only when `html.motion` is set, which happens before first paint unless the visitor prefers reduced motion. Elements marked `[data-reveal]` wait hidden until the script sets them up, and a 3s CSS failsafe shows them if it never does.
+- **Page transitions use native cross-document View Transitions.** The old page sinks back and dims, the new one rises as a sheet, and a work cover morphs into the case-study cover (`view-transition-name: cover-<slug>`). The nav stays put. Browsers without support, and reduced motion, get a normal page load.
+- **Left for the next passes:** the case-study template (Astapable-style opening), the About story, the "How I work" section, and real numbers.
+
 ## 2026-10-26 · Mobile nav is a hamburger menu
 
 Below 48em the bar shows the M mark, the name and a menu button. Work, About, Contact and the theme toggle open in a sheet under the bar. The sheet is a native `popover`, so it needs no JS: Esc and outside clicks close it, and the button exposes its expanded state. The bar now has a fixed height (`--nav-block-size`), so the sheet can sit right below it. Browsers without popover support hide the button and keep the inline menu, which wraps. This replaces the earlier "nav wraps below 375px" behaviour.

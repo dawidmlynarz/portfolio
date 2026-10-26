@@ -16,5 +16,8 @@ export const COLOR_ROLES = [
   "border-muted",
   "border-subtle",
   "focus",
+  "brand-bg",
+  "on-brand",
+  "on-brand-muted",
   "overlay",
 ] as const;

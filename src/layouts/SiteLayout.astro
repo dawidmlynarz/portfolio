@@ -2,13 +2,19 @@
 import BaseLayout from "@/layouts/BaseLayout.astro";
 import Nav from "@/components/blocks/Nav.astro";
 import Footer from "@/components/blocks/Footer.astro";
+import Cursor from "@/components/blocks/Cursor.astro";
 import type { ComponentProps } from "astro/types";
 
-type Props = ComponentProps<typeof BaseLayout>;
+type Props = ComponentProps<typeof BaseLayout> & {
+  /** Let the first section run under the floating nav (full-bleed heroes). */
+  navOverlap?: boolean;
+};
+
+const { navOverlap = false, ...base } = Astro.props;
 ---
 
-<BaseLayout {...Astro.props}>
-  <div class="site" id="top">
+<BaseLayout {...base}>
+  <div class:list={["site", { "site--nav-overlap": navOverlap }]} id="top">
     <a class="skip-link" href="#main">
       Skip to content
     </a>
@@ -17,6 +23,7 @@ type Props = ComponentProps<typeof BaseLayout>;
       <slot />
     </main>
     <Footer />
+    <Cursor />
     <a class="to-top" href="#top">
       <svg class="to-top__icon" viewBox="0 0 24 24" aria-hidden="true">
         <path d="M12 19V5M5 12l7-7 7 7" />
@@ -26,11 +33,15 @@ type Props = ComponentProps<typeof BaseLayout>;
   </div>
 </BaseLayout>
 
+<script>
+  import "@/scripts/motion";
+</script>
+
 <style>
   @layer components {
     .site {
       display: grid;
-      grid-template-rows: auto 1fr auto;
+      grid-template-rows: 1fr auto;
       grid-template-columns: minmax(0, 1fr);
       min-block-size: 100svh;
     }
@@ -114,6 +125,15 @@ type Props = ComponentProps<typeof BaseLayout>;
 
     main:focus {
       outline: none;
+    }
+
+    /* Keep content clear of the floating nav pill unless the page opts in to run under it. */
+    main {
+      padding-block-start: calc(var(--space-4) + var(--space-12) + var(--space-8));
+    }
+
+    .site--nav-overlap main {
+      padding-block-start: 0;
     }
   }
 </style>

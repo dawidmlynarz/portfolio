@@ -14,6 +14,9 @@ import Hero from "@/components/blocks/Hero.astro";
 import LiquidReveal from "@/components/blocks/LiquidReveal.astro";
 import WorkCard from "@/components/blocks/WorkCard.astro";
 import ShotsMarquee from "@/components/blocks/ShotsMarquee.astro";
+import SectionIntro from "@/components/blocks/SectionIntro.astro";
+import Services from "@/components/blocks/Services.astro";
+import StoryIntro from "@/components/blocks/StoryIntro.astro";
 import { getEntry } from "astro:content";
 import shot01 from "@/assets/gallery/shot-01.jpg";
 import shot03 from "@/assets/gallery/shot-03.jpg";
@@ -311,11 +314,42 @@ const SECTIONS = [
   <Section aria-label="Work card">
     <Container>
       <Stack gap="6">
-        <h3 class="text-caption muted">WorkCard · one per row on Home and Work</h3>
+        <h3 class="text-caption muted">
+          WorkCard · one per row on Home and Work · fine pointers get the "View case" cursor
+        </h3>
         {sampleWork && <WorkCard entry={sampleWork} headingLevel={3} />}
       </Stack>
     </Container>
   </Section>
+  <Section aria-label="Section intro and services">
+    <Container>
+      <Stack gap="12">
+        <SectionIntro
+          label="SectionIntro · label, two-tone title, optional link"
+          title="Three ways I help teams"
+          titleMuted="ship products that work."
+          href="#blocks"
+          hrefLabel="Optional link"
+        />
+        <Services
+          headingLevel={4}
+          services={[
+            {
+              title: "Services row",
+              promise: "A one-line promise in lead size.",
+              description:
+                "A short description in muted body text, then links to the case studies that prove it.",
+              proof: ["newsweek-ai-experience", "nerdwallet"],
+            },
+          ]}
+        />
+      </Stack>
+    </Container>
+  </Section>
+  <StoryIntro
+    label="StoryIntro · cobalt hand-off statement"
+    text="With the motion layer on, the panel grows from an inset card to full bleed and the words light up as you scroll. Without it, or with reduced motion, the full statement simply shows."
+  />
   <ShotsMarquee title="ShotsMarquee" shots={sampleShots} />
 </SiteLayout>
 
