@@ -68,7 +68,7 @@ const widthsFor = (img: ImageMetadata) => {
 const sourcesFor = async (img: ImageMetadata) =>
   Promise.all(
     widthsFor(img).map(async (w) => ({
-      url: (await getImage({ src: img, width: w, format: "webp", quality: 82 })).src,
+      url: (await getImage({ src: img, width: w, format: "avif", quality: 70 })).src,
       w,
     })),
   );
@@ -95,8 +95,8 @@ const objectPosition = `${((face[0] + face[1]) / 2) * 100}% ${((face[2] + face[3
     alt={alt}
     widths={widthsFor(topImage)}
     sizes={sizes}
-    format="webp"
-    quality={82}
+    format="avif"
+    quality={70}
     loading={loading}
     fetchpriority={loading === "eager" ? "high" : undefined}
     style={`object-position: ${objectPosition}`}

@@ -2,6 +2,10 @@
 
 Non-obvious choices, newest first. One entry per decision: what, why, and what it rules out.
 
+## 2026-10-26 · Portrait sources: 2400px AVIF from Webflow
+
+The liquid reveal now uses the higher-quality pair Dawid uploaded to Webflow (`realphoto.avif`, `clay.avif`). They are 2400×1792 with transparency and use the same framing as the old 1200px PNGs (the alpha masks match), so the face crop is unchanged. Both layers are now served as AVIF at quality 70 rather than WebP, since WebP re-encodes of the new sources were larger. The largest photo variant is 140 KB.
+
 ## 2026-10-26 · v2 revision 1: black and white, simpler work, Services page
 
 Changes from Dawid's review of the first v2 pass:
