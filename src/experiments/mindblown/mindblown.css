@@ -112,9 +112,15 @@
     inset: 0;
     cursor: pointer;
     outline: none;
+
+    /* the cut through the head, seen from slightly above: an ellipse centred on the straight
+       cut in the photos (y 309/896, x 244..633 of 963). The hole fills it, the lid's front edge
+       follows its lower half, and the face below is masked to match */
+    --mb-cut: ellipse 20.2% 3.62% at 45.5% 34.49%;
+
+    /* one white sticker outline around face, lid and brain together */
     filter: drop-shadow(3px 0 0 var(--mb-sticker)) drop-shadow(-3px 0 0 var(--mb-sticker))
-      drop-shadow(0 3px 0 var(--mb-sticker)) drop-shadow(0 -3px 0 var(--mb-sticker))
-      drop-shadow(6px 5px 0 var(--mb-art-ink));
+      drop-shadow(0 3px 0 var(--mb-sticker)) drop-shadow(0 -3px 0 var(--mb-sticker));
   }
 
   /* keyboard focus also lifts the lid (mindblown.ts); the ring makes it unmistakable */
@@ -124,16 +130,6 @@
     border-radius: var(--radius-lg);
   }
 
-  /* the brain sits outside .mindblown__head so it gets the white outline but no hard shadow */
-  .mindblown__brain-layer {
-    position: absolute;
-    inset: 0;
-    z-index: 5;
-    pointer-events: none;
-    filter: drop-shadow(3px 0 0 var(--mb-sticker)) drop-shadow(-3px 0 0 var(--mb-sticker))
-      drop-shadow(0 3px 0 var(--mb-sticker)) drop-shadow(0 -3px 0 var(--mb-sticker));
-  }
-
   .mindblown__layer {
     position: absolute;
     inset: 0;
@@ -141,6 +137,22 @@
 
   .mindblown__layer--base {
     z-index: 1;
+  }
+
+  /* --cut (set by the script from the first peek until the lid is back down): the face loses
+     the front of the cut and the hole shows. While closed the face stays whole, so no seam can
+     show between the pieces */
+  .mindblown__head--cut .mindblown__layer--base {
+    mask: radial-gradient(var(--mb-cut), transparent calc(100% - 2px), #000 100%);
+  }
+
+  /* the face inside the front half of the cut travels with the lid, so the lid's lower edge is
+     the same curve as the hole's front rim. It reaches a little past the face's mask (px along
+     an ellipse's ray are horizontal, about 1/6 of that vertically, hence 8px) */
+  .mindblown__lid-front {
+    position: absolute;
+    inset: 0;
+    mask: radial-gradient(var(--mb-cut), #000 100%, transparent calc(100% + 8px));
   }
 
   .mindblown__layer--lid {
@@ -192,10 +204,11 @@
     top: 0;
     inline-size: 100%;
     aspect-ratio: 6 / 1;
+    box-sizing: border-box;
 
     /* half the hole's height (a percentage margin is of the parent's width); no translate,
        which the CSS minifier drops next to transform */
-    margin-block-start: calc(-100% / 12 - 3px);
+    margin-block-start: calc(-100% / 12);
     border: 3px solid var(--mb-art-ink);
     border-radius: 50%;
     background: radial-gradient(
@@ -203,7 +216,11 @@
       var(--mb-flesh-dark) 0 45%,
       var(--mb-flesh) 82%
     );
-    transform: scaleY(0);
+    visibility: hidden;
+  }
+
+  .mindblown__head--cut .mindblown__hole {
+    visibility: visible;
   }
 
   /* the brain is masked by the hole's front rim (a half-ellipse), so it sits IN the head */
@@ -215,13 +232,8 @@
     aspect-ratio: 64 / 43.5;
     translate: 0 -82%;
     pointer-events: none;
-
-    /* --mb-peek: how much of the brain shows above the rim (82% = all of it). On hover the
-       lid lifts only a little, so the brain is cut off at the lid's edge instead of covering it */
-    --mb-peek: 82%;
-
     mask:
-      linear-gradient(transparent calc(82% - var(--mb-peek)), #000 0 82%, transparent 0),
+      linear-gradient(#000 0 0) top / 100% 82% no-repeat,
       radial-gradient(ellipse 71% 15% at 50% 82%, #000 98%, transparent 100%);
   }
 

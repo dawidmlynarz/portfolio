@@ -16,8 +16,10 @@ type Card = HTMLButtonElement & {
   _dragged?: boolean;
 };
 
-/** How far the lid lifts on hover, as a share of the head's height. */
-const PEEK_LIFT = 0.06;
+/** Hover peek: how far the lid lifts (share of the head's height) and where the brain rises to
+    (yPercent of the brain; 4 is fully out, 130 is hidden). */
+const PEEK_LIFT = 0.045,
+  PEEK_BRAIN = 26;
 
 const svg = (k: IconName) =>
   `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${ICONS[k]}</svg>`;
@@ -40,7 +42,6 @@ export function init(root: HTMLElement): () => void {
     brain = q<SVGSVGElement>("brain"),
     brainBtn = q<HTMLButtonElement>("brain-btn"),
     cardsEl = q("cards"),
-    brainClip = q("brain-clip"),
     rig = q("rig"),
     headPos = q("head-pos"),
     note = q("note"),
@@ -132,7 +133,6 @@ export function init(root: HTMLElement): () => void {
   let idle: gsap.core.Tween | null = null;
   run(() => {
     gsap.set(brain, { yPercent: 130 });
-    gsap.set(brainClip, { "--mb-peek": "0%" });
     gsap.from(headPos, { yPercent: 40, duration: T(1), ease: "back.out(1.4)", delay: 0.1 });
     gsap.from(note, {
       scale: 0,
@@ -284,6 +284,7 @@ export function init(root: HTMLElement): () => void {
     state = "busy";
     peeking = false;
     peekTl?.kill();
+    cut(true);
     head.setAttribute("aria-expanded", "true");
     head.setAttribute("aria-label", "Close my head");
     idle?.pause();
@@ -304,7 +305,6 @@ export function init(root: HTMLElement): () => void {
       // 1. the lid pops straight off (from wherever the hover peek left it)
       tl.to(note, { scale: 0, rotation: 20, duration: T(0.25), ease: "back.in(2)" }, 0)
         .add("pop", 0.1)
-        .set(brainClip, { "--mb-peek": "82%" }, "pop")
         .to(
           lid,
           {
@@ -316,7 +316,6 @@ export function init(root: HTMLElement): () => void {
           },
           "pop",
         )
-        .to(hole, { scaleY: 1, duration: T(0.5), ease: "back.out(2.5)" }, "pop")
         .add(() => {
           shake();
           confetti(o.x, o.y);
@@ -473,16 +472,15 @@ export function init(root: HTMLElement): () => void {
           { y: 0, yPercent: 0, xPercent: 0, rotation: 0, duration: T(0.45), ease: "bounce.out" },
           ">-0.05",
         )
-        .to(hole, { scaleY: 0, duration: T(0.15) }, "<+.12")
         .add(() => {
           shake();
           setFace("shock");
         }, "<+.1")
         .add(() => {
+          cut(false);
           setFace("rest");
           say("much better.");
         }, "+=.45")
-        .set(brainClip, { "--mb-peek": "0%" })
         .to(note, { scale: 1, rotation: 0, duration: T(0.5), ease: "back.out(2.5)" });
       if (intro)
         tl.set(intro, { clearProps: "pointerEvents" }, "<").to(
@@ -533,36 +531,33 @@ export function init(root: HTMLElement): () => void {
     on,
   );
   /* closed head, mouse hover or keyboard focus: the lid lifts a little and the brain peeks out */
+  const cut = (on: boolean) => head.classList.toggle("mindblown__head--cut", on);
   function peek(on: boolean) {
     if (state !== "closed" || on === peeking) return;
     peeking = on;
-    setFace(on ? "shock" : "rest");
+    setFace(on ? "shock" : "rest", false);
     peekTl?.kill();
+    if (on) cut(true);
     run(() => {
-      const tl = (peekTl = gsap.timeline());
-      if (on) {
-        // the brain shows only in the gap under the lid: its height (less the sticker
-        // outline) as a share of the brain's clip box
-        const gap = PEEK_LIFT * head.offsetHeight,
-          share = Math.max(0, (gap - 6) / brainClip.offsetHeight) * 100;
+      const tl = (peekTl = gsap.timeline({ onComplete: () => !peeking && cut(false) }));
+      // the lid covers the brain, so only the band between its curved edge and the hole's
+      // front rim shows: the eyes and a sliver of brain
+      if (on)
         tl.to(
           lid,
-          { yPercent: -PEEK_LIFT * 100, rotation: 0, duration: T(0.45), ease: "back.out(2.5)" },
+          { yPercent: -PEEK_LIFT * 100, rotation: -1.5, duration: T(0.7), ease: "power3.out" },
           0,
-        )
-          .to(brainClip, { "--mb-peek": `${share}%`, duration: T(0.45), ease: "back.out(2.5)" }, 0)
-          .to(hole, { scaleY: 1, duration: T(0.3), ease: "back.out(2)" }, 0)
-          .to(
-            brain,
-            { yPercent: 18, duration: T(0.5), ease: "back.out(2)", onUpdate: () => look() },
-            0.08,
-          );
-      } else {
-        tl.to(brain, { yPercent: 130, duration: T(0.2), ease: "power2.in" }, 0)
-          .to(brainClip, { "--mb-peek": "0%", duration: T(0.25), ease: "power2.in" }, 0)
-          .to(lid, { yPercent: 0, rotation: 0, duration: T(0.45), ease: "bounce.out" }, 0.05)
-          .to(hole, { scaleY: 0, duration: T(0.15) }, 0.25);
-      }
+        ).to(
+          brain,
+          { yPercent: PEEK_BRAIN, duration: T(0.8), ease: "power3.out", onUpdate: () => look() },
+          0.05,
+        );
+      else
+        tl.to(brain, { yPercent: 130, duration: T(0.35), ease: "power2.in" }, 0).to(
+          lid,
+          { yPercent: 0, rotation: 0, duration: T(0.5), ease: "power2.inOut" },
+          0.05,
+        );
     });
   }
   head.addEventListener("pointerenter", (e) => e.pointerType === "mouse" && peek(true), on);

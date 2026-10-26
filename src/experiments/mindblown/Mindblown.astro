@@ -77,36 +77,6 @@ const belt = [...BELT, ...BELT];
           </div>
           <div class="mindblown__inside" aria-hidden="true">
             <div class="mindblown__hole"></div>
-          </div>
-          <div class="mindblown__layer mindblown__layer--lid">
-            <img
-              class="mindblown__piece mindblown__piece--rest"
-              src={restTop.src}
-              alt=""
-              {...img}
-            />
-            <img
-              class="mindblown__piece mindblown__piece--shock"
-              src={shockedTop.src}
-              alt=""
-              {...img}
-            />
-            <img
-              class="mindblown__piece mindblown__piece--super"
-              src={superTop.src}
-              alt=""
-              {...img}
-            />
-            <img
-              class="mindblown__piece mindblown__piece--pain"
-              src={painTop.src}
-              alt=""
-              {...img}
-            />
-          </div>
-        </div>
-        <div class="mindblown__brain-layer" aria-hidden="true">
-          <div class="mindblown__inside">
             <div class="mindblown__brain-clip">
               <svg class="mindblown__brain" viewBox="0 0 140 78">
                 <path
@@ -161,6 +131,58 @@ const belt = [...BELT, ...BELT];
                 </g>
               </svg>
             </div>
+          </div>
+          <div class="mindblown__layer mindblown__layer--lid">
+            <div class="mindblown__lid-front" aria-hidden="true">
+              <img
+                class="mindblown__piece mindblown__piece--rest"
+                src={restFace.src}
+                alt=""
+                {...img}
+              />
+              <img
+                class="mindblown__piece mindblown__piece--shock"
+                src={shockedFace.src}
+                alt=""
+                {...img}
+              />
+              <img
+                class="mindblown__piece mindblown__piece--super"
+                src={superFace.src}
+                alt=""
+                {...img}
+              />
+              <img
+                class="mindblown__piece mindblown__piece--pain"
+                src={painFace.src}
+                alt=""
+                {...img}
+              />
+            </div>
+            <img
+              class="mindblown__piece mindblown__piece--rest"
+              src={restTop.src}
+              alt=""
+              {...img}
+            />
+            <img
+              class="mindblown__piece mindblown__piece--shock"
+              src={shockedTop.src}
+              alt=""
+              {...img}
+            />
+            <img
+              class="mindblown__piece mindblown__piece--super"
+              src={superTop.src}
+              alt=""
+              {...img}
+            />
+            <img
+              class="mindblown__piece mindblown__piece--pain"
+              src={painTop.src}
+              alt=""
+              {...img}
+            />
           </div>
         </div>
         <button
