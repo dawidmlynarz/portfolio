@@ -161,9 +161,12 @@ export function init(root: HTMLElement): () => void {
   let active: Card[] = cards;
   let shown = new Set<Card>(cards);
   let spots = new Map<Card, { x: number; y: number }>();
-  /* a random handful of thoughts on every open */
+  /* every open: the pinned thoughts plus a fresh random pick of the rest */
   function pickActive() {
-    active = gsap.utils.shuffle(cards.slice()).slice(0, phone() ? MOBILE_COUNT : DESKTOP_COUNT);
+    const count = phone() ? MOBILE_COUNT : DESKTOP_COUNT,
+      pinned = cards.filter((c) => ITEMS[c._i]!.pinned),
+      rest = gsap.utils.shuffle(cards.filter((c) => !ITEMS[c._i]!.pinned));
+    active = gsap.utils.shuffle([...pinned, ...rest].slice(0, count));
     shown = new Set(active);
   }
   function layout() {
@@ -592,7 +595,7 @@ export function init(root: HTMLElement): () => void {
       ${it.body ? `<p>${esc(it.body)}</p>` : ""}
       ${it.chips ? `<ul class="mindblown__chips">${it.chips.map((s) => `<li>${esc(s)}</li>`).join("")}</ul>` : ""}
       ${it.email ? `<div class="mindblown__mail"><code>${esc(it.email)}</code><button type="button" class="mindblown__copy">Copy</button></div>` : ""}
-      ${it.links ? `<div class="mindblown__links">${it.links.map(([n, u]) => `<a href="${esc(u)}" target="_blank" rel="noopener">${esc(n)} ↗</a>`).join("")}</div>` : ""}
+      ${it.links ? `<div class="mindblown__links">${it.links.map(([n, u]) => (u.startsWith("/") ? `<a href="${esc(u)}">${esc(n)} →</a>` : `<a href="${esc(u)}" target="_blank" rel="noopener">${esc(n)} ↗</a>`)).join("")}</div>` : ""}
     </div>`;
     const x = panel.querySelector<HTMLButtonElement>(".mindblown__pop-close")!;
     x.onclick = () => closePop();
