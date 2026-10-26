@@ -35,7 +35,6 @@ type Drop = Stamp & { vx: number; vy: number; life: number };
 const ISO = 0.5;
 const BRUSH_K = 1 / 0.54; // a brush drawn at radius r*K crosses the threshold at r
 const FIELD_PIXELS = 90_000; // mask resolution budget per frame
-const INTRO_MS = 2000; // page-load reveal: the portrait pours in from the face
 const smoothstep = (x: number) => x * x * (3 - 2 * x);
 
 let brush: HTMLCanvasElement | null = null;
@@ -112,8 +111,6 @@ class LiquidReveal extends HTMLElement {
   #wobbleClock = 0;
   #wasResting = true;
   #reveal = 1;
-  #introStart = 0;
-  #introDone = true;
   #trail: Stamp[] = [];
   #drops: Drop[] = [];
   #lastEmit: { x: number; y: number } | null = null;
@@ -127,6 +124,15 @@ class LiquidReveal extends HTMLElement {
     this.#cfg = JSON.parse(this.dataset.config ?? "{}") as Config;
     this.#reduceMotion = matchMedia("(prefers-reduced-motion: reduce)").matches;
     this.#reveal = this.#reduceMotion ? 0 : 1;
+
+    // Page-load fade: mark the portrait as shown once the static image for the current theme has
+    // decoded (LiquidReveal.astro fades it in from 0 to 100% opacity under the motion layer).
+    const shown = [...this.querySelectorAll<HTMLImageElement>(".liquid__image")].find(
+      (img) => getComputedStyle(img).display !== "none",
+    );
+    const markShown = () => (this.dataset.shown = "");
+    if (!shown || shown.complete) markShown();
+    else shown.decode().then(markShown, markShown);
 
     const canvas = this.querySelector("canvas");
     const ctx = canvas?.getContext("2d");
@@ -236,13 +242,7 @@ class LiquidReveal extends HTMLElement {
       opts,
     );
 
-    // Page-load reveal (motion layer only): the portrait pours in as a liquid from the face, then
-    // the usual orbiting liquid fades in. The static <img> stays hidden until then (LiquidReveal.astro).
-    if (!this.#reduceMotion && document.documentElement.classList.contains("motion")) {
-      this.#introDone = false;
-      this.#introStart = performance.now();
-      this.#reveal = 0;
-    }
+    this.#bg = getComputedStyle(this.#cv).color;
     this.#resize();
     this.dataset.ready = "";
   }
@@ -413,7 +413,7 @@ class LiquidReveal extends HTMLElement {
   }
 
   /** Threshold the field into a liquid edge, wobbled by separable animated sine noise. */
-  #liquidPass(t: number, r: number, hover: number, gain = this.#reveal) {
+  #liquidPass(t: number, r: number, hover: number) {
     const fw = this.#field.width;
     const fh = this.#field.height;
     const src = this.#fctx.getImageData(0, 0, fw, fh).data;
@@ -449,63 +449,10 @@ class LiquidReveal extends HTMLElement {
           amp * (0.62 * nx[x * 2]! * ay + 0.38 * nx[x * 2 + 1]! * by) * Math.min(1, a / 60);
         let o = (v - lo) * inv;
         o = o <= 0 ? 0 : o >= 1 ? 1 : o * o * (3 - 2 * o);
-        dst[i] = (o * 255 * gain) | 0;
+        dst[i] = (o * 255 * this.#reveal) | 0;
       }
     }
     this.#octx.putImageData(this.#outImg!, 0, 0);
-  }
-
-  /**
-   * Page-load reveal: a liquid blob grows from the face centre, with lobes that drift and merge,
-   * until it covers the frame. Only the top image is shown through it; the page background shows
-   * outside. The same iso-surface and wobble as the hover liquid keep the edge consistent.
-   */
-  #introFrame(now: number) {
-    const L = this.#L;
-    if (!L) return;
-    const p = Math.min(1, (now - this.#introStart) / INTRO_MS);
-    // Ease in-out: a small drop first, then it floods and settles.
-    const e = p < 0.5 ? 4 * p * p * p : 1 - Math.pow(-2 * p + 2, 3) / 2;
-    const ts = now / 1000;
-    const [x0, x1, y0, y1] = this.#cfg.face;
-    const cx = L.dx + ((x0 + x1) / 2) * L.dw;
-    const cy = L.dy + ((y0 + y1) / 2) * L.dh;
-    const far = Math.hypot(Math.max(cx, this.#W - cx), Math.max(cy, this.#H - cy)) * 1.12;
-    const r = far * e;
-
-    const f = this.#fctx;
-    f.setTransform(1, 0, 0, 1, 0, 0);
-    f.globalAlpha = 1;
-    f.clearRect(0, 0, this.#field.width, this.#field.height);
-    this.#splat(cx, cy, r, 1);
-    for (let i = 0; i < 5; i++) {
-      const ph = i * 1.26 + 0.4;
-      const ang = ph + ts * (i % 2 ? -0.7 : 0.7);
-      const dist = r * (0.55 - 0.3 * e) * (0.8 + 0.2 * Math.sin(ts * 2 + ph));
-      this.#splat(
-        cx + Math.cos(ang) * dist,
-        cy + Math.sin(ang) * dist,
-        r * (0.5 + 0.1 * Math.sin(ts * 1.7 + ph)),
-        0.9,
-      );
-    }
-    this.#liquidPass(ts * 1.4, Math.max(40, r * 0.35), 1, 1);
-
-    const ctx = this.#ctx;
-    ctx.setTransform(1, 0, 0, 1, 0, 0);
-    ctx.globalCompositeOperation = "copy";
-    ctx.drawImage(this.#topLayer, 0, 0);
-    ctx.globalCompositeOperation = "destination-in";
-    ctx.imageSmoothingEnabled = true;
-    ctx.imageSmoothingQuality = "high";
-    ctx.drawImage(this.#out, 0, 0, this.#cv.width, this.#cv.height);
-    ctx.globalCompositeOperation = "source-over";
-
-    if (p >= 1) {
-      this.#introDone = true;
-      this.#last = now;
-      this.dataset.introDone = "";
-    }
   }
 
   // ---------- loop (pauses off screen and in hidden tabs) ----------
@@ -520,11 +467,6 @@ class LiquidReveal extends HTMLElement {
   #frame(now: number) {
     if (!this.#running || !this.#visible || document.hidden) {
       this.#running = false;
-      return;
-    }
-    if (!this.#introDone) {
-      this.#introFrame(now);
-      requestAnimationFrame((t) => this.#frame(t));
       return;
     }
     const cfg = this.#cfg;

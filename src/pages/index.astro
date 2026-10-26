@@ -16,11 +16,33 @@ import { getListedWork } from "@/lib/work";
 
 /** Home shows the first four case studies; the rest are on /work. */
 const work = (await getListedWork()).slice(0, 4);
+
+const jsonLd = {
+  "@context": "https://schema.org",
+  "@graph": [
+    {
+      "@type": "WebSite",
+      name: SITE.title,
+      url: Astro.site?.href,
+      inLanguage: SITE.locale,
+    },
+    {
+      "@type": "Person",
+      name: SITE.name,
+      jobTitle: SITE.jobTitle,
+      url: Astro.site?.href,
+      email: `mailto:${SITE.email}`,
+      image: new URL(SITE.ogImage.src, Astro.site).href,
+      sameAs: SOCIAL_LINKS.map((link) => link.href),
+      knowsAbout: ["Agentic UX", "AI-ready design systems", "Product strategy", "Product design"],
+    },
+  ],
+};
 ---
 
-<SiteLayout navOverlap>
+<SiteLayout navOverlap jsonLd={jsonLd}>
   <HomeHero
-    label="Senior Product Designer · Product, systems and AI"
+    label="Agentic UX • AI-ready design systems • Product strategy"
     title="Transforming AI capability"
     titleMuted="into products people actually trust."
     lead="I bring 15 years of product experience to the AI era, helping you architect AI-ready design systems, safe agentic workflows, and impactful product strategies."
@@ -36,8 +58,6 @@ const work = (await getListedWork()).slice(0, 4);
   <StoryIntro
     label="About"
     text="I'm Dawid Młynarz, a senior product designer with 15 years of turning complex problems into clear, useful products. I've shaped newsrooms, fintech and creator platforms, and built the design systems behind them. Today I help teams bring AI into their products in ways people understand, trust and actually use."
-    href="/about"
-    hrefLabel="More about me"
   >
     <ClientLogos slot="after" strip label="Companies I have worked with" />
   </StoryIntro>

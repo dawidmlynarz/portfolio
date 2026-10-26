@@ -1,8 +1,4 @@
-<!-- Placeholder favicon until the real one is supplied. Adapts to the OS theme. -->
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32">
-  <style>
-    text { fill: #161616; font: 600 20px system-ui, sans-serif; }
-    @media (prefers-color-scheme: dark) { text { fill: #ebebeb; } }
-  </style>
-  <text x="16" y="22" text-anchor="middle">M</text>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
+  <circle cx="32" cy="32" r="32" fill="#0a0a0a"/>
+  <path fill="#fff" transform="translate(16 20)" d="M23.84 0 15.99 7.94 8.15 0 0 17.69h9.1l1.01-2.21L16 24l5.87-8.52 1.06 2.21H32z"/>
 </svg>

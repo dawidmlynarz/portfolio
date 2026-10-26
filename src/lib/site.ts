@@ -3,10 +3,20 @@ import { CF_PAGES_BRANCH, SHOW_PROTECTED_DRAFTS } from "astro:env/server";
 export const SITE = {
   name: "Dawid Młynarz",
   title: "Dawid Młynarz — Senior Product Designer",
+  /** Default meta description (pages override it). */
   description:
-    "Dawid Młynarz, Senior Product Designer. 15 years of building products, from early concepts to delightful, user-friendly design systems and AI experiences.",
+    "Dawid Młynarz, senior product designer with 15 years of experience. Agentic UX, AI-ready design systems and product strategy for teams like Newsweek, NerdWallet, Google and BeatStars.",
+  jobTitle: "Senior Product Designer",
   locale: "en",
+  ogLocale: "en_GB",
   email: "hello@mlynarz.com",
+  /** Social share image in public/ (1200×630). */
+  ogImage: {
+    src: "/og.png",
+    width: 1200,
+    height: 630,
+    alt: "Dawid Młynarz – Senior Product Designer. Designing digital products that meet business goals and delight people.",
+  },
 } as const;
 
 export const SOCIAL_LINKS = [

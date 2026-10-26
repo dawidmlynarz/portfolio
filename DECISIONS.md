@@ -2,6 +2,22 @@
 
 Non-obvious choices, newest first. One entry per decision: what, why, and what it rules out.
 
+## 2026-10-26 · v2 revision 2: logo highlight, mobile bar, fade, SEO
+
+- **Logos light up one by one** in the About story after the statement, using the same dim-to-bright treatment as the words. The repeated, sliding strip is gone. From 62em the ten logos fit the width (32px tall, 40px from 80em). Below that, the one finite line slides along as the logos light up (or swipes, without motion). `.story__inner` uses `minmax(0, 1fr)`, so the wide line can't widen the text column.
+- **Mobile nav is a full-width bar**: the M on the left and a two-line menu button on the right. The menu opens with the theme switch's "ink spread", now shared as `src/scripts/spread.ts`. It grows from the button and closes by shrinking back into it. The sheet repeats the bar, so the close button replaces the menu button in place. Without JS it is still a native popover.
+- **Content changes:**
+  - "More about me" is removed from the story.
+  - The hero label reads "Agentic UX • AI-ready design systems • Product strategy".
+  - Services are now Product Strategy, Design Systems (AI-ready in the copy) and Agentic UX.
+- **Covers keep their original aspect ratio.** The grid only varies tile width and offset.
+- **Portrait on load:** the liquid intro is replaced by a plain opacity fade (0 → 100%, `--duration-fade`), triggered when the static image has decoded, with a 3s failsafe.
+- **SEO:**
+  - The default description now leads with the three services.
+  - Open Graph and Twitter tags include image, size, type, alt and locale. The site-wide image is Dawid's `og.png`. Case studies use `og:type` article and a 1200×630 crop of their cover.
+  - JSON-LD: WebSite + Person on Home, CreativeWork on case studies.
+  - New favicon set from the M mark: `favicon.svg`, `favicon.ico` (16/32), `apple-touch-icon.png`, 192/512 icons and `site.webmanifest`, plus `theme-color`.
+
 ## 2026-10-26 · Logo strip in the story, liquid load reveal, nav pill polish
 
 - **New client logos.** There are ten, from Dawid's set, on a shared 48px artboard: Newsweek, Google, Twitch, Pearson, HolidayCheck, Pantheon, BeatStars, XWP, X-Team and Zazmic. Passion is gone. Only black is recoloured to `currentColor`, because white appears solely inside their masks and clip paths. Mask and clip ids get a per-copy suffix so repeated logos stay valid.

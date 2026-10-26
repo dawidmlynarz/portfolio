@@ -197,18 +197,15 @@ const objectPosition = `${((face[0] + face[1]) / 2) * 100}% ${((face[2] + face[3
       opacity: 1;
     }
 
-    /*
-     * Motion layer: the portrait pours in on load (liquid-reveal.ts), so the static image waits
-     * hidden and the canvas skips its fade. Failsafe: the image shows after 3s if the script
-     * never gets ready (e.g. an image fails to load).
-     */
-    :global(.motion) .liquid:not([data-intro-done]) > .liquid__image {
-      opacity: 0;
-      animation: liquid-failsafe 0s 3s forwards;
+    /* Motion layer: the portrait fades in from 0 to 100% once its image has decoded
+       (data-shown, set by liquid-reveal.ts). Failsafe: visible after 3s regardless. */
+    :global(.motion) .liquid {
+      transition: opacity var(--duration-fade) var(--ease-standard);
     }
 
-    :global(.motion) .liquid > .liquid__canvas {
-      transition: none;
+    :global(.motion) .liquid:not([data-shown]) {
+      opacity: 0;
+      animation: liquid-failsafe 0s 3s forwards;
     }
 
     @keyframes liquid-failsafe {

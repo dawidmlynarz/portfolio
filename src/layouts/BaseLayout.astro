@@ -7,17 +7,32 @@ import { SITE, isProduction } from "@/lib/site";
 interface Props {
   title?: string;
   description?: string;
+  /** Open Graph type: "website" (default) or "article" (case studies). */
+  type?: "website" | "article";
+  /** Social share image; defaults to the site-wide OG image. */
+  image?: { src: string; width: number; height: number; alt: string };
+  /** Structured data (JSON-LD) for this page. */
+  jsonLd?: Record<string, unknown>;
   /** Force noindex for this page (styleguide, 404, drafts). Previews are always noindex. */
   noindex?: boolean;
 }
 
-const { title, description = SITE.description, noindex = false } = Astro.props;
+const {
+  title,
+  description = SITE.description,
+  noindex = false,
+  type = "website",
+  image = SITE.ogImage,
+  jsonLd,
+} = Astro.props;
 
 const pageTitle = title ? `${title} — ${SITE.name}` : SITE.title;
 // build.format "file" exposes "/about.html" and "/index.html"; canonical URLs are extensionless.
 const canonicalPath = Astro.url.pathname.replace(/(index)?\.html$/, "").replace(/(.)\/$/, "$1");
 const canonical = new URL(canonicalPath || "/", Astro.site);
 const robots = noindex || !isProduction ? "noindex, nofollow" : undefined;
+const imageUrl = new URL(image.src, Astro.site);
+const imageType = /\.jpe?g$/i.test(image.src) ? "image/jpeg" : "image/png";
 ---
 
 <!doctype html>
@@ -48,15 +63,31 @@ const robots = noindex || !isProduction ? "noindex, nofollow" : undefined;
     <link rel="canonical" href={canonical} />
     {robots && <meta name="robots" content={robots} />}
 
-    <meta property="og:type" content="website" />
+    <meta property="og:type" content={type} />
     <meta property="og:site_name" content={SITE.name} />
+    <meta property="og:locale" content={SITE.ogLocale} />
     <meta property="og:title" content={pageTitle} />
     <meta property="og:description" content={description} />
     <meta property="og:url" content={canonical} />
+    <meta property="og:image" content={imageUrl} />
+    <meta property="og:image:type" content={imageType} />
+    <meta property="og:image:width" content={String(image.width)} />
+    <meta property="og:image:height" content={String(image.height)} />
+    <meta property="og:image:alt" content={image.alt} />
     <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content={pageTitle} />
+    <meta name="twitter:description" content={description} />
+    <meta name="twitter:image" content={imageUrl} />
+    <meta name="twitter:image:alt" content={image.alt} />
+    <meta name="author" content={SITE.name} />
 
+    <link rel="icon" href="/favicon.ico" sizes="32x32" />
     <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+    <link rel="manifest" href="/site.webmanifest" />
+    <meta name="theme-color" content="#ffffff" />
     <link rel="sitemap" href="/sitemap-index.xml" />
+    {jsonLd && <script type="application/ld+json" set:html={JSON.stringify(jsonLd)} />}
     <meta name="generator" content={Astro.generator} />
     <slot name="head" />
   </head>

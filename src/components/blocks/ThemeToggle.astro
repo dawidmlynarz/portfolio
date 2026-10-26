@@ -4,8 +4,8 @@
  * only changes when the visitor asks. The choice is saved and applied before first paint by the
  * inline script in BaseLayout. Hidden until JS runs (without JS the site stays light).
  *
- * Transition: the new theme spreads from the button as a circle over the old one (a same-document
- * View Transition, styled in base.css). Listeners on `themechange` can delay the new snapshot by
+ * Transition: the new theme spreads from the button as a circle over the old one
+ * (src/scripts/spread.ts, styled in base.css). Listeners on `themechange` can delay the new snapshot by
  * passing a promise to event.detail.waitUntil (the liquid portrait uses it to repaint first).
  * Reduced motion or no View Transitions: the theme switches instantly.
  */
@@ -32,6 +32,8 @@
 </button>
 
 <script>
+  import { spread } from "@/scripts/spread";
+
   type Mode = "light" | "dark";
   const root = document.documentElement;
   const buttons = document.querySelectorAll<HTMLButtonElement>("[data-theme-toggle]");
@@ -66,25 +68,9 @@
 
   const toggle = (button: HTMLButtonElement) => {
     const next: Mode = current() === "dark" ? "light" : "dark";
-    const reduce = matchMedia("(prefers-reduced-motion: reduce)").matches;
-    if (!document.startViewTransition || reduce) {
-      apply(next);
-      return;
-    }
-
-    // The circle starts at the button and grows to cover the farthest corner.
-    const { left, top, width, height } = button.getBoundingClientRect();
-    const x = left + width / 2;
-    const y = top + height / 2;
-    const r = Math.hypot(Math.max(x, innerWidth - x), Math.max(y, innerHeight - y));
-    root.style.setProperty("--theme-x", `${x}px`);
-    root.style.setProperty("--theme-y", `${y}px`);
-    root.style.setProperty("--theme-r", `${r}px`);
-    root.dataset.themeTransition = "";
-
+    // The new theme spreads from the button; wait (briefly) for listeners such as the portrait.
     const wait = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
-    const transition = document.startViewTransition(() => Promise.race([apply(next), wait(400)]));
-    transition.finished.finally(() => delete root.dataset.themeTransition);
+    spread(button, () => Promise.race([apply(next), wait(400)]));
   };
 
   for (const button of buttons) {

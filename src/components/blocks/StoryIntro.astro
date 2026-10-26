@@ -3,7 +3,7 @@
  * The hand-off after the home hero: an inverse (black) panel grows to fill the screen and a large
  * about-me statement lights up word by word as you scroll (the motion layer, data-story).
  * The optional `after` slot (the client logo strip on Home) sits under the statement; the
- * motion layer slides it left to right once the words have lit up.
+ * motion layer lights its logos up one by one once the words have lit up.
  * Without the motion layer (no JS, reduced motion) it is a plain inverse section with the full
  * statement visible.
  */
@@ -65,6 +65,7 @@ const words = text.split(/\s+/);
 
     .story__inner {
       display: grid;
+      grid-template-columns: minmax(0, 1fr); /* a wide logo line must not widen the text column */
       justify-items: start;
       gap: var(--space-8);
       inline-size: 100%;

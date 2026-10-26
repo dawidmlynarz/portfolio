@@ -1,5 +1,6 @@
 ---
-import { Image } from "astro:assets";
+import { Image, getImage } from "astro:assets";
+import { SITE, SOCIAL_LINKS } from "@/lib/site";
 import SiteLayout from "@/layouts/SiteLayout.astro";
 import Container from "@/components/layout/Container.astro";
 import Tag from "@/components/ui/Tag.astro";
@@ -17,6 +18,34 @@ interface Props {
 const { entry, next } = Astro.props;
 const { data } = entry;
 
+// Share image: the cover cropped to 1200×630.
+const og = await getImage({
+  src: data.cover,
+  width: 1200,
+  height: 630,
+  fit: "cover",
+  format: "jpeg",
+  quality: 82,
+});
+const ogImage = { src: og.src, width: 1200, height: 630, alt: data.coverAlt };
+const jsonLd = {
+  "@context": "https://schema.org",
+  "@type": "CreativeWork",
+  name: data.title,
+  headline: data.title,
+  description: data.description,
+  image: new URL(og.src, Astro.site).href,
+  url: new URL(`/work/${entry.id}`, Astro.site).href,
+  ...(data.year ? { dateCreated: String(data.year) } : {}),
+  keywords: [data.industry, ...data.tags].join(", "),
+  author: {
+    "@type": "Person",
+    name: SITE.name,
+    url: Astro.site?.href,
+    sameAs: SOCIAL_LINKS.map((l) => l.href),
+  },
+};
+
 const facts = [
   { term: "Role", detail: data.via ? `${data.role} (via ${data.via})` : data.role },
   { term: "Company", detail: data.company },
@@ -26,7 +55,13 @@ const facts = [
 ];
 ---
 
-<SiteLayout title={data.seoTitle ?? data.title} description={data.description}>
+<SiteLayout
+  title={data.seoTitle ?? data.title}
+  description={data.description}
+  type="article"
+  image={ogImage}
+  jsonLd={jsonLd}
+>
   <article class="case-study">
     <header class="case-study__header">
       <Container class="case-study__intro">

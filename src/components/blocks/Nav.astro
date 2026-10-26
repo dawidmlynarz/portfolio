@@ -3,9 +3,11 @@
  * Floating top pill: the M mark (home), Work, Services, About and the theme toggle.
  * The name is not repeated here; it lives in the page storytelling. Contact is not in the nav:
  * the hero, the footer and the mobile menu carry the email.
- * Below 48em the pill holds the mark and a Menu button that opens a full-screen inverse sheet
- * (a native popover: no JS, Esc and outside clicks close it). The sheet's Close button sits
- * exactly where Menu was.
+ * Below 48em the pill becomes a full-width bar: the mark on the left, a menu button on the right.
+ * The menu is a full-screen inverse sheet (a native popover, so it works without JS; Esc and
+ * outside clicks close it). With JS it opens with the same circle "ink spread" as the theme
+ * switch and closes by shrinking back into the button. The sheet repeats the bar, so its close
+ * button sits exactly where the menu button was.
  */
 import ThemeToggle from "@/components/blocks/ThemeToggle.astro";
 import { NAV_LINKS, SITE, SOCIAL_LINKS } from "@/lib/site";
@@ -38,20 +40,40 @@ const isCurrent = (href: string) => path === href || path.startsWith(`${href}/`)
       ))}
     </ul>
     <ThemeToggle />
-    <button class="nav__toggle" type="button" popovertarget="nav-sheet">
-      Menu
+    <button
+      class="nav__toggle"
+      type="button"
+      popovertarget="nav-sheet"
+      aria-label="Open menu"
+      data-nav-menu
+    >
+      <svg class="nav__toggle-icon" viewBox="0 0 24 24" aria-hidden="true">
+        <path d="M4 9h16M4 15h16"></path>
+      </svg>
     </button>
   </nav>
 
   <div class="nav__sheet" id="nav-sheet" popover>
-    <button
-      class="nav__toggle nav__close"
-      type="button"
-      popovertarget="nav-sheet"
-      popovertargetaction="hide"
-    >
-      Close
-    </button>
+    <div class="nav__sheet-bar">
+      <a class="nav__home nav__home--inverse" href="/">
+        <svg class="nav__mark" viewBox="0 0 32 24" aria-hidden="true">
+          <path d="M23.84 0 15.99 7.94 8.15 0 0 17.69h9.1l1.01-2.21L16 24l5.87-8.52 1.06 2.21H32z" />
+        </svg>
+        <span class="visually-hidden">{SITE.name}, home</span>
+      </a>
+      <button
+        class="nav__toggle nav__close"
+        type="button"
+        popovertarget="nav-sheet"
+        popovertargetaction="hide"
+        aria-label="Close menu"
+        data-nav-menu
+      >
+        <svg class="nav__toggle-icon" viewBox="0 0 24 24" aria-hidden="true">
+          <path d="M6 6l12 12M18 6 6 18"></path>
+        </svg>
+      </button>
+    </div>
     <nav class="nav__sheet-body" aria-label="Menu">
       <ul class="nav__sheet-links" role="list">
         <li style={`--i: 0`}>
@@ -75,6 +97,21 @@ const isCurrent = (href: string) => path === href || path.startsWith(`${href}/`)
     </nav>
   </div>
 </header>
+
+<script>
+  import { spread } from "@/scripts/spread";
+
+  // Open with the ink spread from the menu button; close by shrinking back into it.
+  const sheet = document.getElementById("nav-sheet");
+  for (const button of document.querySelectorAll<HTMLButtonElement>("[data-nav-menu]")) {
+    button.addEventListener("click", (event) => {
+      if (!sheet || !("togglePopover" in sheet)) return;
+      event.preventDefault(); // replace the native popover toggle with the animated one
+      const open = sheet.matches(":popover-open");
+      spread(button, () => sheet.togglePopover(!open), open ? "out" : "in");
+    });
+  }
+</script>
 
 <style>
   @layer components {
@@ -188,29 +225,52 @@ const isCurrent = (href: string) => path === href || path.startsWith(`${href}/`)
 
     .nav__toggle {
       display: none;
-      min-inline-size: var(--space-24);
+      place-items: center;
+      inline-size: var(--nav-item-size);
       block-size: var(--nav-item-size);
-      padding-inline: var(--space-4);
+      padding: 0;
       border: 0;
       border-radius: var(--radius-pill);
-      font: inherit;
-      color: var(--color-bg);
-      background-color: var(--color-text);
+      color: var(--color-text);
+      background: transparent;
     }
 
-    /* Mobile: the pill is just the mark and Menu; everything else moves into the sheet. */
+    .nav__toggle-icon {
+      inline-size: 1.5rem;
+      block-size: 1.5rem;
+      fill: none;
+      stroke: currentcolor;
+      stroke-width: 1.75;
+      stroke-linecap: round;
+    }
+
+    /* Mobile: a full-width bar with the mark and the menu button; the rest moves into the sheet. */
     @media (width < 48em) {
+      .nav {
+        inset-block-start: 0;
+        padding-inline: 0;
+      }
+
+      .nav__pill {
+        justify-content: space-between;
+        inline-size: 100%;
+        padding: var(--space-2) var(--gutter);
+        border-width: 0 0 var(--border-width);
+        border-radius: 0;
+        box-shadow: none;
+      }
+
       .nav__links,
       .nav__pill :global(.theme-toggle) {
         display: none;
       }
 
       .nav__toggle {
-        display: block;
+        display: grid;
       }
 
       @supports not selector(:popover-open) {
-        .nav__toggle {
+        .nav__pill .nav__toggle {
           display: none;
         }
 
@@ -236,8 +296,6 @@ const isCurrent = (href: string) => path === href || path.startsWith(`${href}/`)
     .nav__sheet:popover-open {
       display: grid;
       grid-template-rows: auto 1fr;
-      justify-items: center;
-      padding: var(--space-4) var(--gutter) var(--space-8);
     }
 
     @media (width >= 48em) {
@@ -246,21 +304,33 @@ const isCurrent = (href: string) => path === href || path.startsWith(`${href}/`)
       }
     }
 
-    .nav__close {
-      display: block;
-      color: var(--color-inverse-bg);
-      background-color: var(--color-on-inverse);
+    /* The sheet's own bar: same box as the page bar, so the close button replaces the menu button. */
+    .nav__sheet-bar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: var(--space-2) var(--gutter);
+      border-block-end: var(--border-width) solid var(--color-on-inverse-muted);
+    }
 
-      /* Same box as the Menu button: pill padding + border offset. */
-      margin-block-start: calc(var(--space-1) + var(--border-width));
-      margin-inline-start: calc(var(--nav-item-size) + var(--space-1));
+    .nav__home--inverse {
+      background-color: var(--color-on-inverse);
+    }
+
+    .nav__home--inverse .nav__mark {
+      fill: var(--color-inverse-bg);
+    }
+
+    .nav__close {
+      display: grid;
+      color: var(--color-on-inverse);
     }
 
     .nav__sheet-body {
       display: grid;
       align-content: end;
       gap: var(--space-8);
-      justify-self: stretch;
+      padding: var(--space-8) var(--gutter);
     }
 
     .nav__sheet-links {
@@ -305,14 +375,6 @@ const isCurrent = (href: string) => path === href || path.startsWith(`${href}/`)
     }
 
     @media (prefers-reduced-motion: no-preference) {
-      .nav__sheet:popover-open {
-        transition: clip-path var(--duration-page) var(--ease-out-expo);
-
-        @starting-style {
-          clip-path: inset(0 0 100% 0 round 0 0 var(--radius-xl) var(--radius-xl));
-        }
-      }
-
       .nav__sheet:popover-open .nav__sheet-links li {
         transition:
           translate var(--duration-page) var(--ease-out-expo),

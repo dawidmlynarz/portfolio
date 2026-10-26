@@ -1,9 +1,9 @@
 ---
 /**
  * Creative grid of case-study tiles (Home shows 4, Work shows all).
- * Desktop repeats a four-tile rhythm on 12 columns: wide 4:3, narrow square set lower,
- * narrow square indented, wide 4:3 set lower. Tablet: two staggered columns of squares.
- * Mobile: one column of 4:3 tiles.
+ * Covers keep their original aspect ratio; the grid only varies width and offset.
+ * Desktop repeats a four-tile rhythm on 12 columns: wide, narrow set lower, narrow indented,
+ * wide set lower. Tablet: two staggered columns. Mobile: one column.
  */
 import WorkCard from "@/components/blocks/WorkCard.astro";
 import type { Work } from "@/lib/work";
@@ -39,10 +39,6 @@ const { entries, headingLevel = 3, eager = 0 } = Astro.props;
         grid-template-columns: repeat(2, minmax(0, 1fr));
       }
 
-      .work-grid__item {
-        --work-card-ratio: 1;
-      }
-
       .work-grid__item:nth-child(even) {
         margin-block-start: var(--space-section-lg);
       }
@@ -59,8 +55,6 @@ const { entries, headingLevel = 3, eager = 0 } = Astro.props;
       }
 
       .work-grid__item:nth-child(4n + 1) {
-        --work-card-ratio: 4 / 3;
-
         grid-column: 1 / span 7;
       }
 
@@ -74,8 +68,6 @@ const { entries, headingLevel = 3, eager = 0 } = Astro.props;
       }
 
       .work-grid__item:nth-child(4n + 4) {
-        --work-card-ratio: 4 / 3;
-
         grid-column: 7 / span 6;
         margin-block-start: var(--space-section-lg);
       }

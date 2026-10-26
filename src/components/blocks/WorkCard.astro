@@ -1,8 +1,8 @@
 ---
 /**
  * Case-study tile: the cover, then a mono "Company · Year" line and the outcome title.
- * No tags or summary; the case study tells the rest. The aspect ratio comes from the
- * surrounding WorkGrid (--work-card-ratio). The whole tile is the link target; the visible link
+ * No tags or summary; the case study tells the rest. The cover keeps its original aspect ratio;
+ * WorkGrid only sets the tile width. The whole tile is the link target; the visible link
  * is the title (one tab stop). Entries without a page (page: false) render without a link.
  */
 import { Image } from "astro:assets";
@@ -61,8 +61,6 @@ const meta = [data.company, data.year, data.draft && "Draft"].filter(Boolean).jo
     .work-card__cover {
       inline-size: 100%;
       block-size: auto;
-      aspect-ratio: var(--work-card-ratio, 4 / 3);
-      object-fit: cover;
       transition: scale var(--duration-zoom) var(--ease-out-expo);
     }
 

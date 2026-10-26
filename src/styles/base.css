@@ -162,29 +162,35 @@
   }
 
   /*
-   * Theme switch (ThemeToggle): the new theme spreads as a circle from the toggle over the old
-   * one. Named elements are flattened into the page for this transition so everything switches
-   * together.
+   * "Ink spread" (src/scripts/spread.ts), for the theme switch and the mobile menu: the new state
+   * grows as a circle from the control ("in"), or the old state shrinks back into it ("out").
+   * Named elements are flattened into the page for it so everything changes together.
    */
-  :root[data-theme-transition] * {
+  :root[data-spread] * {
     view-transition-name: none !important;
   }
 
-  :root[data-theme-transition]::view-transition-old(root) {
+  :root[data-spread="in"]::view-transition-old(root),
+  :root[data-spread="out"]::view-transition-new(root) {
     animation: none;
   }
 
-  :root[data-theme-transition]::view-transition-new(root) {
-    animation: theme-spread var(--duration-page) var(--ease-in-out-quart) both;
+  :root[data-spread="in"]::view-transition-new(root) {
+    animation: spread-in var(--duration-page) var(--ease-in-out-quart) both;
   }
 
-  @keyframes theme-spread {
+  :root[data-spread="out"]::view-transition-old(root) {
+    z-index: 1;
+    animation: spread-in var(--duration-page) var(--ease-in-out-quart) reverse both;
+  }
+
+  @keyframes spread-in {
     from {
-      clip-path: circle(0 at var(--theme-x) var(--theme-y));
+      clip-path: circle(0 at var(--spread-x) var(--spread-y));
     }
 
     to {
-      clip-path: circle(var(--theme-r) at var(--theme-x) var(--theme-y));
+      clip-path: circle(var(--spread-r) at var(--spread-x) var(--spread-y));
     }
   }
 

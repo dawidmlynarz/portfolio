@@ -100,7 +100,13 @@ function story() {
 
   const timeline = gsap.timeline({
     defaults: { ease: "none" },
-    scrollTrigger: { trigger: section, start: "top bottom", end: "bottom bottom", scrub: 0.6 },
+    scrollTrigger: {
+      trigger: section,
+      start: "top bottom",
+      end: "bottom bottom",
+      scrub: 0.6,
+      invalidateOnRefresh: true,
+    },
   });
   // Enter (one screen of scroll): the panel grows from an inset card to full bleed.
   timeline.fromTo(
@@ -120,11 +126,23 @@ function story() {
     },
     1.05,
   );
-  // Then the client logo strip slides left to right (one copy's width), with a short hold.
-  const track = section.querySelector<HTMLElement>("[data-logo-track]");
-  if (track) {
-    timeline.fromTo(track, { xPercent: -100 / 3 }, { xPercent: 0, duration: 1.2 }, 2.45);
-    timeline.fromTo(track, { autoAlpha: 0.35 }, { autoAlpha: 1, duration: 0.3 }, 2.35);
+  // Then the client logos light up one by one; where the line is wider than the screen it also
+  // slides along so each logo is in view as it lights up.
+  const strip = section.querySelector<HTMLElement>("[data-logo-strip]");
+  const track = strip?.querySelector<HTMLElement>("[data-logo-track]");
+  const logos = strip ? [...strip.querySelectorAll<HTMLElement>("li")] : [];
+  if (strip && track && logos.length) {
+    const overflow = () => {
+      const pad = parseFloat(getComputedStyle(strip).paddingInlineEnd) || 0;
+      return Math.min(0, strip.clientWidth - pad * 2 - track.offsetWidth);
+    };
+    timeline.fromTo(
+      logos,
+      { opacity: 0.2 },
+      { opacity: 1, duration: 0.12, stagger: logos.length > 1 ? 1 / (logos.length - 1) : 0 },
+      2.45,
+    );
+    timeline.fromTo(track, { x: 0 }, { x: overflow, duration: 1.12 }, 2.45);
   }
   timeline.to({}, { duration: 0.15 });
 }
