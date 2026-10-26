@@ -1,5 +1,7 @@
 ---
 import "@/styles/global.css";
+// Preload the Latin subset of DM Sans so it is usually ready before first paint.
+import dmSansLatin from "@fontsource-variable/dm-sans/files/dm-sans-latin-wght-normal.woff2?url";
 import { SITE, isProduction } from "@/lib/site";
 
 interface Props {
@@ -35,6 +37,8 @@ const robots = noindex || !isProduction ? "noindex, nofollow" : undefined;
         if (theme === "light" || theme === "dark") document.documentElement.dataset.theme = theme;
       } catch {}
     </script>
+    <link rel="preload" href={dmSansLatin} as="font" type="font/woff2" crossorigin />
+
     <title>{pageTitle}</title>
     <meta name="description" content={description} />
     <link rel="canonical" href={canonical} />

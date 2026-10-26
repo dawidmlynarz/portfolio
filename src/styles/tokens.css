@@ -73,9 +73,11 @@
          small     14 -> 15      1.50          0         400
          caption   12 -> 13      1.40         +0.04em    500, uppercase
     */
+    /* "DM Sans Fallback" (base.css) is Arial resized to DM Sans metrics, so the font swap on
+       first load doesn't move the layout. Regenerate it with Capsize when the face changes. */
     --font-heading:
-      "DM Sans Variable", "DM Sans", system-ui, sans-serif; /* swap when the new face is chosen */
-    --font-body: "DM Sans Variable", "DM Sans", system-ui, sans-serif;
+      "DM Sans Variable", "DM Sans Fallback", system-ui, sans-serif; /* swap when the new face is chosen */
+    --font-body: "DM Sans Variable", "DM Sans Fallback", system-ui, sans-serif;
     --font-mono: ui-monospace, "SF Mono", "Menlo", monospace;
 
     --text-h1: clamp(2.125rem, 1.465rem + 2.817vw, 4rem);
