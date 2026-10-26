@@ -1,67 +1,82 @@
 ---
 /**
- * Home hero (layout from the original site): copy on the left, aligned to the page container;
- * the liquid portrait fills the right column to the viewport edge and the full hero height.
- * Tablet: 44/56 split. Mobile: copy, then a tall full-bleed portrait. Client logos sit below.
+ * Home hero: a two-tone headline at the bottom of the first screen, the liquid portrait filling
+ * the right half to the viewport edges (the floating nav runs over it).
+ * Tablet: 44/56 split. Mobile: copy under the nav, then a tall full-bleed portrait.
+ * The motion layer reveals the headline line by line and eases the hero back as the story
+ * section scrolls over it (data-hero).
  */
-import Container from "@/components/layout/Container.astro";
 import LiquidReveal from "@/components/blocks/LiquidReveal.astro";
-import portraitPhoto from "@/assets/portrait/portrait-photo.png";
-import portraitClay from "@/assets/portrait/portrait-clay.png";
+import portraitPhoto from "@/assets/portrait/portrait-photo.avif";
+import portraitClay from "@/assets/portrait/portrait-clay.avif";
+import portraitClayDark from "@/assets/portrait/portrait-clay-dark.avif";
 
 interface Props {
+  /** Small mono line above the headline. */
+  label?: string;
+  /** Headline, first phrase (full ink). */
   title: string;
+  /** Headline, second phrase (muted). */
+  titleMuted?: string;
   lead: string;
 }
 
-const { title, lead } = Astro.props;
+const { label, title, titleMuted, lead } = Astro.props;
 ---
 
-<section class="home-hero" aria-labelledby="home-hero-title">
-  <div class="home-hero__grid">
-    <div class="home-hero__copy">
-      <h1 id="home-hero-title">{title}</h1>
-      <p class="text-lead home-hero__lead">{lead}</p>
-      <div class="home-hero__actions">
-        <slot name="actions" />
-      </div>
-    </div>
-    <div class="home-hero__media">
-      <LiquidReveal
-        photo={portraitPhoto}
-        clay={portraitClay}
-        alt="Portrait of Dawid Młynarz as a white clay sculpture"
-        fit="fill"
-        sizes="(min-width: 62em) 60vw, (min-width: 48em) 56vw, 100vw"
-      />
+<section class="home-hero" aria-labelledby="home-hero-title" data-hero>
+  <div class="home-hero__copy">
+    {label && <p class="text-caption home-hero__label">{label}</p>}
+    <h1 id="home-hero-title" data-reveal="lines">
+      {title}
+      {titleMuted && " "}
+      {titleMuted && <span class="home-hero__muted">{titleMuted}</span>}
+    </h1>
+    <p class="text-lead home-hero__lead" data-reveal="fade">
+      {lead}
+    </p>
+    <div class="home-hero__actions" data-reveal="fade">
+      <slot name="actions" />
     </div>
   </div>
-  <Container class="home-hero__after">
-    <slot name="after" />
-  </Container>
+  <div class="home-hero__media">
+    <LiquidReveal
+      photo={portraitPhoto}
+      clay={portraitClay}
+      clayDark={portraitClayDark}
+      alt="Portrait of Dawid Młynarz as a white clay sculpture"
+      fit="fill"
+      sizes="(min-width: 62em) 50vw, (min-width: 48em) 56vw, 100vw"
+    />
+  </div>
 </section>
 
 <style>
   @layer components {
-    .home-hero__grid {
+    .home-hero {
       display: grid;
     }
 
     .home-hero__copy {
       display: flex;
       flex-direction: column;
-      justify-content: center;
+      justify-content: flex-end;
       align-items: flex-start;
       gap: var(--space-6);
-      padding: var(--space-8) var(--gutter) var(--space-6);
+      padding: calc(var(--space-16) + var(--space-12)) var(--gutter) var(--space-8);
     }
 
-    .home-hero__copy > * {
-      max-inline-size: 35rem;
+    .home-hero__label,
+    .home-hero__lead {
+      color: var(--color-text-muted);
+    }
+
+    .home-hero__muted {
+      color: var(--color-text-muted);
     }
 
     .home-hero__lead {
-      color: var(--color-text-muted);
+      max-inline-size: 34rem;
     }
 
     .home-hero__actions {
@@ -69,7 +84,6 @@ const { title, lead } = Astro.props;
       flex-wrap: wrap;
       align-items: center;
       gap: var(--space-3) var(--space-6);
-      padding-block-start: var(--space-2);
     }
 
     /* Mobile: a tall, full-bleed portrait under the copy. */
@@ -77,18 +91,14 @@ const { title, lead } = Astro.props;
       block-size: max(62svh, 27.5rem);
     }
 
-    .home-hero__after {
-      padding-block: var(--space-6);
-    }
-
     @media (width >= 48em) {
-      .home-hero__grid {
+      .home-hero {
         grid-template-columns: 44fr 56fr;
-        min-block-size: 70svh;
+        min-block-size: max(100svh, 40rem);
       }
 
       .home-hero__copy {
-        padding-block: var(--space-12);
+        padding-block-end: var(--space-12);
       }
 
       .home-hero__media {
@@ -96,15 +106,21 @@ const { title, lead } = Astro.props;
       }
     }
 
-    /* Desktop: the copy column ends 30rem right of the container's left edge (at least 40%). */
+    /* Desktop: the copy starts on the container's left edge and takes half the screen. */
     @media (width >= 62em) {
-      .home-hero__grid {
-        grid-template-columns: max(40%, calc((100vw - var(--container-max)) / 2 + 30rem)) 1fr;
-        min-block-size: 85svh;
+      .home-hero {
+        grid-template-columns: 1fr 1fr;
       }
 
       .home-hero__copy {
-        padding-inline: max(var(--gutter), calc((100vw - var(--container-max)) / 2)) var(--space-10);
+        padding-inline: max(var(--gutter), calc((100vw - var(--container-max)) / 2)) 0;
+        padding-block-end: var(--space-16);
+      }
+
+      .home-hero h1 {
+        inline-size: calc(100% + var(--space-24));
+        position: relative;
+        z-index: 1;
       }
     }
   }

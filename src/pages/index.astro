@@ -2,91 +2,122 @@
 import SiteLayout from "@/layouts/SiteLayout.astro";
 import Section from "@/components/layout/Section.astro";
 import Container from "@/components/layout/Container.astro";
-import Stack from "@/components/layout/Stack.astro";
 import HomeHero from "@/components/blocks/HomeHero.astro";
+import StoryIntro from "@/components/blocks/StoryIntro.astro";
+import SectionIntro from "@/components/blocks/SectionIntro.astro";
+import Services from "@/components/blocks/Services.astro";
 import ClientLogos from "@/components/blocks/ClientLogos.astro";
-import WorkCard from "@/components/blocks/WorkCard.astro";
-import ShotsMarquee from "@/components/blocks/ShotsMarquee.astro";
+import WorkGrid from "@/components/blocks/WorkGrid.astro";
+import Button from "@/components/ui/Button.astro";
 import Link from "@/components/ui/Link.astro";
-import { SOCIAL_LINKS } from "@/lib/site";
+import { SITE, SOCIAL_LINKS } from "@/lib/site";
+import { SERVICES } from "@/lib/services";
 import { getListedWork } from "@/lib/work";
-import shot01 from "@/assets/gallery/shot-01.jpg";
-import shot02 from "@/assets/gallery/shot-02.jpg";
-import shot03 from "@/assets/gallery/shot-03.jpg";
-import shot04 from "@/assets/gallery/shot-04.jpg";
-import shot05 from "@/assets/gallery/shot-05.jpg";
-import shot06 from "@/assets/gallery/shot-06.jpg";
-import shot07 from "@/assets/gallery/shot-07.jpg";
-import shot08 from "@/assets/gallery/shot-08.jpg";
-import shot09 from "@/assets/gallery/shot-09.jpg";
-import shot10 from "@/assets/gallery/shot-10.jpg";
-import shot11 from "@/assets/gallery/shot-11.jpg";
-import shot12 from "@/assets/gallery/shot-12.jpg";
 
-const work = await getListedWork();
+/** Home shows the first four case studies; the rest are on /work. */
+const work = (await getListedWork()).slice(0, 4);
 
-const shots = [
-  { src: shot01, alt: "Onboarding screens of a personal assistant app asking about your home." },
-  { src: shot02, alt: "Dark crypto wallet app with an Ethereum stats dial and a convert button." },
-  { src: shot03, alt: "Nike store landing page concept with product grids and campaign banners." },
-  { src: shot04, alt: "Overview of dark crypto wallet screens with charts and balances." },
-  { src: shot05, alt: "Nike mobile shop concept with product cards and a filter panel." },
-  { src: shot06, alt: "Crypto portfolio list and a Bitcoin price chart in a dark mobile app." },
-  { src: shot07, alt: "Smart home app screens: room controls, thermostat and device lists." },
-  { src: shot08, alt: "Nike Air Max product page concept on desktop." },
-  {
-    src: shot09,
-    alt: "Smart home app dashboard: “Hello Alice, welcome home!” with rooms and devices.",
-  },
-  { src: shot10, alt: "Smart lock app on a phone saying “Welcome back” over a house at dusk." },
-  { src: shot11, alt: "Nike Air Max 90 Premium campaign pages laid out at an angle." },
-  { src: shot12, alt: "Dark mobile wallet screens with payments, charts and a transfer card." },
-];
+const jsonLd = {
+  "@context": "https://schema.org",
+  "@graph": [
+    {
+      "@type": "WebSite",
+      name: SITE.title,
+      url: Astro.site?.href,
+      inLanguage: SITE.locale,
+    },
+    {
+      "@type": "Person",
+      name: SITE.name,
+      jobTitle: SITE.jobTitle,
+      url: Astro.site?.href,
+      email: `mailto:${SITE.email}`,
+      image: new URL(SITE.ogImage.src, Astro.site).href,
+      sameAs: SOCIAL_LINKS.map((link) => link.href),
+      knowsAbout: ["Agentic UX", "AI-ready design systems", "Product strategy", "Product design"],
+    },
+  ],
+};
 ---
 
-<SiteLayout>
+<SiteLayout navOverlap jsonLd={jsonLd}>
   <HomeHero
-    title="Transforming AI capability into products people actually trust."
+    label="Agentic UX • AI-ready design systems • Product strategy"
+    title="Transforming AI capability"
+    titleMuted="into products people actually trust."
     lead="I bring 15 years of product experience to the AI era, helping you architect AI-ready design systems, safe agentic workflows, and impactful product strategies."
   >
     <Fragment slot="actions">
       {SOCIAL_LINKS.map(({ href, label }) => (
         <Link href={href}>{label}</Link>
       ))}
+      <Link href={`mailto:${SITE.email}`}>Contact</Link>
     </Fragment>
-    <ClientLogos
-      slot="after"
-      spread
-      clients={[
-        "newsweek",
-        "google",
-        "pantheon",
-        "xwp",
-        "beatstars",
-        "x-team",
-        "holidaycheck",
-        "pearson",
-      ]}
-    />
   </HomeHero>
 
-  <Section id="work" space="md" aria-labelledby="work-title">
-    <Container>
-      <h2 class="visually-hidden" id="work-title">
-        Case studies
-      </h2>
-      <Stack gap="24" as="div">
-        {work.map((entry, index) => (
-          <WorkCard entry={entry} headingLevel={3} eager={index === 0} />
-        ))}
-      </Stack>
+  <StoryIntro
+    label="About"
+    text="I'm Dawid Młynarz, a senior product designer with 15 years of turning complex problems into clear, useful products. I've shaped newsrooms, fintech and creator platforms, and built the design systems behind them. Today I help teams bring AI into their products in ways people understand, trust and actually use."
+  />
+
+  <Section id="work" space="lg" aria-labelledby="work-title">
+    <Container class="home__stack">
+      <SectionIntro
+        id="work-title"
+        label="Selected work"
+        title="Products I've shaped,"
+        titleMuted="told by their outcomes."
+      />
+      <WorkGrid entries={work} />
+      <div class="home__cta">
+        <Button href="/work">View all work</Button>
+      </div>
     </Container>
   </Section>
 
-  <ShotsMarquee
-    title="Selected work"
-    shots={shots}
-    href="https://dribbble.com/dawidmlynarz/"
-    hrefLabel="More on Dribbble"
-  />
+  <Section space="lg" aria-labelledby="services-title">
+    <Container class="home__stack">
+      <SectionIntro
+        id="services-title"
+        label="What I do"
+        title="Three ways I help teams"
+        titleMuted="ship products that work."
+        href="/services"
+        hrefLabel="Services in detail"
+      />
+      <Services services={SERVICES} />
+    </Container>
+  </Section>
+
+  <Section space="md" aria-labelledby="clients-title" class="home__clients">
+    <Container>
+      <p class="text-caption home__muted" id="clients-title">
+        Trusted by teams at
+      </p>
+    </Container>
+    <ClientLogos marquee />
+  </Section>
 </SiteLayout>
+
+<style>
+  @layer components {
+    .home__stack {
+      display: grid;
+      gap: var(--space-section-sm);
+    }
+
+    .home__muted {
+      color: var(--color-text-muted);
+    }
+
+    .home__clients {
+      display: grid;
+      gap: var(--space-section-sm);
+    }
+
+    .home__cta {
+      display: flex;
+      justify-content: center;
+    }
+  }
+</style>

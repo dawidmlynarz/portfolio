@@ -1,0 +1,76 @@
+---
+/**
+ * Creative grid of case-study tiles (Home shows 4, Work shows all).
+ * All covers are 4:3 (WorkCard); the grid only varies tile width and offset.
+ * Desktop repeats a four-tile rhythm on 12 columns: wide, narrow set lower, narrow indented,
+ * wide set lower. Tablet: two staggered columns. Mobile: one column.
+ */
+import WorkCard from "@/components/blocks/WorkCard.astro";
+import type { Work } from "@/lib/work";
+
+interface Props {
+  entries: Work[];
+  headingLevel?: 2 | 3;
+  /** How many leading tiles load eagerly. */
+  eager?: number;
+}
+
+const { entries, headingLevel = 3, eager = 0 } = Astro.props;
+---
+
+<ul class="work-grid" role="list">
+  {entries.map((entry, index) => (
+    <li class="work-grid__item">
+      <WorkCard entry={entry} headingLevel={headingLevel} eager={index < eager} />
+    </li>
+  ))}
+</ul>
+
+<style>
+  @layer components {
+    .work-grid {
+      display: grid;
+      gap: var(--space-16) var(--space-8);
+      padding: 0;
+    }
+
+    @media (width >= 48em) {
+      .work-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+
+      .work-grid__item:nth-child(even) {
+        margin-block-start: var(--space-section-lg);
+      }
+    }
+
+    @media (width >= 62em) {
+      .work-grid {
+        grid-template-columns: repeat(12, minmax(0, 1fr));
+        row-gap: var(--space-section-md);
+      }
+
+      .work-grid__item:nth-child(even) {
+        margin-block-start: 0;
+      }
+
+      .work-grid__item:nth-child(4n + 1) {
+        grid-column: 1 / span 7;
+      }
+
+      .work-grid__item:nth-child(4n + 2) {
+        grid-column: 9 / span 4;
+        margin-block-start: var(--space-section-lg);
+      }
+
+      .work-grid__item:nth-child(4n + 3) {
+        grid-column: 2 / span 4;
+      }
+
+      .work-grid__item:nth-child(4n + 4) {
+        grid-column: 7 / span 6;
+        margin-block-start: var(--space-section-lg);
+      }
+    }
+  }
+</style>

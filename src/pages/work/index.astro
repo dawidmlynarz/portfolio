@@ -2,8 +2,7 @@
 import SiteLayout from "@/layouts/SiteLayout.astro";
 import Section from "@/components/layout/Section.astro";
 import Container from "@/components/layout/Container.astro";
-import Stack from "@/components/layout/Stack.astro";
-import WorkCard from "@/components/blocks/WorkCard.astro";
+import WorkGrid from "@/components/blocks/WorkGrid.astro";
 import { getListedWork } from "@/lib/work";
 
 const work = await getListedWork();
@@ -14,30 +13,31 @@ const work = await getListedWork();
   description="Case studies by Dawid Młynarz: AI products, design systems, conversion optimisation and product design for Newsweek, NerdWallet, BeatStars, Google and more."
 >
   <Section space="md" aria-labelledby="work-title">
-    <Container>
-      <Stack gap="12">
-        <div class="page-head">
-          <p class="text-caption muted">Selected work 2020 – 2025</p>
-          <h1 id="work-title">Case studies</h1>
-        </div>
-        <Stack gap="24" as="div">
-          {work.map((entry, index) => (
-            <WorkCard entry={entry} eager={index < 2} />
-          ))}
-        </Stack>
-      </Stack>
+    <Container class="work-page">
+      <div class="work-page__head">
+        <p class="text-caption work-page__muted">Selected work 2020 – 2025</p>
+        <h1 id="work-title" data-reveal="lines">
+          Case studies <span class="work-page__muted">told by their outcomes.</span>
+        </h1>
+      </div>
+      <WorkGrid entries={work} headingLevel={2} eager={2} />
     </Container>
   </Section>
 </SiteLayout>
 
 <style>
   @layer components {
-    .page-head {
+    .work-page {
       display: grid;
-      gap: var(--space-3);
+      gap: var(--space-section-md);
     }
 
-    .muted {
+    .work-page__head {
+      display: grid;
+      gap: var(--space-4);
+    }
+
+    .work-page__muted {
       color: var(--color-text-muted);
     }
   }

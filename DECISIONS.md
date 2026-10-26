@@ -2,6 +2,103 @@
 
 Non-obvious choices, newest first. One entry per decision: what, why, and what it rules out.
 
+## 2026-10-26 · Work tiles cropped to 4:3
+
+Every case-study cover in the work grid is cropped to 4:3 (`object-fit: cover`, centred), so tiles of different widths read as one set. This replaces "covers keep their original ratio" from v2 revision 2. The case-study page still shows the cover uncropped. If a cover crops badly, set a per-entry focal point (an `object-position` field in the schema) rather than changing the ratio.
+
+## 2026-10-26 · Client logos as an endless marquee
+
+Above the footer on Home, the logos loop endlessly, full width, at every screen size (`ClientLogos marquee`).
+
+- **How it loops:** pure CSS. The list renders twice (the copy is `aria-hidden`, with its own SVG ids) and slides left by one copy over `--duration-marquee` (40s). Each copy ends with the same gap it has between logos (`--space-24`, or `--space-16` below 48em), so the seam is invisible.
+- **Polish:** the edges fade into the page with a mask, and hovering pauses it.
+- **Reduced motion:** one static, centred, wrapping row.
+
+## 2026-10-26 · Logos back above the footer
+
+On Dawid's call, the About story is back to its original form: the panel grows, the statement lights up word by word, and nothing else is in it (260svh track, no "More about me"). The client logos are a "Trusted by teams at" section again, the last one on Home before the footer, spread across the width in the text colour. `ClientLogos` lost its strip variant and `StoryIntro` its `after` slot, since nothing uses them now.
+
+## 2026-10-26 · v2 revision 2: logo highlight, mobile bar, fade, SEO
+
+- **Logos light up one by one** (superseded: see "Logos back above the footer") in the About story after the statement, using the same dim-to-bright treatment as the words. The repeated, sliding strip is gone. From 62em the ten logos fit the width (32px tall, 40px from 80em). Below that, the one finite line slides along as the logos light up (or swipes, without motion). `.story__inner` uses `minmax(0, 1fr)`, so the wide line can't widen the text column.
+- **Mobile nav is a full-width bar**: the M on the left and a two-line menu button on the right. The menu opens with the theme switch's "ink spread", now shared as `src/scripts/spread.ts`. It grows from the button and closes by shrinking back into it. The sheet repeats the bar, so the close button replaces the menu button in place. Without JS it is still a native popover.
+- **Content changes:**
+  - "More about me" is removed from the story.
+  - The hero label reads "Agentic UX • AI-ready design systems • Product strategy".
+  - Services are now Product Strategy, Design Systems (AI-ready in the copy) and Agentic UX.
+- **Covers keep their original aspect ratio.** The grid only varies tile width and offset.
+- **Portrait on load:** the liquid intro is replaced by a plain opacity fade (0 → 100%, `--duration-fade`), triggered when the static image has decoded, with a 3s failsafe.
+- **SEO:**
+  - The default description now leads with the three services.
+  - Open Graph and Twitter tags include image, size, type, alt and locale. The site-wide image is Dawid's `og.png`. Case studies use `og:type` article and a 1200×630 crop of their cover.
+  - JSON-LD: WebSite + Person on Home, CreativeWork on case studies.
+  - New favicon set from the M mark: `favicon.svg`, `favicon.ico` (16/32), `apple-touch-icon.png`, 192/512 icons and `site.webmanifest`, plus `theme-color`.
+
+## 2026-10-26 · Logo strip in the story, liquid load reveal, nav pill polish
+
+- **New client logos.** There are ten, from Dawid's set, on a shared 48px artboard: Newsweek, Google, Twitch, Pearson, HolidayCheck, Pantheon, BeatStars, XWP, X-Team and Zazmic. Passion is gone. Only black is recoloured to `currentColor`, because white appears solely inside their masks and clip paths. Mask and clip ids get a per-copy suffix so repeated logos stay valid.
+- **The logos live in the About story on Home** (`ClientLogos strip` in the `after` slot of `StoryIntro`). The strip is three copies on one line, and once the words have lit up the motion layer slides it left to right by one copy's width. The story track is now 380svh to give it room. The standalone "Trusted by teams at" section was removed. Without motion the strip is a plain row.
+- **Liquid load reveal.** On load, the portrait pours in from the face: a liquid blob with drifting lobes grows over two seconds (ease in-out), using the same iso-surface and wobble as the hover liquid. The orbiting liquid then fades in. The static image waits hidden under the motion layer, and a 3s failsafe shows it if the script never gets ready. Reduced motion skips the intro.
+- **Descenders in line reveals.** SplitText's line masks were exactly one line tall and cut the "g" in "Transforming" at 0.98 leading. The masks now bleed `--line-mask-bleed` (0.16em) below, with a matching negative margin, so spacing is unchanged.
+- **Nav pill.** Every item is `--nav-item-size` (40px) tall, with an even `--space-1` inset all round. The theme switch matches the M circle. On hover the M no longer scales; it rolls up out of the circle while its twin rolls in from below.
+
+## 2026-10-26 · Theme: light by default, switched only by the visitor
+
+- **Two states, no system mode.** The toggle switches between light and dark, and the OS preference is ignored. `:root` is `color-scheme: light` and only `data-theme="dark"` turns dark, so `light-dark()` tokens keep working. The choice is saved in `localStorage` and applied before first paint. The toggle is an `aria-pressed` "Dark mode" button, and its sun and moon icons turn into each other.
+- **Transition: "ink spread".** The new theme grows as a circle from the toggle over the old one (a same-document View Transition, `theme-spread` in base.css, `--duration-page`). Named transition elements are flattened for this transition so everything switches together. `themechange` carries `waitUntil` so the liquid portrait can repaint with the right clay before the new state is captured (capped at 400 ms). With reduced motion, or no View Transitions, the switch is instant.
+- **Light clay updated** to Dawid's latest `clay.avif` from Webflow (same framing).
+- **Fix:** the mobile menu sheet inherited `pointer-events: none` from the floating nav wrapper, so its links, Close and theme toggle could not be tapped. It now takes pointer input like the pill.
+
+## 2026-10-26 · Black clay for the dark theme
+
+`LiquidReveal` takes an optional `clayDark` image (`portrait-clay-dark.avif`, Dawid's `clay-black.avif` from Webflow, same 2400×1792 framing). It blends into the black page where the white clay looked cut out.
+
+- **Static image:** both clays are rendered, and CSS shows the one for the current theme. Both are `loading="lazy"` with high fetch priority, so the hidden one is never fetched.
+- **Canvas:** it loads only the clay its theme needs and swaps on `themechange` or an OS scheme flip, fetching the other variant the first time it is needed.
+
+## 2026-10-26 · Portrait sources: 2400px AVIF from Webflow
+
+The liquid reveal now uses the higher-quality pair Dawid uploaded to Webflow (`realphoto.avif`, `clay.avif`). They are 2400×1792 with transparency and use the same framing as the old 1200px PNGs (the alpha masks match), so the face crop is unchanged. Both layers are now served as AVIF at quality 70 rather than WebP, since WebP re-encodes of the new sources were larger. The largest photo variant is 140 KB.
+
+## 2026-10-26 · v2 revision 1: black and white, simpler work, Services page
+
+Changes from Dawid's review of the first v2 pass:
+
+- **No colour.** The palette is true neutral greys from white to near-black. `--color-brand*` now resolve to the ink. The cobalt tokens became an inverse surface: `--color-inverse-bg`, `--color-on-inverse` and `--color-on-inverse-muted` (black in light mode, white in dark), used by the story panel, the mobile menu, buttons and text selection.
+- **Case studies are simple tiles on a creative grid** (`WorkGrid` + `WorkCard`). Each tile has a cover, a "Company · Year" line and the outcome title, with no tags or summary. Desktop repeats a four-tile rhythm: wide 4:3, a narrow square set lower, a narrow square indented, then a wide 4:3 set lower. Home shows four tiles and a "View all work" button. Work shows all of them.
+- **Removed:**
+  - the follow-the-mouse "View case" cursor;
+  - the work counter;
+  - the numbers section on Home (`Metrics` stays for case studies);
+  - the hover colour on services;
+  - the Dribbble shots section, along with `ShotsMarquee` and its images;
+  - Contact from the main nav.
+- **Contact** now sits in the hero after LinkedIn and Dribbble (same link style), in the mobile menu's footer row, and in the sign-off.
+- **A dedicated `/services` page.** Data lives in `src/lib/services.ts`, shared with Home. `Services` gained a `detailed` variant that lists deliverables. The page closes with three ways of working together (project, embedded, full-time role), which serves both clients and employers. Services sits in the nav between Work and About.
+- **Link hover.** The underline no longer disappears; the hairline thickens to three times its width with an ease-out. Components that hide the line at rest still draw it in on hover.
+- **Client logos** are larger (`--space-12` tall) and use the text colour (black, or white in dark mode).
+
+## 2026-10-26 · v2 redesign, first pass (branch `v2`)
+
+Built on `v2` so `main` stays live until the redesign is ready to swap in. The direction comes from the reference synthesis ("calm precision, one loud moment").
+
+- **Audience and offers.** The site speaks to clients and employers. It has three offers: Product Design, Design Systems, and AI and Agentic UX.
+- **Type: Geist and Geist Mono** (free, self-hosted with fontsource). Headings use weight 500; the boldness comes from size. h1 is now 40 → 88px and h2 is 30 → 56px. Captions use the mono face. Metric-matched fallbacks keep the font swap shift-free.
+- **Colour: cool green-tinted neutrals and cobalt** (`--blue-600` #234AE8). New semantic tokens `--color-brand-bg`, `--color-on-brand` and `--color-on-brand-muted` cover the cobalt surfaces. Figma `mlynarz.com — Foundations` still needs these values.
+- **Navigation is a floating top pill.** It holds the M mark, Work, About, a cobalt Contact chip and the theme toggle. The name moved out of the nav into the story. On mobile the pill shows the mark and a Menu button, which opens a full-screen cobalt sheet (a native popover). Close sits where Menu was.
+- **Home tells a story.** The order is:
+  1. A two-tone hero with the liquid portrait.
+  2. A cobalt "About" panel that grows over the held hero, where the about-me statement (with the name) lights up word by word.
+  3. Numbers. Two are placeholders (`XX`) until real figures arrive.
+  4. Services, each linked to the case studies that prove it.
+  5. Work told by outcomes, with a "View case" cursor.
+  6. Clients.
+  7. Explorations.
+  8. A sign-off whose last words cycle.
+- **Motion layer replaces "zero JS by default".** One module (`src/scripts/motion.ts`) runs Lenis, GSAP, ScrollTrigger and SplitText on every page, about 50 KB gzipped. It runs only when `html.motion` is set, which happens before first paint unless the visitor prefers reduced motion. Elements marked `[data-reveal]` wait hidden until the script sets them up, and a 3s CSS failsafe shows them if it never does.
+- **Page transitions use native cross-document View Transitions.** The old page sinks back and dims, the new one rises as a sheet, and a work cover morphs into the case-study cover (`view-transition-name: cover-<slug>`). The nav stays put. Browsers without support, and reduced motion, get a normal page load.
+- **Left for the next passes:** the case-study template (Astapable-style opening), the About story, the "How I work" section, and real numbers.
+
 ## 2026-10-26 · Mobile nav is a hamburger menu
 
 Below 48em the bar shows the M mark, the name and a menu button. Work, About, Contact and the theme toggle open in a sheet under the bar. The sheet is a native `popover`, so it needs no JS: Esc and outside clicks close it, and the button exposes its expanded state. The bar now has a fixed height (`--nav-block-size`), so the sheet can sit right below it. Browsers without popover support hide the button and keep the inline menu, which wraps. This replaces the earlier "nav wraps below 375px" behaviour.

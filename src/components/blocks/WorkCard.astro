@@ -1,64 +1,45 @@
 ---
 /**
- * Case-study row for Home and Work: role line, title, summary, labelled tags, then the cover.
- * One per row, full container width (matches the original site's list).
+ * Case-study tile: the cover, then a mono "Company · Year" line and the outcome title.
+ * No tags or summary; the case study tells the rest. Every cover is cropped to 4:3 (centred) so
+ * the grid reads as one set; WorkGrid only sets the tile width. The whole tile is the link target; the visible link
+ * is the title (one tab stop). Entries without a page (page: false) render without a link.
  */
 import { Image } from "astro:assets";
-import Tag from "@/components/ui/Tag.astro";
 import { hasPage, workHref, type Work } from "@/lib/work";
 
 interface Props {
   entry: Work;
   /** Heading level inside the list it sits in. */
   headingLevel?: 2 | 3;
-  /** Load the cover eagerly (first card above the fold). */
+  /** Load the cover eagerly (first tiles above the fold). */
   eager?: boolean;
 }
 
-const { entry, headingLevel = 2, eager = false } = Astro.props;
+const { entry, headingLevel = 3, eager = false } = Astro.props;
 const { data } = entry;
 const Heading = `h${headingLevel}` as const;
 const href = hasPage(entry) ? workHref(entry) : undefined;
+const meta = [data.company, data.year, data.draft && "Draft"].filter(Boolean).join(" · ");
 ---
 
 <article class:list={["work-card", { "work-card--linked": href }]}>
-  <div class="work-card__body">
-    <p class="work-card__role text-small">
-      {data.role} at <strong>{data.company}</strong>
-      {data.via && ` (via ${data.via})`}
-    </p>
-    <Heading class="work-card__title">
-      {href ? <a href={href}>{data.title}</a> : data.title}
-    </Heading>
-    <p class="work-card__summary">{data.description}</p>
-    <ul class="work-card__tags" role="list">
-      {data.draft && (
-        <Tag as="li" variant="solid">
-          Draft · preview only
-        </Tag>
-      )}
-      <Tag as="li" variant="solid">
-        <span class="work-card__label">Industry:</span>
-        {data.industry}
-      </Tag>
-      <Tag as="li" variant="solid">
-        <span class="work-card__label">{data.businessLabel}:</span>
-        {data.business}
-      </Tag>
-      {data.tags.map((tag) => (
-        <Tag as="li">{tag}</Tag>
-      ))}
-    </ul>
-  </div>
-  <div class="work-card__media">
+  <div class="work-card__media" data-reveal="fade">
     <Image
       class="work-card__cover"
       src={data.cover}
       alt={data.coverAlt}
-      widths={[480, 800, 1200, 1600, 2400].filter((w) => w <= data.cover.width)}
-      sizes="(min-width: 84rem) 80rem, calc(100vw - 2rem)"
+      widths={[480, 800, 1200, 1600].filter((w) => w <= data.cover.width)}
+      sizes="(min-width: 62em) 55vw, (min-width: 48em) 50vw, 100vw"
       loading={eager ? "eager" : "lazy"}
+      style={href ? `view-transition-name: cover-${entry.id}` : undefined}
     />
+  </div>
+  <div class="work-card__body">
+    <p class="text-caption work-card__meta">{meta}</p>
+    <Heading class="work-card__title">
+      {href ? <a href={href}>{data.title}</a> : data.title}
+    </Heading>
   </div>
 </article>
 
@@ -67,62 +48,43 @@ const href = hasPage(entry) ? workHref(entry) : undefined;
     .work-card {
       position: relative;
       display: grid;
-      gap: var(--space-8);
-    }
-
-    .work-card__body {
-      display: grid;
-      justify-items: start;
+      align-content: start;
       gap: var(--space-4);
-      max-inline-size: 48rem;
-    }
-
-    .work-card__role,
-    .work-card__summary,
-    .work-card__label {
-      color: var(--color-text-muted);
-    }
-
-    .work-card__role strong {
-      color: var(--color-text);
-      font-weight: var(--weight-semibold);
-    }
-
-    .work-card__title {
-      font: var(--weight-semibold) var(--text-h2) / var(--leading-h2) var(--font-heading);
-      letter-spacing: var(--tracking-h2);
-      text-wrap: balance;
-    }
-
-    .work-card__summary {
-      max-inline-size: var(--measure);
-    }
-
-    .work-card__tags {
-      display: flex;
-      flex-wrap: wrap;
-      gap: var(--space-2);
-      padding: 0;
     }
 
     .work-card__media {
       overflow: hidden;
-      border-radius: var(--radius-lg);
+      border-radius: var(--radius-md);
       background-color: var(--color-bg-subtle);
     }
 
     .work-card__cover {
       inline-size: 100%;
       block-size: auto;
-      aspect-ratio: 3 / 2;
+      aspect-ratio: 4 / 3;
       object-fit: cover;
       transition: scale var(--duration-zoom) var(--ease-out-expo);
     }
 
-    /* The whole row is the link target; the visible link stays the title (one tab stop). */
+    .work-card__body {
+      display: grid;
+      gap: var(--space-2);
+      max-inline-size: 36rem;
+    }
+
+    .work-card__meta {
+      color: var(--color-text-muted);
+    }
+
+    .work-card__title {
+      font: var(--weight-medium) var(--text-h4) / var(--leading-h4) var(--font-heading);
+      letter-spacing: var(--tracking-h4);
+      text-wrap: balance;
+    }
+
+    /* Quiet at rest; the underline draws in when the tile is hovered or the link focused. */
     .work-card__title a {
       --underline-size: 0%;
-      --underline-origin: right;
     }
 
     .work-card__title a::after {
@@ -134,7 +96,6 @@ const href = hasPage(entry) ? workHref(entry) : undefined;
     .work-card--linked:hover .work-card__title a,
     .work-card__title a:focus-visible {
       --underline-size: 100%;
-      --underline-origin: left;
     }
 
     .work-card--linked:hover .work-card__cover {

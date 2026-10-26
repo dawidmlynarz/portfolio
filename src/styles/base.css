@@ -1,17 +1,33 @@
 /* Element defaults and type roles. Semantic tokens only. */
 
 /*
- * Metric-matched fallback for DM Sans (values from Capsize: @capsizecss/metrics dMSans + arial).
- * While DM Sans loads, text renders in Arial (or the metric-identical Liberation Sans) scaled to
- * the same width and line box, so swapping fonts causes no layout shift.
+ * Metric-matched fallbacks for Geist and Geist Mono (Capsize: @capsizecss/metrics geist + arial,
+ * geistMono + courierNew). While the fonts load, text renders in a system face scaled to the same
+ * width and line box, so the swap causes no layout shift.
  */
 @font-face {
-  font-family: "DM Sans Fallback";
+  font-family: "Geist Fallback";
   src: local("Arial"), local("ArialMT"), local("Liberation Sans");
-  ascent-override: 94.9001%;
-  descent-override: 29.6563%;
+  ascent-override: 95.9379%;
+  descent-override: 28.1609%;
   line-gap-override: 0%;
-  size-adjust: 104.531%;
+  size-adjust: 104.7553%;
+}
+
+@font-face {
+  font-family: "Geist Mono Fallback";
+  src: local("Courier New"), local("CourierNewPSMT"), local("Liberation Mono");
+  ascent-override: 100.5164%;
+  descent-override: 29.5048%;
+  line-gap-override: 0%;
+  size-adjust: 99.9837%;
+}
+
+/* Page transitions between documents (Chrome, Edge, Safari). Others get a normal page load. */
+@media (prefers-reduced-motion: no-preference) {
+  @view-transition {
+    navigation: auto;
+  }
 }
 
 @layer base {
@@ -28,25 +44,25 @@
   }
 
   h1 {
-    font: var(--weight-semibold) var(--text-h1) / var(--leading-h1) var(--font-heading);
+    font: var(--weight-medium) var(--text-h1) / var(--leading-h1) var(--font-heading);
     letter-spacing: var(--tracking-h1);
     text-wrap: balance;
   }
 
   h2 {
-    font: var(--weight-semibold) var(--text-h2) / var(--leading-h2) var(--font-heading);
+    font: var(--weight-medium) var(--text-h2) / var(--leading-h2) var(--font-heading);
     letter-spacing: var(--tracking-h2);
     text-wrap: balance;
   }
 
   h3 {
-    font: var(--weight-semibold) var(--text-h3) / var(--leading-h3) var(--font-heading);
+    font: var(--weight-medium) var(--text-h3) / var(--leading-h3) var(--font-heading);
     letter-spacing: var(--tracking-h3);
     text-wrap: balance;
   }
 
   h4 {
-    font: var(--weight-semibold) var(--text-h4) / var(--leading-h4) var(--font-heading);
+    font: var(--weight-medium) var(--text-h4) / var(--leading-h4) var(--font-heading);
     letter-spacing: var(--tracking-h4);
   }
 
@@ -55,25 +71,25 @@
   }
 
   /*
-   * Default link: animated underline drawn as a background so it can wipe.
-   * Rest: full underline. Hover: retracts to the right, then grows back from the left.
-   * Components tune it with --underline-size / --underline-origin (e.g. nav: hidden at rest).
-   * Reduced motion: reset.css removes the transition; the underline still changes state.
+   * Default link: a hairline underline drawn as a background, so it can animate.
+   * Hover: the line thickens with an ease-out. Components tune it with --underline-size
+   * (0% hides it at rest, e.g. the nav) and --underline-origin (where it grows from).
+   * Reduced motion: reset.css removes the transition; the line still changes state.
    */
   a {
     --underline-size: 100%;
     --underline-origin: left;
+    --underline-thickness: var(--border-width);
 
     color: inherit;
     text-decoration: none;
     background: linear-gradient(currentcolor, currentcolor) no-repeat var(--underline-origin)
-      bottom / var(--underline-size) var(--border-width);
-    transition: background-size var(--duration-link) var(--ease-standard);
+      bottom / var(--underline-size) var(--underline-thickness);
+    transition: background-size var(--duration-link) var(--ease-out-expo);
   }
 
   a:hover {
-    --underline-size: 0%;
-    --underline-origin: right;
+    --underline-thickness: calc(var(--border-width) * 3);
   }
 
   :focus-visible {
@@ -83,8 +99,8 @@
   }
 
   ::selection {
-    color: var(--color-bg);
-    background: var(--color-brand);
+    color: var(--color-on-inverse);
+    background: var(--color-inverse-bg);
   }
 
   .text-lead {
@@ -98,9 +114,127 @@
   }
 
   .text-caption {
-    font: var(--weight-medium) var(--text-caption) / var(--leading-caption) var(--font-body);
+    font: var(--weight-medium) var(--text-caption) / var(--leading-caption) var(--font-mono);
     letter-spacing: var(--tracking-caption);
     text-transform: uppercase;
+  }
+}
+
+@layer base {
+  /*
+   * Page transition: the old page sinks back and dims over the ink backdrop while the new one
+   * rises as a sheet with rounded top corners. Named elements (the nav, a case-study cover)
+   * morph separately on top.
+   */
+  ::view-transition {
+    background-color: var(--color-text);
+  }
+
+  ::view-transition-group(*) {
+    animation-duration: var(--duration-page);
+    animation-timing-function: var(--ease-in-out-quart);
+  }
+
+  ::view-transition-old(root) {
+    animation: page-out var(--duration-page) var(--ease-in-out-quart) both;
+  }
+
+  ::view-transition-new(root) {
+    animation: page-in var(--duration-page) var(--ease-in-out-quart) both;
+  }
+
+  @keyframes page-out {
+    to {
+      opacity: 0.35;
+      scale: 0.94;
+      translate: 0 -3%;
+    }
+  }
+
+  @keyframes page-in {
+    from {
+      clip-path: inset(100% 0 0 0 round var(--radius-xl) var(--radius-xl) 0 0);
+    }
+
+    to {
+      clip-path: inset(0 0 0 0 round 0);
+    }
+  }
+
+  /*
+   * "Ink spread" (src/scripts/spread.ts), for the theme switch and the mobile menu: the new state
+   * grows as a circle from the control ("in"), or the old state shrinks back into it ("out").
+   * Named elements are flattened into the page for it so everything changes together.
+   */
+  :root[data-spread] * {
+    view-transition-name: none !important;
+  }
+
+  :root[data-spread="in"]::view-transition-old(root),
+  :root[data-spread="out"]::view-transition-new(root) {
+    animation: none;
+  }
+
+  :root[data-spread="in"]::view-transition-new(root) {
+    animation: spread-in var(--duration-page) var(--ease-in-out-quart) both;
+  }
+
+  :root[data-spread="out"]::view-transition-old(root) {
+    z-index: 1;
+    animation: spread-in var(--duration-page) var(--ease-in-out-quart) reverse both;
+  }
+
+  @keyframes spread-in {
+    from {
+      clip-path: circle(0 at var(--spread-x) var(--spread-y));
+    }
+
+    to {
+      clip-path: circle(var(--spread-r) at var(--spread-x) var(--spread-y));
+    }
+  }
+
+  /*
+   * Motion layer (src/scripts/motion.ts): reveal targets wait hidden until the script has set
+   * their starting state. If it never runs, the failsafe shows them after 3s.
+   */
+  .motion [data-reveal]:not([data-reveal-ready]) {
+    visibility: hidden;
+    animation: reveal-failsafe 0s 3s forwards;
+  }
+
+  /*
+   * SplitText wraps each line in a clipping mask exactly one line tall; with the tight heading
+   * leading that cuts descenders (g, y, p). Give the mask room below and pull the next line back
+   * so the spacing is unchanged.
+   */
+  .motion [data-reveal="lines"] > div {
+    padding-block-end: var(--line-mask-bleed);
+    margin-block-end: calc(-1 * var(--line-mask-bleed));
+  }
+
+  @keyframes reveal-failsafe {
+    to {
+      visibility: visible;
+    }
+  }
+
+  /* Lenis smooth scrolling (replaces lenis/dist/lenis.css, which is unlayered). */
+  html.lenis,
+  html.lenis body {
+    block-size: auto;
+  }
+
+  .lenis.lenis-smooth {
+    scroll-behavior: auto !important;
+  }
+
+  .lenis.lenis-stopped {
+    overflow: clip;
+  }
+
+  .lenis.lenis-smooth iframe {
+    pointer-events: none;
   }
 }
 

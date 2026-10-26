@@ -9,8 +9,11 @@
  * - Progressive enhancement: the top image is a real responsive <img> (LCP, no-JS, alt text).
  *   The canvas fades in over it once both images are decoded.
  * - Theme-aware: both cutouts are flattened onto the resolved --color-bg and re-flattened on theme
- *   change (the `themechange` event from ThemeToggle, or the OS scheme flipping).
- * - Images come from astro:assets (WebP with alpha, picked to the rendered size).
+ *   change (the `themechange` event from ThemeToggle; its waitUntil holds the theme transition until
+ *   the canvas has repainted). With
+ *   data-clay-dark, a dark clay replaces the light one while the background is dark; it is loaded
+ *   only when first needed.
+ * - Images come from astro:assets (AVIF with alpha, picked to the rendered size).
  * - All listeners are removed when the element leaves the DOM.
  */
 
@@ -82,6 +85,9 @@ class LiquidReveal extends HTMLElement {
   #noiseY = new Float32Array(0);
   #photo: HTMLImageElement | null = null;
   #clay: HTMLImageElement | null = null;
+  #clayLight: Promise<HTMLImageElement> | null = null;
+  #clayDark: Promise<HTMLImageElement> | null = null;
+  #drawnWidth = 0;
   #bg = "transparent";
 
   // geometry
@@ -119,6 +125,15 @@ class LiquidReveal extends HTMLElement {
     this.#reduceMotion = matchMedia("(prefers-reduced-motion: reduce)").matches;
     this.#reveal = this.#reduceMotion ? 0 : 1;
 
+    // Page-load fade: mark the portrait as shown once the static image for the current theme has
+    // decoded (LiquidReveal.astro fades it in from 0 to 100% opacity under the motion layer).
+    const shown = [...this.querySelectorAll<HTMLImageElement>(".liquid__image")].find(
+      (img) => getComputedStyle(img).display !== "none",
+    );
+    const markShown = () => (this.dataset.shown = "");
+    if (!shown || shown.complete) markShown();
+    else shown.decode().then(markShown, markShown);
+
     const canvas = this.querySelector("canvas");
     const ctx = canvas?.getContext("2d");
     if (!canvas || !ctx) return;
@@ -149,17 +164,19 @@ class LiquidReveal extends HTMLElement {
   }
 
   async #boot() {
-    const sources = (key: "photo" | "clay") => JSON.parse(this.dataset[key] ?? "[]") as Source[];
+    const sources = (key: "photo") => JSON.parse(this.dataset[key] ?? "[]") as Source[];
     const rect = this.getBoundingClientRect();
     const dpr = Math.min(devicePixelRatio || 1, 2);
     // Ask for the width the image is actually drawn at (cover can exceed the box).
     const ratio = Number(this.dataset.ratio) || 1;
     const drawnWidth = Math.max(rect.width, rect.height * ratio) * dpr;
+    this.#drawnWidth = drawnWidth;
+    this.#bg = getComputedStyle(this.#cv).color;
 
     try {
       [this.#photo, this.#clay] = await Promise.all([
         loadImage(pick(sources("photo"), drawnWidth).url),
-        loadImage(pick(sources("clay"), drawnWidth).url),
+        this.#clayFor(this.#bg),
       ]);
     } catch {
       return; // keep the static <img>
@@ -169,13 +186,24 @@ class LiquidReveal extends HTMLElement {
     new ResizeObserver(() => this.#resize()).observe(this);
     signal.addEventListener("abort", () => this.#trail.splice(0));
 
-    const onTheme = () => {
+    const onTheme = async () => {
       this.#bg = getComputedStyle(this.#cv).color;
+      try {
+        this.#clay = await this.#clayFor(this.#bg);
+      } catch {
+        // keep the clay already drawn
+      }
       this.#paintLayers();
       this.#kick();
     };
-    document.addEventListener("themechange", onTheme, { signal });
-    matchMedia("(prefers-color-scheme: dark)").addEventListener("change", onTheme, { signal });
+    document.addEventListener(
+      "themechange",
+      (event) => {
+        const detail = (event as CustomEvent<{ waitUntil?: (p: Promise<unknown>) => void }>).detail;
+        detail?.waitUntil?.(onTheme());
+      },
+      { signal },
+    );
     document.addEventListener("visibilitychange", () => this.#kick(), { signal });
 
     // Pointer is tracked on the window so text or buttons over the image don't block it.
@@ -217,6 +245,23 @@ class LiquidReveal extends HTMLElement {
     this.#bg = getComputedStyle(this.#cv).color;
     this.#resize();
     this.dataset.ready = "";
+  }
+
+  /**
+   * The clay for a background colour: the dark variant (if any) on a dark page, else the light one.
+   * Each is loaded the first time it is needed, so a page only fetches the clay its theme shows.
+   */
+  #clayFor(bg: string): Promise<HTMLImageElement> {
+    const [r = 255, g = 255, b = 255] = (bg.match(/[\d.]+/g) ?? []).map(Number);
+    const dark = 0.2126 * r + 0.7152 * g + 0.0722 * b < 128;
+    const darkSources = JSON.parse(this.dataset.clayDark ?? "[]") as Source[];
+    if (dark && darkSources.length) {
+      this.#clayDark ??= loadImage(pick(darkSources, this.#drawnWidth).url);
+      return this.#clayDark;
+    }
+    const lightSources = JSON.parse(this.dataset.clay ?? "[]") as Source[];
+    this.#clayLight ??= loadImage(pick(lightSources, this.#drawnWidth).url);
+    return this.#clayLight;
   }
 
   // ---------- layout ----------

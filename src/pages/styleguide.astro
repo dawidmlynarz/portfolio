@@ -12,16 +12,18 @@ import Tag from "@/components/ui/Tag.astro";
 import Figure from "@/components/ui/Figure.astro";
 import Hero from "@/components/blocks/Hero.astro";
 import LiquidReveal from "@/components/blocks/LiquidReveal.astro";
-import WorkCard from "@/components/blocks/WorkCard.astro";
-import ShotsMarquee from "@/components/blocks/ShotsMarquee.astro";
+import WorkGrid from "@/components/blocks/WorkGrid.astro";
+import Metrics from "@/components/content/Metrics.astro";
+import SectionIntro from "@/components/blocks/SectionIntro.astro";
+import Services from "@/components/blocks/Services.astro";
+import StoryIntro from "@/components/blocks/StoryIntro.astro";
+import ClientLogos from "@/components/blocks/ClientLogos.astro";
 import { getEntry } from "astro:content";
-import shot01 from "@/assets/gallery/shot-01.jpg";
-import shot03 from "@/assets/gallery/shot-03.jpg";
-import shot07 from "@/assets/gallery/shot-07.jpg";
-import shot10 from "@/assets/gallery/shot-10.jpg";
 import { COLOR_ROLES, SPACE } from "@/lib/tokens";
-import portraitPhoto from "@/assets/portrait/portrait-photo.png";
-import portraitClay from "@/assets/portrait/portrait-clay.png";
+import { SERVICES } from "@/lib/services";
+import portraitPhoto from "@/assets/portrait/portrait-photo.avif";
+import portraitClay from "@/assets/portrait/portrait-clay.avif";
+import portraitClayDark from "@/assets/portrait/portrait-clay-dark.avif";
 import figureSample from "@/assets/placeholders/figure-sample.jpg";
 
 const TYPE_ROLES = [
@@ -48,13 +50,14 @@ const TYPE_ROLES = [
   { role: "caption", className: "text-caption", sample: "Caption · eyebrow" },
 ] as const;
 
-const sampleWork = await getEntry("work", "nerdwallet");
-const sampleShots = [
-  { src: shot01, alt: "Onboarding screens of a personal assistant app asking about your home." },
-  { src: shot03, alt: "Nike store landing page concept with product grids and campaign banners." },
-  { src: shot07, alt: "Smart home app screens: room controls, thermostat and device lists." },
-  { src: shot10, alt: "Smart lock app on a phone saying “Welcome back” over a house at dusk." },
-];
+const sampleWork = (
+  await Promise.all(
+    ["newsweek-ai-experience", "newsweek-design-system", "nerdwallet", "xwp"].map((slug) =>
+      getEntry("work", slug),
+    ),
+  )
+).filter((entry) => entry !== undefined);
+const sampleService = { ...SERVICES[0]!, title: "Services row" };
 
 const RADII = ["sm", "md", "lg", "xl", "pill"] as const;
 
@@ -284,7 +287,8 @@ const SECTIONS = [
         <p class="muted measure">
           Nav and Footer frame this page. Below: the split Hero with the LiquidReveal. At rest the
           liquid orbits the face; point at the portrait and it is pulled towards the cursor (tap on
-          touch). With reduced motion it only appears while pointing, without orbit or wobble.
+          touch). With reduced motion it only appears while pointing, without orbit or wobble. In
+          the dark theme the clay switches to its black variant (clayDark).
         </p>
       </Stack>
     </Container>
@@ -304,19 +308,56 @@ const SECTIONS = [
       slot="media"
       photo={portraitPhoto}
       clay={portraitClay}
+      clayDark={portraitClayDark}
       alt="Portrait of Dawid Młynarz as a white clay sculpture"
       loading="lazy"
     />
   </Hero>
-  <Section aria-label="Work card">
+  <Section aria-label="Work grid">
     <Container>
       <Stack gap="6">
-        <h3 class="text-caption muted">WorkCard · one per row on Home and Work</h3>
-        {sampleWork && <WorkCard entry={sampleWork} headingLevel={3} />}
+        <h3 class="text-caption muted">
+          WorkGrid of WorkCards · four-tile rhythm on desktop, staggered pairs on tablet, one column
+          on mobile · a tile without a page has no link (XWP)
+        </h3>
+        <WorkGrid entries={sampleWork} />
       </Stack>
     </Container>
   </Section>
-  <ShotsMarquee title="ShotsMarquee" shots={sampleShots} />
+  <Section aria-label="Section intro and services">
+    <Container>
+      <Stack gap="12">
+        <SectionIntro
+          label="SectionIntro · label, two-tone title, optional link"
+          title="Three ways I help teams"
+          titleMuted="ship products that work."
+          href="#blocks"
+          hrefLabel="Optional link"
+        />
+        <h3 class="text-caption muted">Services · summary (Home)</h3>
+        <Services headingLevel={4} services={[sampleService]} />
+        <h3 class="text-caption muted">Services · detailed (/services), adds deliverables</h3>
+        <Services headingLevel={4} services={[sampleService]} variant="detailed" />
+        <h3 class="text-caption muted">ClientLogos · row (About) and spread; marquee below</h3>
+        <ClientLogos />
+        <ClientLogos spread />
+        <h3 class="text-caption muted">Metrics · numbers inside case studies</h3>
+        <Metrics
+          items={[
+            { value: "80%", label: "Higher click-through rate" },
+            { value: "30%", label: "Lower bounce rate" },
+          ]}
+        />
+      </Stack>
+    </Container>
+  </Section>
+  <Section aria-label="Client logo marquee" space="sm">
+    <ClientLogos marquee />
+  </Section>
+  <StoryIntro
+    label="StoryIntro · inverse hand-off statement"
+    text="With the motion layer on, the panel grows from an inset card to full bleed and the words light up as you scroll. Without it, or with reduced motion, the full statement simply shows."
+  />
 </SiteLayout>
 
 <style>

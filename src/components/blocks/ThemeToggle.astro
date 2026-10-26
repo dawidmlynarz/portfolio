@@ -1,68 +1,81 @@
 ---
-// Cycles system → light → dark. Hidden until JS runs; without JS the OS theme applies.
-// The saved theme is applied before first paint by the inline script in BaseLayout.
+/**
+ * Light / dark switch. Light is the default; the OS setting is ignored on purpose, so the theme
+ * only changes when the visitor asks. The choice is saved and applied before first paint by the
+ * inline script in BaseLayout. Hidden until JS runs (without JS the site stays light).
+ *
+ * Transition: the new theme spreads from the button as a circle over the old one
+ * (src/scripts/spread.ts, styled in base.css). Listeners on `themechange` can delay the new snapshot by
+ * passing a promise to event.detail.waitUntil (the liquid portrait uses it to repaint first).
+ * Reduced motion or no View Transitions: the theme switches instantly.
+ */
 ---
 
-<button class="theme-toggle" type="button" data-theme-toggle data-mode="system" hidden>
-  <svg class="theme-toggle__icon theme-toggle__icon--system" viewBox="0 0 24 24" aria-hidden="true">
-    <rect x="3" y="4" width="18" height="12" rx="2"></rect>
-    <path d="M8 20h8M12 16v4"></path>
-  </svg>
-  <svg class="theme-toggle__icon theme-toggle__icon--light" viewBox="0 0 24 24" aria-hidden="true">
-    <circle cx="12" cy="12" r="4"></circle>
-    <path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"></path>
-  </svg>
-  <svg class="theme-toggle__icon theme-toggle__icon--dark" viewBox="0 0 24 24" aria-hidden="true">
-    <path d="M20 14.5A8 8 0 1 1 9.5 4a6.5 6.5 0 0 0 10.5 10.5Z"></path>
-  </svg>
-  <span class="visually-hidden" data-theme-label>
-    Theme
+<button
+  class="theme-toggle"
+  type="button"
+  data-theme-toggle
+  data-mode="light"
+  aria-pressed="false"
+  hidden
+>
+  <span class="theme-toggle__icons" aria-hidden="true">
+    <svg class="theme-toggle__icon theme-toggle__icon--light" viewBox="0 0 24 24">
+      <circle cx="12" cy="12" r="4"></circle>
+      <path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"></path>
+    </svg>
+    <svg class="theme-toggle__icon theme-toggle__icon--dark" viewBox="0 0 24 24">
+      <path d="M20 14.5A8 8 0 1 1 9.5 4a6.5 6.5 0 0 0 10.5 10.5Z"></path>
+    </svg>
   </span>
+  <span class="visually-hidden">Dark mode</span>
 </button>
 
 <script>
-  const MODES = ["system", "light", "dark"] as const;
-  type Mode = (typeof MODES)[number];
-  const LABELS: Record<Mode, string> = { system: "System", light: "Light", dark: "Dark" };
+  import { spread } from "@/scripts/spread";
+
+  type Mode = "light" | "dark";
   const root = document.documentElement;
+  const buttons = document.querySelectorAll<HTMLButtonElement>("[data-theme-toggle]");
+  const current = (): Mode => (root.dataset.theme === "dark" ? "dark" : "light");
 
-  const current = (): Mode => {
-    const theme = root.dataset.theme;
-    return theme === "light" || theme === "dark" ? theme : "system";
-  };
-
+  /** Switch the theme and let listeners register work the new snapshot should wait for. */
   const apply = (mode: Mode) => {
     try {
-      if (mode === "system") localStorage.removeItem("theme");
-      else localStorage.setItem("theme", mode);
+      localStorage.setItem("theme", mode);
     } catch {
       // Storage blocked: the choice still applies for this page view.
     }
-    if (mode === "system") delete root.dataset.theme;
-    else root.dataset.theme = mode;
-    document.dispatchEvent(new CustomEvent("themechange", { detail: { mode } }));
+    root.dataset.theme = mode;
+    const pending: Promise<unknown>[] = [];
+    document.dispatchEvent(
+      new CustomEvent("themechange", {
+        detail: { mode, waitUntil: (promise: Promise<unknown>) => pending.push(promise) },
+      }),
+    );
+    render();
+    return Promise.allSettled(pending);
   };
-
-  const buttons = document.querySelectorAll<HTMLButtonElement>("[data-theme-toggle]");
 
   const render = () => {
     const mode = current();
-    const next = MODES[(MODES.indexOf(mode) + 1) % MODES.length]!;
     for (const button of buttons) {
       button.dataset.mode = mode;
-      const label = button.querySelector("[data-theme-label]");
-      if (label) label.textContent = `Theme: ${LABELS[mode]}. Switch to ${LABELS[next]}.`;
-      button.title = `Theme: ${LABELS[mode]}`;
+      button.setAttribute("aria-pressed", String(mode === "dark"));
+      button.title = mode === "dark" ? "Switch to light mode" : "Switch to dark mode";
     }
+  };
+
+  const toggle = (button: HTMLButtonElement) => {
+    const next: Mode = current() === "dark" ? "light" : "dark";
+    // The new theme spreads from the button; wait (briefly) for listeners such as the portrait.
+    const wait = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
+    spread(button, () => Promise.race([apply(next), wait(400)]));
   };
 
   for (const button of buttons) {
     button.hidden = false;
-    button.addEventListener("click", () => {
-      const mode = current();
-      apply(MODES[(MODES.indexOf(mode) + 1) % MODES.length]!);
-      render();
-    });
+    button.addEventListener("click", () => toggle(button));
   }
   render();
 </script>
@@ -89,8 +102,13 @@
       background-color: var(--color-bg-subtle);
     }
 
+    /* Sun and moon share one cell; the inactive one turns away and shrinks out. */
+    .theme-toggle__icons {
+      display: grid;
+    }
+
     .theme-toggle__icon {
-      display: none;
+      grid-area: 1 / 1;
       inline-size: 1.125em;
       block-size: 1.125em;
       fill: none;
@@ -98,12 +116,17 @@
       stroke-width: 1.75;
       stroke-linecap: round;
       stroke-linejoin: round;
+      transition:
+        rotate var(--duration-page) var(--ease-out-expo),
+        scale var(--duration-page) var(--ease-out-expo),
+        opacity var(--duration-fast) var(--ease-standard);
     }
 
-    [data-mode="system"] .theme-toggle__icon--system,
-    [data-mode="light"] .theme-toggle__icon--light,
-    [data-mode="dark"] .theme-toggle__icon--dark {
-      display: block;
+    [data-mode="light"] .theme-toggle__icon--dark,
+    [data-mode="dark"] .theme-toggle__icon--light {
+      opacity: 0;
+      rotate: -90deg;
+      scale: 0.4;
     }
   }
 </style>
