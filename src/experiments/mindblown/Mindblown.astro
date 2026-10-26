@@ -1,0 +1,340 @@
+---
+/**
+ * Mindblown: the About hero. A dotted stage with Dawid's cut-out portrait; clicking the head
+ * snips it open and a random batch of "thought" cards bursts out, each opening a popover;
+ * clicking the brain sucks them back in and throws a fresh batch. A tilted ticker
+ * stripe closes the section. Behaviour: mindblown.ts. Copy: content.ts. Styles: mindblown.css.
+ *
+ * Isolated experiment (CLAUDE.md rule 6): every class lives under .mindblown and the section
+ * reads only semantic site tokens; illustration colours are local.
+ *
+ * Without JS (or before it runs) the resting portrait, the note and the stripe still render.
+ * The default slot is the page intro: it sits at the top of the stage and fades out when the
+ * head opens, so the thoughts can land where it was.
+ */
+import "@fontsource/gochi-hand/latin-400.css";
+import "./mindblown.css";
+import restFace from "./assets/rest-face.webp";
+import shockedFace from "./assets/shocked-face.webp";
+import superFace from "./assets/super-face.webp";
+import restTop from "./assets/rest-top.webp";
+import shockedTop from "./assets/shocked-top.webp";
+import superTop from "./assets/super-top.webp";
+import painFace from "./assets/pain-face.webp";
+import painTop from "./assets/pain-top.webp";
+import { BELT } from "./content";
+
+const img = { width: restFace.width, height: restFace.height, decoding: "async" } as const;
+const belt = [...BELT, ...BELT];
+---
+
+<div class="mindblown" data-mindblown>
+  <section class="mindblown__stage" aria-labelledby="mindblown-title">
+    {Astro.slots.has("default") && (
+      <div class="mindblown__intro">
+        <slot />
+      </div>
+    )}
+    <h2 class="visually-hidden" id="mindblown-title">
+      About Dawid Młynarz
+    </h2>
+    <div class="mindblown__head-space"></div>
+
+    <div class="mindblown__head-pos">
+      <div class="mindblown__rig">
+        <div
+          class="mindblown__head"
+          role="button"
+          tabindex="0"
+          aria-label="Open my head to see what's inside"
+          aria-expanded="false"
+        >
+          <div class="mindblown__layer mindblown__layer--base">
+            <img
+              class="mindblown__piece mindblown__piece--rest"
+              src={restFace.src}
+              alt="Dawid, black and white portrait with round glasses"
+              {...img}
+            />
+            <img
+              class="mindblown__piece mindblown__piece--shock"
+              src={shockedFace.src}
+              alt=""
+              {...img}
+            />
+            <img
+              class="mindblown__piece mindblown__piece--super"
+              src={superFace.src}
+              alt=""
+              {...img}
+            />
+            <img
+              class="mindblown__piece mindblown__piece--pain"
+              src={painFace.src}
+              alt=""
+              {...img}
+            />
+          </div>
+          <div class="mindblown__inside" aria-hidden="true">
+            <div class="mindblown__hole"></div>
+          </div>
+          <div class="mindblown__layer mindblown__layer--lid">
+            <img
+              class="mindblown__piece mindblown__piece--rest"
+              src={restTop.src}
+              alt=""
+              {...img}
+            />
+            <img
+              class="mindblown__piece mindblown__piece--shock"
+              src={shockedTop.src}
+              alt=""
+              {...img}
+            />
+            <img
+              class="mindblown__piece mindblown__piece--super"
+              src={superTop.src}
+              alt=""
+              {...img}
+            />
+            <img
+              class="mindblown__piece mindblown__piece--pain"
+              src={painTop.src}
+              alt=""
+              {...img}
+            />
+          </div>
+        </div>
+        <div class="mindblown__brain-layer" aria-hidden="true">
+          <div class="mindblown__inside">
+            <div class="mindblown__brain-clip">
+              <svg class="mindblown__brain" viewBox="0 0 140 78">
+                <path
+                  d="M18 78 C2 76 4 52 20 48 C14 28 36 16 50 26 C56 8 86 6 92 24 C108 14 130 28 122 46 C140 52 138 76 122 78 Z"
+                  fill="var(--mb-brain)"
+                  stroke="var(--mb-art-ink)"
+                  stroke-width="3.5"
+                  stroke-linejoin="round"
+                ></path>
+                <path
+                  d="M38 40 q8 -8 16 0 M76 24 q4 10 14 8 M104 44 q-8 4 -6 14 M28 62 q6 -6 12 0"
+                  fill="none"
+                  stroke="var(--mb-art-ink)"
+                  stroke-width="3"
+                  stroke-linecap="round"
+                ></path>
+                <g class="mindblown__eye">
+                  <ellipse
+                    cx="60"
+                    cy="56"
+                    rx="9"
+                    ry="10"
+                    fill="var(--mb-art-paper)"
+                    stroke="var(--mb-art-ink)"
+                    stroke-width="3"
+                  ></ellipse>
+                  <circle
+                    class="mindblown__pupil"
+                    cx="60"
+                    cy="56"
+                    r="4"
+                    fill="var(--mb-art-ink)"
+                  ></circle>
+                </g>
+                <g class="mindblown__eye">
+                  <ellipse
+                    cx="84"
+                    cy="56"
+                    rx="9"
+                    ry="10"
+                    fill="var(--mb-art-paper)"
+                    stroke="var(--mb-art-ink)"
+                    stroke-width="3"
+                  ></ellipse>
+                  <circle
+                    class="mindblown__pupil"
+                    cx="84"
+                    cy="56"
+                    r="4"
+                    fill="var(--mb-art-ink)"
+                  ></circle>
+                </g>
+              </svg>
+            </div>
+          </div>
+        </div>
+        <button
+          class="mindblown__brain-btn"
+          type="button"
+          aria-label="Show new thoughts"
+          hidden
+        ></button>
+        <div class="mindblown__cutline" aria-hidden="true">
+          <div class="mindblown__dash"></div>
+          <svg
+            class="mindblown__scissors"
+            viewBox="0 0 120 52"
+            stroke-linejoin="round"
+            stroke-linecap="round"
+          >
+            <!-- upper blade + lower handle -->
+            <g class="mindblown__blade mindblown__blade--a">
+              <path d="M44 30 L28 40" stroke="var(--mb-art-ink)" stroke-width="9"></path>
+              <path d="M44 30 L28 40" stroke="var(--mb-handle)" stroke-width="4.5"></path>
+              <ellipse
+                cx="16"
+                cy="42"
+                rx="12"
+                ry="8.5"
+                fill="none"
+                stroke="var(--mb-art-ink)"
+                stroke-width="10"
+              ></ellipse>
+              <ellipse
+                cx="16"
+                cy="42"
+                rx="12"
+                ry="8.5"
+                fill="none"
+                stroke="var(--mb-handle)"
+                stroke-width="5"
+              ></ellipse>
+              <path
+                d="M38 26 L38 19.5 Q42 14.5 52 15.5 L111 23.4 Q117 25 111 26 Z"
+                fill="var(--mb-steel)"
+                stroke="var(--mb-art-ink)"
+                stroke-width="2.8"
+              ></path>
+              <path
+                d="M55 19 L102 24"
+                stroke="var(--mb-art-paper)"
+                stroke-width="2"
+                opacity=".95"
+              ></path>
+            </g>
+            <!-- lower blade + upper handle -->
+            <g class="mindblown__blade mindblown__blade--b">
+              <path d="M44 22 L28 12" stroke="var(--mb-art-ink)" stroke-width="9"></path>
+              <path d="M44 22 L28 12" stroke="var(--mb-handle)" stroke-width="4.5"></path>
+              <ellipse
+                cx="16"
+                cy="10"
+                rx="12"
+                ry="8.5"
+                fill="none"
+                stroke="var(--mb-art-ink)"
+                stroke-width="10"
+              ></ellipse>
+              <ellipse
+                cx="16"
+                cy="10"
+                rx="12"
+                ry="8.5"
+                fill="none"
+                stroke="var(--mb-handle)"
+                stroke-width="5"
+              ></ellipse>
+              <path
+                d="M8.5 6.5 q4 -3.5 10 -2.5"
+                fill="none"
+                stroke="var(--mb-art-paper)"
+                stroke-width="1.8"
+                opacity=".85"
+              ></path>
+              <path
+                d="M38 26 L38 32.5 Q42 37.5 52 36.5 L111 28.6 Q117 27 111 26 Z"
+                fill="var(--mb-steel-shade)"
+                stroke="var(--mb-art-ink)"
+                stroke-width="2.8"
+              ></path>
+            </g>
+            <circle
+              cx="44"
+              cy="26"
+              r="4.6"
+              fill="var(--mb-art-paper)"
+              stroke="var(--mb-art-ink)"
+              stroke-width="2.6"
+            ></circle>
+            <circle cx="44" cy="26" r="1.3" fill="var(--mb-art-ink)" stroke="none"></circle>
+          </svg>
+        </div>
+      </div>
+      <div class="mindblown__note" aria-hidden="true">
+        <svg viewBox="0 0 120 70">
+          <path
+            d="M100 64 C 82 30, 52 14, 10 10 M10 10 l17 10 M10 10 l18 -5"
+            fill="none"
+            stroke="currentcolor"
+            stroke-width="3"
+            stroke-linecap="round"
+          ></path>
+        </svg>
+        <span>
+          hi, I'm Dawid.
+          <br />
+          wanna see inside?
+        </span>
+      </div>
+      <div class="mindblown__bubble" aria-hidden="true">
+        ow.
+      </div>
+      <div class="mindblown__note-close" aria-hidden="true">
+        <svg viewBox="0 0 120 70">
+          <path
+            d="M100 64 C 82 30, 52 14, 10 10 M10 10 l17 10 M10 10 l18 -5"
+            fill="none"
+            stroke="currentcolor"
+            stroke-width="3"
+            stroke-linecap="round"
+          ></path>
+        </svg>
+        <span>
+          seen enough?
+          <br />
+          <span data-close-verb>click</span> my head to close it.
+        </span>
+      </div>
+    </div>
+
+    <canvas class="mindblown__confetti" aria-hidden="true"></canvas>
+    <div class="mindblown__cards"></div>
+
+    <p class="mindblown__tip">
+      click a thought.
+      <br />
+      drag it around.
+      <br />
+      poke my brain for more.
+    </p>
+  </section>
+
+  <div class="mindblown__belt" aria-hidden="true">
+    <div class="mindblown__belt-track">
+      {belt.map((item) => (
+        <>
+          <span class="mindblown__belt-item">{item}</span>
+          <span class="mindblown__belt-star">✶</span>
+        </>
+      ))}
+    </div>
+  </div>
+
+  <div class="mindblown__pop" hidden>
+    <div class="mindblown__pop-scrim"></div>
+    <div
+      class="mindblown__pop-panel"
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="mindblown-pop-title"
+      data-lenis-prevent
+    ></div>
+  </div>
+  <div class="mindblown__cursor" aria-hidden="true"></div>
+</div>
+
+<script>
+  import { init } from "./mindblown";
+
+  for (const root of document.querySelectorAll<HTMLElement>("[data-mindblown]")) init(root);
+</script>
