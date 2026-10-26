@@ -15,7 +15,15 @@ const isCurrent = (href: string) => path === href || path.startsWith(`${href}/`)
       </svg>
       {SITE.name}
     </a>
-    <nav class="nav__menu" aria-label="Primary">
+    <button class="nav__toggle" type="button" popovertarget="nav-menu" aria-label="Menu">
+      <svg class="nav__toggle-icon nav__toggle-icon--open" viewBox="0 0 24 24" aria-hidden="true">
+        <path d="M4 7h16M4 12h16M4 17h16"></path>
+      </svg>
+      <svg class="nav__toggle-icon nav__toggle-icon--close" viewBox="0 0 24 24" aria-hidden="true">
+        <path d="M6 6l12 12M18 6 6 18"></path>
+      </svg>
+    </button>
+    <nav class="nav__menu" id="nav-menu" popover aria-label="Primary">
       <ul class="nav__links" role="list">
         {NAV_LINKS.map(({ href, label }) => (
           <li>
@@ -39,6 +47,9 @@ const isCurrent = (href: string) => path === href || path.startsWith(`${href}/`)
 <style>
   @layer components {
     .nav {
+      /* Fixed bar height: the mobile menu sheet opens right below it. */
+      --nav-block-size: var(--space-16);
+
       position: sticky;
       inset-block-start: 0;
       z-index: var(--z-nav);
@@ -74,11 +85,10 @@ const isCurrent = (href: string) => path === href || path.startsWith(`${href}/`)
 
     .nav__inner {
       display: flex;
-      flex-wrap: wrap;
       align-items: center;
       justify-content: space-between;
-      gap: var(--space-2) var(--space-4);
-      padding-block: var(--space-3);
+      gap: var(--space-4);
+      min-block-size: var(--nav-block-size);
     }
 
     .nav__home {
@@ -100,13 +110,6 @@ const isCurrent = (href: string) => path === href || path.startsWith(`${href}/`)
 
     .nav__contact-full {
       display: none;
-    }
-
-    /* Below ~416px the mark would push the menu onto a second line. */
-    @media (width < 26em) {
-      .nav__mark {
-        display: none;
-      }
     }
 
     @media (width >= 62em) {
@@ -135,10 +138,120 @@ const isCurrent = (href: string) => path === href || path.startsWith(`${href}/`)
       }
     }
 
+    /* The menu is a native popover (no JS: Esc and outside clicks close it). From 48em it is a
+       plain inline menu, so the popover UA styles are reset here. */
     .nav__menu {
+      position: static;
       display: flex;
       align-items: center;
       gap: var(--space-2);
+      inline-size: auto;
+      block-size: auto;
+      margin: 0;
+      padding: 0;
+      overflow: visible;
+      border: 0;
+      color: inherit;
+      background: none;
+    }
+
+    .nav__toggle {
+      flex-shrink: 0;
+      display: inline-grid;
+      place-items: center;
+      padding: var(--space-2);
+      border: var(--border-width) solid var(--color-border-subtle);
+      border-radius: var(--radius-pill);
+      color: var(--color-text);
+      background: transparent;
+      transition: background-color var(--duration-fast) var(--ease-standard);
+    }
+
+    .nav__toggle:hover {
+      background-color: var(--color-bg-subtle);
+    }
+
+    .nav__toggle-icon {
+      inline-size: 1.125em;
+      block-size: 1.125em;
+      fill: none;
+      stroke: currentcolor;
+      stroke-width: 1.75;
+      stroke-linecap: round;
+    }
+
+    .nav__toggle-icon--close,
+    .nav:has(.nav__menu:popover-open) .nav__toggle-icon--open {
+      display: none;
+    }
+
+    .nav:has(.nav__menu:popover-open) .nav__toggle-icon--close {
+      display: block;
+    }
+
+    /* Mobile: the whole menu folds into a sheet below the bar. */
+    @media (width < 48em) {
+      .nav__menu:not(:popover-open) {
+        display: none;
+      }
+
+      .nav__menu:popover-open {
+        position: fixed;
+        inset: var(--nav-block-size) 0 0;
+        flex-direction: column;
+        align-items: stretch;
+        gap: var(--space-8);
+        padding: var(--space-8) var(--gutter);
+        overflow-y: auto;
+        border-block-start: var(--border-width) solid var(--color-border-subtle);
+        background-color: var(--color-bg);
+      }
+
+      .nav__menu:popover-open .nav__links {
+        flex-direction: column;
+        gap: var(--space-6);
+        font: var(--weight-semibold) var(--text-h3) / var(--leading-h3) var(--font-heading);
+        letter-spacing: var(--tracking-h3);
+      }
+
+      .nav__menu:popover-open .nav__link {
+        color: var(--color-text);
+      }
+
+      .nav__menu:popover-open :global(.theme-toggle) {
+        align-self: start;
+      }
+
+      :global(html):has(.nav__menu:popover-open) {
+        overflow: hidden;
+      }
+    }
+
+    @media (width < 48em) and (prefers-reduced-motion: no-preference) {
+      .nav__menu:popover-open {
+        transition: opacity var(--duration-fast) var(--ease-standard);
+
+        @starting-style {
+          opacity: 0;
+        }
+      }
+    }
+
+    @media (width >= 48em) {
+      .nav__toggle {
+        display: none;
+      }
+    }
+
+    /* No popover support: no toggle; the menu stays inline and wraps under the name. */
+    @supports not selector(:popover-open) {
+      .nav__toggle {
+        display: none;
+      }
+
+      .nav__inner {
+        flex-wrap: wrap;
+      }
     }
 
     .nav__links {
