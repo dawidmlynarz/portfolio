@@ -11,6 +11,7 @@ Dawid found the hero reveal jarring and laggy (references: Framer's "Liquid Mous
 - **Head and lobes are analytic** (stretched along velocity, smooth-merged with the trail), drawn per pixel in the composite pass. Droplets and the tendril are gone: they added randomness that read as jitter.
 - **No 2D fallback any more.** Without WebGL the static portrait stays; WebGL 1 is universal on the browsers we target and the second renderer was ~200 lines of a different motion model.
 - Props (`size`, `soft`, `pull`, `wobble`, `fade`, `orbit`) keep their names and defaults; `pull` now sets how tightly the head follows.
+- **Auto mode is livelier** (Dawid: "more fade, some randomness but very smooth, bigger, multiple blobs merging"). At rest the head is ~25% bigger and breathes, its orbit drifts on smooth random curves (three slow sines with random rates and phases, so no two visits look the same and nothing ever jumps), the edge is feathered and the trail lingers 1.6× longer. Three drops roam the face on their own random paths, grow from nothing, swell and dry up, and merge with the head and each other through the same smooth union. On hover they swirl in around the pointer and merge into one blob; the edge sharpens. Reduced motion has no drops.
 
 ## 2026-10-27 · Performance pass
 
