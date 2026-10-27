@@ -12,6 +12,7 @@
  * The default slot is the page intro: it sits at the top of the stage and fades out when the
  * head opens, so the thoughts can land where it was.
  */
+import { getImage } from "astro:assets";
 import "@fontsource/gochi-hand/latin-400.css";
 import "./mindblown.css";
 import restFace from "./assets/rest-face.webp";
@@ -29,6 +30,34 @@ import silhouette from "./assets/silhouette.webp";
 import { BELT } from "./content";
 
 const img = { width: restFace.width, height: restFace.height, decoding: "async" } as const;
+
+// Every piece is the same 963×896 frame, served as AVIF at the head's rendered width (--hw in
+// mindblown.css). The resting pieces are the LCP; the other states only show on interaction, so
+// they load at low priority and never hold up first paint.
+const SIZES = "(width <= 1000px) min(86vw, 600px), clamp(600px, 44vw, 760px)";
+const responsive = async (asset: ImageMetadata, resting = false) => {
+  const { src, srcSet } = await getImage({
+    src: asset,
+    widths: [480, 720, asset.width],
+    format: "avif",
+    quality: 75,
+  });
+  const fetchpriority: "high" | "low" = resting ? "high" : "low";
+  return { src, srcset: srcSet.attribute, sizes: SIZES, fetchpriority };
+};
+const pic = {
+  restFace: await responsive(restFace, true),
+  shockedFace: await responsive(shockedFace),
+  superFace: await responsive(superFace),
+  painFace: await responsive(painFace),
+  lookUpFace: await responsive(lookUpFace),
+  lookLeftFace: await responsive(lookLeftFace),
+  lookRightFace: await responsive(lookRightFace),
+  restTop: await responsive(restTop, true),
+  shockedTop: await responsive(shockedTop),
+  superTop: await responsive(superTop),
+  painTop: await responsive(painTop),
+};
 
 const belt = [...BELT, ...BELT];
 ---
@@ -57,37 +86,37 @@ const belt = [...BELT, ...BELT];
           <div class="mindblown__layer mindblown__layer--base">
             <img
               class="mindblown__piece mindblown__piece--rest"
-              src={restFace.src}
+              {...pic.restFace}
               alt="Dawid, black and white portrait with round glasses"
               {...img}
             />
             <img
               class="mindblown__piece mindblown__piece--shock"
-              src={shockedFace.src}
+              {...pic.shockedFace}
               alt=""
               {...img}
             />
             <img
               class="mindblown__piece mindblown__piece--super"
-              src={superFace.src}
+              {...pic.superFace}
               alt=""
               {...img}
             />
             <img
               class="mindblown__piece mindblown__piece--pain"
-              src={painFace.src}
+              {...pic.painFace}
               alt=""
               {...img}
             />
             {/* the open head's super-shocked face, looking towards the pointer (mindblown.ts) */}
             {[
-              ["up", lookUpFace],
-              ["left", lookLeftFace],
-              ["right", lookRightFace],
+              ["up", pic.lookUpFace],
+              ["left", pic.lookLeftFace],
+              ["right", pic.lookRightFace],
             ].map(([dir, face]) => (
               <img
                 class={`mindblown__piece mindblown__piece--look mindblown__piece--look-${dir}`}
-                src={(face as typeof lookUpFace).src}
+                {...(face as typeof pic.lookUpFace)}
                 alt=""
                 {...img}
               />
@@ -347,53 +376,43 @@ const belt = [...BELT, ...BELT];
             <div class="mindblown__lid-front" aria-hidden="true">
               <img
                 class="mindblown__piece mindblown__piece--rest"
-                src={restFace.src}
+                {...pic.restFace}
                 alt=""
                 {...img}
               />
               <img
                 class="mindblown__piece mindblown__piece--shock"
-                src={shockedFace.src}
+                {...pic.shockedFace}
                 alt=""
                 {...img}
               />
               <img
                 class="mindblown__piece mindblown__piece--super"
-                src={superFace.src}
+                {...pic.superFace}
                 alt=""
                 {...img}
               />
               <img
                 class="mindblown__piece mindblown__piece--pain"
-                src={painFace.src}
+                {...pic.painFace}
                 alt=""
                 {...img}
               />
             </div>
-            <img
-              class="mindblown__piece mindblown__piece--rest"
-              src={restTop.src}
-              alt=""
-              {...img}
-            />
+            <img class="mindblown__piece mindblown__piece--rest" {...pic.restTop} alt="" {...img} />
             <img
               class="mindblown__piece mindblown__piece--shock"
-              src={shockedTop.src}
+              {...pic.shockedTop}
               alt=""
               {...img}
             />
             <img
               class="mindblown__piece mindblown__piece--super"
-              src={superTop.src}
+              {...pic.superTop}
               alt=""
               {...img}
             />
-            <img
-              class="mindblown__piece mindblown__piece--pain"
-              src={painTop.src}
-              alt=""
-              {...img}
-            />
+            <img class="mindblown__piece mindblown__piece--pain" {...pic.painTop} alt="" {...img} />
           </div>
         </div>
         <button

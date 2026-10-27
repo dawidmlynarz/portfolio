@@ -83,10 +83,14 @@ const [photoSources, claySources, clayDarkSources] = await Promise.all([
 ]);
 const topImage = top === "clay" ? clay : photo;
 // With a dark clay on top, two static images are rendered and CSS shows the one for the resolved
-// theme. Both are lazy so the hidden one (display: none) is never fetched.
+// theme. The light one (the default theme) keeps the requested loading so it can be the LCP; the
+// dark one is lazy, so it is only fetched once the dark theme shows it (display: none never loads).
 const topImageDark = top === "clay" ? clayDark : undefined;
-const imageLoading = topImageDark ? "lazy" : loading;
 const config = { top, size, soft, pull, wobble, fade, orbit, face };
+
+// Page-load fade: the image marks the portrait as shown as soon as it has loaded, without waiting
+// for the module scripts (which would push LCP back). liquid-reveal.ts does the same as a fallback.
+const markShown = "this.parentNode.dataset.shown=''";
 
 // The static <img> and the canvas share this crop: cover, positioned on the face centre.
 const objectPosition = `${((face[0] + face[1]) / 2) * 100}% ${((face[2] + face[3]) / 2) * 100}%`;
@@ -109,9 +113,10 @@ const objectPosition = `${((face[0] + face[1]) / 2) * 100}% ${((face[2] + face[3
     sizes={sizes}
     format="avif"
     quality={70}
-    loading={imageLoading}
+    loading={loading}
     fetchpriority={loading === "eager" ? "high" : undefined}
     style={`object-position: ${objectPosition}`}
+    onload={markShown}
   />
   {topImageDark && (
     <Image
@@ -123,8 +128,8 @@ const objectPosition = `${((face[0] + face[1]) / 2) * 100}% ${((face[2] + face[3
       format="avif"
       quality={70}
       loading="lazy"
-      fetchpriority={loading === "eager" ? "high" : undefined}
       style={`object-position: ${objectPosition}`}
+      onload={markShown}
     />
   )}
   <canvas class="liquid__canvas" aria-hidden="true"></canvas>
@@ -197,7 +202,7 @@ const objectPosition = `${((face[0] + face[1]) / 2) * 100}% ${((face[2] + face[3
     }
 
     /* Motion layer: the portrait fades in from 0 to 100% once its image has decoded
-       (data-shown, set by liquid-reveal.ts). Failsafe: visible after 3s regardless. */
+       (data-shown, set by the image's onload or liquid-reveal.ts). Failsafe: visible after 3s regardless. */
     :global(.motion) .liquid {
       transition: opacity var(--duration-fade) var(--ease-standard);
     }

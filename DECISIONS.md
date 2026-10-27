@@ -2,6 +2,16 @@
 
 Non-obvious choices, newest first. One entry per decision: what, why, and what it rules out.
 
+## 2026-10-27 · Performance pass
+
+Measured with Lighthouse (mobile and desktop presets) on home, About, a case study and Services. Case studies and Services already scored ~100; the two heroes were the problem.
+
+- **The liquid portrait renders with WebGL.** The 2D canvas version cost ~25ms per frame on a desktop and ~170ms on a throttled phone (CPU threshold, `getImageData`, five full-size blend-mode draws), so the home page never went idle. One fragment shader now does the threshold, edge wobble and mix per pixel, with the field still splatted on a small 2D canvas and uploaded as a texture: ~2ms per frame on desktop, ~6ms throttled. The motion model is unchanged; the edge is thresholded at full resolution instead of upscaled, so it is marginally crisper. The 2D path stays as the fallback when WebGL is unavailable. Noise phases are wrapped on the CPU so the clock never outgrows `mediump` floats on phones.
+- **The canvas starts after `load` + idle**, decodes its images off the main thread, and reuses the static clay image's file when it is big enough, so the hero no longer downloads the clay twice.
+- **The home portrait is the LCP, so it loads eagerly and fades in from its own `onload`** instead of waiting for the module scripts. In the dark theme the (hidden) light clay is still fetched; the light theme is the default, so that trade favours most visitors. Its `sizes` now asks for the drawn width (the image covers a box taller than its ratio), which also made the static image sharper.
+- **About head pieces are AVIF at the rendered width** (`srcset` 480/720/963) instead of the 963px WebP originals, and only the resting face and lid load at high priority; the other states load at low priority. About: 670KB → 447KB, mobile Lighthouse 77 → 100.
+- **Known lab artefact:** Lighthouse still reports multi-second TBT on the home page at mobile settings. Headless Chrome composites in software and reads the WebGL canvas back on every frame of the always-on orbit; phones and desktops with GPU compositing don't. Options if the lab score matters: start the orbit on first interaction, or cap the canvas at 1.5× pixel density.
+
 ## 2026-10-26 · Dotted hero backdrop by default
 
 The About hero's faint dot grid is now the default hero background: `--bg-hero` in `tokens.css` (dots in the new `--color-pattern` over `--color-bg`), used by `HomeHero`, `Hero` (404, styleguide) and the mindblown stage. To let the dots run behind the home portrait, `LiquidReveal` no longer flattens its cutouts onto `--color-bg`: the canvas stays transparent and the liquid masks both layers, so soft edges never let the photo bleed through the clay. `--color-pattern` and the pattern tokens are new; mirror them in Figma Foundations.
