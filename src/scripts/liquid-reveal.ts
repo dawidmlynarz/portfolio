@@ -1,13 +1,27 @@
 /**
  * <liquid-reveal>: a portrait on top; a liquid, pointer-driven mask reveals a second image below.
  *
- * Ported from the original Webflow embed (liquid-reveal.js, Oct 2026) with the same motion model:
- * a sprung "head" that orbits the face at rest and is magnetised to the pointer on hover, a healing
- * trail, droplets on fast moves, drifting lobes and a wobbling iso-surface edge.
+ * Motion: a "head" glides around the face at rest and follows the pointer on hover, with a
+ * critically damped ease (heavy, never overshoots). It leaves a trail that recedes from its edges
+ * as it heals, so it shrinks like liquid instead of fading. Three lobes drift around the head and
+ * merge with it and the trail (smooth union), and the edge ripples gently. At rest (auto mode) the
+ * head is bigger, its path and size drift on smooth random curves, the trail lingers, and
+ * three drops roam the face on their own, swelling, drying up and merging; on hover they all
+ * stream into the pointer.
+ * Fragile: the edge carries a fine travelling ripple, trails are beaded so they break into droplets
+ * as they heal, and fast blobs shed small droplets that drift and dry up.
  *
- * Changes from the embed:
- * - Progressive enhancement: the top image is a real responsive <img> (LCP, no-JS, alt text).
- *   The canvas fades in over it once both images are decoded.
+ * Rendering (WebGL, all on the GPU):
+ * - Trail: a small mask texture, ping-ponged each frame. Every frame lowers it by a fixed step and
+ *   stamps the head's path since the last frame as a capsule, so fast moves leave no gaps. The mask
+ *   holds a distance ramp, not a coverage value, so bilinear sampling keeps the edge sharp at any
+ *   size and lowering it moves the edge inwards.
+ * - Composite: one pass per screen pixel. The head (stretched along its velocity) and the lobes are
+ *   analytic circles, smooth-merged with the trail; the edge is anti-aliased at full resolution.
+ *
+ * Also:
+ * - Progressive enhancement: the top image is a real responsive <img> (LCP, no-JS, alt text). The
+ *   canvas fades in over it once both images are decoded. Without WebGL the static image stays.
  * - Transparent: the cutouts stay cutouts, so the hero backdrop (--bg-hero) shows around them.
  *   The liquid masks both layers (top minus liquid, bottom inside it), so a soft edge never lets
  *   the image below bleed through.
@@ -18,9 +32,6 @@
  * - Images come from astro:assets (AVIF with alpha, picked to the rendered size). The clay reuses
  *   the static <img>'s file when it is big enough, so it is not downloaded twice.
  * - Starts once the page has loaded and gone idle, so it never competes with first paint.
- * - Drawn with WebGL: one shader thresholds the liquid field, wobbles its edge and mixes the two
- *   layers per pixel, so a frame costs well under a millisecond on the main thread. Without WebGL
- *   the same model runs on a 2D canvas (threshold on the CPU, composite with blend modes).
  * - All listeners are removed when the element leaves the DOM.
  */
 
@@ -36,29 +47,39 @@ type Config = {
 };
 type Source = { url: string; w: number };
 type Layout = { dx: number; dy: number; dw: number; dh: number };
-type Stamp = { x: number; y: number; r: number; t: number };
-type Drop = Stamp & { vx: number; vy: number; life: number };
+type Point = { x: number; y: number };
+/** One frame of shape for the renderer, in CSS pixels. */
+type Shape = {
+  head: Point & { r: number; stretch: number; dirX: number; dirY: number };
+  trails: [number, number, number, number, number][]; // x0, y0 → x1, y1, r: path since last frame
+  decay: number; // amount the trail mask drops this frame (exact multiple of 1/255)
+  balls: [number, number, number][]; // x, y, r: lobes and drops, merged with the head
+  goo: number; // smooth-union radius
+  soft: number; // edge half-width
+  wobble: [number, number, number, number]; // amplitude, frequency, phase, phase
+  ripple: [number, number, number]; // amplitude, frequency, phase: fine waves along the edge
+  reveal: number;
+};
 
-const ISO = 0.5;
-const BRUSH_K = 1 / 0.54; // a brush drawn at radius r*K crosses the threshold at r
-const FIELD_PIXELS = 90_000; // mask resolution budget per frame
+const FIELD_PIXELS = 90_000; // trail mask resolution budget
+const MAX_TRAILS = 12; // head + 3 drops + 8 droplets
+const MAX_SPRAY = 8; // droplets shed by fast blobs
+const MAX_BALLS = 6; // lobes + drops
 const smoothstep = (x: number) => x * x * (3 - 2 * x);
+const clamp01 = (x: number) => Math.min(1, Math.max(0, x));
+const TAU = Math.PI * 2;
 
-let brush: HTMLCanvasElement | null = null;
-function getBrush() {
-  if (brush) return brush;
-  const size = 128;
-  brush = document.createElement("canvas");
-  brush.width = brush.height = size;
-  const c = brush.getContext("2d")!;
-  const g = c.createRadialGradient(size / 2, size / 2, 0, size / 2, size / 2, size / 2);
-  for (let i = 0; i <= 16; i++) {
-    const t = i / 16;
-    g.addColorStop(t, `rgb(0 0 0 / ${Math.pow(1 - t * t, 2).toFixed(4)})`);
-  }
-  c.fillStyle = g;
-  c.fillRect(0, 0, size, size);
-  return brush;
+/**
+ * Smooth random motion: three sines with random rates (periods of ~10–40 s) and phases. Returns a
+ * function of time in seconds, roughly in -1…1, that never jumps.
+ */
+function wander() {
+  const waves = [1, 0.6, 0.35].map((amp) => ({
+    amp: amp / 1.95,
+    rate: 0.15 + Math.random() * 0.45,
+    phase: Math.random() * TAU,
+  }));
+  return (t: number) => waves.reduce((sum, w) => sum + w.amp * Math.sin(t * w.rate + w.phase), 0);
 }
 
 /** Resolves once the page has loaded and the main thread is idle (or after a short timeout). */
@@ -72,39 +93,87 @@ const afterLoad = () =>
     else addEventListener("load", idle, { once: true });
   });
 
-/** Edge shape for one frame, shared by the WebGL and 2D renderers. */
-type Edge = { amp: number; lo: number; hi: number; f1: number; f2: number };
+/**
+ * Exact critically damped step towards a target (no overshoot, stable at any frame time).
+ * omega is the response rate: the gap closes to ~1% in 6.6 / omega seconds.
+ */
+function follow(x: number, v: number, target: number, omega: number, dt: number) {
+  const e = x - target;
+  const k = (v + omega * e) * dt;
+  const decay = Math.exp(-omega * dt);
+  return [target + (e + k) * decay, (v - omega * k) * decay] as const;
+}
 
 const VERTEX = `attribute vec2 p;varying vec2 uv;
 void main(){uv=vec2(p.x*.5+.5,.5-p.y*.5);gl_Position=vec4(p,0.,1.);}`;
 
-// Same maths as LiquidReveal.#liquidPass, per output pixel instead of per field pixel.
-const FRAGMENT = `#ifdef GL_FRAGMENT_PRECISION_HIGH
+const PRECISION = `#ifdef GL_FRAGMENT_PRECISION_HIGH
 precision highp float;
 #else
 precision mediump float;
 #endif
-uniform sampler2D topTex,bottomTex,fieldTex;
-uniform vec2 fieldSize,freq;
-uniform vec4 phase,edge;
 varying vec2 uv;
+uniform vec2 res;
+uniform float rRef;
+`;
+
+// The trail mask stores 0.5 - distance / (2 * rRef): 0.5 on the edge, rising inwards. Rows are
+// written bottom-up, so it is read with y flipped.
+const MASK = `${PRECISION}
+uniform sampler2D prev;
+uniform vec4 seg[${MAX_TRAILS}];
+uniform float radius[${MAX_TRAILS}];
+uniform float decay;
 void main(){
-  float a=texture2D(fieldTex,uv).a;
-  float m=0.;
-  if(a>0.){
-    vec2 q=uv*fieldSize;
-    float n=.62*sin(q.x*freq.x+phase.x)*cos(q.y*freq.x*.93+phase.z)
-      +.38*cos(q.x*freq.y+phase.y)*sin(q.y*freq.y*1.07+phase.w);
-    m=smoothstep(edge.y,edge.z,a+edge.x*n*min(1.,a*4.25))*edge.w;
+  vec2 p=uv*res;
+  float v=texture2D(prev,vec2(uv.x,1.-uv.y)).r-decay;
+  for(int i=0;i<${MAX_TRAILS};i++){
+    vec2 a=seg[i].xy,ab=seg[i].zw-a;
+    float h=clamp(dot(p-a,ab)/max(dot(ab,ab),1e-4),0.,1.);
+    v=max(v,.5-(length(p-a-ab*h)-radius[i])/(2.*rRef));
   }
-  vec4 top=texture2D(topTex,uv)*(1.-m);
-  gl_FragColor=top+texture2D(bottomTex,uv)*m*(1.-top.a);
+  gl_FragColor=vec4(v,0.,0.,1.);
 }`;
 
-/** Draws a frame in one pass: top layer minus the liquid, over the bottom layer inside it. */
+const COMPOSITE = `${PRECISION}
+uniform sampler2D topTex,bottomTex,maskTex;
+uniform vec4 head,wob,edge;
+uniform vec3 rip;
+uniform vec3 balls[${MAX_BALLS}];
+uniform vec2 dir;
+float smin(float a,float b,float k){
+  float h=clamp(.5+.5*(b-a)/k,0.,1.);
+  return mix(b,a,h)-k*h*(1.-h);
+}
+void main(){
+  vec2 p=uv*res;
+  vec2 q=p+wob.x*vec2(
+    sin(p.y*wob.y+wob.z)+.5*sin((p.x+p.y)*wob.y*1.7-wob.w),
+    cos(p.x*wob.y*1.13-wob.z)+.5*cos((p.x-p.y)*wob.y*1.45+wob.w));
+  vec2 m=q/res;
+  float d=(.5-texture2D(maskTex,vec2(m.x,1.-m.y)).r)*2.*rRef;
+  vec2 o=q-head.xy;
+  float sq=inversesqrt(head.w);
+  vec2 t=vec2(dot(o,dir),dot(o,vec2(-dir.y,dir.x)))/vec2(head.w,sq);
+  d=smin(d,(length(t)-head.z)*sq,edge.y);
+  for(int i=0;i<${MAX_BALLS};i++)d=smin(d,length(q-balls[i].xy)-balls[i].z,edge.y);
+  d+=rip.x*sin(dot(q,vec2(.8,.6))*rip.y+rip.z)*sin(dot(q,vec2(-.5,.87))*rip.y*.83-rip.z*1.3);
+  float a=(1.-smoothstep(-edge.x,edge.x,d))*edge.w;
+  vec4 top=texture2D(topTex,uv)*(1.-a);
+  gl_FragColor=top+texture2D(bottomTex,uv)*a*(1.-top.a);
+}`;
+
+type Program = { p: WebGLProgram; u: Record<string, WebGLUniformLocation | null> };
+
+/** Ping-pongs the trail mask and composites both layers through the liquid, once per frame. */
 class GlRenderer {
   #gl: WebGLRenderingContext;
-  #u: Record<string, WebGLUniformLocation | null> = {};
+  #mask!: Program;
+  #composite!: Program;
+  #targets: { tex: WebGLTexture; fb: WebGLFramebuffer }[] = [];
+  #layers: WebGLTexture[] = [];
+  #current = 0;
+  #size = { w: 1, h: 1 };
   ready = false;
 
   static create(canvas: HTMLCanvasElement) {
@@ -124,8 +193,18 @@ class GlRenderer {
     this.#gl = gl;
   }
 
-  /** (Re)creates the program and textures; also called after a lost context is restored. */
-  init() {
+  #texture() {
+    const gl = this.#gl;
+    const tex = gl.createTexture()!;
+    gl.bindTexture(gl.TEXTURE_2D, tex);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
+    return tex;
+  }
+
+  #program(fragment: string, uniforms: string[]): Program | null {
     const gl = this.#gl;
     const shader = (type: number, src: string) => {
       const s = gl.createShader(type)!;
@@ -133,60 +212,123 @@ class GlRenderer {
       gl.compileShader(s);
       return s;
     };
-    const program = gl.createProgram()!;
-    gl.attachShader(program, shader(gl.VERTEX_SHADER, VERTEX));
-    gl.attachShader(program, shader(gl.FRAGMENT_SHADER, FRAGMENT));
-    gl.linkProgram(program);
-    if (!gl.getProgramParameter(program, gl.LINK_STATUS)) return (this.ready = false);
-    gl.useProgram(program);
+    const p = gl.createProgram()!;
+    gl.attachShader(p, shader(gl.VERTEX_SHADER, VERTEX));
+    gl.attachShader(p, shader(gl.FRAGMENT_SHADER, fragment));
+    gl.bindAttribLocation(p, 0, "p");
+    gl.linkProgram(p);
+    if (!gl.getProgramParameter(p, gl.LINK_STATUS)) return null;
+    const u: Program["u"] = {};
+    for (const name of uniforms) u[name] = gl.getUniformLocation(p, name);
+    return { p, u };
+  }
+
+  /** (Re)creates programs and textures; also called after a lost context is restored. */
+  init() {
+    const gl = this.#gl;
+    const mask = this.#program(MASK, ["res", "rRef", "prev", "seg", "radius", "decay"]);
+    const composite = this.#program(COMPOSITE, [
+      ...["res", "rRef", "topTex", "bottomTex", "maskTex"],
+      ...["head", "balls", "wob", "rip", "edge", "dir"],
+    ]);
+    if (!mask || !composite) return (this.ready = false);
+    this.#mask = mask;
+    this.#composite = composite;
 
     gl.bindBuffer(gl.ARRAY_BUFFER, gl.createBuffer());
     gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([-1, -1, 1, -1, -1, 1, 1, 1]), gl.STATIC_DRAW);
-    const p = gl.getAttribLocation(program, "p");
-    gl.enableVertexAttribArray(p);
-    gl.vertexAttribPointer(p, 2, gl.FLOAT, false, 0, 0);
+    gl.enableVertexAttribArray(0);
+    gl.vertexAttribPointer(0, 2, gl.FLOAT, false, 0, 0);
 
-    for (const name of ["fieldSize", "freq", "phase", "edge"])
-      this.#u[name] = gl.getUniformLocation(program, name);
-    // One texture per unit, bound once: 0 top layer, 1 bottom layer, 2 liquid field.
-    ["topTex", "bottomTex", "fieldTex"].forEach((name, i) => {
+    // Units: 0 top layer, 1 bottom layer, 2 trail mask (read side of the ping-pong).
+    this.#layers = [0, 1].map((i) => {
       gl.activeTexture(gl.TEXTURE0 + i);
-      gl.bindTexture(gl.TEXTURE_2D, gl.createTexture());
-      gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
-      gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
-      gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
-      gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
-      gl.uniform1i(gl.getUniformLocation(program, name), i);
+      return this.#texture();
     });
-    return (this.ready = true);
+    gl.activeTexture(gl.TEXTURE2);
+    this.#targets = [0, 1].map(() => ({ tex: this.#texture(), fb: gl.createFramebuffer()! }));
+    gl.useProgram(composite.p);
+    gl.uniform1i(composite.u.topTex!, 0);
+    gl.uniform1i(composite.u.bottomTex!, 1);
+    gl.uniform1i(composite.u.maskTex!, 2);
+    gl.useProgram(mask.p);
+    gl.uniform1i(mask.u.prev!, 2);
+    this.ready = true;
+    this.resizeMask(this.#size.w, this.#size.h);
+    return this.ready;
+  }
+
+  /** Sizes and clears the trail mask. */
+  resizeMask(w: number, h: number) {
+    const gl = this.#gl;
+    this.#size = { w, h };
+    gl.activeTexture(gl.TEXTURE2);
+    for (const { tex, fb } of this.#targets) {
+      gl.bindTexture(gl.TEXTURE_2D, tex);
+      gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, w, h, 0, gl.RGBA, gl.UNSIGNED_BYTE, null);
+      gl.bindFramebuffer(gl.FRAMEBUFFER, fb);
+      gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, tex, 0);
+      if (gl.checkFramebufferStatus(gl.FRAMEBUFFER) !== gl.FRAMEBUFFER_COMPLETE) this.ready = false;
+      gl.viewport(0, 0, w, h);
+      gl.clearColor(0, 0, 0, 1);
+      gl.clear(gl.COLOR_BUFFER_BIT);
+    }
+    gl.bindFramebuffer(gl.FRAMEBUFFER, null);
+    gl.bindTexture(gl.TEXTURE_2D, this.#targets[this.#current]!.tex);
   }
 
   /** Uploads a painted layer (0 top, 1 bottom), premultiplied like the canvas output. */
   setLayer(i: 0 | 1, source: HTMLCanvasElement) {
     const gl = this.#gl;
     gl.activeTexture(gl.TEXTURE0 + i);
+    gl.bindTexture(gl.TEXTURE_2D, this.#layers[i]!);
     gl.pixelStorei(gl.UNPACK_PREMULTIPLY_ALPHA_WEBGL, true);
     gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, source);
   }
 
-  draw(field: HTMLCanvasElement, e: Edge, t: number, reveal: number) {
+  draw(s: Shape, W: number, H: number, rRef: number) {
     const gl = this.#gl;
-    gl.viewport(0, 0, gl.drawingBufferWidth, gl.drawingBufferHeight);
+    const read = this.#targets[this.#current]!;
+    const write = this.#targets[1 - this.#current]!;
     gl.activeTexture(gl.TEXTURE2);
-    gl.pixelStorei(gl.UNPACK_PREMULTIPLY_ALPHA_WEBGL, false);
-    gl.texImage2D(gl.TEXTURE_2D, 0, gl.ALPHA, gl.ALPHA, gl.UNSIGNED_BYTE, field);
-    // Phases wrapped on the CPU in double precision, so the clock never outgrows mediump floats.
-    const wrap = (x: number) => x % (Math.PI * 2);
-    gl.uniform2f(this.#u.fieldSize!, field.width, field.height);
-    gl.uniform2f(this.#u.freq!, e.f1, e.f2);
-    gl.uniform4f(
-      this.#u.phase!,
-      wrap(t * 1.15),
-      wrap(1.2 - t * 1.6),
-      wrap(0.4 - t * 0.9),
-      wrap(t * 1.35),
-    );
-    gl.uniform4f(this.#u.edge!, e.amp, e.lo, e.hi, reveal);
+    gl.bindTexture(gl.TEXTURE_2D, read.tex);
+
+    // 1. Trail: lower the mask, stamp each path since the last frame.
+    let u = this.#mask.u;
+    gl.useProgram(this.#mask.p);
+    gl.bindFramebuffer(gl.FRAMEBUFFER, write.fb);
+    gl.viewport(0, 0, this.#size.w, this.#size.h);
+    gl.uniform2f(u.res!, W, H);
+    gl.uniform1f(u.rRef!, rRef);
+    const segs = new Float32Array(MAX_TRAILS * 4);
+    const radii = new Float32Array(MAX_TRAILS).fill(-1e4);
+    s.trails.slice(0, MAX_TRAILS).forEach(([x0, y0, x1, y1, r], i) => {
+      segs.set([x0, y0, x1, y1], i * 4);
+      radii[i] = r;
+    });
+    gl.uniform4fv(u.seg!, segs);
+    gl.uniform1fv(u.radius!, radii);
+    gl.uniform1f(u.decay!, s.decay);
+    gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
+    this.#current = 1 - this.#current;
+
+    // 2. Composite to the canvas.
+    gl.bindFramebuffer(gl.FRAMEBUFFER, null);
+    gl.bindTexture(gl.TEXTURE_2D, write.tex);
+    u = this.#composite.u;
+    gl.useProgram(this.#composite.p);
+    gl.viewport(0, 0, gl.drawingBufferWidth, gl.drawingBufferHeight);
+    gl.uniform2f(u.res!, W, H);
+    gl.uniform1f(u.rRef!, rRef);
+    const { head } = s;
+    gl.uniform4f(u.head!, head.x, head.y, head.r, head.stretch);
+    gl.uniform2f(u.dir!, head.dirX, head.dirY);
+    const balls = new Float32Array(MAX_BALLS * 3);
+    for (let i = 0; i < MAX_BALLS; i++) balls.set(s.balls[i] ?? [0, 0, -1e4], i * 3);
+    gl.uniform3fv(u.balls!, balls);
+    gl.uniform4f(u.wob!, ...s.wobble);
+    gl.uniform3f(u.rip!, ...s.ripple);
+    gl.uniform4f(u.edge!, s.soft, s.goo, 0, s.reveal);
     gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
   }
 }
@@ -209,20 +351,10 @@ class LiquidReveal extends HTMLElement {
   #cfg!: Config;
   #reduceMotion = false;
 
-  // canvases (#gl when WebGL is available, else #ctx)
   #cv!: HTMLCanvasElement;
   #gl: GlRenderer | null = null;
-  #ctx: CanvasRenderingContext2D | null = null;
   #topLayer = document.createElement("canvas");
   #bottomLayer = document.createElement("canvas");
-  #mix = document.createElement("canvas");
-  #field = document.createElement("canvas");
-  #fctx = this.#field.getContext("2d", { willReadFrequently: true })!;
-  #out = document.createElement("canvas");
-  #octx = this.#out.getContext("2d")!;
-  #outImg: ImageData | null = null;
-  #noiseX = new Float32Array(0);
-  #noiseY = new Float32Array(0);
   #photo: HTMLImageElement | null = null;
   #clay: HTMLImageElement | null = null;
   #clayLight: Promise<HTMLImageElement> | null = null;
@@ -234,14 +366,31 @@ class LiquidReveal extends HTMLElement {
   #W = 0;
   #H = 0;
   #dpr = 1;
-  #MS = 0.33;
   #L: Layout | null = null;
 
   // motion
   #head = { x: 0, y: 0, vx: 0, vy: 0 };
+  #from: Point = { x: 0, y: 0 };
+  #headWander = [wander(), wander(), wander()]; // x, y, size
+  // Drops: smaller blobs that roam the face on their own at rest, grow, shrink, vanish and merge,
+  // then stream into the pointer on hover.
+  #drops = Array.from({ length: 3 }, () => ({
+    x: 0,
+    y: 0,
+    vx: 0,
+    vy: 0,
+    nx: wander(),
+    ny: wander(),
+    size: wander(),
+    from: { x: 0, y: 0 } as Point,
+    travelled: 0,
+  }));
+  #travelled = 0; // head path length, for the beaded trail
+  // Spray: small droplets that break off fast-moving blobs, drift, slow down and dry up.
+  #spray: { x: number; y: number; vx: number; vy: number; r: number; age: number; life: number }[] =
+    [];
   #hasHead = false;
   #cursor = { x: 0, y: 0 };
-  #softCursor = { x: 0, y: 0 };
   #lastClient = { x: -1, y: -1 };
   #over = false;
   #touchUntil = 0;
@@ -249,11 +398,8 @@ class LiquidReveal extends HTMLElement {
   #orbitSpeed = 0;
   #pullMix = 0;
   #wobbleClock = 0;
-  #wasResting = true;
   #reveal = 1;
-  #trail: Stamp[] = [];
-  #drops: Drop[] = [];
-  #lastEmit: { x: number; y: number } | null = null;
+  #decayDebt = 0; // trail decay owed, in 1/255 steps (the mask is 8-bit)
 
   // loop
   #visible = false;
@@ -279,8 +425,7 @@ class LiquidReveal extends HTMLElement {
     if (!canvas) return;
     this.#cv = canvas;
     this.#gl = GlRenderer.create(canvas);
-    if (!this.#gl) this.#ctx = canvas.getContext("2d");
-    if (!this.#gl && !this.#ctx) return;
+    if (!this.#gl) return; // keep the static <img>
 
     const { signal } = this.#abort;
     canvas.addEventListener(
@@ -347,7 +492,6 @@ class LiquidReveal extends HTMLElement {
 
     const { signal } = this.#abort;
     new ResizeObserver(() => this.#resize()).observe(this);
-    signal.addEventListener("abort", () => this.#trail.splice(0));
 
     const onTheme = async () => {
       this.#bg = getComputedStyle(this.#cv).color;
@@ -374,7 +518,12 @@ class LiquidReveal extends HTMLElement {
     window.addEventListener(
       "pointermove",
       (e) => {
-        if (e.pointerType === "touch") return;
+        if (e.pointerType === "touch") {
+          // A finger still down after a tap drags the liquid until the page starts scrolling.
+          if (performance.now() < this.#touchUntil && this.#track(e.clientX, e.clientY))
+            this.#touchUntil = performance.now() + 1600;
+          return;
+        }
         this.#lastClient.x = e.clientX;
         this.#lastClient.y = e.clientY;
         this.#over = this.#track(e.clientX, e.clientY);
@@ -456,27 +605,22 @@ class LiquidReveal extends HTMLElement {
   }
 
   #resize() {
-    if (!this.#photo || !this.#clay) return;
+    if (!this.#photo || !this.#clay || !this.#gl) return;
     const rect = this.getBoundingClientRect();
     this.#W = Math.max(1, rect.width);
     this.#H = Math.max(1, rect.height);
     this.#dpr = Math.min(devicePixelRatio || 1, 2);
     this.#cv.width = Math.round(this.#W * this.#dpr);
     this.#cv.height = Math.round(this.#H * this.#dpr);
-    this.#MS = Math.min(0.5, Math.sqrt(FIELD_PIXELS / (this.#W * this.#H)));
-    this.#field.width = this.#out.width = Math.max(1, Math.ceil(this.#W * this.#MS));
-    this.#field.height = this.#out.height = Math.max(1, Math.ceil(this.#H * this.#MS));
-    this.#outImg = this.#octx.createImageData(this.#out.width, this.#out.height);
-    this.#noiseX = new Float32Array(this.#field.width * 2);
-    this.#noiseY = new Float32Array(this.#field.height * 2);
-    this.#trail.length = 0;
-    this.#drops.length = 0;
+    const ms = Math.min(0.5, Math.sqrt(FIELD_PIXELS / (this.#W * this.#H)));
+    this.#gl.resizeMask(Math.max(1, Math.ceil(this.#W * ms)), Math.max(1, Math.ceil(this.#H * ms)));
     this.#L = this.#computeLayout(this.#photo.naturalWidth, this.#photo.naturalHeight);
     this.#paintLayers();
     if (!this.#hasHead) {
       const o = this.#orbitPoint(this.#orbitAngle);
-      this.#head.x = o.x;
-      this.#head.y = o.y;
+      this.#head.x = this.#from.x = o.x;
+      this.#head.y = this.#from.y = o.y;
+      for (const d of this.#drops) [d.x, d.y] = [o.x, o.y];
       this.#hasHead = true;
     }
     this.#kick();
@@ -523,6 +667,22 @@ class LiquidReveal extends HTMLElement {
     };
   }
 
+  #faceCentre() {
+    const L = this.#L!;
+    const [x0, x1] = this.#cfg.face;
+    return { cx: L.dx + ((x0 + x1) / 2) * L.dw, cy: L.dy + 0.44 * L.dh };
+  }
+
+  /** How far drops may roam from the face centre. */
+  #faceSpread() {
+    const L = this.#L!;
+    const [x0, x1, y0, y1] = this.#cfg.face;
+    return {
+      x: Math.min((x1 - x0) * L.dw * 0.42, this.#W * 0.42),
+      y: Math.min((y1 - y0) * L.dh * 0.36, this.#H * 0.38),
+    };
+  }
+
   #track(clientX: number, clientY: number) {
     const r = this.getBoundingClientRect();
     const inside =
@@ -534,298 +694,188 @@ class LiquidReveal extends HTMLElement {
     return inside;
   }
 
-  // ---------- field ----------
-
-  #splat(x: number, y: number, r: number, a: number) {
-    if (a <= 0.004 || r <= 0.5) return;
-    const R = r * BRUSH_K * this.#MS;
-    this.#fctx.globalAlpha = Math.min(1, a);
-    this.#fctx.drawImage(getBrush(), x * this.#MS - R, y * this.#MS - R, R * 2, R * 2);
-  }
-
-  #emitTrail(now: number, r: number) {
-    const head = this.#head;
-    const speed = Math.hypot(head.vx, head.vy);
-    const rr = r * (0.9 + Math.min(speed / 2600, 0.25));
-    if (!this.#lastEmit) {
-      this.#lastEmit = { x: head.x, y: head.y };
-      return;
-    }
-    const dx = head.x - this.#lastEmit.x;
-    const dy = head.y - this.#lastEmit.y;
-    const d = Math.hypot(dx, dy);
-    const spacing = Math.max(3, r * 0.12);
-    if (d >= spacing) {
-      const n = Math.min(60, Math.floor(d / spacing));
-      for (let i = 1; i <= n; i++) {
-        this.#trail.push({
-          x: this.#lastEmit.x + (dx * i) / n,
-          y: this.#lastEmit.y + (dy * i) / n,
-          r: rr,
-          t: now,
-        });
-      }
-      this.#lastEmit = { x: head.x, y: head.y };
-    }
-    if (
-      !this.#reduceMotion &&
-      speed > 450 &&
-      this.#drops.length < 36 &&
-      Math.random() < Math.min(0.5, (speed / 900) * 0.12)
-    ) {
-      const nx = -head.vy / speed;
-      const ny = head.vx / speed;
-      const side = Math.random() < 0.5 ? -1 : 1;
-      const off = r * (0.55 + Math.random() * 0.45) * side;
-      this.#drops.push({
-        x: head.x + nx * off,
-        y: head.y + ny * off,
-        vx: nx * side * (40 + Math.random() * 70) + head.vx * 0.08,
-        vy: ny * side * (40 + Math.random() * 70) + head.vy * 0.08,
-        r: r * (0.2 + Math.random() * 0.18),
-        t: now,
-        life: 500 + Math.random() * 700,
-      });
-    }
-  }
-
-  /** The liquid edge: threshold band, wobble amplitude and noise frequencies (in field pixels). */
-  #edge(r: number, hover: number): Edge {
-    const amp = (this.#cfg.wobble / 100) * 0.3 * (1 + 0.9 * hover);
-    const s = 0.015 + (this.#cfg.soft / 100) * 0.42 + 0.06 * hover;
-    const wl = Math.max(10, r * this.#MS * 2.1);
-    const f1 = (Math.PI * 2) / wl;
-    return { amp, lo: ISO - s, hi: ISO + s, f1, f2: f1 * 1.61 };
-  }
-
-  /** 2D fallback: threshold the field into a liquid edge, wobbled by separable sine noise. */
-  #liquidPass(t: number, { amp, lo, hi, f1, f2 }: Edge) {
-    const fw = this.#field.width;
-    const fh = this.#field.height;
-    const src = this.#fctx.getImageData(0, 0, fw, fh).data;
-    const dst = this.#outImg!.data;
-    const nx = this.#noiseX;
-    const ny = this.#noiseY;
-    const inv = 1 / (hi - lo);
-    for (let x = 0; x < fw; x++) {
-      nx[x * 2] = Math.sin(x * f1 + t * 1.15);
-      nx[x * 2 + 1] = Math.cos(x * f2 - t * 1.6 + 1.2);
-    }
-    for (let y = 0; y < fh; y++) {
-      ny[y * 2] = Math.cos(y * f1 * 0.93 - t * 0.9 + 0.4);
-      ny[y * 2 + 1] = Math.sin(y * f2 * 1.07 + t * 1.35);
-    }
-    for (let y = 0, i = 3; y < fh; y++) {
-      const ay = ny[y * 2]!;
-      const by = ny[y * 2 + 1]!;
-      for (let x = 0; x < fw; x++, i += 4) {
-        const a = src[i]!;
-        if (a === 0) {
-          dst[i] = 0;
-          continue;
-        }
-        const v =
-          a / 255 +
-          amp * (0.62 * nx[x * 2]! * ay + 0.38 * nx[x * 2 + 1]! * by) * Math.min(1, a / 60);
-        let o = (v - lo) * inv;
-        o = o <= 0 ? 0 : o >= 1 ? 1 : o * o * (3 - 2 * o);
-        dst[i] = (o * 255 * this.#reveal) | 0;
-      }
-    }
-    this.#octx.putImageData(this.#outImg!, 0, 0);
-  }
-
   // ---------- loop (pauses off screen and in hidden tabs) ----------
 
   #kick() {
     if (this.#running || !this.#visible || document.hidden || !this.#L) return;
-    if (this.#gl && !this.#gl.ready) return; // context lost; restored re-kicks
+    if (!this.#gl?.ready) return; // context lost; restored re-kicks
     this.#running = true;
     this.#last = performance.now();
     requestAnimationFrame((t) => this.#frame(t));
   }
 
   #frame(now: number) {
-    if (!this.#running || !this.#visible || document.hidden) {
+    if (!this.#running || !this.#visible || document.hidden || !this.#gl?.ready) {
       this.#running = false;
       return;
     }
     const cfg = this.#cfg;
     const rm = this.#reduceMotion;
     const head = this.#head;
-    const soft = this.#softCursor;
-    const dt = Math.min(0.033, (now - this.#last) / 1000);
+    // Real elapsed time (the follow is exact at any step), capped for stalls and background tabs.
+    const dt = Math.min(0.1, (now - this.#last) / 1000);
     this.#last = now;
     const resting = !this.#over && now > this.#touchUntil;
 
-    if (this.#wasResting && !resting) {
-      soft.x = this.#cursor.x;
-      soft.y = this.#cursor.y;
-    }
-    this.#wasResting = resting;
-    const kc = 1 - Math.exp(-dt * 12);
-    soft.x += (this.#cursor.x - soft.x) * kc;
-    soft.y += (this.#cursor.y - soft.y) * kc;
-
+    // Hover blend: quick to arrive, slow to let go.
     this.#pullMix +=
-      ((resting ? 0 : 1) - this.#pullMix) * (1 - Math.exp(-dt * (resting ? 1.2 : 2.4)));
-    const m = smoothstep(Math.min(1, Math.max(0, this.#pullMix)));
+      ((resting ? 0 : 1) - this.#pullMix) * (1 - Math.exp(-dt * (resting ? 1.6 : 6)));
+    const m = smoothstep(clamp01(this.#pullMix));
 
     const ts = now / 1000;
-    const calm =
-      0.5 * Math.sin(ts * 0.31) + 0.3 * Math.sin(ts * 0.53 + 1.1) + 0.2 * Math.sin(ts * 0.89 + 2.3);
-    const lively =
-      0.5 * Math.sin(ts * 1.7 + 0.4) + 0.3 * Math.sin(ts * 2.9 + 1.7) + 0.2 * Math.sin(ts * 4.3);
-    const sizeMod = rm ? 1 : (1 + 0.24 * calm) * (1 - m) + (1.25 + 0.12 * lively + 0.08 * calm) * m;
-    const r = this.#baseRadius() * sizeMod;
-    this.#wobbleClock += dt * (0.6 + 1.0 * m);
+    const [wx, wy, ws] = this.#headWander.map((n) => (rm ? 0 : n(ts)));
+    // Bigger and breathing at rest; one steady size under the pointer.
+    const sizeMod = rm ? 1 : (1.25 + 0.22 * ws!) * (1 - m) + 1.22 * m;
+    const base = this.#baseRadius();
+    const r = base * sizeMod;
+    this.#wobbleClock += dt * (0.5 + 0.5 * m);
 
     const goalSpeed = rm ? 0 : (0.12 + (cfg.orbit / 100) * 1.1) * (1 - m * 0.8);
     this.#orbitSpeed += (goalSpeed - this.#orbitSpeed) * (1 - Math.exp(-dt * 1.3));
     this.#orbitAngle += dt * this.#orbitSpeed;
-    const o = this.#orbitPoint(this.#orbitAngle, rm ? 0 : now);
-    const tx = o.x + (soft.x - o.x) * m;
-    const ty = o.y + (soft.y - o.y) * m;
+    const orbit = this.#orbitPoint(this.#orbitAngle, rm ? 0 : now);
+    const spread = this.#faceSpread();
+    const o = { x: orbit.x + wx! * spread.x * 0.35, y: orbit.y + wy! * spread.y * 0.35 };
+    const tx = o.x + (this.#cursor.x - o.x) * m;
+    const ty = o.y + (this.#cursor.y - o.y) * m;
 
-    const k = 9 + (cfg.pull / 100) * 75 + 30 * m;
-    const c = 2 * Math.sqrt(k) * 0.64;
-    head.vx += ((tx - head.x) * k - head.vx * c) * dt;
-    head.vy += ((ty - head.y) * k - head.vy * c) * dt;
-    const sp = Math.hypot(head.vx, head.vy);
-    const vmax = 2200;
-    if (sp > vmax) {
-      head.vx *= vmax / sp;
-      head.vy *= vmax / sp;
-    }
+    // Floaty at rest, heavier but responsive on hover (pull sets how tightly it follows).
+    const omega = 3.5 + (5 + (cfg.pull / 100) * 12 - 3.5) * m;
+    this.#from = { x: head.x, y: head.y };
     if (rm && !resting) {
       head.x = tx;
       head.y = ty;
       head.vx = head.vy = 0;
+      if (this.#reveal < 0.05) this.#from = { x: tx, y: ty }; // appear in place, no streak
+    } else {
+      [head.x, head.vx] = follow(head.x, head.vx, tx, omega, dt);
+      [head.y, head.vy] = follow(head.y, head.vy, ty, omega, dt);
     }
-    head.x += head.vx * dt;
-    head.y += head.vy * dt;
 
     const want = rm ? (resting ? 0 : 1) : 1;
-    this.#reveal += (want - this.#reveal) * Math.min(1, dt * 4);
+    this.#reveal += (want - this.#reveal) * (1 - Math.exp(-dt * 6));
 
-    const f = this.#fctx;
-    f.setTransform(1, 0, 0, 1, 0, 0);
-    f.globalAlpha = 1;
-    f.clearRect(0, 0, this.#field.width, this.#field.height);
+    // Trail mask drop, paid in whole 8-bit steps so the heal time is exact at any frame rate.
+    // At rest the trail lingers longer, so the drops leave slow, fading streams.
+    const rRef = base * 1.6;
+    const heal = Math.max(0.1, cfg.fade) * (1.6 - 0.6 * m);
+    this.#decayDebt += ((dt * (base * 1.22)) / (2 * rRef) / heal) * 255;
+    const steps = Math.floor(this.#decayDebt);
+    this.#decayDebt -= steps;
 
-    if (this.#reveal > 0.01) this.#emitTrail(now, r);
-    else this.#lastEmit = null;
-    const life = cfg.fade * 1000;
-    while (this.#trail.length && now - this.#trail[0]!.t > life) this.#trail.shift();
-    if (this.#trail.length > 800) this.#trail.splice(0, this.#trail.length - 800);
-    for (const s of this.#trail) {
-      const p = (now - s.t) / life;
-      this.#splat(s.x, s.y, s.r * (1 - 0.55 * p * p), Math.pow(1 - p, 1.5) * 0.72);
-    }
-    for (let i = this.#drops.length - 1; i >= 0; i--) {
-      const d = this.#drops[i]!;
-      const p = (now - d.t) / d.life;
-      if (p >= 1) {
-        this.#drops.splice(i, 1);
-        continue;
-      }
-      const damp = Math.exp(-dt * 3);
-      d.vx *= damp;
-      d.vy *= damp;
-      d.x += d.vx * dt;
-      d.y += d.vy * dt;
-      this.#splat(d.x, d.y, d.r * (1 - 0.4 * p), (1 - smoothstep(p)) * 0.95);
-    }
-
-    // Head, drifting lobes, squash/stretch along velocity, then the tendril and cursor pool.
+    // Squash and stretch along the velocity.
     const speed = Math.hypot(head.vx, head.vy);
-    this.#splat(head.x, head.y, r, 1);
-    if (!rm) {
-      for (let i = 0; i < 4; i++) {
-        const ph = i * 1.9 + 0.7;
-        const ang = ts * (0.35 + 0.55 * m) * (i % 2 ? -1 : 1) + ph + Math.sin(ts * 0.7 + ph) * 0.8;
-        const sz =
-          0.5 +
-          0.18 * Math.sin(ts * (0.6 + 0.9 * m) * (1 + i * 0.23) + ph * 2) +
-          0.12 * Math.sin(ts * 1.3 + ph);
-        const dist =
-          r * (0.38 + 0.18 * Math.sin(ts * (0.5 + 0.8 * m) + ph * 1.3)) * (0.7 + 0.5 * m);
-        this.#splat(head.x + Math.cos(ang) * dist, head.y + Math.sin(ang) * dist, r * sz, 0.9);
-      }
-      if (speed > 20) {
-        const ux = head.vx / speed;
-        const uy = head.vy / speed;
-        const st = Math.min(speed / 1600, 0.6);
-        this.#splat(
-          head.x - ux * r * 0.7 * st,
-          head.y - uy * r * 0.7 * st,
-          r * (1 - 0.25 * st),
-          0.9,
-        );
-        this.#splat(
-          head.x + ux * r * 0.35 * st,
-          head.y + uy * r * 0.35 * st,
-          r * (0.9 - 0.2 * st),
-          0.8,
-        );
-      }
-    }
-    if (m > 0.02 && this.#reveal > 0.01) {
-      const dx = soft.x - head.x;
-      const dy = soft.y - head.y;
-      const d = Math.hypot(dx, dy);
-      const strength = (0.3 + (cfg.pull / 100) * 0.6) * m;
-      if (d > r * 0.25) {
-        const steps = Math.min(30, Math.ceil(d / (r * 0.1)));
-        for (let i = 1; i <= steps; i++) {
-          const u = i / steps;
-          const neck =
-            r * (0.62 - 0.2 * smoothstep(u)) * strength * Math.min(1, (r * 3.2) / d + 0.3);
-          this.#splat(head.x + dx * u, head.y + dy * u, neck, 0.85);
-        }
-      }
-      this.#splat(soft.x, soft.y, r * (0.62 + 0.1 * lively) * m, 0.95);
-    }
+    const stretch = rm ? 1 : 1 + Math.min(speed / 2400, 0.35);
+    const dirX = speed > 1 ? head.vx / speed : 1;
+    const dirY = speed > 1 ? head.vy / speed : 0;
 
-    const edge = this.#edge(r, m);
-    const clock = rm ? 0 : this.#wobbleClock;
-    if (this.#gl) this.#gl.draw(this.#field, edge, clock, this.#reveal);
-    else this.#composite2d(clock, edge);
+    const balls: [number, number, number][] = [];
+    const trails: Shape["trails"] = [];
+    // Beaded trail: the stamp swells and pinches along the path, so as the trail heals its necks
+    // dry first and it breaks into a string of droplets.
+    const bead = (travelled: number, R: number) =>
+      rm ? R : R * (0.55 + 0.45 * Math.cos((travelled / (R * 0.85)) * TAU));
+    const hx = head.x - this.#from.x;
+    const hy = head.y - this.#from.y;
+    this.#travelled += Math.hypot(hx, hy);
+    if (this.#reveal > 0.01)
+      trails.push([this.#from.x, this.#from.y, head.x, head.y, bead(this.#travelled, r * 0.9)]);
+    const shed = (x: number, y: number, vx: number, vy: number, R: number) => {
+      const v = Math.hypot(vx, vy);
+      if (rm || R <= 0 || this.#spray.length >= MAX_SPRAY) return;
+      if (Math.random() > clamp01((v - 120) / 900) * 10 * dt) return;
+      const ux = vx / v;
+      const uy = vy / v;
+      const side = (Math.random() - 0.5) * 1.3;
+      this.#spray.push({
+        x: x - ux * R * 0.8 - uy * R * side,
+        y: y - uy * R * 0.8 + ux * R * side,
+        vx: vx * 0.3 - uy * side * 90,
+        vy: vy * 0.3 + ux * side * 90,
+        r: R * (0.1 + Math.random() * 0.12),
+        age: 0,
+        life: 0.5 + Math.random() * 0.7,
+      });
+    };
+    shed(head.x, head.y, head.vx, head.vy, r);
+    if (!rm) {
+      for (let i = 0; i < 3; i++) {
+        const ph = i * 2.1 + 0.7;
+        const ang = ts * (0.28 + 0.3 * m) * (i % 2 ? -1 : 1) + ph + Math.sin(ts * 0.45 + ph) * 0.7;
+        const dist = r * (0.42 + 0.16 * Math.sin(ts * (0.4 + 0.3 * m) + ph * 1.3));
+        const size = r * (0.5 + 0.1 * Math.sin(ts * (0.5 + 0.4 * m) * (1 + i * 0.2) + ph * 2));
+        balls.push([head.x + Math.cos(ang) * dist, head.y + Math.sin(ang) * dist, size]);
+      }
+      const { cx, cy } = this.#faceCentre();
+      this.#drops.forEach((d, i) => {
+        // Roam the face at rest; on hover, swirl in close around the pointer and merge with the head.
+        const a = ts * 0.8 + (i * TAU) / this.#drops.length;
+        const gx = cx + d.nx(ts) * spread.x;
+        const gy = cy + d.ny(ts) * spread.y;
+        const px = this.#cursor.x + Math.cos(a) * r * 0.45;
+        const py = this.#cursor.y + Math.sin(a) * r * 0.45;
+        const omegaDrop = 1.4 + (3 + (cfg.pull / 100) * 6 - 1.4) * m;
+        d.from = { x: d.x, y: d.y };
+        [d.x, d.vx] = follow(d.x, d.vx, gx + (px - gx) * m, omegaDrop, dt);
+        [d.y, d.vy] = follow(d.y, d.vy, gy + (py - gy) * m, omegaDrop, dt);
+        // Size drifts between nothing and most of the head, so drops appear, swell and dry up.
+        const life = smoothstep(clamp01(0.55 + 0.75 * d.size(ts)));
+        const size = r * ((0.85 * life - 0.15) * (1 - m) + 0.5 * m);
+        balls.push([d.x, d.y, size]);
+        d.travelled += Math.hypot(d.x - d.from.x, d.y - d.from.y);
+        if (size > 0 && this.#reveal > 0.01)
+          trails.push([d.from.x, d.from.y, d.x, d.y, bead(d.travelled, size * 0.85)]);
+        shed(d.x, d.y, d.vx, d.vy, size);
+      });
+    }
+    this.#spray = this.#spray.filter((p) => {
+      const x0 = p.x;
+      const y0 = p.y;
+      const drag = Math.exp(-dt * 4);
+      p.vx *= drag;
+      p.vy *= drag;
+      p.x += p.vx * dt;
+      p.y += p.vy * dt;
+      p.age += dt;
+      const t = p.age / p.life;
+      if (t >= 1) return false;
+      trails.push([x0, y0, p.x, p.y, p.r * (1 - t * t)]);
+      return true;
+    });
+
+    const w = rm ? 0 : this.#wobbleClock;
+    this.#gl.draw(
+      {
+        head: { x: head.x, y: head.y, r, stretch, dirX, dirY },
+        trails,
+        decay: steps / 255,
+        balls,
+        goo: r * (0.34 + 0.1 * (1 - m)),
+        soft: 0.6 + (cfg.soft / 100) * r * 0.025,
+        wobble: [
+          rm ? 0 : (cfg.wobble / 100) * r * (0.07 + 0.04 * m),
+          TAU / Math.max(10, r * 1.6),
+          (w * 1.3) % TAU,
+          (w * 0.9) % TAU,
+        ],
+        ripple: [
+          rm ? 0 : 1.2 + Math.min(speed / 1200, 1.4),
+          TAU / Math.max(14, r * 0.32),
+          (w * 4.2) % TAU,
+        ],
+        reveal: this.#reveal,
+      },
+      this.#W,
+      this.#H,
+      rRef,
+    );
 
     // With reduced motion there is nothing to animate once the liquid has faded out.
-    if (rm && resting && this.#reveal < 0.01 && !this.#trail.length) {
+    if (rm && resting && this.#reveal < 0.01) {
       this.#running = false;
       return;
     }
     requestAnimationFrame((t) => this.#frame(t));
-  }
-
-  #composite2d(clock: number, edge: Edge) {
-    this.#liquidPass(clock, edge);
-
-    // Top layer with the liquid cut out, over the bottom layer kept only inside the liquid.
-    const W = this.#cv.width,
-      H = this.#cv.height;
-    if (this.#mix.width !== W || this.#mix.height !== H)
-      [this.#mix.width, this.#mix.height] = [W, H];
-    const mix = this.#mix.getContext("2d")!;
-    mix.globalCompositeOperation = "copy";
-    mix.drawImage(this.#bottomLayer, 0, 0);
-    mix.globalCompositeOperation = "destination-in";
-    mix.imageSmoothingEnabled = true;
-    mix.imageSmoothingQuality = "high";
-    mix.drawImage(this.#out, 0, 0, W, H);
-    const ctx = this.#ctx!;
-    ctx.setTransform(1, 0, 0, 1, 0, 0);
-    ctx.globalCompositeOperation = "copy";
-    ctx.drawImage(this.#topLayer, 0, 0);
-    ctx.globalCompositeOperation = "destination-out";
-    ctx.imageSmoothingEnabled = true;
-    ctx.imageSmoothingQuality = "high";
-    ctx.drawImage(this.#out, 0, 0, W, H);
-    ctx.globalCompositeOperation = "destination-over";
-    ctx.drawImage(this.#mix, 0, 0);
-    ctx.globalCompositeOperation = "source-over";
   }
 }
 
