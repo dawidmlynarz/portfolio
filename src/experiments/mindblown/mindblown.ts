@@ -576,12 +576,16 @@ export function init(root: HTMLElement): () => void {
           { yPercent: PEEK_BRAIN, duration: T(0.8), ease: "power3.out", onUpdate: () => look() },
           0.1,
         );
-      } else
-        tl.to(brain, { yPercent: 98, duration: T(0.35), ease: "power2.in" }, 0).to(
-          lid,
-          { yPercent: 0, x: 0, rotation: 0, duration: T(0.5), ease: "power2.inOut" },
-          0.05,
-        );
+      } else {
+        // the lean's own quickTo tweens bring rotation and x home: a second tween on the same
+        // props would end first and let the lean land the lid at an angle; the empty tween keeps
+        // the hole cut until the lean has settled
+        lean.r(0);
+        lean.x(0);
+        tl.to(brain, { yPercent: 98, duration: T(0.35), ease: "power2.in" }, 0)
+          .to(lid, { yPercent: 0, duration: T(0.5), ease: "power2.inOut" }, 0.05)
+          .to({}, { duration: 0.8 }, 0);
+      }
     });
   }
   head.addEventListener("pointerenter", (e) => e.pointerType === "mouse" && peek(true), on);
