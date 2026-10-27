@@ -14,23 +14,22 @@
     --mb-art-ink: #141414;
     --mb-art-paper: #fff;
 
-    /* inside the head: a flat, illustrated cut (orange rim, coral inside) */
-    --mb-rim: #f9c6d0;
-    --mb-flesh: #e57891;
-    --mb-flesh-dark: #b8435f;
-    --mb-brain: #f6a3b0;
-    --mb-brain-light: #f9c6d0;
-    --mb-brain-dark: #f07f9b;
-    --mb-brain-fold: #ef8da0;
+    /* inside the head: Dawid's illustration (Figma brain-sprite), the same in both themes */
+    --mb-rim: #fbc5cf;
+    --mb-flesh: #f68ca6;
+    --mb-flesh-dark: #ad3753;
+    --mb-brain: #fbc5cf;
+    --mb-brain-line: #f68ca6;
     --mb-brain-ink: #282828;
     --mb-brain-cheek: #ffe0ea;
+    --mb-brain-shadow: rgb(0 0 0 / 30%);
 
-    /* the burst when the head pops open: beams, dots and sparkles (canvas) */
-    --mb-fx-1: #9447e8;
-    --mb-fx-2: #f27fef;
-    --mb-fx-3: #c9a6ff;
-    --mb-fx-4: #ffb8f6;
-    --mb-fx-5: #ffb15e;
+    /* the burst when the head pops open: beams, dots and sparkles (canvas), in the brain's colours */
+    --mb-fx-1: #ad3753;
+    --mb-fx-2: #f68ca6;
+    --mb-fx-3: #fbc5cf;
+    --mb-fx-4: #ffe0ea;
+    --mb-fx-5: #282828;
 
     /* type: the site face; the handwritten face and its sizes are local */
     --mb-font-hand: "Gochi Hand", "Comic Sans MS", "Marker Felt", cursive;
@@ -120,14 +119,14 @@
     /* the cut through the head, seen from slightly above: an ellipse centred on the straight
        cut in the photos (y 309/896, x 244..633 of 963). The hole fills it, the lid's front edge
        follows its lower half, and the face below is masked to match */
-    --mb-cut: ellipse 20.2% 3.62% at 45.5% var(--mb-cut-y);
+    --mb-cut: ellipse 20.2% 3.17% at 45.5% var(--mb-cut-y);
 
     /* its layers stack among themselves, between the blob behind and the burst in front */
     isolation: isolate;
 
     /* the hole's rim scales with the head, so the masks below can be plain percentages (Chrome
        drops a mask whose ellipse size mixes % and px) */
-    --mb-rim-w: calc(var(--hw) * 0.0055);
+    --mb-rim-w: calc(var(--hw) * 0.0045);
 
     /* the cut's centre line: a little above the straight cut in the photos (34.49%), so the
        hole hugs the lid instead of sitting low on the forehead */
@@ -164,6 +163,21 @@
     position: absolute;
     inset: 0;
     mask: radial-gradient(var(--mb-cut), #000 100%, transparent calc(100% + 8px));
+  }
+
+  /* the lifted lid's underside: a soft shadow over its curved lower edge (Figma: 30% black,
+     blurred), only while the cut is open */
+  .mindblown__lid-front::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(var(--mb-cut), var(--mb-brain-shadow) 70%, transparent 100%);
+    opacity: 0;
+    transition: opacity 0.3s;
+  }
+
+  .mindblown__head--cut .mindblown__lid-front::after {
+    opacity: 1;
   }
 
   .mindblown__layer--lid {
@@ -227,50 +241,61 @@
     left: 0;
     top: 0;
     inline-size: 100%;
-    aspect-ratio: 6 / 1;
+    aspect-ratio: 288 / 42;
     box-sizing: border-box;
 
     /* half the hole's height (a percentage margin is of the parent's width); no translate,
        which the CSS minifier drops next to transform */
-    margin-block-start: calc(-100% / 12);
+    margin-block-start: calc(-100% * 21 / 288);
     border: var(--mb-rim-w) solid var(--mb-rim);
     border-radius: 50%;
 
-    /* a pink well: darkest at the back, where the brain sits, lighter towards the front wall */
-    background: radial-gradient(
-      ellipse 70% 90% at 50% 35%,
-      var(--mb-flesh-dark) 0 45%,
-      var(--mb-flesh) 100%
-    );
+    /* a pink well: dark at the back, lighter towards the front wall */
+    background: linear-gradient(var(--mb-flesh-dark), var(--mb-flesh));
     visibility: hidden;
   }
 
-  .mindblown__head--cut .mindblown__hole {
+  /* the brain's shadow on the floor of the well (Figma: 230 x 30 in a 288-wide ring) */
+  .mindblown__shadow {
+    position: absolute;
+    left: calc(100% * 29 / 288);
+    top: 0;
+    inline-size: calc(100% * 230 / 288);
+    aspect-ratio: 230 / 30;
+    margin-block-start: calc(-100% * 15 / 288);
+    background: radial-gradient(closest-side, var(--mb-brain-shadow) 96%, transparent 100%);
+    visibility: hidden;
+  }
+
+  .mindblown__head--cut .mindblown__hole,
+  .mindblown__head--cut .mindblown__shadow {
     visibility: visible;
   }
 
-  /* the brain is masked by the inner edge of the hole's front rim (a half-ellipse), so it sits
-     IN the head. In clip units (the clip is 61.6% of the hole wide, 64:43.5):
-     rx (0.202 - 0.0055) / 0.2489 hw, ry (0.404 / 12 - 0.0055) / 0.1692 hw */
+  /* the brain sits in the well: it shows above the cut's centre line and, below it, down to the
+     front of its shadow (Figma's mask), so it rises out of the hole rather than through the rim.
+     In Figma units (the ring is 288 wide, its centre line at 0): the clip is 230 wide and spans
+     -165..15, the brain is 142 x 108 and rests at -103..5 */
   .mindblown__brain-clip {
     position: absolute;
-    left: 19.2%;
+    left: calc(100% * 29 / 288);
     top: 0;
-    inline-size: 61.6%;
-    aspect-ratio: 64 / 43.5;
-    translate: 0 -82%;
+    inline-size: calc(100% * 230 / 288);
+    aspect-ratio: 230 / 180;
+    translate: 0 -91.667%;
     pointer-events: none;
     mask:
-      linear-gradient(#000 0 0) top / 100% 82% no-repeat,
-      radial-gradient(ellipse 78.96% 16.65% at 50% 82%, #000 98%, transparent 100%);
+      linear-gradient(#000 0 0) top / 100% 91.667% no-repeat,
+      radial-gradient(ellipse 50% 8.333% at 50% 91.667%, #000 98%, transparent 100%);
   }
 
   .mindblown__brain {
     position: absolute;
-    left: 0;
-    top: 0;
-    inline-size: 100%;
-    block-size: calc(82% * 104 / 78);
+    left: calc(100% * 44 / 230);
+    top: calc(100% * 62 / 180);
+    inline-size: calc(100% * 142 / 230);
+    aspect-ratio: 142 / 108;
+    block-size: auto;
     max-inline-size: none;
     overflow: visible;
   }
@@ -312,11 +337,11 @@
   /* the risen brain is its own button ("new thoughts"); it covers the brain, not the hole */
   .mindblown__brain-btn {
     position: absolute;
-    left: 31%;
-    top: 16.5%;
+    left: 34.5%;
+    top: 15.5%;
     z-index: 7;
-    inline-size: 29%;
-    block-size: 20%;
+    inline-size: 22%;
+    block-size: 19%;
     padding: 0;
     border: 0;
     border-radius: 50% 50% 40% 40%;

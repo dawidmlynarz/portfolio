@@ -17,9 +17,9 @@ type Card = HTMLButtonElement & {
 };
 
 /** Hover peek: how far the lid lifts (share of the head's height) and where the brain rises to
-    (yPercent of the brain; 3 is fully out, 98 is hidden). */
-const PEEK_LIFT = 0.07,
-  PEEK_BRAIN = 22.5;
+    (yPercent of the brain; 0 is fully out, 112 is hidden), as in Dawid's Figma frames. */
+const PEEK_LIFT = 0.055,
+  PEEK_BRAIN = 38.9;
 
 const svg = (k: IconName) =>
   `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${ICONS[k]}</svg>`;
@@ -39,6 +39,7 @@ export function init(root: HTMLElement): () => void {
     head = q("head"),
     lid = q("layer--lid"),
     hole = q("hole"),
+    shadow = q("shadow"),
     brain = q<SVGSVGElement>("brain"),
     brainBtn = q<HTMLButtonElement>("brain-btn"),
     cardsEl = q("cards"),
@@ -132,7 +133,7 @@ export function init(root: HTMLElement): () => void {
   /* ---------- intro ---------- */
   let idle: gsap.core.Tween | null = null;
   run(() => {
-    gsap.set(brain, { yPercent: 98 });
+    gsap.set(brain, { yPercent: 112 });
     gsap.from(headPos, { yPercent: 40, duration: T(1), ease: "back.out(1.4)", delay: 0.1 });
     gsap.from(note, {
       scale: 0,
@@ -323,7 +324,7 @@ export function init(root: HTMLElement): () => void {
         }, "pop")
         .to(
           brain,
-          { yPercent: 3, duration: T(0.7), ease: "back.out(2.2)", onUpdate: () => look() },
+          { yPercent: 0, duration: T(0.7), ease: "back.out(2.2)", onUpdate: () => look() },
           "pop+=.5",
         );
       // 2. thoughts erupt
@@ -466,7 +467,7 @@ export function init(root: HTMLElement): () => void {
         .to(noteClose, { scale: 0, rotation: -20, duration: T(0.25), ease: "back.in(2)" }, 0)
         .set(noteClose, { autoAlpha: 0 });
       suck(tl, o);
-      tl.to(brain, { yPercent: 98, duration: T(0.3), ease: "power2.in" }, "-=.3")
+      tl.to(brain, { yPercent: 112, duration: T(0.3), ease: "power2.in" }, "-=.3")
         .to(
           lid,
           {
@@ -513,16 +514,26 @@ export function init(root: HTMLElement): () => void {
         }),
       ),
     );
+    // the risen brain floats over the well; its shadow shrinks as it rises
+    const bob = { duration: 1.5, yoyo: true, repeat: -1, ease: "sine.inOut" };
+    floats.push(
+      ...run(() => [
+        gsap.to(brain, { y: () => -brain.getBoundingClientRect().height * 0.07, ...bob }),
+        gsap.to(shadow, { scale: 0.86, opacity: 0.75, ...bob }),
+      ]),
+    );
   }
   function stopFloats() {
     for (const f of floats) f.kill();
     floats = [];
-    run(() =>
+    run(() => {
       gsap.to(
         active.map((c) => c._in),
         { y: 0, rotation: 0, duration: 0.2 },
-      ),
-    );
+      );
+      gsap.to(brain, { y: 0, duration: 0.2 });
+      gsap.to(shadow, { scale: 1, opacity: 1, duration: 0.2 });
+    });
   }
 
   /* ---------- head interactions ---------- */
@@ -582,7 +593,7 @@ export function init(root: HTMLElement): () => void {
         // the hole cut until the lean has settled
         lean.r(0);
         lean.x(0);
-        tl.to(brain, { yPercent: 98, duration: T(0.35), ease: "power2.in" }, 0)
+        tl.to(brain, { yPercent: 112, duration: T(0.35), ease: "power2.in" }, 0)
           .to(lid, { yPercent: 0, duration: T(0.5), ease: "power2.inOut" }, 0.05)
           .to({}, { duration: 0.8 }, 0);
       }
@@ -903,10 +914,20 @@ export function init(root: HTMLElement): () => void {
   }
 
   /* ---------- brain eyes follow the pointer ---------- */
-  // every face has its own pair; each pupil knows its centre in brain units, and moves in its
-  // face's units (the faces are drawn at 0.72 scale)
-  const pupils = [...brain.querySelectorAll<SVGGElement>(".mindblown__pupil")];
-  const eyeC = pupils.map((p) => [Number(p.dataset.cx), Number(p.dataset.cy)] as const);
+  // every face has its own pair of eyes. The black eye leans a little towards the pointer and
+  // its white glint slides right up to the eye's edge on that side, so it's clear where the
+  // brain looks. Each eye knows (in brain units) its centre, how far the glint may travel, and
+  // where the glint is drawn.
+  const eyes = [...brain.querySelectorAll<SVGGElement>(".mindblown__look")].map((g) => {
+    const n = (k: string) => Number(g.dataset[k]);
+    return {
+      g,
+      glint: g.querySelector(".mindblown__glint")!,
+      c: [n("cx"), n("cy")] as const,
+      r: n("r"),
+      off: [n("gx") - n("cx"), n("gy") - n("cy")] as const,
+    };
+  });
   let lookX = innerWidth / 2,
     lookY = 0,
     lookRaf = 0;
@@ -914,19 +935,25 @@ export function init(root: HTMLElement): () => void {
     lookRaf = 0;
     const r = brain.getBoundingClientRect();
     if (!r.width) return;
-    const k = r.width / 140;
-    pupils.forEach((p, i) => {
-      const ex = r.left + eyeC[i]![0] * k,
-        ey = r.top + eyeC[i]![1] * k;
-      const dx = lookX - ex,
-        dy = lookY - ey,
+    const k = r.width / 142;
+    for (const e of eyes) {
+      const dx = lookX - (r.left + e.c[0] * k),
+        dy = lookY - (r.top + e.c[1] * k),
         d = Math.hypot(dx, dy) || 1,
-        m = Math.min(4.2, d / 20);
-      p.setAttribute(
+        // full reach a little way out from the eye, so the look reads at any distance
+        m = Math.min(1, d / (20 * k)),
+        ux = (dx / d) * m,
+        uy = (dy / d) * m,
+        lean = 0.9;
+      e.g.setAttribute(
         "transform",
-        `translate(${((dx / d) * m).toFixed(2)} ${((dy / d) * m * 1.1).toFixed(2)})`,
+        `translate(${(ux * lean).toFixed(2)} ${(uy * lean).toFixed(2)})`,
       );
-    });
+      e.glint.setAttribute(
+        "transform",
+        `translate(${(ux * (e.r - lean) - e.off[0]).toFixed(2)} ${(uy * (e.r - lean) - e.off[1]).toFixed(2)})`,
+      );
+    }
   }
   addEventListener(
     "pointermove",
