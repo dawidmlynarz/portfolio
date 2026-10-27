@@ -21,6 +21,9 @@ import restTop from "./assets/rest-top.webp";
 import shockedTop from "./assets/shocked-top.webp";
 import superTop from "./assets/super-top.webp";
 import painFace from "./assets/pain-face.webp";
+import lookUpFace from "./assets/look-up-face.webp";
+import lookLeftFace from "./assets/look-left-face.webp";
+import lookRightFace from "./assets/look-right-face.webp";
 import painTop from "./assets/pain-top.webp";
 import silhouette from "./assets/silhouette.webp";
 import { BELT } from "./content";
@@ -76,6 +79,19 @@ const belt = [...BELT, ...BELT];
               alt=""
               {...img}
             />
+            {/* the open head's super-shocked face, looking towards the pointer (mindblown.ts) */}
+            {[
+              ["up", lookUpFace],
+              ["left", lookLeftFace],
+              ["right", lookRightFace],
+            ].map(([dir, face]) => (
+              <img
+                class={`mindblown__piece mindblown__piece--look mindblown__piece--look-${dir}`}
+                src={(face as typeof lookUpFace).src}
+                alt=""
+                {...img}
+              />
+            ))}
           </div>
           <div
             class="mindblown__ring"

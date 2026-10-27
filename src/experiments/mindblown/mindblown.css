@@ -198,6 +198,28 @@
     visibility: hidden;
   }
 
+  /* open and super-shocked, the face looks towards the pointer: up, left or right (the base
+     layer only; the lid is off by then) */
+  .mindblown__piece--look {
+    visibility: hidden;
+  }
+
+  .mindblown__head--super.mindblown__head--look-up .mindblown__piece--look-up,
+  .mindblown__head--super.mindblown__head--look-left .mindblown__piece--look-left,
+  .mindblown__head--super.mindblown__head--look-right .mindblown__piece--look-right {
+    visibility: visible;
+  }
+
+  .mindblown__head--super:is(
+      .mindblown__head--look-up,
+      .mindblown__head--look-left,
+      .mindblown__head--look-right
+    )
+    .mindblown__layer--base
+    .mindblown__piece--super {
+    visibility: hidden;
+  }
+
   /* the cut: straight across at y 309/896, x 244..633 of 963 */
   .mindblown__inside {
     position: absolute;

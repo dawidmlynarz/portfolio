@@ -116,39 +116,22 @@ export function init(root: HTMLElement): () => void {
     } else settleBrain();
   }
 
-  /* the brain's faces: rest, suck, boom. A swap squashes the new face in, the brows pop */
+  /* the brain's faces: rest, suck, boom; a swap is instant */
   const bfaces = Object.fromEntries(
     ["rest", "suck", "boom"].map((n) => [
       n,
       brain.querySelector<SVGGElement>(`.mindblown__bface--${n}`)!,
     ]),
   ) as Record<"rest" | "suck" | "boom", SVGGElement>;
-  const brows = (n: keyof typeof bfaces) => bfaces[n].querySelectorAll(".mindblown__brow");
   let bface: keyof typeof bfaces = "rest",
     boomCall: gsap.core.Tween | null = null;
   function brainFace(n: keyof typeof bfaces) {
     if (n === bface) return;
-    const from = bfaces[bface],
-      to = bfaces[n];
-    bface = n;
     run(() => {
-      if (RM) {
-        gsap.set(from, { autoAlpha: 0 });
-        gsap.set(to, { autoAlpha: 1, scaleY: 1 });
-        return;
-      }
-      gsap.to(from, { autoAlpha: 0, duration: 0.1, overwrite: "auto" });
-      gsap.fromTo(
-        to,
-        { autoAlpha: 0, scaleY: 0.3 },
-        { autoAlpha: 1, scaleY: 1, duration: 0.45, ease: "back.out(2.5)", overwrite: "auto" },
-      );
-      gsap.fromTo(
-        brows(n),
-        { yPercent: n === "suck" ? 60 : -120 },
-        { yPercent: 0, duration: 0.7, ease: "elastic.out(1,.35)", delay: 0.05, overwrite: "auto" },
-      );
+      gsap.set(bfaces[bface], { autoAlpha: 0 });
+      gsap.set(bfaces[n], { autoAlpha: 1 });
     });
+    bface = n;
   }
   const overBrain = () => !brainBtn.hidden && brainBtn.matches(":hover, :focus-visible");
   function settleBrain() {
@@ -357,6 +340,7 @@ export function init(root: HTMLElement): () => void {
     state = "busy";
     peeking = false;
     head.classList.remove("mindblown__head--peek");
+    headLook();
     peekTl?.kill();
     cut(true);
     head.setAttribute("aria-expanded", "true");
@@ -1011,6 +995,26 @@ export function init(root: HTMLElement): () => void {
   let lookX = innerWidth / 2,
     lookY = 0,
     lookRaf = 0;
+  /* open, the super-shocked face looks up, left or right towards the pointer (straight at you
+     when it's close to his eyes or below them) */
+  let headDir = "",
+    mouseSeen = false;
+  function headLook() {
+    let dir = "";
+    if (mouseSeen && state !== "closed" && !peeking) {
+      const r = head.getBoundingClientRect(),
+        dx = lookX - (r.left + r.width * 0.455),
+        dy = lookY - (r.top + r.height * 0.47);
+      if (Math.hypot(dx, dy) > r.width * 0.16) {
+        if (dy < 0 && -dy > Math.abs(dx) * 0.8) dir = "up";
+        else if (Math.abs(dx) > r.width * 0.12) dir = dx < 0 ? "left" : "right";
+      }
+    }
+    if (dir === headDir) return;
+    for (const d of ["up", "left", "right"])
+      head.classList.toggle(`mindblown__head--look-${d}`, d === dir);
+    headDir = dir;
+  }
   function look() {
     lookRaf = 0;
     const r = brain.getBoundingClientRect();
@@ -1041,6 +1045,10 @@ export function init(root: HTMLElement): () => void {
       lookX = e.clientX;
       lookY = e.clientY;
       if (!lookRaf) lookRaf = requestAnimationFrame(look);
+      if (e.pointerType === "mouse") {
+        mouseSeen = true;
+        headLook();
+      }
     },
     { passive: true, signal: abort.signal },
   );
