@@ -2,6 +2,12 @@
 
 Non-obvious choices, newest first. One entry per decision: what, why, and what it rules out.
 
+## 2026-10-27 · Soft rise page transition
+
+- **"Soft rise" replaces the sheet.** Dawid compared four variants live on a preview (curtain, soft rise, columns, spread from the clicked link) and picked soft rise: the old page fades, blurs and lifts away (320 ms), then the new one settles up into focus from 6vh below with a long ease-out (1 s, starting at 200 ms). The backdrop is the page background, so no ink flashes between pages in either theme. The nav is still the only named element and stays put. Timings and distances are tokens (`--duration-page-out`, `--duration-page-in`, `--delay-page-in`, `--shift-page-*`, `--blur-page`); `--duration-page` stays for the ink spread.
+- **Back reverses the motion.** On a history traversal backwards, BaseLayout adds the `back` view-transition type (Navigation API), and both pages move the other way. Browsers without the Navigation API play the forward motion.
+- **The opt-in is inline in `<head>`.** With `@view-transition` in the shared stylesheet, Chrome sometimes resolved the new page's opt-in before that stylesheet applied and skipped the transition ("ViewTransition opt-in disabled"), so some navigations just loaded the page. Measured in Chromium: about 1 in 2 navigations into About and case studies failed; with the rule inline, 32 of 32 played. Reduced motion still opts out through the same media query.
+
 ## 2026-10-27 · Smoother liquid portrait
 
 Dawid found the hero reveal jarring and laggy (references: Framer's "Liquid Mouse Reveal" and framer.university's hover mask reveal: a heavy, lerped follow and a gooey trail that shrinks back). Frame cost was already low after the WebGL pass, so the problem was the motion and the low-res mask, not the frame rate.
@@ -138,7 +144,7 @@ Built on `v2` so `main` stays live until the redesign is ready to swap in. The d
   7. Explorations.
   8. A sign-off whose last words cycle.
 - **Motion layer replaces "zero JS by default".** One module (`src/scripts/motion.ts`) runs Lenis, GSAP, ScrollTrigger and SplitText on every page, about 50 KB gzipped. It runs only when `html.motion` is set, which happens before first paint unless the visitor prefers reduced motion. Elements marked `[data-reveal]` wait hidden until the script sets them up, and a 3s CSS failsafe shows them if it never does.
-- **Page transitions use native cross-document View Transitions.** The old page sinks back and dims, the new one rises as a sheet. The nav stays put. Every page uses the same transition: opening a case study used to morph the work cover into the case-study cover, but it read as a different transition from the rest of the site and was dropped. Browsers without support, and reduced motion, get a normal page load.
+- **Page transitions use native cross-document View Transitions.** The old page sinks back and dims, the new one rises as a sheet. The nav stays put. Every page uses the same transition: opening a case study used to morph the work cover into the case-study cover, but it read as a different transition from the rest of the site and was dropped. Browsers without support, and reduced motion, get a normal page load. (The motion is superseded by "Soft rise page transition".)
 - **Left for the next passes:** the case-study template (Astapable-style opening), the About story, the "How I work" section, and real numbers.
 
 ## 2026-10-26 · Mobile nav is a hamburger menu

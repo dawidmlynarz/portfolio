@@ -44,6 +44,17 @@ const imageType = /\.jpe?g$/i.test(image.src) ? "image/jpeg" : "image/png";
     <!-- Fix the cascade layer order before any stylesheet loads, whatever order bundles arrive in. -->
     <style is:inline>
       @layer reset, tokens, base, components, utilities;
+
+      /*
+       * Page transitions between documents (Chrome, Edge, Safari; styles in base.css). Inline so
+       * the new page always sees the opt-in: in the shared stylesheet the browser sometimes
+       * decided before it applied and skipped the transition. Others get a normal page load.
+       */
+      @media (prefers-reduced-motion: no-preference) {
+        @view-transition {
+          navigation: auto;
+        }
+      }
     </style>
     <!-- Before first paint: apply a saved dark theme (light is the default) and flag the motion layer. -->
     <script is:inline>
@@ -55,6 +66,20 @@ const imageType = /\.jpe?g$/i.test(image.src) ? "image/jpeg" : "image/png";
       if (!matchMedia("(prefers-reduced-motion: reduce)").matches) {
         document.documentElement.classList.add("motion");
       }
+    </script>
+    <!-- Going back through history gets the "back" transition type, so the page motion reverses. -->
+    <script is:inline>
+      addEventListener("pagereveal", (event) => {
+        const activation = window.navigation?.activation;
+        if (
+          event.viewTransition &&
+          activation?.navigationType === "traverse" &&
+          activation.from &&
+          activation.entry.index < activation.from.index
+        ) {
+          event.viewTransition.types.add("back");
+        }
+      });
     </script>
     <link rel="preload" href={geistLatin} as="font" type="font/woff2" crossorigin />
 
