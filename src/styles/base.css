@@ -122,11 +122,12 @@
 
 @layer base {
   /*
-   * Page transition: the old page sinks back and dims over the ink backdrop while the new one
-   * rises as a sheet with rounded top corners. The same transition runs between every page; only
-   * the nav is named, so it stays put on top.
+   * Page transitions (cross-document View Transitions). The nav is the only named element, so it
+   * stays put on top while the pages change underneath. PREVIEW: five variants to compare, picked
+   * with the transition switcher (TransitionPicker.astro), which sets html[data-pt].
+   * Back navigation adds the "back" transition type (BaseLayout), which reverses the direction.
    */
-  ::view-transition {
+  :root:not([data-spread])::view-transition {
     background-color: var(--color-text);
   }
 
@@ -135,11 +136,12 @@
     animation-timing-function: var(--ease-in-out-quart);
   }
 
-  ::view-transition-old(root) {
+  /* Current: the old page sinks back and dims, the new one rises as a sheet. */
+  :root[data-pt="sheet"]:not([data-spread])::view-transition-old(root) {
     animation: page-out var(--duration-page) var(--ease-in-out-quart) both;
   }
 
-  ::view-transition-new(root) {
+  :root[data-pt="sheet"]:not([data-spread])::view-transition-new(root) {
     animation: page-in var(--duration-page) var(--ease-in-out-quart) both;
   }
 
@@ -158,6 +160,126 @@
 
     to {
       clip-path: inset(0 0 0 0 round 0);
+    }
+  }
+
+  /*
+   * 1. Curtain: the old page is wiped up and away, a beat of ink, then the new page is wiped in
+   * from below, both drifting in the same direction so it reads as one continuous move.
+   */
+  :root[data-pt="curtain"]:not([data-spread])::view-transition-old(root) {
+    animation: curtain-out calc(var(--duration-page) * 0.9) var(--ease-in-out-quart) both;
+  }
+
+  :root[data-pt="curtain"]:not([data-spread])::view-transition-new(root) {
+    animation: curtain-in calc(var(--duration-page) * 0.95) var(--ease-in-out-quart)
+      calc(var(--duration-page) * 0.45) both;
+  }
+
+  :root[data-pt="curtain"]:active-view-transition-type(back)::view-transition-old(root) {
+    animation-name: curtain-out-back;
+  }
+
+  :root[data-pt="curtain"]:active-view-transition-type(back)::view-transition-new(root) {
+    animation-name: curtain-in-back;
+  }
+
+  @keyframes curtain-out {
+    to {
+      clip-path: inset(0 0 100% 0);
+      translate: 0 -15vh;
+    }
+  }
+
+  @keyframes curtain-in {
+    from {
+      clip-path: inset(100% 0 0 0);
+      translate: 0 15vh;
+    }
+  }
+
+  @keyframes curtain-out-back {
+    to {
+      clip-path: inset(100% 0 0 0);
+      translate: 0 15vh;
+    }
+  }
+
+  @keyframes curtain-in-back {
+    from {
+      clip-path: inset(0 0 100% 0);
+      translate: 0 -15vh;
+    }
+  }
+
+  /*
+   * 2. Soft rise: a quiet editorial cross-fade. The old page fades and lifts out of focus, the
+   * new one settles up into place with a long ease-out. No backdrop shows.
+   */
+  :root[data-pt="rise"]:not([data-spread])::view-transition {
+    background-color: var(--color-bg);
+  }
+
+  :root[data-pt="rise"]:not([data-spread])::view-transition-old(root) {
+    animation: rise-out calc(var(--duration-page) * 0.45) var(--ease-standard) both;
+  }
+
+  :root[data-pt="rise"]:not([data-spread])::view-transition-new(root) {
+    animation: rise-in calc(var(--duration-page) * 1.4) var(--ease-out-expo)
+      calc(var(--duration-page) * 0.3) both;
+  }
+
+  @keyframes rise-out {
+    to {
+      opacity: 0;
+      filter: blur(var(--blur-nav));
+      translate: 0 -2vh;
+    }
+  }
+
+  @keyframes rise-in {
+    from {
+      opacity: 0;
+      filter: blur(var(--blur-nav));
+      translate: 0 6vh;
+    }
+  }
+
+  /*
+   * 3. Columns: the new page rises in five staggered columns over the old one, which sinks into
+   * the ink. Going back, the columns run right to left. The columns are one clip-path polygon
+   * animated from BaseLayout (a single CSS keyframe can't stagger them); until then the new page
+   * waits clipped away.
+   */
+  :root[data-pt="columns"]:not([data-spread])::view-transition-old(root) {
+    animation: page-out calc(var(--duration-page) * 1.3) var(--ease-in-out-quart) both;
+  }
+
+  :root[data-pt="columns"]:not([data-spread])::view-transition-new(root) {
+    animation: none;
+    clip-path: inset(100% 0 0 0);
+  }
+
+  /*
+   * 4. Spread: the new page grows as a circle from the link you clicked (the same ink spread as
+   * the theme switch), while the old page sinks back into the ink. Going back, it grows from the
+   * centre. The origin is set by BaseLayout (--pt-x, --pt-y, --pt-r).
+   */
+  :root[data-pt="spread"]:not([data-spread])::view-transition-old(root) {
+    animation: page-out calc(var(--duration-page) * 1.15) var(--ease-in-out-quart) both;
+  }
+
+  :root[data-pt="spread"]:not([data-spread])::view-transition-new(root) {
+    animation: pt-spread calc(var(--duration-page) * 1.15) var(--ease-in-out-quart) both;
+  }
+
+  @keyframes pt-spread {
+    from {
+      clip-path: circle(0 at var(--pt-x, 50%) var(--pt-y, 50%));
+    }
+
+    to {
+      clip-path: circle(var(--pt-r, 150vmax) at var(--pt-x, 50%) var(--pt-y, 50%));
     }
   }
 
