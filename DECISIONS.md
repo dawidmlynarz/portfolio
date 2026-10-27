@@ -2,6 +2,16 @@
 
 Non-obvious choices, newest first. One entry per decision: what, why, and what it rules out.
 
+## 2026-10-27 · Portrait reveal styles: liquid, pixels, glitch
+
+From the playground Dawid kept the liquid, pixel dither and glitch slices, with two notes: the resting animation suits only the liquid, pixels switched layers too abruptly, and glitch needs calm moments to show what it revealed. All three now live in `LiquidReveal` (`reveal` prop / `data-style`) on the same blobs, trail and layers; only the composite shader differs.
+
+- **Pixels and glitch are hover-only.** No orbit or roaming drops: the liquid appears where the pointer arrives (no streak from elsewhere), grows in, and dries up when it leaves. Once the trail has healed the loop stops, so a resting hero costs nothing.
+- **Pixels weave the layers.** The liquid is sampled once per 8 px cell with an ordered-dither edge. Where two layers meet, each cell takes either one at random and re-rolls 8 times a second, so marble and iridescent interleave instead of switching.
+- **Glitch bursts, then settles.** Sampled once per 6 px strip (scanlines). Arriving, a layer switch or a fast move sets off a burst (strips jump, colours split, a few strips flash the other layer) that settles in about half a second; bursts have a 1.4 s cooldown and glitch switches layers only every 3.2–5 s, so the clean reveal is visible most of the time.
+- **All styles favour the head's current layer** when picking which layer fills a pixel, so a new pick shows straight away instead of waiting for the old trail to heal.
+- **Preview switcher.** `RevealPicker` (bottom right, previews only, never on production) sets the style on the home hero; remembered in localStorage, `?reveal=pixels|glitch|liquid` also works. Remove it and set the `reveal` prop once a style is chosen.
+
 ## 2026-10-27 · Multi-layer liquid portrait and a reveal playground
 
 Dawid wanted the hero liquid to reveal 3–4 layers at random, with the real photo as the default, the iridescent sculpture as the rarest, and themed versions of the clay and marble. After trying it, Dawid dropped the clay, so two layers remain.

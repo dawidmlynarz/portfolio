@@ -18,6 +18,15 @@
  * be rare (a pick of the current layer changes nothing). Where layers overlap, the deepest liquid
  * shows.
  *
+ * Styles (data-style): "liquid" is all of the above. "pixels" and "glitch" have no resting
+ * animation: the liquid only exists under the pointer and dries up when it leaves, and they read
+ * the same liquid differently. Pixels samples it once per 8 px cell with an ordered-dither edge;
+ * where two layers meet, cells take either one at random and re-roll 8 times a second, so the
+ * layers weave into each other instead of switching. Glitch samples it once per 6 px strip
+ * (scanlines); arriving, switching layer or moving fast sets off a short burst (strips jump, split
+ * colour, flash another layer) that settles within half a second, with a 1.4 s cooldown so the
+ * reveal can be seen. Glitch also switches layers less often.
+ *
  * Rendering (WebGL, all on the GPU):
  * - Trail: a small RGBA mask texture, one channel per layer, ping-ponged each frame. Every frame
  *   lowers it by a fixed step and stamps each blob's path since the last frame as a capsule into its
@@ -77,6 +86,7 @@ type Shape = {
   wobble: [number, number, number, number]; // amplitude, frequency, phase, phase
   ripple: [number, number, number]; // amplitude, frequency, phase: fine waves along the edge
   reveal: number;
+  fx: [number, number, number, number]; // time, glitch energy, pixel or strip size, head-layer bias
 };
 
 const MAX_LAYERS = 4; // one per mask channel
@@ -85,6 +95,8 @@ const TEXTURE_BUDGET = 64e6; // bytes for the top and layer textures together
 const MAX_TRAILS = 13; // head + 3 drops + 8 droplets + the head's old blob when it switches
 const MAX_SPRAY = 8; // droplets shed by fast blobs
 const MAX_BALLS = 6; // lobes + drops
+export const STYLES = ["liquid", "pixels", "glitch"] as const;
+export type Style = (typeof STYLES)[number];
 const smoothstep = (x: number) => x * x * (3 - 2 * x);
 const clamp01 = (x: number) => Math.min(1, Math.max(0, x));
 const between = (a: number, b: number) => a + Math.random() * (b - a);
@@ -170,9 +182,11 @@ void main(){
   gl_FragColor=v;
 }`;
 
+// Shared by the three styles: the liquid's distance per layer at any point, and how layers fill it.
 const COMPOSITE = `${PRECISION}
 uniform sampler2D topTex,l0,l1,l2,l3,maskTex;
 uniform vec4 head,wob,edge,active;
+uniform vec4 fx; // time, glitch energy, pixel or strip size, head-layer bias
 uniform vec3 rip;
 uniform vec4 balls[${MAX_BALLS}];
 uniform vec2 dir;
@@ -184,11 +198,12 @@ vec4 smin4(vec4 a,float b,float k){
   vec4 h=clamp(.5+.5*(b-a)/k,0.,1.);
   return mix(vec4(b),a,h)-k*h*(1.-h);
 }
-void main(){
-  vec2 p=uv*res;
-  vec2 q=p+wob.x*vec2(
-    sin(p.y*wob.y+wob.z)+.5*sin((p.x+p.y)*wob.y*1.7-wob.w),
-    cos(p.x*wob.y*1.13-wob.z)+.5*cos((p.x-p.y)*wob.y*1.45+wob.w));
+float min4(vec4 d){return min(min(d.x,d.y),min(d.z,d.w));}
+float hash(vec2 p){return fract(sin(dot(p,vec2(127.1,311.7)))*43758.5453);}
+float bayer2(vec2 a){a=floor(a);return fract(a.x/2.+a.y*a.y*.75);}
+float bayer8(vec2 a){return bayer2(.25*a)*.0625+bayer2(.5*a)*.25+bayer2(a);}
+// Each layer's trail, smooth-merged with the head and the blobs that carry that layer.
+vec4 field(vec2 q){
   vec2 m=q/res;
   float k=edge.y;
   vec4 d=(.5-texture2D(maskTex,vec2(m.x,1.-m.y)))*2.*rRef;
@@ -197,17 +212,71 @@ void main(){
   vec2 t=vec2(dot(o,dir),dot(o,vec2(-dir.y,dir.x)))/vec2(head.w,sq);
   d=mix(d,smin4(d,(length(t)-head.z)*sq,k),onehot(edge.z));
   for(int i=0;i<${MAX_BALLS};i++)d=mix(d,smin4(d,length(q-balls[i].xy)-balls[i].z,k),onehot(balls[i].w));
-  d=mix(vec4(1e4),d,active);
-  float n=min(min(d.x,d.y),min(d.z,d.w));
-  float u=smin(smin(d.x,d.y,k*.5),smin(d.z,d.w,k*.5),k*.5);
+  return mix(vec4(1e4),d,active);
+}
+float union4(vec4 d){float k=edge.y*.5;return smin(smin(d.x,d.y,k),smin(d.z,d.w,k),k);}
+// Depth for picking a layer: the head's own layer is favoured, so a new pick shows at once.
+vec4 depth(vec4 d){return d-onehot(edge.z)*fx.w;}
+vec4 below(vec4 w,vec2 q){
+  return (texture2D(l0,q)*w.x+texture2D(l1,q)*w.y+texture2D(l2,q)*w.z+texture2D(l3,q)*w.w)
+    /max(w.x+w.y+w.z+w.w,1e-3);
+}
+vec4 over(float a,vec4 b){vec4 t=texture2D(topTex,uv)*(1.-a);return t+b*a*(1.-t.a);}
+`;
+
+const STYLE_MAIN: Record<Style, string> = {
+  // Liquid: a wobbling, rippling edge, anti-aliased; the deepest layer fills each pixel.
+  liquid: `void main(){
+  vec2 p=uv*res;
+  vec2 q=p+wob.x*vec2(
+    sin(p.y*wob.y+wob.z)+.5*sin((p.x+p.y)*wob.y*1.7-wob.w),
+    cos(p.x*wob.y*1.13-wob.z)+.5*cos((p.x-p.y)*wob.y*1.45+wob.w));
+  vec4 d=field(q);
+  float u=union4(d);
   u+=rip.x*sin(dot(q,vec2(.8,.6))*rip.y+rip.z)*sin(dot(q,vec2(-.5,.87))*rip.y*.83-rip.z*1.3);
   float a=(1.-smoothstep(-edge.x,edge.x,u))*edge.w;
-  vec4 w=(1.-smoothstep(0.,2.*edge.x+.5,d-n))*active;
-  vec4 below=(texture2D(l0,uv)*w.x+texture2D(l1,uv)*w.y+texture2D(l2,uv)*w.z+texture2D(l3,uv)*w.w)
-    /max(w.x+w.y+w.z+w.w,1e-3);
-  vec4 top=texture2D(topTex,uv)*(1.-a);
-  gl_FragColor=top+below*a*(1.-top.a);
-}`;
+  vec4 s=depth(d);
+  vec4 w=(1.-smoothstep(0.,2.*edge.x+.5,s-min4(s)))*active;
+  gl_FragColor=over(a,below(w,uv));
+}`,
+  // Pixels: the liquid sampled once per cell, its edge an ordered dither. Where two layers meet,
+  // cells take either one at random and re-roll 8 times a second, so the layers weave together.
+  pixels: `void main(){
+  vec2 cell=floor(uv*res/fx.z);
+  vec4 d=field((cell+.5)*fx.z);
+  float b=bayer8(cell);
+  float a=step(b+.008,clamp(.5-union4(d)/(rRef*.5),0.,1.))*edge.w;
+  vec4 s=depth(d);
+  float n1=min4(s);
+  vec4 w1=step(s,vec4(n1));
+  vec4 s2=s+w1*1e4;
+  float n2=min4(s2);
+  vec4 w2=step(s2,vec4(n2))*step(n2,1e3);
+  float t=.5*(1.-smoothstep(0.,rRef*.9,n2-n1));
+  float roll=fract(hash(cell)+floor(fx.x*8.)*.618+b*.37);
+  gl_FragColor=over(a,below(mix(w1,w2,step(roll,t)),uv));
+}`,
+  // Glitch: the liquid sampled once per horizontal strip, so it reads as scanlines. During a burst
+  // (fx.y) strips jump sideways, split their colours and flash another layer; then it settles.
+  glitch: `void main(){
+  vec2 p=uv*res;
+  float e=fx.y,row=floor(p.y/fx.z),tick=floor(fx.x*14.);
+  float h1=hash(vec2(row,tick)),h2=hash(vec2(row*1.7,tick+3.1));
+  float off=(h1-.5)*2.*e*rRef*step(.55,h2);
+  vec4 d=field(vec2(p.x+off,(row+.5)*fx.z));
+  float a=step(union4(d),0.)*edge.w;
+  vec4 s=depth(d);
+  vec4 w=step(s,vec4(min4(s)));
+  vec4 other=active*(1.-w);
+  w=mix(w,other,step(.88,h1)*step(.3,e)*step(.5,dot(other,vec4(1.))));
+  vec2 q=uv+vec2(off/res.x,0.);
+  vec2 split=vec2(e*7./res.x,0.);
+  vec4 c=below(w,q);
+  c.r=below(w,q+split).r;
+  c.b=below(w,q-split).b;
+  gl_FragColor=over(a,c);
+}`,
+};
 
 type Program = { p: WebGLProgram; u: Record<string, WebGLUniformLocation | null> };
 
@@ -215,7 +284,7 @@ type Program = { p: WebGLProgram; u: Record<string, WebGLUniformLocation | null>
 class GlRenderer {
   #gl: WebGLRenderingContext;
   #mask!: Program;
-  #composite!: Program;
+  #composite = {} as Record<Style, Program>;
   #targets: { tex: WebGLTexture; fb: WebGLFramebuffer }[] = [];
   #images: WebGLTexture[] = []; // unit 0 top, 1–4 layers
   #current = 0;
@@ -274,13 +343,14 @@ class GlRenderer {
     const gl = this.#gl;
     const mask = this.#program(MASK, ["res", "rRef", "prev", "seg", "radius", "decay"]);
     const samplers = ["topTex", "l0", "l1", "l2", "l3", "maskTex"];
-    const composite = this.#program(COMPOSITE, [
+    const uniforms = [
       ...["res", "rRef", ...samplers],
-      ...["head", "balls", "wob", "rip", "edge", "dir", "active"],
-    ]);
-    if (!mask || !composite) return (this.ready = false);
+      ...["head", "balls", "wob", "rip", "edge", "dir", "active", "fx"],
+    ];
+    const styles = STYLES.map((style) => this.#program(COMPOSITE + STYLE_MAIN[style], uniforms));
+    if (!mask || styles.some((p) => !p)) return (this.ready = false);
     this.#mask = mask;
-    this.#composite = composite;
+    STYLES.forEach((style, i) => (this.#composite[style] = styles[i]!));
 
     gl.bindBuffer(gl.ARRAY_BUFFER, gl.createBuffer());
     gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([-1, -1, 1, -1, -1, 1, 1, 1]), gl.STATIC_DRAW);
@@ -297,8 +367,10 @@ class GlRenderer {
     });
     gl.activeTexture(gl.TEXTURE5);
     this.#targets = [0, 1].map(() => ({ tex: this.#texture(), fb: gl.createFramebuffer()! }));
-    gl.useProgram(composite.p);
-    samplers.forEach((name, i) => gl.uniform1i(composite.u[name]!, i));
+    for (const composite of Object.values(this.#composite)) {
+      gl.useProgram(composite.p);
+      samplers.forEach((name, i) => gl.uniform1i(composite.u[name]!, i));
+    }
     gl.useProgram(mask.p);
     gl.uniform1i(mask.u.prev!, 5);
     this.ready = true;
@@ -334,7 +406,7 @@ class GlRenderer {
     gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, source);
   }
 
-  draw(s: Shape, W: number, H: number, rRef: number, active: number[]) {
+  draw(s: Shape, W: number, H: number, rRef: number, active: number[], style: Style) {
     const gl = this.#gl;
     const read = this.#targets[this.#current]!;
     const write = this.#targets[1 - this.#current]!;
@@ -364,8 +436,8 @@ class GlRenderer {
     // 2. Composite to the canvas.
     gl.bindFramebuffer(gl.FRAMEBUFFER, null);
     gl.bindTexture(gl.TEXTURE_2D, write.tex);
-    u = this.#composite.u;
-    gl.useProgram(this.#composite.p);
+    u = this.#composite[style].u;
+    gl.useProgram(this.#composite[style].p);
     gl.viewport(0, 0, gl.drawingBufferWidth, gl.drawingBufferHeight);
     gl.uniform2f(u.res!, W, H);
     gl.uniform1f(u.rRef!, rRef);
@@ -379,6 +451,7 @@ class GlRenderer {
     gl.uniform3f(u.rip!, ...s.ripple);
     gl.uniform4f(u.edge!, s.soft, s.goo, head.layer, s.reveal);
     gl.uniform4f(u.active!, active[0]!, active[1]!, active[2]!, active[3]!);
+    gl.uniform4f(u.fx!, ...s.fx);
     gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
   }
 }
@@ -469,11 +542,36 @@ class LiquidReveal extends HTMLElement {
   #wobbleClock = 0;
   #reveal = 1;
   #decayDebt = 0; // trail decay owed, in 1/255 steps (the mask is 8-bit)
+  // Pixels and glitch: no resting animation, the liquid only exists under the pointer.
+  #style: Style = "liquid";
+  #presence = 0; // 0 → 1 while pointing (hover-only styles)
+  #pointedAt = 0; // last frame with the pointer over it
+  #energy = 0; // glitch burst, decays to a clean reveal
+  #burstAt = -1e4;
 
   // loop
   #visible = false;
   #running = false;
   #last = 0;
+
+  static observedAttributes = ["data-style"];
+
+  attributeChangedCallback() {
+    const style = this.dataset.style as Style;
+    this.#style = STYLES.includes(style) ? style : "liquid";
+    this.#kick();
+  }
+
+  get #hoverOnly() {
+    return this.#style !== "liquid";
+  }
+
+  /** Glitch: a burst, unless one started in the last 1.4 s (the cooldown shows what was revealed). */
+  #burst(now: number, amount: number) {
+    if (this.#style !== "glitch" || this.#reduceMotion || now - this.#burstAt < 1400) return;
+    this.#burstAt = now;
+    this.#energy = Math.max(this.#energy, amount);
+  }
 
   connectedCallback() {
     this.#cfg = JSON.parse(this.dataset.config ?? "{}") as Config;
@@ -829,18 +927,32 @@ class LiquidReveal extends HTMLElement {
     const dt = Math.min(0.1, (now - this.#last) / 1000);
     this.#last = now;
     const resting = !this.#over && now > this.#touchUntil;
+    const hoverOnly = this.#hoverOnly;
+    if (!resting) this.#pointedAt = now;
 
-    // Hover blend: quick to arrive, slow to let go.
+    // Hover-only styles: the liquid appears where the pointer arrives (no streak from where it
+    // was), grows in quickly and dries up once the pointer leaves.
+    if (hoverOnly && !resting && this.#presence < 0.02) {
+      const { x, y } = this.#cursor;
+      Object.assign(head, { x, y, vx: 0, vy: 0 });
+      for (const d of this.#drops) Object.assign(d, { x, y, vx: 0, vy: 0, from: { x, y } });
+    }
+    this.#presence +=
+      ((resting ? 0 : 1) - this.#presence) * (1 - Math.exp(-dt * (resting ? 4 : 10)));
+    const presence = hoverOnly ? smoothstep(clamp01(this.#presence)) : 1;
+    this.#energy *= Math.exp(-dt * 4.5);
+
+    // Hover blend: quick to arrive, slow to let go. Hover-only styles are always "on hover".
     this.#pullMix +=
       ((resting ? 0 : 1) - this.#pullMix) * (1 - Math.exp(-dt * (resting ? 1.6 : 6)));
-    const m = smoothstep(clamp01(this.#pullMix));
+    const m = hoverOnly ? 1 : smoothstep(clamp01(this.#pullMix));
 
     const ts = now / 1000;
     const [wx, wy, ws] = this.#headWander.map((n) => (rm ? 0 : n(ts)));
     // Bigger and breathing at rest; one steady size under the pointer.
     const sizeMod = rm ? 1 : (1.25 + 0.22 * ws!) * (1 - m) + 1.22 * m;
     const base = this.#baseRadius();
-    const r = base * sizeMod;
+    const r = base * sizeMod * presence;
     this.#wobbleClock += dt * (0.5 + 0.5 * m);
 
     const goalSpeed = rm ? 0 : (0.12 + (cfg.orbit / 100) * 1.1) * (1 - m * 0.8);
@@ -876,10 +988,14 @@ class LiquidReveal extends HTMLElement {
     // layer wells up inside it.
     const arrived = this.#wasResting && !resting;
     this.#wasResting = resting;
-    const due = !rm && now > this.#nextSwitch;
+    const due = !rm && now > this.#nextSwitch && !(hoverOnly && resting);
     if (arrived || this.#switchNow || due) {
       this.#switchNow = false;
-      this.#nextSwitch = now + (resting ? between(3500, 6000) : between(1600, 3200));
+      this.#burst(now, 1);
+      // Glitch switches less often, so each burst is followed by a calm look at the new layer.
+      const [lo, hi] =
+        this.#style === "glitch" ? [3200, 5000] : resting ? [3500, 6000] : [1600, 3200];
+      this.#nextSwitch = now + between(lo, hi);
       const next = this.#pickLayer(this.#headLayer);
       if (next !== this.#headLayer) {
         if (this.#reveal > 0.01) {
@@ -904,6 +1020,7 @@ class LiquidReveal extends HTMLElement {
 
     // Squash and stretch along the velocity.
     const speed = Math.hypot(head.vx, head.vy);
+    if (speed > 1400) this.#burst(now, 0.6);
     const stretch = rm ? 1 : 1 + Math.min(speed / 2400, 0.35);
     const dirX = speed > 1 ? head.vx / speed : 1;
     const dirY = speed > 1 ? head.vy / speed : 0;
@@ -999,7 +1116,7 @@ class LiquidReveal extends HTMLElement {
         trails,
         decay: steps / 255,
         balls,
-        goo: r * (0.34 + 0.1 * (1 - m)),
+        goo: Math.max(1, r * (0.34 + 0.1 * (1 - m))),
         soft: 0.6 + (cfg.soft / 100) * r * 0.025,
         wobble: [
           rm ? 0 : (cfg.wobble / 100) * r * (0.07 + 0.04 * m),
@@ -1013,15 +1130,19 @@ class LiquidReveal extends HTMLElement {
           (w * 4.2) % TAU,
         ],
         reveal: this.#reveal,
+        fx: [rm ? 0 : ts % 1000, this.#energy, this.#style === "pixels" ? 8 : 6, r * 0.3],
       },
       this.#W,
       this.#H,
       rRef,
       active,
+      this.#style,
     );
 
-    // With reduced motion there is nothing to animate once the liquid has faded out.
-    if (rm && resting && this.#reveal < 0.01) {
+    // Nothing left to animate: with reduced motion once the liquid has faded out; in a hover-only
+    // style once the pointer has gone and the trail has healed.
+    const healed = now - this.#pointedAt > heal * 1500 + 300 && !this.#spray.length;
+    if ((rm && resting && this.#reveal < 0.01) || (hoverOnly && resting && healed)) {
       this.#running = false;
       return;
     }

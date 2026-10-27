@@ -9,6 +9,7 @@
  * whatever is behind (the hero's dotted backdrop) shows around the figure in light and dark. A
  * layer can have a dark-theme variant. Behaviour lives in src/scripts/liquid-reveal.ts.
  *
+ * Styles: liquid (default; roams the face at rest), pixels and glitch (only while pointing).
  * Reduced motion: no orbit, lobes or wobble; the liquid appears only while pointing.
  * No JS or no WebGL: the top image alone.
  */
@@ -29,6 +30,8 @@ interface Props {
   layers: Layer[];
   /** Describes the top image. */
   alt: string;
+  /** How the layers are revealed; can also be changed later through data-style. */
+  reveal?: "liquid" | "pixels" | "glitch";
   /** Blob size, 6–60. */
   size?: number;
   /** Edge softness, 0–100. */
@@ -54,6 +57,7 @@ const {
   top,
   layers,
   alt,
+  reveal = "liquid",
   size = 22,
   soft = 30,
   pull = 55,
@@ -110,6 +114,7 @@ const objectPosition = `${((face[0] + face[1]) / 2) * 100}% ${((face[2] + face[3
 <liquid-reveal
   class:list={["liquid", `liquid--${fit}`, className]}
   data-config={JSON.stringify(config)}
+  data-style={reveal}
   data-top={JSON.stringify(topSources)}
   data-layers={JSON.stringify(layerSources)}
   data-ratio={top.width / top.height}
