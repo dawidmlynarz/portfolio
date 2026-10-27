@@ -265,3 +265,7 @@ What changed versus the embed, and why:
 **Only DM Sans is installed.** The plan listed Playfair Display, but `tokens.css` has no serif role and the type faces are placeholders until the new ones are chosen. Swap by installing a fontsource package, importing it in `global.css`, and changing `--font-heading` / `--font-body`.
 
 **TypeScript 6, not 7.** `@astrojs/check` peers on the TS 6 JS API; npm resolved 6.0.x. Revisit when the Astro language server supports TS 7.
+
+**Newsweek AI case study dropped.** It won't be written, so the entry is deleted rather than kept as a draft, and `/work/newsweek-ai-experience` redirects to `/work` (`public/_redirects`). The Agentic UX service has no proof link until a new case study exists.
+
+**Hero actions are site links, not social.** The hero shows About me and Contact with the forward arrow (`Link icon="arrow"`); LinkedIn and Dribbble stay in the footer and in the JSON-LD `sameAs`.

@@ -73,12 +73,16 @@ const endings = ["AI product", "design system", "product team"];
       max-inline-size: 14em;
     }
 
-    /* One line tall window over a column of endings that steps upward. */
+    /* One line tall window over a column of endings that steps upward. The window is taller than
+       the title's line (so descenders in "design system" aren't clipped); equal negative margins
+       centre it on the line, so the endings sit on the same baseline as the words before them. */
     .footer__ticker {
       --ticker-line: 1.12em;
+      --ticker-inset: calc((var(--leading-h1) * 1em - var(--ticker-line)) / 2);
 
       display: inline-block;
       block-size: var(--ticker-line);
+      margin-block: var(--ticker-inset);
       overflow: clip;
       vertical-align: bottom;
       color: var(--color-text-muted);
