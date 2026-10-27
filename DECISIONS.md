@@ -2,6 +2,12 @@
 
 Non-obvious choices, newest first. One entry per decision: what, why, and what it rules out.
 
+## 2026-10-27 · Navigation preview (not decided yet)
+
+- **One bar that grows into the menu, at every size.** Studied on anthracitestudio.be and thedesignsociety.fr: a compact floating bar (mark, name, menu button) that is the same on desktop and mobile, and opens by growing in place instead of covering the screen. Preview-only `SiteNav` with three variants in a switcher (bottom left, or `?nav=`): drop-down, two-step (widens, then drops, with a featured case study on desktop) and pill + menu (today's desktop pill keeps its links; the menu adds contact and featured work). "Current" shows today's nav for comparison. Production keeps the current nav until a variant is picked.
+- **The box animates its real size, the content does not reflow.** The bar and the menu are one element, so the mark stays put and the menu icon turns into the close icon in place. The panel holds its final width while the box grows around it. Without JS the menu button is hidden and the links sit in the bar; with reduced motion the menu opens instantly.
+- **New token `--color-scrim`.** The page behind the open menu is dimmed and blurred. Needs mirroring in Figma.
+
 ## 2026-10-27 · Soft rise page transition
 
 - **"Soft rise" replaces the sheet.** Dawid compared four variants live on a preview (curtain, soft rise, columns, spread from the clicked link) and picked soft rise: the old page fades, blurs and lifts away (320 ms), then the new one settles up into focus from 6vh below with a long ease-out (1 s, starting at 200 ms). The backdrop is the page background, so no ink flashes between pages in either theme. The nav is still the only named element and stays put. Timings and distances are tokens (`--duration-page-out`, `--duration-page-in`, `--delay-page-in`, `--shift-page-*`, `--blur-page`); `--duration-page` stays for the ink spread.

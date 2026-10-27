@@ -2,6 +2,9 @@
 import BaseLayout from "@/layouts/BaseLayout.astro";
 import Nav from "@/components/blocks/Nav.astro";
 import Footer from "@/components/blocks/Footer.astro";
+import SiteNav from "@/components/blocks/SiteNav.astro";
+import NavPicker from "@/components/blocks/NavPicker.astro";
+import { isProduction } from "@/lib/site";
 import type { ComponentProps } from "astro/types";
 
 type Props = ComponentProps<typeof BaseLayout> & {
@@ -17,7 +20,17 @@ const { navOverlap = false, ...base } = Astro.props;
     <a class="skip-link" href="#main">
       Skip to content
     </a>
-    <Nav />
+    {isProduction ? (
+      <Nav />
+    ) : (
+      <>
+        {/* PREVIEW: the current nav stays available in the NavPicker for comparison. */}
+        <div class="nav-current">
+          <Nav />
+        </div>
+        <SiteNav />
+      </>
+    )}
     <main id="main" tabindex="-1">
       <slot />
     </main>
@@ -28,6 +41,7 @@ const { navOverlap = false, ...base } = Astro.props;
       </svg>
       <span class="visually-hidden">Back to top</span>
     </a>
+    {!isProduction && <NavPicker />}
   </div>
 </BaseLayout>
 
@@ -119,6 +133,14 @@ const { navOverlap = false, ...base } = Astro.props;
         opacity: 1;
         visibility: visible;
       }
+    }
+
+    .nav-current {
+      display: contents;
+    }
+
+    :global(:root:not([data-nav="current"])) .nav-current {
+      display: none;
     }
 
     main:focus {

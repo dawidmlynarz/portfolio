@@ -1,0 +1,85 @@
+---
+/**
+ * PREVIEW ONLY: a floating switcher to compare the navigation variants (SiteNav, html[data-nav]).
+ * The choice is remembered, so it carries across every page; ?nav=<name> also works. Never
+ * rendered on production; it goes away once a variant is picked.
+ */
+const OPTIONS = [
+  { value: "current", label: "Current" },
+  { value: "drop", label: "1. Drop-down" },
+  { value: "twostep", label: "2. Two-step" },
+  { value: "pill", label: "3. Pill + menu" },
+] as const;
+---
+
+<label class="nav-picker">
+  <span class="nav-picker__label text-caption">Nav</span>
+  <select class="nav-picker__select" data-nav-picker>
+    {OPTIONS.map(({ value, label }) => (
+      <option value={value}>{label}</option>
+    ))}
+  </select>
+</label>
+
+<script>
+  const root = document.documentElement;
+  for (const select of document.querySelectorAll<HTMLSelectElement>("[data-nav-picker]")) {
+    select.value = root.dataset.nav ?? "drop";
+    select.addEventListener("change", () => {
+      document.dispatchEvent(new Event("navchange")); // close an open menu first
+      root.dataset.nav = select.value;
+      try {
+        localStorage.setItem("nav", select.value);
+      } catch {
+        // Storage blocked: the choice lasts for this page only.
+      }
+    });
+  }
+</script>
+
+<style>
+  @layer components {
+    .nav-picker {
+      position: fixed;
+      inset-block-end: var(--space-8);
+      inset-inline-start: var(--space-8);
+      z-index: var(--z-nav);
+      display: flex;
+      gap: var(--space-2);
+      align-items: center;
+      padding: var(--space-2) var(--space-2) var(--space-2) var(--space-4);
+      border: var(--border-width) solid var(--color-border-subtle);
+      border-radius: var(--radius-pill);
+      color: var(--color-text);
+      background-color: var(--color-overlay);
+      backdrop-filter: blur(var(--blur-nav));
+      view-transition-name: nav-picker;
+    }
+
+    .nav-picker__label {
+      color: var(--color-text-muted);
+    }
+
+    .nav-picker__select {
+      padding: var(--space-1) var(--space-3);
+      border: var(--border-width) solid var(--color-border-muted);
+      border-radius: var(--radius-pill);
+      font: inherit;
+      font-size: var(--text-small);
+      color: var(--color-text);
+      background-color: var(--color-bg);
+    }
+
+    .nav-picker__select:focus-visible {
+      outline: calc(var(--border-width) * 2) solid var(--color-focus);
+      outline-offset: var(--space-1);
+    }
+
+    @media (width < 48em) {
+      .nav-picker {
+        inset-block-end: var(--space-4);
+        inset-inline-start: var(--space-4);
+      }
+    }
+  }
+</style>
