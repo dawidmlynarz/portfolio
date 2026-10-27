@@ -350,11 +350,14 @@ const SECTIONS = [
         <h3 class="text-caption muted">ClientLogos · row (About) and spread; marquee below</h3>
         <ClientLogos />
         <ClientLogos spread />
-        <h3 class="text-caption muted">Metrics · numbers inside case studies</h3>
+        <h3 class="text-caption muted">
+          Metrics · up to three numbers inside case studies, content width by default, top-aligned
+        </h3>
         <Metrics
           items={[
             { value: "80%", label: "Higher click-through rate" },
             { value: "30%", label: "Lower bounce rate" },
+            { value: "+60", label: "Team eNPS, with a label long enough to wrap onto two lines" },
           ]}
         />
       </Stack>
