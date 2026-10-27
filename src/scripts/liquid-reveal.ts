@@ -5,9 +5,11 @@
  * critically damped ease (heavy, never overshoots). It leaves a trail that recedes from its edges
  * as it heals, so it shrinks like liquid instead of fading. Three lobes drift around the head and
  * merge with it and the trail (smooth union), and the edge ripples gently. At rest (auto mode) the
- * head is bigger, its path and size drift on smooth random curves, the edge is feathered, and
+ * head is bigger, its path and size drift on smooth random curves, the trail lingers, and
  * three drops roam the face on their own, swelling, drying up and merging; on hover they all
  * stream into the pointer.
+ * Fragile: the edge carries a fine travelling ripple, trails are beaded so they break into droplets
+ * as they heal, and fast blobs shed small droplets that drift and dry up.
  *
  * Rendering (WebGL, all on the GPU):
  * - Trail: a small mask texture, ping-ponged each frame. Every frame lowers it by a fixed step and
@@ -55,11 +57,13 @@ type Shape = {
   goo: number; // smooth-union radius
   soft: number; // edge half-width
   wobble: [number, number, number, number]; // amplitude, frequency, phase, phase
+  ripple: [number, number, number]; // amplitude, frequency, phase: fine waves along the edge
   reveal: number;
 };
 
 const FIELD_PIXELS = 90_000; // trail mask resolution budget
-const MAX_TRAILS = 4; // head + drops
+const MAX_TRAILS = 12; // head + 3 drops + 8 droplets
+const MAX_SPRAY = 8; // droplets shed by fast blobs
 const MAX_BALLS = 6; // lobes + drops
 const smoothstep = (x: number) => x * x * (3 - 2 * x);
 const clamp01 = (x: number) => Math.min(1, Math.max(0, x));
@@ -134,6 +138,7 @@ void main(){
 const COMPOSITE = `${PRECISION}
 uniform sampler2D topTex,bottomTex,maskTex;
 uniform vec4 head,wob,edge;
+uniform vec3 rip;
 uniform vec3 balls[${MAX_BALLS}];
 uniform vec2 dir;
 float smin(float a,float b,float k){
@@ -152,6 +157,7 @@ void main(){
   vec2 t=vec2(dot(o,dir),dot(o,vec2(-dir.y,dir.x)))/vec2(head.w,sq);
   d=smin(d,(length(t)-head.z)*sq,edge.y);
   for(int i=0;i<${MAX_BALLS};i++)d=smin(d,length(q-balls[i].xy)-balls[i].z,edge.y);
+  d+=rip.x*sin(dot(q,vec2(.8,.6))*rip.y+rip.z)*sin(dot(q,vec2(-.5,.87))*rip.y*.83-rip.z*1.3);
   float a=(1.-smoothstep(-edge.x,edge.x,d))*edge.w;
   vec4 top=texture2D(topTex,uv)*(1.-a);
   gl_FragColor=top+texture2D(bottomTex,uv)*a*(1.-top.a);
@@ -223,7 +229,7 @@ class GlRenderer {
     const mask = this.#program(MASK, ["res", "rRef", "prev", "seg", "radius", "decay"]);
     const composite = this.#program(COMPOSITE, [
       ...["res", "rRef", "topTex", "bottomTex", "maskTex"],
-      ...["head", "balls", "wob", "edge", "dir"],
+      ...["head", "balls", "wob", "rip", "edge", "dir"],
     ]);
     if (!mask || !composite) return (this.ready = false);
     this.#mask = mask;
@@ -321,6 +327,7 @@ class GlRenderer {
     for (let i = 0; i < MAX_BALLS; i++) balls.set(s.balls[i] ?? [0, 0, -1e4], i * 3);
     gl.uniform3fv(u.balls!, balls);
     gl.uniform4f(u.wob!, ...s.wobble);
+    gl.uniform3f(u.rip!, ...s.ripple);
     gl.uniform4f(u.edge!, s.soft, s.goo, 0, s.reveal);
     gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
   }
@@ -367,7 +374,7 @@ class LiquidReveal extends HTMLElement {
   #headWander = [wander(), wander(), wander()]; // x, y, size
   // Drops: smaller blobs that roam the face on their own at rest, grow, shrink, vanish and merge,
   // then stream into the pointer on hover.
-  #drops = Array.from({ length: MAX_TRAILS - 1 }, () => ({
+  #drops = Array.from({ length: 3 }, () => ({
     x: 0,
     y: 0,
     vx: 0,
@@ -376,7 +383,12 @@ class LiquidReveal extends HTMLElement {
     ny: wander(),
     size: wander(),
     from: { x: 0, y: 0 } as Point,
+    travelled: 0,
   }));
+  #travelled = 0; // head path length, for the beaded trail
+  // Spray: small droplets that break off fast-moving blobs, drift, slow down and dry up.
+  #spray: { x: number; y: number; vx: number; vy: number; r: number; age: number; life: number }[] =
+    [];
   #hasHead = false;
   #cursor = { x: 0, y: 0 };
   #lastClient = { x: -1, y: -1 };
@@ -759,7 +771,33 @@ class LiquidReveal extends HTMLElement {
 
     const balls: [number, number, number][] = [];
     const trails: Shape["trails"] = [];
-    if (this.#reveal > 0.01) trails.push([this.#from.x, this.#from.y, head.x, head.y, r * 0.9]);
+    // Beaded trail: the stamp swells and pinches along the path, so as the trail heals its necks
+    // dry first and it breaks into a string of droplets.
+    const bead = (travelled: number, R: number) =>
+      rm ? R : R * (0.55 + 0.45 * Math.cos((travelled / (R * 0.85)) * TAU));
+    const hx = head.x - this.#from.x;
+    const hy = head.y - this.#from.y;
+    this.#travelled += Math.hypot(hx, hy);
+    if (this.#reveal > 0.01)
+      trails.push([this.#from.x, this.#from.y, head.x, head.y, bead(this.#travelled, r * 0.9)]);
+    const shed = (x: number, y: number, vx: number, vy: number, R: number) => {
+      const v = Math.hypot(vx, vy);
+      if (rm || R <= 0 || this.#spray.length >= MAX_SPRAY) return;
+      if (Math.random() > clamp01((v - 120) / 900) * 10 * dt) return;
+      const ux = vx / v;
+      const uy = vy / v;
+      const side = (Math.random() - 0.5) * 1.3;
+      this.#spray.push({
+        x: x - ux * R * 0.8 - uy * R * side,
+        y: y - uy * R * 0.8 + ux * R * side,
+        vx: vx * 0.3 - uy * side * 90,
+        vy: vy * 0.3 + ux * side * 90,
+        r: R * (0.1 + Math.random() * 0.12),
+        age: 0,
+        life: 0.5 + Math.random() * 0.7,
+      });
+    };
+    shed(head.x, head.y, head.vx, head.vy, r);
     if (!rm) {
       for (let i = 0; i < 3; i++) {
         const ph = i * 2.1 + 0.7;
@@ -784,10 +822,26 @@ class LiquidReveal extends HTMLElement {
         const life = smoothstep(clamp01(0.55 + 0.75 * d.size(ts)));
         const size = r * ((0.85 * life - 0.15) * (1 - m) + 0.5 * m);
         balls.push([d.x, d.y, size]);
+        d.travelled += Math.hypot(d.x - d.from.x, d.y - d.from.y);
         if (size > 0 && this.#reveal > 0.01)
-          trails.push([d.from.x, d.from.y, d.x, d.y, size * 0.85]);
+          trails.push([d.from.x, d.from.y, d.x, d.y, bead(d.travelled, size * 0.85)]);
+        shed(d.x, d.y, d.vx, d.vy, size);
       });
     }
+    this.#spray = this.#spray.filter((p) => {
+      const x0 = p.x;
+      const y0 = p.y;
+      const drag = Math.exp(-dt * 4);
+      p.vx *= drag;
+      p.vy *= drag;
+      p.x += p.vx * dt;
+      p.y += p.vy * dt;
+      p.age += dt;
+      const t = p.age / p.life;
+      if (t >= 1) return false;
+      trails.push([x0, y0, p.x, p.y, p.r * (1 - t * t)]);
+      return true;
+    });
 
     const w = rm ? 0 : this.#wobbleClock;
     this.#gl.draw(
@@ -796,14 +850,18 @@ class LiquidReveal extends HTMLElement {
         trails,
         decay: steps / 255,
         balls,
-        goo: r * (0.38 + 0.12 * (1 - m)),
-        // Feathered edge at rest, crisper under the pointer.
-        soft: 0.75 + (cfg.soft / 100) * r * (0.12 + 0.3 * (1 - m)),
+        goo: r * (0.34 + 0.1 * (1 - m)),
+        soft: 0.6 + (cfg.soft / 100) * r * 0.025,
         wobble: [
           rm ? 0 : (cfg.wobble / 100) * r * (0.07 + 0.04 * m),
           TAU / Math.max(10, r * 1.6),
           (w * 1.3) % TAU,
           (w * 0.9) % TAU,
+        ],
+        ripple: [
+          rm ? 0 : 1.2 + Math.min(speed / 1200, 1.4),
+          TAU / Math.max(14, r * 0.32),
+          (w * 4.2) % TAU,
         ],
         reveal: this.#reveal,
       },
