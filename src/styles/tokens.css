@@ -143,6 +143,7 @@
     --bg-hero: var(--pattern-dots), var(--color-bg);
     --shadow-bar: 0 12px 30px -20px light-dark(rgb(0 0 0 / 30%), rgb(0 0 0 / 70%));
     --blur-nav: 12px; /* backdrop blur behind the sticky nav */
+    --blur-page: 12px; /* page transition: pages blur out and in */
     --ease-standard: cubic-bezier(0.4, 0, 0.2, 1);
     --duration-fast: 150ms;
     --duration-link: 350ms; /* animated link underline */
@@ -151,7 +152,12 @@
     --duration-zoom: 800ms; /* case-study cover zoom on hover */
     --duration-marquee: 40s; /* one full loop of the client logo marquee */
     --ease-out-expo: cubic-bezier(0.19, 1, 0.22, 1);
-    --duration-page: 700ms; /* page transition */
+    --duration-page: 700ms; /* ink spread (theme switch, mobile menu); the nav during page changes */
+    --duration-page-out: 320ms; /* page transition: the old page fades out */
+    --duration-page-in: 1000ms; /* page transition: the new page settles in */
+    --delay-page-in: 200ms; /* page transition: the new page starts as the old one is nearly gone */
+    --shift-page-out: 2vh; /* page transition: how far the old page lifts */
+    --shift-page-in: 6vh; /* page transition: how far below the new page starts */
     --ease-in-out-quart: cubic-bezier(0.77, 0, 0.175, 1);
     --z-nav: 100;
   }

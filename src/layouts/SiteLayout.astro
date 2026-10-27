@@ -2,8 +2,6 @@
 import BaseLayout from "@/layouts/BaseLayout.astro";
 import Nav from "@/components/blocks/Nav.astro";
 import Footer from "@/components/blocks/Footer.astro";
-import TransitionPicker from "@/components/blocks/TransitionPicker.astro";
-import { isProduction } from "@/lib/site";
 import type { ComponentProps } from "astro/types";
 
 type Props = ComponentProps<typeof BaseLayout> & {
@@ -30,7 +28,6 @@ const { navOverlap = false, ...base } = Astro.props;
       </svg>
       <span class="visually-hidden">Back to top</span>
     </a>
-    {!isProduction && <TransitionPicker />}
   </div>
 </BaseLayout>
 

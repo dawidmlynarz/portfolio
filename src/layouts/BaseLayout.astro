@@ -44,6 +44,17 @@ const imageType = /\.jpe?g$/i.test(image.src) ? "image/jpeg" : "image/png";
     <!-- Fix the cascade layer order before any stylesheet loads, whatever order bundles arrive in. -->
     <style is:inline>
       @layer reset, tokens, base, components, utilities;
+
+      /*
+       * Page transitions between documents (Chrome, Edge, Safari; styles in base.css). Inline so
+       * the new page always sees the opt-in: in the shared stylesheet the browser sometimes
+       * decided before it applied and skipped the transition. Others get a normal page load.
+       */
+      @media (prefers-reduced-motion: no-preference) {
+        @view-transition {
+          navigation: auto;
+        }
+      }
     </style>
     <!-- Before first paint: apply a saved dark theme (light is the default) and flag the motion layer. -->
     <script is:inline>
@@ -56,88 +67,19 @@ const imageType = /\.jpe?g$/i.test(image.src) ? "image/jpeg" : "image/png";
         document.documentElement.classList.add("motion");
       }
     </script>
-    <!--
-      Page transitions (styles in base.css). PREVIEW: html[data-pt] picks the variant, from ?pt= or
-      the transition switcher. The clicked link is remembered as the origin for "spread", and back
-      navigation gets the "back" transition type so the motion can reverse.
-    -->
+    <!-- Going back through history gets the "back" transition type, so the page motion reverses. -->
     <script is:inline>
-      (() => {
-        const root = document.documentElement;
-        const names = ["sheet", "curtain", "rise", "columns", "spread"];
-        let pt = new URLSearchParams(location.search).get("pt");
-        try {
-          if (names.includes(pt)) localStorage.setItem("pt", pt);
-          pt = localStorage.getItem("pt");
-        } catch {}
-        root.dataset.pt = names.includes(pt) ? pt : "sheet";
-
-        addEventListener(
-          "click",
-          (event) => {
-            const link = event.target instanceof Element && event.target.closest("a[href]");
-            if (!link) return;
-            const box = link.getBoundingClientRect();
-            const x = event.detail ? event.clientX : box.left + box.width / 2;
-            const y = event.detail ? event.clientY : box.top + box.height / 2;
-            try {
-              sessionStorage.setItem("pt-origin", JSON.stringify({ x, y }));
-            } catch {}
-          },
-          true,
-        );
-
-        addEventListener("pagereveal", (event) => {
-          if (!event.viewTransition) return;
-          const activation = window.navigation?.activation;
-          const back =
-            activation?.navigationType === "traverse" &&
-            activation.from &&
-            activation.entry.index < activation.from.index;
-          if (back) event.viewTransition.types.add("back");
-          let origin = null;
-          try {
-            origin = JSON.parse(sessionStorage.getItem("pt-origin"));
-            sessionStorage.removeItem("pt-origin");
-          } catch {}
-          const x = !back && origin ? origin.x : innerWidth / 2;
-          const y = !back && origin ? origin.y : innerHeight / 2;
-          const r = Math.hypot(Math.max(x, innerWidth - x), Math.max(y, innerHeight - y));
-          root.style.setProperty("--pt-x", `${x}px`);
-          root.style.setProperty("--pt-y", `${y}px`);
-          root.style.setProperty("--pt-r", `${r}px`);
-
-          // "columns": five columns rise in a stagger, as one clip-path polygon.
-          if (root.dataset.pt !== "columns") return;
-          event.viewTransition.ready.then(() => {
-            const count = 5;
-            const value = getComputedStyle(root).getPropertyValue("--duration-page").trim();
-            // The build minifies "700ms" to ".7s", so read either unit.
-            const page = parseFloat(value) * (value.endsWith("ms") ? 1 : 1000);
-            const step = 0.08 * page;
-            const total = page + step * (count - 1);
-            const ease = (t) => (t < 0.5 ? 8 * t ** 4 : 1 - (-2 * t + 2) ** 4 / 2);
-            const frames = [];
-            for (let f = 0; f <= 48; f++) {
-              const time = (f / 48) * total;
-              const points = ["0% 100%"];
-              for (let i = 0; i < count; i++) {
-                const order = back ? count - 1 - i : i;
-                const t = Math.min(Math.max((time - order * step) / page, 0), 1);
-                const top = `${(1 - ease(t)) * 100}%`;
-                points.push(`${(i / count) * 100}% ${top}`, `${((i + 1) / count) * 100}% ${top}`);
-              }
-              points.push("100% 100%");
-              frames.push({ clipPath: `polygon(${points.join(", ")})` });
-            }
-            root.animate(frames, {
-              duration: total,
-              fill: "both",
-              pseudoElement: "::view-transition-new(root)",
-            });
-          });
-        });
-      })();
+      addEventListener("pagereveal", (event) => {
+        const activation = window.navigation?.activation;
+        if (
+          event.viewTransition &&
+          activation?.navigationType === "traverse" &&
+          activation.from &&
+          activation.entry.index < activation.from.index
+        ) {
+          event.viewTransition.types.add("back");
+        }
+      });
     </script>
     <link rel="preload" href={geistLatin} as="font" type="font/woff2" crossorigin />
 
