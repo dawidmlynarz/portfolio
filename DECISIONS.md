@@ -2,6 +2,16 @@
 
 Non-obvious choices, newest first. One entry per decision: what, why, and what it rules out.
 
+## 2026-10-27 · Smoother liquid portrait
+
+Dawid found the hero reveal jarring and laggy (references: Framer's "Liquid Mouse Reveal" and framer.university's hover mask reveal: a heavy, lerped follow and a gooey trail that shrinks back). Frame cost was already low after the WebGL pass, so the problem was the motion and the low-res mask, not the frame rate.
+
+- **Critically damped follow.** The head used to chase an already-smoothed cursor through an underdamped spring (overshoot, a second of ramp-in before it reached the pointer). It now follows the pointer directly with an exact critically damped step: heavy, never overshoots, and frame-rate independent (the old 33 ms clamp slowed motion down on dropped frames). The hover blend arrives in ~0.4 s and lets go slowly.
+- **The trail recedes instead of fading.** It lives in a small GPU texture that stores a distance ramp; each frame lowers it by a fixed step and stamps the head's path as a capsule. Lowering a distance field moves the edge inwards, so old trail shrinks and tapers like liquid rather than turning into a translucent ghost, and fast moves leave no gaps. Bilinear sampling of a ramp is exact, so the edge stays sharp at full resolution. The step is paid in whole 8-bit units with the remainder carried over, so the heal time is exact at any refresh rate.
+- **Head and lobes are analytic** (stretched along velocity, smooth-merged with the trail), drawn per pixel in the composite pass. Droplets and the tendril are gone: they added randomness that read as jitter.
+- **No 2D fallback any more.** Without WebGL the static portrait stays; WebGL 1 is universal on the browsers we target and the second renderer was ~200 lines of a different motion model.
+- Props (`size`, `soft`, `pull`, `wobble`, `fade`, `orbit`) keep their names and defaults; `pull` now sets how tightly the head follows.
+
 ## 2026-10-27 · Performance pass
 
 Measured with Lighthouse (mobile and desktop presets) on home, About, a case study and Services. Case studies and Services already scored ~100; the two heroes were the problem.
