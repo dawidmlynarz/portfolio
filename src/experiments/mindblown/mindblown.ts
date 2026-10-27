@@ -100,7 +100,79 @@ export function init(root: HTMLElement): () => void {
           { scaleY: 1, scaleX: 1, duration: 0.45, ease: "elastic.out(1,.4)", overwrite: "auto" },
         ),
       );
+    // the brain's own face follows: sucking while the thoughts go in, exploding for a moment on
+    // every burst, then back to rest (or exploding again while the pointer is on the brain)
+    boomCall?.kill();
+    boomCall = null;
+    if (name === "pain") brainFace("suck");
+    else if (name === "super") {
+      brainFace("boom");
+      boomCall = run(() =>
+        gsap.delayedCall(T(1.6), () => {
+          boomCall = null;
+          settleBrain();
+        }),
+      );
+    } else settleBrain();
   }
+
+  /* the brain's faces: rest, suck, boom. A swap squashes the new face in, the brows pop */
+  const bfaces = Object.fromEntries(
+    ["rest", "suck", "boom"].map((n) => [
+      n,
+      brain.querySelector<SVGGElement>(`.mindblown__bface--${n}`)!,
+    ]),
+  ) as Record<"rest" | "suck" | "boom", SVGGElement>;
+  const brows = (n: keyof typeof bfaces) => bfaces[n].querySelectorAll(".mindblown__brow");
+  let bface: keyof typeof bfaces = "rest",
+    boomCall: gsap.core.Tween | null = null;
+  function brainFace(n: keyof typeof bfaces) {
+    if (n === bface) return;
+    const from = bfaces[bface],
+      to = bfaces[n];
+    bface = n;
+    run(() => {
+      if (RM) {
+        gsap.set(from, { autoAlpha: 0 });
+        gsap.set(to, { autoAlpha: 1, scaleY: 1 });
+        return;
+      }
+      gsap.to(from, { autoAlpha: 0, duration: 0.1, overwrite: "auto" });
+      gsap.fromTo(
+        to,
+        { autoAlpha: 0, scaleY: 0.3 },
+        { autoAlpha: 1, scaleY: 1, duration: 0.45, ease: "back.out(2.5)", overwrite: "auto" },
+      );
+      gsap.fromTo(
+        brows(n),
+        { yPercent: n === "suck" ? 60 : -120 },
+        { yPercent: 0, duration: 0.7, ease: "elastic.out(1,.35)", delay: 0.05, overwrite: "auto" },
+      );
+    });
+  }
+  const overBrain = () => !brainBtn.hidden && brainBtn.matches(":hover, :focus-visible");
+  function settleBrain() {
+    if (boomCall || face === "pain") return;
+    brainFace(state === "open" && overBrain() ? "boom" : "rest");
+  }
+  // now and then the brows give a little lift, out of step with each other
+  if (!RM)
+    run(() =>
+      gsap
+        .timeline({ repeat: -1, repeatDelay: 2.4, delay: 1.5 })
+        .to(brain.querySelectorAll(".mindblown__brow"), {
+          y: -2,
+          duration: 0.16,
+          ease: "power2.out",
+          stagger: { each: 0.06, from: "random" },
+        })
+        .to(brain.querySelectorAll(".mindblown__brow"), {
+          y: 0,
+          duration: 0.4,
+          ease: "bounce.out",
+          stagger: { each: 0.06, from: "random" },
+        }),
+    );
 
   /* ---------- cards ---------- */
   const narrow = () => stage.clientWidth < 1000;
@@ -284,6 +356,7 @@ export function init(root: HTMLElement): () => void {
     if (state !== "closed") return;
     state = "busy";
     peeking = false;
+    head.classList.remove("mindblown__head--peek");
     peekTl?.kill();
     cut(true);
     head.setAttribute("aria-expanded", "true");
@@ -390,6 +463,7 @@ export function init(root: HTMLElement): () => void {
     startFloats();
     for (const c of active) c.tabIndex = 0;
     brainBtn.hidden = false;
+    settleBrain();
   }
 
   /* brain click: suck every thought in (pained face, the brain strains), then the super-shocked
@@ -538,6 +612,11 @@ export function init(root: HTMLElement): () => void {
 
   /* ---------- head interactions ---------- */
   brainBtn.addEventListener("click", rethink, on);
+  // pointing at the risen brain excites it
+  brainBtn.addEventListener("pointerenter", settleBrain, on);
+  brainBtn.addEventListener("pointerleave", () => requestAnimationFrame(settleBrain), on);
+  brainBtn.addEventListener("focus", settleBrain, on);
+  brainBtn.addEventListener("blur", () => requestAnimationFrame(settleBrain), on);
   head.addEventListener("click", () => (state === "closed" ? openHead() : closeHead()), on);
   head.addEventListener(
     "keydown",
@@ -574,6 +653,7 @@ export function init(root: HTMLElement): () => void {
   function peek(on: boolean) {
     if (state !== "closed" || on === peeking) return;
     peeking = on;
+    head.classList.toggle("mindblown__head--peek", on);
     setFace(on ? "shock" : "rest", false);
     peekTl?.kill();
     if (on) cut(true);

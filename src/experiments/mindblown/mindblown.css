@@ -165,21 +165,6 @@
     mask: radial-gradient(var(--mb-cut), #000 100%, transparent calc(100% + 8px));
   }
 
-  /* the lifted lid's underside: a soft shadow over its curved lower edge (Figma: 30% black,
-     blurred), only while the cut is open */
-  .mindblown__lid-front::after {
-    content: "";
-    position: absolute;
-    inset: 0;
-    background: radial-gradient(var(--mb-cut), var(--mb-brain-shadow) 70%, transparent 100%);
-    opacity: 0;
-    transition: opacity 0.3s;
-  }
-
-  .mindblown__head--cut .mindblown__lid-front::after {
-    opacity: 1;
-  }
-
   .mindblown__layer--lid {
     z-index: 4;
     transform-origin: 26% 34.5%;
@@ -309,17 +294,31 @@
     animation: mindblown-blink 4s infinite;
   }
 
-  /* one face per state: rest (peek, open), sucking (thoughts going back in), exploding (pop) */
-  .mindblown__bface--suck,
-  .mindblown__bface--boom,
-  .mindblown__head--pain .mindblown__bface--rest,
-  .mindblown__head--super .mindblown__bface--rest {
-    display: none;
+  /* one face per state; mindblown.ts swaps them with a little squash. Rest shows without JS */
+  .mindblown__bface {
+    transform-box: fill-box;
+    transform-origin: 50% 60%;
   }
 
-  .mindblown__head--pain .mindblown__bface--suck,
-  .mindblown__head--super .mindblown__bface--boom {
-    display: inline;
+  .mindblown__bface--suck,
+  .mindblown__bface--boom {
+    opacity: 0;
+    visibility: hidden;
+  }
+
+  .mindblown__brow {
+    transform-box: fill-box;
+    transform-origin: center;
+  }
+
+  /* the lid's shadow falls on the brain only while the lid hovers just above it */
+  .mindblown__lid-shade {
+    opacity: 0;
+    transition: opacity 0.4s;
+  }
+
+  .mindblown__head--peek .mindblown__lid-shade {
+    opacity: 1;
   }
 
   @keyframes mindblown-blink {
