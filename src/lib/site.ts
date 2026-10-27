@@ -1,7 +1,9 @@
-import { CF_PAGES_BRANCH, SHOW_PROTECTED_DRAFTS } from "astro:env/server";
+import { CF_PAGES_BRANCH, CF_WEB_ANALYTICS_TOKEN, SHOW_PROTECTED_DRAFTS } from "astro:env/server";
 
 export const SITE = {
   name: "Dawid Młynarz",
+  /** Spelling without the Polish ł, as people often type it. */
+  alternateName: "Dawid Mlynarz",
   title: "Dawid Młynarz — Senior Product Designer",
   /** Default meta description (pages override it). */
   description:
@@ -9,6 +11,16 @@ export const SITE = {
   jobTitle: "Senior Product Designer",
   locale: "en",
   ogLocale: "en_GB",
+  /** ISO 3166 country code, for structured data. */
+  country: "PL",
+  /** Topics Dawid wants to be known for (structured data). */
+  knowsAbout: [
+    "AI-ready design systems",
+    "Agentic UX",
+    "Product strategy",
+    "Design systems",
+    "Product design",
+  ],
   email: "hello@mlynarz.com",
   /** Social share image in public/ (1200×630). */
   ogImage: {
@@ -37,4 +49,10 @@ export const PRODUCTION_BRANCH = "main";
 export const isProduction = CF_PAGES_BRANCH === PRODUCTION_BRANCH;
 
 /** Previews are behind Cloudflare Access, so formerly password-protected drafts may be built. */
+/** Cloudflare Web Analytics runs on production only, and only when a token is set. */
+export const webAnalyticsToken = isProduction ? CF_WEB_ANALYTICS_TOKEN : undefined;
+
+/** Search results cut titles at about 60 characters and descriptions at about 160. */
+export const SEO_LIMITS = { title: 60, description: 160 } as const;
+
 export const showProtectedDrafts = !isProduction && SHOW_PROTECTED_DRAFTS;

@@ -7,6 +7,7 @@ import Stack from "@/components/layout/Stack.astro";
 import Mindblown from "@/experiments/mindblown/Mindblown.astro";
 import Tag from "@/components/ui/Tag.astro";
 import Link from "@/components/ui/Link.astro";
+import { breadcrumbs, person, websiteId } from "@/lib/schema";
 import about01 from "@/assets/about/about-01.jpg";
 import about02 from "@/assets/about/about-02.jpg";
 import about03 from "@/assets/about/about-03.jpg";
@@ -41,6 +42,21 @@ const skills = [
   "Internal/external stakeholder management",
 ];
 
+const site = Astro.site!;
+// About is Dawid's profile page; the Person node lives here in full and is referenced elsewhere.
+const jsonLd = {
+  "@context": "https://schema.org",
+  "@graph": [
+    {
+      "@type": "ProfilePage",
+      url: new URL("/about", site).href,
+      isPartOf: { "@id": websiteId(site) },
+      mainEntity: await person(site),
+    },
+    breadcrumbs(site, [["About", "/about"]]),
+  ],
+};
+
 const interests = [
   ["🧬", "INTJ"],
   ["❤️", "Father & Husband"],
@@ -54,6 +70,7 @@ const interests = [
 <SiteLayout
   navOverlap
   title="About me"
+  jsonLd={jsonLd}
   description="Dawid Młynarz, a self-taught product designer based in Poland. I help companies build meaningful & user-centered digital experiences."
 >
   <Mindblown>

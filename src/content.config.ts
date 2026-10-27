@@ -20,6 +20,8 @@ const work = defineCollection({
       seoTitle: z.string().optional(),
       /** One or two sentences: card summary, lead paragraph and meta description. */
       description: z.string(),
+      /** Meta description override when `description` is too long for search results (~160). */
+      seoDescription: z.string().optional(),
       /** Page intro under the headline, when it differs from the card summary. */
       lead: z.string().optional(),
       company: z.string(),

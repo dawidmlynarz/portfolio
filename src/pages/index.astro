@@ -10,33 +10,18 @@ import ClientLogos from "@/components/blocks/ClientLogos.astro";
 import WorkGrid from "@/components/blocks/WorkGrid.astro";
 import Button from "@/components/ui/Button.astro";
 import Link from "@/components/ui/Link.astro";
-import { SITE, SOCIAL_LINKS } from "@/lib/site";
+import { SITE } from "@/lib/site";
 import { SERVICES } from "@/lib/services";
 import { getListedWork } from "@/lib/work";
+import { person, website } from "@/lib/schema";
 
 /** Home shows the first four case studies; the rest are on /work. */
 const work = (await getListedWork()).slice(0, 4);
 
+const site = Astro.site!;
 const jsonLd = {
   "@context": "https://schema.org",
-  "@graph": [
-    {
-      "@type": "WebSite",
-      name: SITE.title,
-      url: Astro.site?.href,
-      inLanguage: SITE.locale,
-    },
-    {
-      "@type": "Person",
-      name: SITE.name,
-      jobTitle: SITE.jobTitle,
-      url: Astro.site?.href,
-      email: `mailto:${SITE.email}`,
-      image: new URL(SITE.ogImage.src, Astro.site).href,
-      sameAs: SOCIAL_LINKS.map((link) => link.href),
-      knowsAbout: ["Agentic UX", "AI-ready design systems", "Product strategy", "Product design"],
-    },
-  ],
+  "@graph": [website(site), await person(site)],
 };
 ---
 
