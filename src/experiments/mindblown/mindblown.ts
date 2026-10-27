@@ -17,9 +17,9 @@ type Card = HTMLButtonElement & {
 };
 
 /** Hover peek: how far the lid lifts (share of the head's height) and where the brain rises to
-    (yPercent of the brain; 4 is fully out, 130 is hidden). */
+    (yPercent of the brain; 3 is fully out, 98 is hidden). */
 const PEEK_LIFT = 0.07,
-  PEEK_BRAIN = 30;
+  PEEK_BRAIN = 22.5;
 
 const svg = (k: IconName) =>
   `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${ICONS[k]}</svg>`;
@@ -132,7 +132,7 @@ export function init(root: HTMLElement): () => void {
   /* ---------- intro ---------- */
   let idle: gsap.core.Tween | null = null;
   run(() => {
-    gsap.set(brain, { yPercent: 130 });
+    gsap.set(brain, { yPercent: 98 });
     gsap.from(headPos, { yPercent: 40, duration: T(1), ease: "back.out(1.4)", delay: 0.1 });
     gsap.from(note, {
       scale: 0,
@@ -323,7 +323,7 @@ export function init(root: HTMLElement): () => void {
         }, "pop")
         .to(
           brain,
-          { yPercent: 4, duration: T(0.7), ease: "back.out(2.2)", onUpdate: () => look() },
+          { yPercent: 3, duration: T(0.7), ease: "back.out(2.2)", onUpdate: () => look() },
           "pop+=.5",
         );
       // 2. thoughts erupt
@@ -466,7 +466,7 @@ export function init(root: HTMLElement): () => void {
         .to(noteClose, { scale: 0, rotation: -20, duration: T(0.25), ease: "back.in(2)" }, 0)
         .set(noteClose, { autoAlpha: 0 });
       suck(tl, o);
-      tl.to(brain, { yPercent: 130, duration: T(0.3), ease: "power2.in" }, "-=.3")
+      tl.to(brain, { yPercent: 98, duration: T(0.3), ease: "power2.in" }, "-=.3")
         .to(
           lid,
           {
@@ -577,7 +577,7 @@ export function init(root: HTMLElement): () => void {
           0.1,
         );
       } else
-        tl.to(brain, { yPercent: 130, duration: T(0.35), ease: "power2.in" }, 0).to(
+        tl.to(brain, { yPercent: 98, duration: T(0.35), ease: "power2.in" }, 0).to(
           lid,
           { yPercent: 0, x: 0, rotation: 0, duration: T(0.5), ease: "power2.inOut" },
           0.05,
@@ -899,11 +899,10 @@ export function init(root: HTMLElement): () => void {
   }
 
   /* ---------- brain eyes follow the pointer ---------- */
-  const pupils = [...brain.querySelectorAll(".mindblown__pupil")];
-  const eyeC = [
-    [58, 48],
-    [82, 48],
-  ] as const;
+  // every face has its own pair; each pupil knows its centre in brain units, and moves in its
+  // face's units (the faces are drawn at 0.72 scale)
+  const pupils = [...brain.querySelectorAll<SVGGElement>(".mindblown__pupil")];
+  const eyeC = pupils.map((p) => [Number(p.dataset.cx), Number(p.dataset.cy)] as const);
   let lookX = innerWidth / 2,
     lookY = 0,
     lookRaf = 0;
@@ -918,7 +917,7 @@ export function init(root: HTMLElement): () => void {
       const dx = lookX - ex,
         dy = lookY - ey,
         d = Math.hypot(dx, dy) || 1,
-        m = Math.min(3, d / 30);
+        m = Math.min(4.2, d / 20);
       p.setAttribute(
         "transform",
         `translate(${((dx / d) * m).toFixed(2)} ${((dy / d) * m * 1.1).toFixed(2)})`,

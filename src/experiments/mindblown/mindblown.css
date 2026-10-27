@@ -15,13 +15,15 @@
     --mb-art-paper: #fff;
 
     /* inside the head: a flat, illustrated cut (orange rim, coral inside) */
-    --mb-rim: #ffb15e;
-    --mb-flesh: #ff8a6b;
-    --mb-flesh-dark: #e2504d;
+    --mb-rim: #f9c6d0;
+    --mb-flesh: #e57891;
+    --mb-flesh-dark: #b8435f;
     --mb-brain: #f6a3b0;
     --mb-brain-light: #f9c6d0;
     --mb-brain-dark: #f07f9b;
     --mb-brain-fold: #ef8da0;
+    --mb-brain-ink: #282828;
+    --mb-brain-cheek: #ffe0ea;
 
     /* the burst when the head pops open: beams, dots and sparkles (canvas) */
     --mb-fx-1: #9447e8;
@@ -233,10 +235,12 @@
     margin-block-start: calc(-100% / 12);
     border: var(--mb-rim-w) solid var(--mb-rim);
     border-radius: 50%;
+
+    /* a pink well: darkest at the back, where the brain sits, lighter towards the front wall */
     background: radial-gradient(
-      ellipse at 50% 30%,
-      var(--mb-flesh-dark) 0 40%,
-      var(--mb-flesh) 85%
+      ellipse 70% 90% at 50% 35%,
+      var(--mb-flesh-dark) 0 45%,
+      var(--mb-flesh) 100%
     );
     visibility: hidden;
   }
@@ -266,7 +270,7 @@
     left: 0;
     top: 0;
     inline-size: 100%;
-    block-size: 82%;
+    block-size: calc(82% * 104 / 78);
     max-inline-size: none;
     overflow: visible;
   }
@@ -274,7 +278,23 @@
   .mindblown__eye {
     transform-box: fill-box;
     transform-origin: center;
+  }
+
+  .mindblown__bface--rest .mindblown__eye {
     animation: mindblown-blink 4s infinite;
+  }
+
+  /* one face per state: rest (peek, open), sucking (thoughts going back in), exploding (pop) */
+  .mindblown__bface--suck,
+  .mindblown__bface--boom,
+  .mindblown__head--pain .mindblown__bface--rest,
+  .mindblown__head--super .mindblown__bface--rest {
+    display: none;
+  }
+
+  .mindblown__head--pain .mindblown__bface--suck,
+  .mindblown__head--super .mindblown__bface--boom {
+    display: inline;
   }
 
   @keyframes mindblown-blink {
