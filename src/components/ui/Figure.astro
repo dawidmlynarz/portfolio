@@ -1,8 +1,13 @@
 ---
 import { Image } from "astro:assets";
+import { isProduction } from "@/lib/site";
 
 interface Props {
-  src: ImageMetadata;
+  /**
+   * Leave out for a placeholder while the image is being made: a dashed box labelled with `alt`.
+   * Placeholders render on previews only, never in production.
+   */
+  src?: ImageMetadata;
   /** Required. Describe what the image shows; use "" only for purely decorative images. */
   alt: string;
   caption?: string;
@@ -24,7 +29,8 @@ const {
   class: className,
 } = Astro.props;
 
-const widths = [480, 800, 1200, 1600, 2400].filter((w) => w <= src.width);
+const widths = src ? [480, 800, 1200, 1600, 2400].filter((w) => w <= src.width) : [];
+const hidden = !src && isProduction;
 const defaultSizes = {
   content: "(min-width: 44rem) 40rem, calc(100vw - 2rem)",
   wide: "(min-width: 84rem) 80rem, calc(100vw - 2rem)",
@@ -32,17 +38,33 @@ const defaultSizes = {
 };
 ---
 
-<figure class:list={["figure", `figure--${width}`, className]} data-width={width}>
-  <Image
-    class="figure__image"
-    src={src}
-    alt={alt}
-    widths={widths.length ? widths : [src.width]}
-    sizes={sizes ?? defaultSizes[width]}
-    loading={loading}
-  />
-  {caption && <figcaption class="figure__caption">{caption}</figcaption>}
-</figure>
+{!hidden && (
+  <figure
+    class:list={["figure", `figure--${width}`, { "figure--placeholder": !src }, className]}
+    data-width={width}
+  >
+    {src ? (
+      <Image
+        class="figure__image"
+        src={src}
+        alt={alt}
+        widths={widths.length ? widths : [src.width]}
+        sizes={sizes ?? defaultSizes[width]}
+        loading={loading}
+      />
+    ) : (
+      <div
+        class="figure__image figure__placeholder"
+        role="img"
+        aria-label={`Image to come: ${alt}`}
+      >
+        <span class="text-caption">Image to come</span>
+        <span class="figure__placeholder-label">{alt}</span>
+      </div>
+    )}
+    {caption && <figcaption class="figure__caption">{caption}</figcaption>}
+  </figure>
+)}
 
 <style>
   @layer components {
@@ -55,6 +77,23 @@ const defaultSizes = {
       inline-size: 100%;
       border-radius: var(--radius-md);
       background-color: var(--color-bg-subtle);
+    }
+
+    .figure__placeholder {
+      display: grid;
+      place-content: center;
+      justify-items: center;
+      gap: var(--space-2);
+      aspect-ratio: 16 / 9;
+      padding: var(--space-6);
+      border: var(--border-width) dashed var(--color-border-muted);
+      color: var(--color-text-muted);
+      text-align: center;
+    }
+
+    .figure__placeholder-label {
+      max-inline-size: var(--measure);
+      text-wrap: balance;
     }
 
     .figure--full .figure__image {
