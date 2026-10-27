@@ -288,13 +288,17 @@ class LiquidReveal extends HTMLElement {
       (e) => {
         e.preventDefault();
         if (this.#gl) this.#gl.ready = false;
+        delete this.dataset.ready; // show the static <img> while the canvas is blank
       },
       { signal },
     );
     canvas.addEventListener(
       "webglcontextrestored",
       () => {
-        if (this.#gl?.init()) this.#paintLayers();
+        if (this.#gl?.init() && this.#photo) {
+          this.#paintLayers();
+          this.dataset.ready = "";
+        }
         this.#kick();
       },
       { signal },
