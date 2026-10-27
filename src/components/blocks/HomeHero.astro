@@ -22,6 +22,13 @@ interface Props {
 }
 
 const { label, title, titleMuted, lead } = Astro.props;
+
+// The portrait covers its box, so it is drawn at the wider of the box width and the box height
+// times the image ratio (≈1.34). Box heights below: mobile max(62svh, 27.5rem), wider screens at
+// least max(100svh, 40rem). Asking for the drawn width keeps the static image sharp and lets the
+// canvas reuse the same file instead of downloading a second one.
+const SIZES =
+  "(min-width: 62em) max(50vw, 134vh, 54rem), (min-width: 48em) max(56vw, 134vh, 54rem), max(100vw, 83vh, 37rem)";
 ---
 
 <section class="home-hero" aria-labelledby="home-hero-title" data-hero>
@@ -46,7 +53,7 @@ const { label, title, titleMuted, lead } = Astro.props;
       clayDark={portraitClayDark}
       alt="Portrait of Dawid Młynarz as a white clay sculpture"
       fit="fill"
-      sizes="(min-width: 62em) 50vw, (min-width: 48em) 56vw, 100vw"
+      sizes={SIZES}
     />
   </div>
 </section>

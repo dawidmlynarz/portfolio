@@ -15,7 +15,12 @@
  *   (the `themechange` event from ThemeToggle; its waitUntil holds the theme transition until the
  *   canvas has repainted). With data-clay-dark, a dark clay replaces the light one while the
  *   background is dark; it is loaded only when first needed.
- * - Images come from astro:assets (AVIF with alpha, picked to the rendered size).
+ * - Images come from astro:assets (AVIF with alpha, picked to the rendered size). The clay reuses
+ *   the static <img>'s file when it is big enough, so it is not downloaded twice.
+ * - Starts once the page has loaded and gone idle, so it never competes with first paint.
+ * - Drawn with WebGL: one shader thresholds the liquid field, wobbles its edge and mixes the two
+ *   layers per pixel, so a frame costs well under a millisecond on the main thread. Without WebGL
+ *   the same model runs on a 2D canvas (threshold on the CPU, composite with blend modes).
  * - All listeners are removed when the element leaves the DOM.
  */
 
@@ -56,6 +61,136 @@ function getBrush() {
   return brush;
 }
 
+/** Resolves once the page has loaded and the main thread is idle (or after a short timeout). */
+const afterLoad = () =>
+  new Promise<void>((resolve) => {
+    const idle = () =>
+      "requestIdleCallback" in window
+        ? requestIdleCallback(() => resolve(), { timeout: 1500 })
+        : setTimeout(resolve, 200);
+    if (document.readyState === "complete") idle();
+    else addEventListener("load", idle, { once: true });
+  });
+
+/** Edge shape for one frame, shared by the WebGL and 2D renderers. */
+type Edge = { amp: number; lo: number; hi: number; f1: number; f2: number };
+
+const VERTEX = `attribute vec2 p;varying vec2 uv;
+void main(){uv=vec2(p.x*.5+.5,.5-p.y*.5);gl_Position=vec4(p,0.,1.);}`;
+
+// Same maths as LiquidReveal.#liquidPass, per output pixel instead of per field pixel.
+const FRAGMENT = `#ifdef GL_FRAGMENT_PRECISION_HIGH
+precision highp float;
+#else
+precision mediump float;
+#endif
+uniform sampler2D topTex,bottomTex,fieldTex;
+uniform vec2 fieldSize,freq;
+uniform vec4 phase,edge;
+varying vec2 uv;
+void main(){
+  float a=texture2D(fieldTex,uv).a;
+  float m=0.;
+  if(a>0.){
+    vec2 q=uv*fieldSize;
+    float n=.62*sin(q.x*freq.x+phase.x)*cos(q.y*freq.x*.93+phase.z)
+      +.38*cos(q.x*freq.y+phase.y)*sin(q.y*freq.y*1.07+phase.w);
+    m=smoothstep(edge.y,edge.z,a+edge.x*n*min(1.,a*4.25))*edge.w;
+  }
+  vec4 top=texture2D(topTex,uv)*(1.-m);
+  gl_FragColor=top+texture2D(bottomTex,uv)*m*(1.-top.a);
+}`;
+
+/** Draws a frame in one pass: top layer minus the liquid, over the bottom layer inside it. */
+class GlRenderer {
+  #gl: WebGLRenderingContext;
+  #u: Record<string, WebGLUniformLocation | null> = {};
+  ready = false;
+
+  static create(canvas: HTMLCanvasElement) {
+    const gl = canvas.getContext("webgl", {
+      alpha: true,
+      premultipliedAlpha: true,
+      antialias: false,
+      depth: false,
+      stencil: false,
+    });
+    if (!gl) return null;
+    const renderer = new GlRenderer(gl);
+    return renderer.init() ? renderer : null;
+  }
+
+  constructor(gl: WebGLRenderingContext) {
+    this.#gl = gl;
+  }
+
+  /** (Re)creates the program and textures; also called after a lost context is restored. */
+  init() {
+    const gl = this.#gl;
+    const shader = (type: number, src: string) => {
+      const s = gl.createShader(type)!;
+      gl.shaderSource(s, src);
+      gl.compileShader(s);
+      return s;
+    };
+    const program = gl.createProgram()!;
+    gl.attachShader(program, shader(gl.VERTEX_SHADER, VERTEX));
+    gl.attachShader(program, shader(gl.FRAGMENT_SHADER, FRAGMENT));
+    gl.linkProgram(program);
+    if (!gl.getProgramParameter(program, gl.LINK_STATUS)) return (this.ready = false);
+    gl.useProgram(program);
+
+    gl.bindBuffer(gl.ARRAY_BUFFER, gl.createBuffer());
+    gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([-1, -1, 1, -1, -1, 1, 1, 1]), gl.STATIC_DRAW);
+    const p = gl.getAttribLocation(program, "p");
+    gl.enableVertexAttribArray(p);
+    gl.vertexAttribPointer(p, 2, gl.FLOAT, false, 0, 0);
+
+    for (const name of ["fieldSize", "freq", "phase", "edge"])
+      this.#u[name] = gl.getUniformLocation(program, name);
+    // One texture per unit, bound once: 0 top layer, 1 bottom layer, 2 liquid field.
+    ["topTex", "bottomTex", "fieldTex"].forEach((name, i) => {
+      gl.activeTexture(gl.TEXTURE0 + i);
+      gl.bindTexture(gl.TEXTURE_2D, gl.createTexture());
+      gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
+      gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+      gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
+      gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
+      gl.uniform1i(gl.getUniformLocation(program, name), i);
+    });
+    return (this.ready = true);
+  }
+
+  /** Uploads a painted layer (0 top, 1 bottom), premultiplied like the canvas output. */
+  setLayer(i: 0 | 1, source: HTMLCanvasElement) {
+    const gl = this.#gl;
+    gl.activeTexture(gl.TEXTURE0 + i);
+    gl.pixelStorei(gl.UNPACK_PREMULTIPLY_ALPHA_WEBGL, true);
+    gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, source);
+  }
+
+  draw(field: HTMLCanvasElement, e: Edge, t: number, reveal: number) {
+    const gl = this.#gl;
+    gl.viewport(0, 0, gl.drawingBufferWidth, gl.drawingBufferHeight);
+    gl.activeTexture(gl.TEXTURE2);
+    gl.pixelStorei(gl.UNPACK_PREMULTIPLY_ALPHA_WEBGL, false);
+    gl.texImage2D(gl.TEXTURE_2D, 0, gl.ALPHA, gl.ALPHA, gl.UNSIGNED_BYTE, field);
+    // Phases wrapped on the CPU in double precision, so the clock never outgrows mediump floats.
+    const wrap = (x: number) => x % (Math.PI * 2);
+    gl.uniform2f(this.#u.fieldSize!, field.width, field.height);
+    gl.uniform2f(this.#u.freq!, e.f1, e.f2);
+    gl.uniform4f(
+      this.#u.phase!,
+      wrap(t * 1.15),
+      wrap(1.2 - t * 1.6),
+      wrap(0.4 - t * 0.9),
+      wrap(t * 1.35),
+    );
+    gl.uniform4f(this.#u.edge!, e.amp, e.lo, e.hi, reveal);
+    gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
+  }
+}
+
 const pick = (sources: Source[], needed: number) =>
   sources.find((s) => s.w >= needed) ?? sources[sources.length - 1]!;
 
@@ -63,9 +198,10 @@ const loadImage = (url: string) =>
   new Promise<HTMLImageElement>((resolve, reject) => {
     const img = new Image();
     img.decoding = "async";
-    img.onload = () => resolve(img);
     img.onerror = reject;
     img.src = url;
+    // Decode off the main thread, so the first drawImage of a large AVIF doesn't block a frame.
+    img.decode().then(() => resolve(img), reject);
   });
 
 class LiquidReveal extends HTMLElement {
@@ -73,9 +209,10 @@ class LiquidReveal extends HTMLElement {
   #cfg!: Config;
   #reduceMotion = false;
 
-  // canvases
+  // canvases (#gl when WebGL is available, else #ctx)
   #cv!: HTMLCanvasElement;
-  #ctx!: CanvasRenderingContext2D;
+  #gl: GlRenderer | null = null;
+  #ctx: CanvasRenderingContext2D | null = null;
   #topLayer = document.createElement("canvas");
   #bottomLayer = document.createElement("canvas");
   #mix = document.createElement("canvas");
@@ -129,7 +266,8 @@ class LiquidReveal extends HTMLElement {
     this.#reveal = this.#reduceMotion ? 0 : 1;
 
     // Page-load fade: mark the portrait as shown once the static image for the current theme has
-    // decoded (LiquidReveal.astro fades it in from 0 to 100% opacity under the motion layer).
+    // decoded (LiquidReveal.astro fades it in from 0 to 100% opacity under the motion layer). The
+    // image's own onload usually gets there first; this covers a load that beat the attribute.
     const shown = [...this.querySelectorAll<HTMLImageElement>(".liquid__image")].find(
       (img) => getComputedStyle(img).display !== "none",
     );
@@ -138,12 +276,29 @@ class LiquidReveal extends HTMLElement {
     else shown.decode().then(markShown, markShown);
 
     const canvas = this.querySelector("canvas");
-    const ctx = canvas?.getContext("2d");
-    if (!canvas || !ctx) return;
+    if (!canvas) return;
     this.#cv = canvas;
-    this.#ctx = ctx;
+    this.#gl = GlRenderer.create(canvas);
+    if (!this.#gl) this.#ctx = canvas.getContext("2d");
+    if (!this.#gl && !this.#ctx) return;
 
     const { signal } = this.#abort;
+    canvas.addEventListener(
+      "webglcontextlost",
+      (e) => {
+        e.preventDefault();
+        if (this.#gl) this.#gl.ready = false;
+      },
+      { signal },
+    );
+    canvas.addEventListener(
+      "webglcontextrestored",
+      () => {
+        if (this.#gl?.init()) this.#paintLayers();
+        this.#kick();
+      },
+      { signal },
+    );
     let booted = false;
     const io = new IntersectionObserver(
       (entries) => {
@@ -167,6 +322,7 @@ class LiquidReveal extends HTMLElement {
   }
 
   async #boot() {
+    await afterLoad();
     const sources = (key: "photo") => JSON.parse(this.dataset[key] ?? "[]") as Source[];
     const rect = this.getBoundingClientRect();
     const dpr = Math.min(devicePixelRatio || 1, 2);
@@ -259,12 +415,24 @@ class LiquidReveal extends HTMLElement {
     const dark = 0.2126 * r + 0.7152 * g + 0.0722 * b < 128;
     const darkSources = JSON.parse(this.dataset.clayDark ?? "[]") as Source[];
     if (dark && darkSources.length) {
-      this.#clayDark ??= loadImage(pick(darkSources, this.#drawnWidth).url);
+      this.#clayDark ??= loadImage(this.#clayUrl(darkSources, ".liquid__image--dark"));
       return this.#clayDark;
     }
     const lightSources = JSON.parse(this.dataset.clay ?? "[]") as Source[];
-    this.#clayLight ??= loadImage(pick(lightSources, this.#drawnWidth).url);
+    this.#clayLight ??= loadImage(
+      this.#clayUrl(lightSources, ".liquid__image:not(.liquid__image--dark)"),
+    );
     return this.#clayLight;
+  }
+
+  /** The static <img>'s file when the clay is on top and that file is big enough, else a pick. */
+  #clayUrl(sources: Source[], selector: string) {
+    const current = this.querySelector<HTMLImageElement>(selector)?.currentSrc;
+    const path = current && new URL(current, location.href).pathname;
+    const shown = this.#cfg.top === "clay" ? sources.find((s) => s.url === path) : undefined;
+    return shown && shown.w >= this.#drawnWidth * 0.8
+      ? shown.url
+      : pick(sources, this.#drawnWidth).url;
   }
 
   // ---------- layout ----------
@@ -325,6 +493,10 @@ class LiquidReveal extends HTMLElement {
       c.setTransform(this.#dpr, 0, 0, this.#dpr, 0, 0);
       c.imageSmoothingQuality = "high";
       c.drawImage(img, this.#L.dx, this.#L.dy, this.#L.dw, this.#L.dh);
+    }
+    if (this.#gl?.ready) {
+      this.#gl.setLayer(0, this.#topLayer);
+      this.#gl.setLayer(1, this.#bottomLayer);
     }
   }
 
@@ -413,21 +585,24 @@ class LiquidReveal extends HTMLElement {
     }
   }
 
-  /** Threshold the field into a liquid edge, wobbled by separable animated sine noise. */
-  #liquidPass(t: number, r: number, hover: number) {
+  /** The liquid edge: threshold band, wobble amplitude and noise frequencies (in field pixels). */
+  #edge(r: number, hover: number): Edge {
+    const amp = (this.#cfg.wobble / 100) * 0.3 * (1 + 0.9 * hover);
+    const s = 0.015 + (this.#cfg.soft / 100) * 0.42 + 0.06 * hover;
+    const wl = Math.max(10, r * this.#MS * 2.1);
+    const f1 = (Math.PI * 2) / wl;
+    return { amp, lo: ISO - s, hi: ISO + s, f1, f2: f1 * 1.61 };
+  }
+
+  /** 2D fallback: threshold the field into a liquid edge, wobbled by separable sine noise. */
+  #liquidPass(t: number, { amp, lo, hi, f1, f2 }: Edge) {
     const fw = this.#field.width;
     const fh = this.#field.height;
     const src = this.#fctx.getImageData(0, 0, fw, fh).data;
     const dst = this.#outImg!.data;
     const nx = this.#noiseX;
     const ny = this.#noiseY;
-    const amp = (this.#cfg.wobble / 100) * 0.3 * (1 + 0.9 * hover);
-    const s = 0.015 + (this.#cfg.soft / 100) * 0.42 + 0.06 * hover;
-    const lo = ISO - s;
-    const inv = 1 / (2 * s);
-    const wl = Math.max(10, r * this.#MS * 2.1);
-    const f1 = (Math.PI * 2) / wl;
-    const f2 = f1 * 1.61;
+    const inv = 1 / (hi - lo);
     for (let x = 0; x < fw; x++) {
       nx[x * 2] = Math.sin(x * f1 + t * 1.15);
       nx[x * 2 + 1] = Math.cos(x * f2 - t * 1.6 + 1.2);
@@ -460,6 +635,7 @@ class LiquidReveal extends HTMLElement {
 
   #kick() {
     if (this.#running || !this.#visible || document.hidden || !this.#L) return;
+    if (this.#gl && !this.#gl.ready) return; // context lost; restored re-kicks
     this.#running = true;
     this.#last = performance.now();
     requestAnimationFrame((t) => this.#frame(t));
@@ -607,7 +783,21 @@ class LiquidReveal extends HTMLElement {
       this.#splat(soft.x, soft.y, r * (0.62 + 0.1 * lively) * m, 0.95);
     }
 
-    this.#liquidPass(rm ? 0 : this.#wobbleClock, r, m);
+    const edge = this.#edge(r, m);
+    const clock = rm ? 0 : this.#wobbleClock;
+    if (this.#gl) this.#gl.draw(this.#field, edge, clock, this.#reveal);
+    else this.#composite2d(clock, edge);
+
+    // With reduced motion there is nothing to animate once the liquid has faded out.
+    if (rm && resting && this.#reveal < 0.01 && !this.#trail.length) {
+      this.#running = false;
+      return;
+    }
+    requestAnimationFrame((t) => this.#frame(t));
+  }
+
+  #composite2d(clock: number, edge: Edge) {
+    this.#liquidPass(clock, edge);
 
     // Top layer with the liquid cut out, over the bottom layer kept only inside the liquid.
     const W = this.#cv.width,
@@ -621,7 +811,7 @@ class LiquidReveal extends HTMLElement {
     mix.imageSmoothingEnabled = true;
     mix.imageSmoothingQuality = "high";
     mix.drawImage(this.#out, 0, 0, W, H);
-    const ctx = this.#ctx;
+    const ctx = this.#ctx!;
     ctx.setTransform(1, 0, 0, 1, 0, 0);
     ctx.globalCompositeOperation = "copy";
     ctx.drawImage(this.#topLayer, 0, 0);
@@ -632,13 +822,6 @@ class LiquidReveal extends HTMLElement {
     ctx.globalCompositeOperation = "destination-over";
     ctx.drawImage(this.#mix, 0, 0);
     ctx.globalCompositeOperation = "source-over";
-
-    // With reduced motion there is nothing to animate once the liquid has faded out.
-    if (rm && resting && this.#reveal < 0.01 && !this.#trail.length) {
-      this.#running = false;
-      return;
-    }
-    requestAnimationFrame((t) => this.#frame(t));
   }
 }
 
