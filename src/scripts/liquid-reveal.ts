@@ -1,5 +1,5 @@
 /**
- * <liquid-reveal>: a portrait on top; a liquid, pointer-driven mask reveals a second image below.
+ * <liquid-reveal>: a portrait on top; a liquid, pointer-driven mask reveals up to four layers below.
  *
  * Motion: a "head" glides around the face at rest and follows the pointer on hover, with a
  * critically damped ease (heavy, never overshoots). It leaves a trail that recedes from its edges
@@ -11,32 +11,44 @@
  * Fragile: the edge carries a fine travelling ripple, trails are beaded so they break into droplets
  * as they heal, and fast blobs shed small droplets that drift and dry up.
  *
+ * Layers: every blob carries one of the layers below and reveals that one. The head picks a new
+ * layer when the pointer arrives, on each tap, and every few seconds after that; it pours the new
+ * layer in as a blob that wells up inside the old one, while the old trail heals in its own layer.
+ * Each roaming drop picks a new layer whenever it has dried up. Picks are weighted (a layer can be
+ * rare) and never repeat the layer just shown. Where layers overlap, the deepest (freshest) liquid
+ * shows.
+ *
  * Rendering (WebGL, all on the GPU):
- * - Trail: a small mask texture, ping-ponged each frame. Every frame lowers it by a fixed step and
- *   stamps the head's path since the last frame as a capsule, so fast moves leave no gaps. The mask
- *   holds a distance ramp, not a coverage value, so bilinear sampling keeps the edge sharp at any
- *   size and lowering it moves the edge inwards.
+ * - Trail: a small RGBA mask texture, one channel per layer, ping-ponged each frame. Every frame
+ *   lowers it by a fixed step and stamps each blob's path since the last frame as a capsule into its
+ *   layer's channel, so fast moves leave no gaps. The mask holds a distance ramp, not a coverage
+ *   value, so bilinear sampling keeps the edge sharp at any size and lowering it moves the edge
+ *   inwards. Four layers cost the same pass as one.
  * - Composite: one pass per screen pixel. The head (stretched along its velocity) and the lobes are
- *   analytic circles, smooth-merged with the trail; the edge is anti-aliased at full resolution.
+ *   analytic circles, smooth-merged with their layer's trail; the union of all layers masks the top,
+ *   and the deepest layer at each pixel fills it. The edge is anti-aliased at full resolution.
+ * - Memory: each image is drawn once at the canvas size into a scratch canvas, uploaded, and the
+ *   scratch is released, so only the GPU textures stay. Their total is capped (TEXTURE_BUDGET); on
+ *   very large retina screens they are drawn slightly below device resolution.
  *
  * Also:
  * - Progressive enhancement: the top image is a real responsive <img> (LCP, no-JS, alt text). The
- *   canvas fades in over it once both images are decoded. Without WebGL the static image stays.
+ *   canvas fades in over it once the top and the first layer are decoded. Without WebGL the static
+ *   image stays.
+ * - Lazy: the other layers load one at a time at low priority once the canvas is running, each
+ *   uploaded in its own idle slot, and join the picks when ready. Skipped on Save-Data or 2G/3G.
  * - Transparent: the cutouts stay cutouts, so the hero backdrop (--bg-hero) shows around them.
- *   The liquid masks both layers (top minus liquid, bottom inside it), so a soft edge never lets
- *   the image below bleed through.
- * - Theme-aware: the resolved --color-bg picks the clay, and the canvas repaints on theme change
- *   (the `themechange` event from ThemeToggle; its waitUntil holds the theme transition until the
- *   canvas has repainted). With data-clay-dark, a dark clay replaces the light one while the
- *   background is dark; it is loaded only when first needed.
- * - Images come from astro:assets (AVIF with alpha, picked to the rendered size). The clay reuses
+ *   The liquid masks every layer, so a soft edge never lets one image bleed through another.
+ * - Theme-aware: the resolved --color-bg picks each layer's light or dark variant, and the canvas
+ *   repaints on theme change (the `themechange` event from ThemeToggle; its waitUntil holds the
+ *   theme transition until the canvas has repainted). A variant is loaded only when first needed.
+ * - Images come from astro:assets (AVIF with alpha, picked to the rendered size). The top reuses
  *   the static <img>'s file when it is big enough, so it is not downloaded twice.
  * - Starts once the page has loaded and gone idle, so it never competes with first paint.
  * - All listeners are removed when the element leaves the DOM.
  */
 
 type Config = {
-  top: "photo" | "clay";
   size: number; // 6–60
   soft: number; // 0–100
   pull: number; // 0–100
@@ -46,14 +58,20 @@ type Config = {
   face: [number, number, number, number]; // x0, x1, y0, y1 (0–1) kept in frame
 };
 type Source = { url: string; w: number };
+type LayerData = { light: Source[]; dark?: Source[]; weight: number };
+type Slot = {
+  data: LayerData;
+  variants: { light?: Promise<HTMLImageElement>; dark?: Promise<HTMLImageElement> };
+  img: HTMLImageElement | null; // the variant on the GPU; null until loaded
+};
 type Layout = { dx: number; dy: number; dw: number; dh: number };
 type Point = { x: number; y: number };
 /** One frame of shape for the renderer, in CSS pixels. */
 type Shape = {
-  head: Point & { r: number; stretch: number; dirX: number; dirY: number };
-  trails: [number, number, number, number, number][]; // x0, y0 → x1, y1, r: path since last frame
+  head: Point & { r: number; stretch: number; dirX: number; dirY: number; layer: number };
+  trails: [number, number, number, number, number, number][]; // x0, y0 → x1, y1, r, layer
   decay: number; // amount the trail mask drops this frame (exact multiple of 1/255)
-  balls: [number, number, number][]; // x, y, r: lobes and drops, merged with the head
+  balls: [number, number, number, number][]; // x, y, r, layer: lobes and drops
   goo: number; // smooth-union radius
   soft: number; // edge half-width
   wobble: [number, number, number, number]; // amplitude, frequency, phase, phase
@@ -61,12 +79,15 @@ type Shape = {
   reveal: number;
 };
 
+const MAX_LAYERS = 4; // one per mask channel
 const FIELD_PIXELS = 90_000; // trail mask resolution budget
-const MAX_TRAILS = 12; // head + 3 drops + 8 droplets
+const TEXTURE_BUDGET = 64e6; // bytes for the top and layer textures together
+const MAX_TRAILS = 13; // head + 3 drops + 8 droplets + the head's old blob when it switches
 const MAX_SPRAY = 8; // droplets shed by fast blobs
 const MAX_BALLS = 6; // lobes + drops
 const smoothstep = (x: number) => x * x * (3 - 2 * x);
 const clamp01 = (x: number) => Math.min(1, Math.max(0, x));
+const between = (a: number, b: number) => a + Math.random() * (b - a);
 const TAU = Math.PI * 2;
 
 /**
@@ -82,16 +103,28 @@ function wander() {
   return (t: number) => waves.reduce((sum, w) => sum + w.amp * Math.sin(t * w.rate + w.phase), 0);
 }
 
-/** Resolves once the page has loaded and the main thread is idle (or after a short timeout). */
+/** Resolves when the main thread is idle (or after a short timeout). */
+const idle = (timeout = 1500) =>
+  new Promise<void>((resolve) =>
+    "requestIdleCallback" in window
+      ? requestIdleCallback(() => resolve(), { timeout })
+      : setTimeout(resolve, 200),
+  );
+
+/** Resolves once the page has loaded and the main thread is idle. */
 const afterLoad = () =>
   new Promise<void>((resolve) => {
-    const idle = () =>
-      "requestIdleCallback" in window
-        ? requestIdleCallback(() => resolve(), { timeout: 1500 })
-        : setTimeout(resolve, 200);
-    if (document.readyState === "complete") idle();
-    else addEventListener("load", idle, { once: true });
+    if (document.readyState === "complete") void idle().then(resolve);
+    else addEventListener("load", () => void idle().then(resolve), { once: true });
   });
+
+/** Save-Data or a slow connection: no extra layers. */
+const lean = () => {
+  const c = (
+    navigator as Navigator & { connection?: { saveData?: boolean; effectiveType?: string } }
+  ).connection;
+  return Boolean(c?.saveData) || /(^|-)(2g|3g)$/.test(c?.effectiveType ?? "");
+};
 
 /**
  * Exact critically damped step towards a target (no overshoot, stable at any frame time).
@@ -115,35 +148,41 @@ precision mediump float;
 varying vec2 uv;
 uniform vec2 res;
 uniform float rRef;
+vec4 onehot(float c){return vec4(equal(vec4(c),vec4(0.,1.,2.,3.)));}
 `;
 
-// The trail mask stores 0.5 - distance / (2 * rRef): 0.5 on the edge, rising inwards. Rows are
-// written bottom-up, so it is read with y flipped.
+// The trail mask stores 0.5 - distance / (2 * rRef) per layer channel: 0.5 on the edge, rising
+// inwards. Rows are written bottom-up, so it is read with y flipped.
 const MASK = `${PRECISION}
 uniform sampler2D prev;
 uniform vec4 seg[${MAX_TRAILS}];
-uniform float radius[${MAX_TRAILS}];
+uniform vec2 radius[${MAX_TRAILS}];
 uniform float decay;
 void main(){
   vec2 p=uv*res;
-  float v=texture2D(prev,vec2(uv.x,1.-uv.y)).r-decay;
+  vec4 v=texture2D(prev,vec2(uv.x,1.-uv.y))-decay;
   for(int i=0;i<${MAX_TRAILS};i++){
     vec2 a=seg[i].xy,ab=seg[i].zw-a;
     float h=clamp(dot(p-a,ab)/max(dot(ab,ab),1e-4),0.,1.);
-    v=max(v,.5-(length(p-a-ab*h)-radius[i])/(2.*rRef));
+    float s=.5-(length(p-a-ab*h)-radius[i].x)/(2.*rRef);
+    v=max(v,mix(vec4(-1.),vec4(s),onehot(radius[i].y)));
   }
-  gl_FragColor=vec4(v,0.,0.,1.);
+  gl_FragColor=v;
 }`;
 
 const COMPOSITE = `${PRECISION}
-uniform sampler2D topTex,bottomTex,maskTex;
-uniform vec4 head,wob,edge;
+uniform sampler2D topTex,l0,l1,l2,l3,maskTex;
+uniform vec4 head,wob,edge,active;
 uniform vec3 rip;
-uniform vec3 balls[${MAX_BALLS}];
+uniform vec4 balls[${MAX_BALLS}];
 uniform vec2 dir;
 float smin(float a,float b,float k){
   float h=clamp(.5+.5*(b-a)/k,0.,1.);
   return mix(b,a,h)-k*h*(1.-h);
+}
+vec4 smin4(vec4 a,float b,float k){
+  vec4 h=clamp(.5+.5*(b-a)/k,0.,1.);
+  return mix(vec4(b),a,h)-k*h*(1.-h);
 }
 void main(){
   vec2 p=uv*res;
@@ -151,27 +190,34 @@ void main(){
     sin(p.y*wob.y+wob.z)+.5*sin((p.x+p.y)*wob.y*1.7-wob.w),
     cos(p.x*wob.y*1.13-wob.z)+.5*cos((p.x-p.y)*wob.y*1.45+wob.w));
   vec2 m=q/res;
-  float d=(.5-texture2D(maskTex,vec2(m.x,1.-m.y)).r)*2.*rRef;
+  float k=edge.y;
+  vec4 d=(.5-texture2D(maskTex,vec2(m.x,1.-m.y)))*2.*rRef;
   vec2 o=q-head.xy;
   float sq=inversesqrt(head.w);
   vec2 t=vec2(dot(o,dir),dot(o,vec2(-dir.y,dir.x)))/vec2(head.w,sq);
-  d=smin(d,(length(t)-head.z)*sq,edge.y);
-  for(int i=0;i<${MAX_BALLS};i++)d=smin(d,length(q-balls[i].xy)-balls[i].z,edge.y);
-  d+=rip.x*sin(dot(q,vec2(.8,.6))*rip.y+rip.z)*sin(dot(q,vec2(-.5,.87))*rip.y*.83-rip.z*1.3);
-  float a=(1.-smoothstep(-edge.x,edge.x,d))*edge.w;
+  d=mix(d,smin4(d,(length(t)-head.z)*sq,k),onehot(edge.z));
+  for(int i=0;i<${MAX_BALLS};i++)d=mix(d,smin4(d,length(q-balls[i].xy)-balls[i].z,k),onehot(balls[i].w));
+  d=mix(vec4(1e4),d,active);
+  float n=min(min(d.x,d.y),min(d.z,d.w));
+  float u=smin(smin(d.x,d.y,k*.5),smin(d.z,d.w,k*.5),k*.5);
+  u+=rip.x*sin(dot(q,vec2(.8,.6))*rip.y+rip.z)*sin(dot(q,vec2(-.5,.87))*rip.y*.83-rip.z*1.3);
+  float a=(1.-smoothstep(-edge.x,edge.x,u))*edge.w;
+  vec4 w=(1.-smoothstep(0.,2.*edge.x+.5,d-n))*active;
+  vec4 below=(texture2D(l0,uv)*w.x+texture2D(l1,uv)*w.y+texture2D(l2,uv)*w.z+texture2D(l3,uv)*w.w)
+    /max(w.x+w.y+w.z+w.w,1e-3);
   vec4 top=texture2D(topTex,uv)*(1.-a);
-  gl_FragColor=top+texture2D(bottomTex,uv)*a*(1.-top.a);
+  gl_FragColor=top+below*a*(1.-top.a);
 }`;
 
 type Program = { p: WebGLProgram; u: Record<string, WebGLUniformLocation | null> };
 
-/** Ping-pongs the trail mask and composites both layers through the liquid, once per frame. */
+/** Ping-pongs the trail mask and composites the layers through the liquid, once per frame. */
 class GlRenderer {
   #gl: WebGLRenderingContext;
   #mask!: Program;
   #composite!: Program;
   #targets: { tex: WebGLTexture; fb: WebGLFramebuffer }[] = [];
-  #layers: WebGLTexture[] = [];
+  #images: WebGLTexture[] = []; // unit 0 top, 1–4 layers
   #current = 0;
   #size = { w: 1, h: 1 };
   ready = false;
@@ -227,9 +273,10 @@ class GlRenderer {
   init() {
     const gl = this.#gl;
     const mask = this.#program(MASK, ["res", "rRef", "prev", "seg", "radius", "decay"]);
+    const samplers = ["topTex", "l0", "l1", "l2", "l3", "maskTex"];
     const composite = this.#program(COMPOSITE, [
-      ...["res", "rRef", "topTex", "bottomTex", "maskTex"],
-      ...["head", "balls", "wob", "rip", "edge", "dir"],
+      ...["res", "rRef", ...samplers],
+      ...["head", "balls", "wob", "rip", "edge", "dir", "active"],
     ]);
     if (!mask || !composite) return (this.ready = false);
     this.#mask = mask;
@@ -240,19 +287,20 @@ class GlRenderer {
     gl.enableVertexAttribArray(0);
     gl.vertexAttribPointer(0, 2, gl.FLOAT, false, 0, 0);
 
-    // Units: 0 top layer, 1 bottom layer, 2 trail mask (read side of the ping-pong).
-    this.#layers = [0, 1].map((i) => {
+    // Units: 0 top, 1–4 layers (empty until uploaded), 5 trail mask (read side of the ping-pong).
+    const empty = new Uint8Array(4);
+    this.#images = samplers.slice(0, 5).map((_, i) => {
       gl.activeTexture(gl.TEXTURE0 + i);
-      return this.#texture();
+      const tex = this.#texture();
+      gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, 1, 1, 0, gl.RGBA, gl.UNSIGNED_BYTE, empty);
+      return tex;
     });
-    gl.activeTexture(gl.TEXTURE2);
+    gl.activeTexture(gl.TEXTURE5);
     this.#targets = [0, 1].map(() => ({ tex: this.#texture(), fb: gl.createFramebuffer()! }));
     gl.useProgram(composite.p);
-    gl.uniform1i(composite.u.topTex!, 0);
-    gl.uniform1i(composite.u.bottomTex!, 1);
-    gl.uniform1i(composite.u.maskTex!, 2);
+    samplers.forEach((name, i) => gl.uniform1i(composite.u[name]!, i));
     gl.useProgram(mask.p);
-    gl.uniform1i(mask.u.prev!, 2);
+    gl.uniform1i(mask.u.prev!, 5);
     this.ready = true;
     this.resizeMask(this.#size.w, this.#size.h);
     return this.ready;
@@ -262,7 +310,7 @@ class GlRenderer {
   resizeMask(w: number, h: number) {
     const gl = this.#gl;
     this.#size = { w, h };
-    gl.activeTexture(gl.TEXTURE2);
+    gl.activeTexture(gl.TEXTURE5);
     for (const { tex, fb } of this.#targets) {
       gl.bindTexture(gl.TEXTURE_2D, tex);
       gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, w, h, 0, gl.RGBA, gl.UNSIGNED_BYTE, null);
@@ -270,30 +318,30 @@ class GlRenderer {
       gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, tex, 0);
       if (gl.checkFramebufferStatus(gl.FRAMEBUFFER) !== gl.FRAMEBUFFER_COMPLETE) this.ready = false;
       gl.viewport(0, 0, w, h);
-      gl.clearColor(0, 0, 0, 1);
+      gl.clearColor(0, 0, 0, 0);
       gl.clear(gl.COLOR_BUFFER_BIT);
     }
     gl.bindFramebuffer(gl.FRAMEBUFFER, null);
     gl.bindTexture(gl.TEXTURE_2D, this.#targets[this.#current]!.tex);
   }
 
-  /** Uploads a painted layer (0 top, 1 bottom), premultiplied like the canvas output. */
-  setLayer(i: 0 | 1, source: HTMLCanvasElement) {
+  /** Uploads a painted image (0 top, 1–4 layers), premultiplied like the canvas output. */
+  setImage(unit: number, source: HTMLCanvasElement) {
     const gl = this.#gl;
-    gl.activeTexture(gl.TEXTURE0 + i);
-    gl.bindTexture(gl.TEXTURE_2D, this.#layers[i]!);
+    gl.activeTexture(gl.TEXTURE0 + unit);
+    gl.bindTexture(gl.TEXTURE_2D, this.#images[unit]!);
     gl.pixelStorei(gl.UNPACK_PREMULTIPLY_ALPHA_WEBGL, true);
     gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, source);
   }
 
-  draw(s: Shape, W: number, H: number, rRef: number) {
+  draw(s: Shape, W: number, H: number, rRef: number, active: number[]) {
     const gl = this.#gl;
     const read = this.#targets[this.#current]!;
     const write = this.#targets[1 - this.#current]!;
-    gl.activeTexture(gl.TEXTURE2);
+    gl.activeTexture(gl.TEXTURE5);
     gl.bindTexture(gl.TEXTURE_2D, read.tex);
 
-    // 1. Trail: lower the mask, stamp each path since the last frame.
+    // 1. Trail: lower the mask, stamp each path since the last frame into its layer's channel.
     let u = this.#mask.u;
     gl.useProgram(this.#mask.p);
     gl.bindFramebuffer(gl.FRAMEBUFFER, write.fb);
@@ -301,13 +349,14 @@ class GlRenderer {
     gl.uniform2f(u.res!, W, H);
     gl.uniform1f(u.rRef!, rRef);
     const segs = new Float32Array(MAX_TRAILS * 4);
-    const radii = new Float32Array(MAX_TRAILS).fill(-1e4);
-    s.trails.slice(0, MAX_TRAILS).forEach(([x0, y0, x1, y1, r], i) => {
+    const radii = new Float32Array(MAX_TRAILS * 2);
+    for (let i = 0; i < MAX_TRAILS; i++) radii[i * 2] = -1e4;
+    s.trails.slice(0, MAX_TRAILS).forEach(([x0, y0, x1, y1, r, layer], i) => {
       segs.set([x0, y0, x1, y1], i * 4);
-      radii[i] = r;
+      radii.set([r, layer], i * 2);
     });
     gl.uniform4fv(u.seg!, segs);
-    gl.uniform1fv(u.radius!, radii);
+    gl.uniform2fv(u.radius!, radii);
     gl.uniform1f(u.decay!, s.decay);
     gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
     this.#current = 1 - this.#current;
@@ -323,12 +372,13 @@ class GlRenderer {
     const { head } = s;
     gl.uniform4f(u.head!, head.x, head.y, head.r, head.stretch);
     gl.uniform2f(u.dir!, head.dirX, head.dirY);
-    const balls = new Float32Array(MAX_BALLS * 3);
-    for (let i = 0; i < MAX_BALLS; i++) balls.set(s.balls[i] ?? [0, 0, -1e4], i * 3);
-    gl.uniform3fv(u.balls!, balls);
+    const balls = new Float32Array(MAX_BALLS * 4);
+    for (let i = 0; i < MAX_BALLS; i++) balls.set(s.balls[i] ?? [0, 0, -1e4, 0], i * 4);
+    gl.uniform4fv(u.balls!, balls);
     gl.uniform4f(u.wob!, ...s.wobble);
     gl.uniform3f(u.rip!, ...s.ripple);
-    gl.uniform4f(u.edge!, s.soft, s.goo, 0, s.reveal);
+    gl.uniform4f(u.edge!, s.soft, s.goo, head.layer, s.reveal);
+    gl.uniform4f(u.active!, active[0]!, active[1]!, active[2]!, active[3]!);
     gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
   }
 }
@@ -336,15 +386,22 @@ class GlRenderer {
 const pick = (sources: Source[], needed: number) =>
   sources.find((s) => s.w >= needed) ?? sources[sources.length - 1]!;
 
-const loadImage = (url: string) =>
+const loadImage = (url: string, priority: "high" | "low" | "auto" = "auto") =>
   new Promise<HTMLImageElement>((resolve, reject) => {
     const img = new Image();
     img.decoding = "async";
+    img.fetchPriority = priority;
     img.onerror = reject;
     img.src = url;
     // Decode off the main thread, so the first drawImage of a large AVIF doesn't block a frame.
     img.decode().then(() => resolve(img), reject);
   });
+
+/** Relative luminance below half: a dark page. */
+const isDark = (color: string) => {
+  const [r = 255, g = 255, b = 255] = (color.match(/[\d.]+/g) ?? []).map(Number);
+  return 0.2126 * r + 0.7152 * g + 0.0722 * b < 128;
+};
 
 class LiquidReveal extends HTMLElement {
   #abort = new AbortController();
@@ -353,14 +410,11 @@ class LiquidReveal extends HTMLElement {
 
   #cv!: HTMLCanvasElement;
   #gl: GlRenderer | null = null;
-  #topLayer = document.createElement("canvas");
-  #bottomLayer = document.createElement("canvas");
-  #photo: HTMLImageElement | null = null;
-  #clay: HTMLImageElement | null = null;
-  #clayLight: Promise<HTMLImageElement> | null = null;
-  #clayDark: Promise<HTMLImageElement> | null = null;
+  #scratch = document.createElement("canvas");
+  #top: HTMLImageElement | null = null;
+  #slots: Slot[] = [];
   #drawnWidth = 0;
-  #bg = "transparent";
+  #dark = false;
 
   // geometry
   #W = 0;
@@ -372,8 +426,12 @@ class LiquidReveal extends HTMLElement {
   #head = { x: 0, y: 0, vx: 0, vy: 0 };
   #from: Point = { x: 0, y: 0 };
   #headWander = [wander(), wander(), wander()]; // x, y, size
+  #headLayer = 0;
+  #headGrow = 1; // 0 → 1 as a newly picked layer wells up inside the old one
+  #nextSwitch = 0;
+  #switchNow = false;
   // Drops: smaller blobs that roam the face on their own at rest, grow, shrink, vanish and merge,
-  // then stream into the pointer on hover.
+  // then stream into the pointer on hover. Each carries its own layer, re-picked when it dries up.
   #drops = Array.from({ length: 3 }, () => ({
     x: 0,
     y: 0,
@@ -384,15 +442,26 @@ class LiquidReveal extends HTMLElement {
     size: wander(),
     from: { x: 0, y: 0 } as Point,
     travelled: 0,
+    layer: 0,
+    dry: true,
   }));
   #travelled = 0; // head path length, for the beaded trail
   // Spray: small droplets that break off fast-moving blobs, drift, slow down and dry up.
-  #spray: { x: number; y: number; vx: number; vy: number; r: number; age: number; life: number }[] =
-    [];
+  #spray: {
+    x: number;
+    y: number;
+    vx: number;
+    vy: number;
+    r: number;
+    age: number;
+    life: number;
+    layer: number;
+  }[] = [];
   #hasHead = false;
   #cursor = { x: 0, y: 0 };
   #lastClient = { x: -1, y: -1 };
   #over = false;
+  #wasResting = true;
   #touchUntil = 0;
   #orbitAngle = -Math.PI / 2;
   #orbitSpeed = 0;
@@ -410,19 +479,19 @@ class LiquidReveal extends HTMLElement {
     this.#cfg = JSON.parse(this.dataset.config ?? "{}") as Config;
     this.#reduceMotion = matchMedia("(prefers-reduced-motion: reduce)").matches;
     this.#reveal = this.#reduceMotion ? 0 : 1;
+    const layers = JSON.parse(this.dataset.layers ?? "[]") as LayerData[];
+    this.#slots = layers.slice(0, MAX_LAYERS).map((data) => ({ data, variants: {}, img: null }));
 
-    // Page-load fade: mark the portrait as shown once the static image for the current theme has
-    // decoded (LiquidReveal.astro fades it in from 0 to 100% opacity under the motion layer). The
-    // image's own onload usually gets there first; this covers a load that beat the attribute.
-    const shown = [...this.querySelectorAll<HTMLImageElement>(".liquid__image")].find(
-      (img) => getComputedStyle(img).display !== "none",
-    );
+    // Page-load fade: mark the portrait as shown once the static image has decoded
+    // (LiquidReveal.astro fades it in from 0 to 100% opacity under the motion layer). The image's
+    // own onload usually gets there first; this covers a load that beat the attribute.
+    const shown = this.querySelector<HTMLImageElement>(".liquid__image");
     const markShown = () => (this.dataset.shown = "");
     if (!shown || shown.complete) markShown();
     else shown.decode().then(markShown, markShown);
 
     const canvas = this.querySelector("canvas");
-    if (!canvas) return;
+    if (!canvas || !this.#slots.length) return;
     this.#cv = canvas;
     this.#gl = GlRenderer.create(canvas);
     if (!this.#gl) return; // keep the static <img>
@@ -440,8 +509,9 @@ class LiquidReveal extends HTMLElement {
     canvas.addEventListener(
       "webglcontextrestored",
       () => {
-        if (this.#gl?.init() && this.#photo) {
-          this.#paintLayers();
+        if (this.#gl?.init() && this.#top) {
+          this.#gl.resizeMask(...this.#maskSize());
+          this.#uploadAll();
           this.dataset.ready = "";
         }
         this.#kick();
@@ -472,19 +542,19 @@ class LiquidReveal extends HTMLElement {
 
   async #boot() {
     await afterLoad();
-    const sources = (key: "photo") => JSON.parse(this.dataset[key] ?? "[]") as Source[];
+    const topSources = JSON.parse(this.dataset.top ?? "[]") as Source[];
     const rect = this.getBoundingClientRect();
     const dpr = Math.min(devicePixelRatio || 1, 2);
     // Ask for the width the image is actually drawn at (cover can exceed the box).
     const ratio = Number(this.dataset.ratio) || 1;
-    const drawnWidth = Math.max(rect.width, rect.height * ratio) * dpr;
-    this.#drawnWidth = drawnWidth;
-    this.#bg = getComputedStyle(this.#cv).color;
+    this.#drawnWidth = Math.max(rect.width, rect.height * ratio) * dpr;
+    this.#dark = isDark(getComputedStyle(this.#cv).color);
 
+    const first = this.#slots[0]!;
     try {
-      [this.#photo, this.#clay] = await Promise.all([
-        loadImage(pick(sources("photo"), drawnWidth).url),
-        this.#clayFor(this.#bg),
+      [this.#top, first.img] = await Promise.all([
+        loadImage(this.#topUrl(topSources)),
+        this.#variant(first, this.#dark),
       ]);
     } catch {
       return; // keep the static <img>
@@ -494,13 +564,19 @@ class LiquidReveal extends HTMLElement {
     new ResizeObserver(() => this.#resize()).observe(this);
 
     const onTheme = async () => {
-      this.#bg = getComputedStyle(this.#cv).color;
-      try {
-        this.#clay = await this.#clayFor(this.#bg);
-      } catch {
-        // keep the clay already drawn
-      }
-      this.#paintLayers();
+      this.#dark = isDark(getComputedStyle(this.#cv).color);
+      await Promise.all(
+        this.#slots
+          .filter((slot) => slot.img)
+          .map(async (slot) => {
+            try {
+              slot.img = await this.#variant(slot, this.#dark);
+            } catch {
+              // keep the variant already drawn
+            }
+          }),
+      );
+      this.#uploadAll();
       this.#kick();
     };
     document.addEventListener(
@@ -541,48 +617,60 @@ class LiquidReveal extends HTMLElement {
     );
     document.documentElement.addEventListener("mouseleave", () => (this.#over = false), opts);
     window.addEventListener("blur", () => (this.#over = false), opts);
-    // Touch: a tap pulls the liquid there for a moment; scrolling is never blocked.
+    // Touch: a tap pulls the liquid there for a moment and pours the next layer; scrolling is
+    // never blocked.
     window.addEventListener(
       "pointerdown",
       (e) => {
         if (e.pointerType !== "touch") return;
         if (this.#track(e.clientX, e.clientY)) {
           this.#touchUntil = performance.now() + 1600;
+          this.#switchNow = true;
           this.#kick();
         }
       },
       opts,
     );
 
-    this.#bg = getComputedStyle(this.#cv).color;
     this.#resize();
     this.dataset.ready = "";
+    if (!lean()) void this.#loadRest();
   }
 
-  /**
-   * The clay for a background colour: the dark variant (if any) on a dark page, else the light one.
-   * Each is loaded the first time it is needed, so a page only fetches the clay its theme shows.
-   */
-  #clayFor(bg: string): Promise<HTMLImageElement> {
-    const [r = 255, g = 255, b = 255] = (bg.match(/[\d.]+/g) ?? []).map(Number);
-    const dark = 0.2126 * r + 0.7152 * g + 0.0722 * b < 128;
-    const darkSources = JSON.parse(this.dataset.clayDark ?? "[]") as Source[];
-    if (dark && darkSources.length) {
-      this.#clayDark ??= loadImage(this.#clayUrl(darkSources, ".liquid__image--dark"));
-      return this.#clayDark;
+  /** The other layers, one at a time, each uploaded in its own idle slot. */
+  async #loadRest() {
+    for (const slot of this.#slots.slice(1)) {
+      await idle();
+      let img: HTMLImageElement;
+      let dark: boolean;
+      try {
+        do {
+          dark = this.#dark;
+          img = await this.#variant(slot, dark, "low");
+        } while (dark !== this.#dark); // the theme changed while it loaded
+      } catch {
+        continue; // left out of the picks
+      }
+      await idle();
+      if (this.#abort.signal.aborted) return;
+      slot.img = img;
+      this.#upload(this.#slots.indexOf(slot) + 1, img);
+      this.#releaseScratch();
     }
-    const lightSources = JSON.parse(this.dataset.clay ?? "[]") as Source[];
-    this.#clayLight ??= loadImage(
-      this.#clayUrl(lightSources, ".liquid__image:not(.liquid__image--dark)"),
-    );
-    return this.#clayLight;
   }
 
-  /** The static <img>'s file when the clay is on top and that file is big enough, else a pick. */
-  #clayUrl(sources: Source[], selector: string) {
-    const current = this.querySelector<HTMLImageElement>(selector)?.currentSrc;
+  /** A layer's image for the theme: its dark variant (if any) on a dark page, else the light one. */
+  #variant(slot: Slot, dark: boolean, priority: "auto" | "low" = "auto") {
+    const key = dark && slot.data.dark ? "dark" : "light";
+    slot.variants[key] ??= loadImage(pick(slot.data[key]!, this.#drawnWidth).url, priority);
+    return slot.variants[key];
+  }
+
+  /** The static <img>'s file when it is big enough, else a pick. */
+  #topUrl(sources: Source[]) {
+    const current = this.querySelector<HTMLImageElement>(".liquid__image")?.currentSrc;
     const path = current && new URL(current, location.href).pathname;
-    const shown = this.#cfg.top === "clay" ? sources.find((s) => s.url === path) : undefined;
+    const shown = sources.find((s) => s.url === path);
     return shown && shown.w >= this.#drawnWidth * 0.8
       ? shown.url
       : pick(sources, this.#drawnWidth).url;
@@ -604,18 +692,22 @@ class LiquidReveal extends HTMLElement {
     return { dx: (W - dw) * ((x0 + x1) / 2), dy: (H - dh) * ((y0 + y1) / 2), dw, dh };
   }
 
+  #maskSize(): [number, number] {
+    const ms = Math.min(0.5, Math.sqrt(FIELD_PIXELS / (this.#W * this.#H)));
+    return [Math.max(1, Math.ceil(this.#W * ms)), Math.max(1, Math.ceil(this.#H * ms))];
+  }
+
   #resize() {
-    if (!this.#photo || !this.#clay || !this.#gl) return;
+    if (!this.#top || !this.#gl) return;
     const rect = this.getBoundingClientRect();
     this.#W = Math.max(1, rect.width);
     this.#H = Math.max(1, rect.height);
     this.#dpr = Math.min(devicePixelRatio || 1, 2);
     this.#cv.width = Math.round(this.#W * this.#dpr);
     this.#cv.height = Math.round(this.#H * this.#dpr);
-    const ms = Math.min(0.5, Math.sqrt(FIELD_PIXELS / (this.#W * this.#H)));
-    this.#gl.resizeMask(Math.max(1, Math.ceil(this.#W * ms)), Math.max(1, Math.ceil(this.#H * ms)));
-    this.#L = this.#computeLayout(this.#photo.naturalWidth, this.#photo.naturalHeight);
-    this.#paintLayers();
+    this.#gl.resizeMask(...this.#maskSize());
+    this.#L = this.#computeLayout(this.#top.naturalWidth, this.#top.naturalHeight);
+    this.#uploadAll();
     if (!this.#hasHead) {
       const o = this.#orbitPoint(this.#orbitAngle);
       this.#head.x = this.#from.x = o.x;
@@ -626,26 +718,44 @@ class LiquidReveal extends HTMLElement {
     this.#kick();
   }
 
-  /** Paint both cutouts at the canvas size (kept transparent around the figure). */
-  #paintLayers() {
-    if (!this.#L || !this.#photo || !this.#clay) return;
-    const photoOnTop = this.#cfg.top !== "clay";
-    const pairs: [HTMLCanvasElement, HTMLImageElement][] = [
-      [this.#topLayer, photoOnTop ? this.#photo : this.#clay],
-      [this.#bottomLayer, photoOnTop ? this.#clay : this.#photo],
-    ];
-    for (const [layer, img] of pairs) {
-      layer.width = this.#cv.width;
-      layer.height = this.#cv.height;
-      const c = layer.getContext("2d")!;
-      c.setTransform(this.#dpr, 0, 0, this.#dpr, 0, 0);
-      c.imageSmoothingQuality = "high";
-      c.drawImage(img, this.#L.dx, this.#L.dy, this.#L.dw, this.#L.dh);
-    }
-    if (this.#gl?.ready) {
-      this.#gl.setLayer(0, this.#topLayer);
-      this.#gl.setLayer(1, this.#bottomLayer);
-    }
+  /**
+   * Paints one cutout at the canvas size (kept transparent around the figure) into the scratch
+   * canvas and uploads it. Under the texture budget, that is the device resolution.
+   */
+  #upload(unit: number, img: HTMLImageElement) {
+    if (!this.#L || !this.#gl?.ready) return;
+    const { width: cw, height: ch } = this.#cv;
+    const scale = Math.min(1, Math.sqrt(TEXTURE_BUDGET / ((1 + this.#slots.length) * cw * ch * 4)));
+    const s = this.#scratch;
+    s.width = Math.max(1, Math.round(cw * scale));
+    s.height = Math.max(1, Math.round(ch * scale));
+    const c = s.getContext("2d")!;
+    c.setTransform(s.width / this.#W, 0, 0, s.height / this.#H, 0, 0);
+    c.imageSmoothingQuality = "high";
+    c.drawImage(img, this.#L.dx, this.#L.dy, this.#L.dw, this.#L.dh);
+    this.#gl.setImage(unit, s);
+  }
+
+  #uploadAll() {
+    if (!this.#top) return;
+    this.#upload(0, this.#top);
+    this.#slots.forEach((slot, i) => slot.img && this.#upload(i + 1, slot.img));
+    this.#releaseScratch();
+  }
+
+  /** Only the GPU copies stay. */
+  #releaseScratch() {
+    this.#scratch.width = this.#scratch.height = 0;
+  }
+
+  /** A random loaded layer other than `not`, weighted; `not` itself if it is the only one. */
+  #pickLayer(not: number) {
+    const ready = this.#slots
+      .map((slot, i) => ({ i, w: slot.img ? slot.data.weight : 0 }))
+      .filter((c) => c.w > 0 && c.i !== not);
+    let roll = Math.random() * ready.reduce((sum, c) => sum + c.w, 0);
+    for (const c of ready) if ((roll -= c.w) <= 0) return c.i;
+    return ready[ready.length - 1]?.i ?? not;
   }
 
   #baseRadius() {
@@ -755,6 +865,32 @@ class LiquidReveal extends HTMLElement {
     const want = rm ? (resting ? 0 : 1) : 1;
     this.#reveal += (want - this.#reveal) * (1 - Math.exp(-dt * 6));
 
+    const balls: Shape["balls"] = [];
+    const trails: Shape["trails"] = [];
+
+    // Next layer: when the pointer arrives, on a tap, and (with motion) every few seconds, sooner
+    // on hover than at rest. The old head is left behind as trail in its own layer, and the new
+    // layer wells up inside it.
+    const arrived = this.#wasResting && !resting;
+    this.#wasResting = resting;
+    const due = !rm && now > this.#nextSwitch;
+    if (arrived || this.#switchNow || due) {
+      this.#switchNow = false;
+      this.#nextSwitch = now + (resting ? between(3500, 6000) : between(1600, 3200));
+      const next = this.#pickLayer(this.#headLayer);
+      if (next !== this.#headLayer) {
+        if (this.#reveal > 0.01) {
+          const grown = 0.3 + 0.7 * smoothstep(this.#headGrow);
+          trails.push([head.x, head.y, head.x, head.y, r * grown, this.#headLayer]);
+        }
+        this.#headLayer = next;
+        this.#headGrow = rm ? 1 : 0;
+      }
+    }
+    this.#headGrow = Math.min(1, this.#headGrow + dt / 0.5);
+    const rHead = r * (0.3 + 0.7 * smoothstep(this.#headGrow));
+    const layer = this.#headLayer;
+
     // Trail mask drop, paid in whole 8-bit steps so the heal time is exact at any frame rate.
     // At rest the trail lingers longer, so the drops leave slow, fading streams.
     const rRef = base * 1.6;
@@ -769,8 +905,6 @@ class LiquidReveal extends HTMLElement {
     const dirX = speed > 1 ? head.vx / speed : 1;
     const dirY = speed > 1 ? head.vy / speed : 0;
 
-    const balls: [number, number, number][] = [];
-    const trails: Shape["trails"] = [];
     // Beaded trail: the stamp swells and pinches along the path, so as the trail heals its necks
     // dry first and it breaks into a string of droplets.
     const bead = (travelled: number, R: number) =>
@@ -779,8 +913,15 @@ class LiquidReveal extends HTMLElement {
     const hy = head.y - this.#from.y;
     this.#travelled += Math.hypot(hx, hy);
     if (this.#reveal > 0.01)
-      trails.push([this.#from.x, this.#from.y, head.x, head.y, bead(this.#travelled, r * 0.9)]);
-    const shed = (x: number, y: number, vx: number, vy: number, R: number) => {
+      trails.push([
+        this.#from.x,
+        this.#from.y,
+        head.x,
+        head.y,
+        bead(this.#travelled, rHead * 0.9),
+        layer,
+      ]);
+    const shed = (x: number, y: number, vx: number, vy: number, R: number, layer: number) => {
       const v = Math.hypot(vx, vy);
       if (rm || R <= 0 || this.#spray.length >= MAX_SPRAY) return;
       if (Math.random() > clamp01((v - 120) / 900) * 10 * dt) return;
@@ -795,16 +936,17 @@ class LiquidReveal extends HTMLElement {
         r: R * (0.1 + Math.random() * 0.12),
         age: 0,
         life: 0.5 + Math.random() * 0.7,
+        layer,
       });
     };
-    shed(head.x, head.y, head.vx, head.vy, r);
+    shed(head.x, head.y, head.vx, head.vy, rHead, layer);
     if (!rm) {
       for (let i = 0; i < 3; i++) {
         const ph = i * 2.1 + 0.7;
         const ang = ts * (0.28 + 0.3 * m) * (i % 2 ? -1 : 1) + ph + Math.sin(ts * 0.45 + ph) * 0.7;
-        const dist = r * (0.42 + 0.16 * Math.sin(ts * (0.4 + 0.3 * m) + ph * 1.3));
-        const size = r * (0.5 + 0.1 * Math.sin(ts * (0.5 + 0.4 * m) * (1 + i * 0.2) + ph * 2));
-        balls.push([head.x + Math.cos(ang) * dist, head.y + Math.sin(ang) * dist, size]);
+        const dist = rHead * (0.42 + 0.16 * Math.sin(ts * (0.4 + 0.3 * m) + ph * 1.3));
+        const size = rHead * (0.5 + 0.1 * Math.sin(ts * (0.5 + 0.4 * m) * (1 + i * 0.2) + ph * 2));
+        balls.push([head.x + Math.cos(ang) * dist, head.y + Math.sin(ang) * dist, size, layer]);
       }
       const { cx, cy } = this.#faceCentre();
       this.#drops.forEach((d, i) => {
@@ -821,11 +963,14 @@ class LiquidReveal extends HTMLElement {
         // Size drifts between nothing and most of the head, so drops appear, swell and dry up.
         const life = smoothstep(clamp01(0.55 + 0.75 * d.size(ts)));
         const size = r * ((0.85 * life - 0.15) * (1 - m) + 0.5 * m);
-        balls.push([d.x, d.y, size]);
+        // A drop that has dried up comes back as a new layer.
+        if (d.dry && size > 0) d.layer = this.#pickLayer(d.layer);
+        d.dry = size <= 0;
+        balls.push([d.x, d.y, size, d.layer]);
         d.travelled += Math.hypot(d.x - d.from.x, d.y - d.from.y);
         if (size > 0 && this.#reveal > 0.01)
-          trails.push([d.from.x, d.from.y, d.x, d.y, bead(d.travelled, size * 0.85)]);
-        shed(d.x, d.y, d.vx, d.vy, size);
+          trails.push([d.from.x, d.from.y, d.x, d.y, bead(d.travelled, size * 0.85), d.layer]);
+        shed(d.x, d.y, d.vx, d.vy, size, d.layer);
       });
     }
     this.#spray = this.#spray.filter((p) => {
@@ -839,14 +984,15 @@ class LiquidReveal extends HTMLElement {
       p.age += dt;
       const t = p.age / p.life;
       if (t >= 1) return false;
-      trails.push([x0, y0, p.x, p.y, p.r * (1 - t * t)]);
+      trails.push([x0, y0, p.x, p.y, p.r * (1 - t * t), p.layer]);
       return true;
     });
 
     const w = rm ? 0 : this.#wobbleClock;
+    const active = [0, 1, 2, 3].map((i) => (this.#slots[i]?.img ? 1 : 0));
     this.#gl.draw(
       {
-        head: { x: head.x, y: head.y, r, stretch, dirX, dirY },
+        head: { x: head.x, y: head.y, r: rHead, stretch, dirX, dirY, layer },
         trails,
         decay: steps / 255,
         balls,
@@ -868,6 +1014,7 @@ class LiquidReveal extends HTMLElement {
       this.#W,
       this.#H,
       rRef,
+      active,
     );
 
     // With reduced motion there is nothing to animate once the liquid has faded out.

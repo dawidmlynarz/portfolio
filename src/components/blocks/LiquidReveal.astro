@@ -1,26 +1,34 @@
 ---
 /**
- * LiquidReveal: the portrait hero. The top image (the clay sculpture by default) is a real
- * responsive <img>; once JS runs, a canvas fades in over it and a liquid mask follows the pointer
- * to reveal the bottom image (the photo). At rest the liquid orbits the face on its own.
+ * LiquidReveal: the portrait hero. The top image (the photo) is a real responsive <img>; once JS
+ * runs, a canvas fades in over it and a liquid mask follows the pointer to reveal up to four layers
+ * below it, picked at random (each layer can be weighted, so one can be rare). At rest the liquid
+ * roams the face on its own.
  *
- * Both images must be transparent cutouts with identical framing. They stay transparent, so
- * whatever is behind (the hero's dotted backdrop) shows around the figure in light and dark. Behaviour lives in
- * src/scripts/liquid-reveal.ts (ported from the original Webflow embed).
+ * All images must be transparent cutouts with identical framing. They stay transparent, so
+ * whatever is behind (the hero's dotted backdrop) shows around the figure in light and dark. A
+ * layer can have a dark-theme variant. Behaviour lives in src/scripts/liquid-reveal.ts.
  *
  * Reduced motion: no orbit, lobes or wobble; the liquid appears only while pointing.
  * No JS or no WebGL: the top image alone.
  */
 import { Image, getImage } from "astro:assets";
 
+interface Layer {
+  light: ImageMetadata;
+  /** Variant for the dark theme (same framing). */
+  dark?: ImageMetadata;
+  /** Relative chance of being picked (default 1). */
+  weight?: number;
+}
+
 interface Props {
-  photo: ImageMetadata;
-  clay: ImageMetadata;
-  /** Optional clay variant for the dark theme (same framing), so it blends into a black page. */
-  clayDark?: ImageMetadata;
-  /** Describes the top image (what shows before and without the reveal). */
+  /** What shows before and without the reveal. */
+  top: ImageMetadata;
+  /** Revealed under the top, 1–4. The first loads with the canvas, the rest once it is idle. */
+  layers: Layer[];
+  /** Describes the top image. */
   alt: string;
-  top?: "photo" | "clay";
   /** Blob size, 6–60. */
   size?: number;
   /** Edge softness, 0–100. */
@@ -43,11 +51,9 @@ interface Props {
 }
 
 const {
-  photo,
-  clay,
-  clayDark,
+  top,
+  layers,
   alt,
-  top = "clay",
   size = 22,
   soft = 30,
   pull = 55,
@@ -67,26 +73,31 @@ const widthsFor = (img: ImageMetadata) => {
   return [...fits, img.width];
 };
 
-// Same widths and format for both layers, so the canvas can pick a matching pair.
-const sourcesFor = async (img: ImageMetadata) =>
+// The top is the LCP and stays sharp; the layers only show through moving liquid, so they take a
+// lower quality (about half the bytes, no visible difference at 100%).
+const TOP_QUALITY = 65;
+const LAYER_QUALITY = 55;
+
+// Same widths for every layer, so the canvas can pick a matching set.
+const sourcesFor = async (img: ImageMetadata, quality: number) =>
   Promise.all(
     widthsFor(img).map(async (w) => ({
-      url: (await getImage({ src: img, width: w, format: "avif", quality: 70 })).src,
+      url: (await getImage({ src: img, width: w, format: "avif", quality })).src,
       w,
     })),
   );
 
-const [photoSources, claySources, clayDarkSources] = await Promise.all([
-  sourcesFor(photo),
-  sourcesFor(clay),
-  clayDark ? sourcesFor(clayDark) : undefined,
+const [topSources, layerSources] = await Promise.all([
+  sourcesFor(top, TOP_QUALITY),
+  Promise.all(
+    layers.slice(0, 4).map(async (layer) => ({
+      light: await sourcesFor(layer.light, LAYER_QUALITY),
+      dark: layer.dark && (await sourcesFor(layer.dark, LAYER_QUALITY)),
+      weight: layer.weight ?? 1,
+    })),
+  ),
 ]);
-const topImage = top === "clay" ? clay : photo;
-// With a dark clay on top, two static images are rendered and CSS shows the one for the resolved
-// theme. The light one (the default theme) keeps the requested loading so it can be the LCP; the
-// dark one is lazy, so it is only fetched once the dark theme shows it (display: none never loads).
-const topImageDark = top === "clay" ? clayDark : undefined;
-const config = { top, size, soft, pull, wobble, fade, orbit, face };
+const config = { size, soft, pull, wobble, fade, orbit, face };
 
 // Page-load fade: the image marks the portrait as shown as soon as it has loaded, without waiting
 // for the module scripts (which would push LCP back). liquid-reveal.ts does the same as a fallback.
@@ -99,39 +110,24 @@ const objectPosition = `${((face[0] + face[1]) / 2) * 100}% ${((face[2] + face[3
 <liquid-reveal
   class:list={["liquid", `liquid--${fit}`, className]}
   data-config={JSON.stringify(config)}
-  data-photo={JSON.stringify(photoSources)}
-  data-clay={JSON.stringify(claySources)}
-  data-clay-dark={clayDarkSources && JSON.stringify(clayDarkSources)}
-  data-ratio={photo.width / photo.height}
-  style={`--liquid-ratio: ${photo.width} / ${photo.height}`}
+  data-top={JSON.stringify(topSources)}
+  data-layers={JSON.stringify(layerSources)}
+  data-ratio={top.width / top.height}
+  style={`--liquid-ratio: ${top.width} / ${top.height}`}
 >
   <Image
-    class:list={["liquid__image", { "liquid__image--light": topImageDark }]}
-    src={topImage}
+    class="liquid__image"
+    src={top}
     alt={alt}
-    widths={widthsFor(topImage)}
+    widths={widthsFor(top)}
     sizes={sizes}
     format="avif"
-    quality={70}
+    quality={TOP_QUALITY}
     loading={loading}
     fetchpriority={loading === "eager" ? "high" : undefined}
     style={`object-position: ${objectPosition}`}
     onload={markShown}
   />
-  {topImageDark && (
-    <Image
-      class="liquid__image liquid__image--dark"
-      src={topImageDark}
-      alt={alt}
-      widths={widthsFor(topImageDark)}
-      sizes={sizes}
-      format="avif"
-      quality={70}
-      loading="lazy"
-      style={`object-position: ${objectPosition}`}
-      onload={markShown}
-    />
-  )}
   <canvas class="liquid__canvas" aria-hidden="true"></canvas>
 </liquid-reveal>
 
@@ -176,21 +172,8 @@ const objectPosition = `${((face[0] + face[1]) / 2) * 100}% ${((face[2] + face[3
       object-fit: cover;
     }
 
-    /* Light/dark pair: show the image for the theme the visitor picked. */
-    .liquid__image--dark {
-      display: none;
-    }
-
-    :global(:root[data-theme="dark"]) .liquid__image--dark {
-      display: block;
-    }
-
-    :global(:root[data-theme="dark"]) .liquid__image--light {
-      display: none;
-    }
-
     .liquid__canvas {
-      /* Read by the script: the resolved page background, which picks the light or dark clay. */
+      /* Read by the script: the resolved page background, which picks light or dark layers. */
       color: var(--color-bg);
       pointer-events: none;
       opacity: 0;
@@ -202,7 +185,7 @@ const objectPosition = `${((face[0] + face[1]) / 2) * 100}% ${((face[2] + face[3
     }
 
     /* The canvas paints both layers itself, so once it has faded in the static image is hidden.
-       Left underneath, it would show through the photo's soft, semi-transparent edges (the hair). */
+       Left underneath, it would show through the layers' soft, semi-transparent edges (the hair). */
     [data-ready] > .liquid__image {
       visibility: hidden;
       transition: visibility 0s var(--duration-reveal);

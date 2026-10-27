@@ -7,9 +7,7 @@
  * section scrolls over it (data-hero).
  */
 import LiquidReveal from "@/components/blocks/LiquidReveal.astro";
-import portraitPhoto from "@/assets/portrait/portrait-photo.avif";
-import portraitClay from "@/assets/portrait/portrait-clay.avif";
-import portraitClayDark from "@/assets/portrait/portrait-clay-dark.avif";
+import { PORTRAIT_LAYERS, portraitPhoto } from "@/lib/portrait";
 
 interface Props {
   /** Small mono line above the headline. */
@@ -48,10 +46,9 @@ const SIZES =
   </div>
   <div class="home-hero__media">
     <LiquidReveal
-      photo={portraitPhoto}
-      clay={portraitClay}
-      clayDark={portraitClayDark}
-      alt="Portrait of Dawid Młynarz as a white clay sculpture"
+      top={portraitPhoto}
+      layers={PORTRAIT_LAYERS}
+      alt="Portrait of Dawid Młynarz"
       fit="fill"
       sizes={SIZES}
     />

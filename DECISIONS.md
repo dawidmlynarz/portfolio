@@ -2,6 +2,18 @@
 
 Non-obvious choices, newest first. One entry per decision: what, why, and what it rules out.
 
+## 2026-10-27 · Multi-layer liquid portrait and a reveal playground
+
+Dawid wanted the hero liquid to reveal 3–4 layers at random, with the real photo as the default, the iridescent sculpture as the rarest, and themed versions of the clay and marble.
+
+- **Photo on top, three layers below.** `LiquidReveal` now takes `top` and `layers` (1–4, each `{ light, dark?, weight? }`) instead of photo/clay/clayDark. Home: clay (black in light, white in dark), marble (white in light, black and gold in dark), iridescent (both themes, weight 0.3). The set lives in `src/lib/portrait.ts`. Clay and marble are named by Dawid's theme labels, so in light mode the clay is the black one.
+- **One mask channel per layer.** The trail mask was RGBA but used only red; each layer now has its own channel, so four layers cost the same mask pass as one. Every blob carries a layer; the composite merges each layer's blobs with its trail, masks the photo with the union and fills each pixel with the deepest (freshest) layer. Hard cap of 4 layers (channels), which also fits WebGL 1's 8 guaranteed texture units (we use 6).
+- **Picking.** Weighted random, never the layer just shown. The head picks a new layer when the pointer arrives, on a tap and every 1.6–3.2 s on hover (3.5–6 s at rest). The old head is left behind as trail in its own layer and the new one wells up inside it over 0.5 s, so a switch reads as a pour, not a cut. Each roaming drop picks a new layer whenever it has dried up. Reduced motion: a new layer per hover only.
+- **Memory.** Images used to be painted into 2D canvases that stayed allocated next to their textures. Now each is painted into one scratch canvas, uploaded, and the scratch is released. At 1440 (2x) the photo plus three layers use about 52 MB including the drawing buffer, the same as the old two-layer version; at 375 about 16 MB. Layer textures are capped at 64 MB in total, so huge retina screens draw them slightly below device resolution.
+- **Lazy layers.** The canvas starts with the photo and the first layer (clay); marble and iridescent follow one at a time at low fetch priority, each uploaded in its own idle slot, and join the picks once ready. Skipped on Save-Data or 2G/3G. A theme switch reloads only the variants already in use.
+- **AVIF.** Dawid's 2400 × 1792 PNGs (12 MB) are committed as AVIF masters at quality 80 with 4:4:4 chroma (920 KB). Astro serves the photo at quality 65 (161 KB at 2400, 89 KB at 1600) and the layers at 55, which is visually identical at 100% on the hair and marble veins and about half the bytes. Extras at 1440: about 120 KB (light) to 155 KB (dark); at 375 about 57 KB. No WebP fallback: browsers without AVIF keep the static photo (`<img>` is AVIF-only, as before).
+- **Reveal playground** (`/playground`, noindex, not linked): the same layers through seven alternatives next to the real liquid: glass lens, ink burn, pixel dither, halftone, Voronoi shards, glitch slices and a full-portrait shockwave. Isolated under `src/experiments/reveals/`; one small WebGL canvas per tile (capped at 1.5x), paused off screen. It is for choosing a direction, not production code.
+
 ## 2026-10-27 · Smoother liquid portrait
 
 Dawid found the hero reveal jarring and laggy (references: Framer's "Liquid Mouse Reveal" and framer.university's hover mask reveal: a heavy, lerped follow and a gooey trail that shrinks back). Frame cost was already low after the WebGL pass, so the problem was the motion and the low-res mask, not the frame rate.

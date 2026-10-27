@@ -21,9 +21,7 @@ import ClientLogos from "@/components/blocks/ClientLogos.astro";
 import { getEntry } from "astro:content";
 import { COLOR_ROLES, SPACE } from "@/lib/tokens";
 import { SERVICES } from "@/lib/services";
-import portraitPhoto from "@/assets/portrait/portrait-photo.avif";
-import portraitClay from "@/assets/portrait/portrait-clay.avif";
-import portraitClayDark from "@/assets/portrait/portrait-clay-dark.avif";
+import { PORTRAIT_LAYERS, portraitPhoto } from "@/lib/portrait";
 import figureSample from "@/assets/placeholders/figure-sample.jpg";
 
 const TYPE_ROLES = [
@@ -296,8 +294,9 @@ const SECTIONS = [
         <p class="muted measure">
           Nav and Footer frame this page. Below: the split Hero with the LiquidReveal. At rest the
           liquid orbits the face; point at the portrait and it is pulled towards the cursor (tap on
-          touch). With reduced motion it only appears while pointing, without orbit or wobble. In
-          the dark theme the clay switches to its black variant (clayDark).
+          touch). Each blob reveals one of the layers under the photo (clay, marble, and a rare
+          iridescent one), picked at random; clay and marble switch variants with the theme. With
+          reduced motion it only appears while pointing, without orbit or wobble.
         </p>
       </Stack>
     </Container>
@@ -315,10 +314,9 @@ const SECTIONS = [
     </Fragment>
     <LiquidReveal
       slot="media"
-      photo={portraitPhoto}
-      clay={portraitClay}
-      clayDark={portraitClayDark}
-      alt="Portrait of Dawid Młynarz as a white clay sculpture"
+      top={portraitPhoto}
+      layers={PORTRAIT_LAYERS}
+      alt="Portrait of Dawid Młynarz"
       loading="lazy"
     />
   </Hero>
