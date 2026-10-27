@@ -1,6 +1,6 @@
 /**
  * Mindblown About: behaviour. `init(root)` wires one [data-mindblown] section and returns
- * `destroy()`, which kills every tween, the tails ticker, the window listeners and the confetti
+ * `destroy()`, which kills every tween, the tails ticker, the window listeners and the burst
  * frame, and removes the cards it created. Copy lives in content.ts.
  *
  * States: closed -> busy (animating, clicks ignored) -> open -> busy -> closed. While open, the
@@ -15,6 +15,11 @@ type Card = HTMLButtonElement & {
   _tails: HTMLElement[];
   _dragged?: boolean;
 };
+
+/** Hover peek: how far the lid lifts (share of the head's height) and where the brain rises to
+    (yPercent of the brain; 0 is fully out, 112 is hidden), as in Dawid's Figma frames. */
+const PEEK_LIFT = 0.055,
+  PEEK_BRAIN = 38.9;
 
 const svg = (k: IconName) =>
   `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${ICONS[k]}</svg>`;
@@ -34,11 +39,10 @@ export function init(root: HTMLElement): () => void {
     head = q("head"),
     lid = q("layer--lid"),
     hole = q("hole"),
+    shadow = q("shadow"),
     brain = q<SVGSVGElement>("brain"),
     brainBtn = q<HTMLButtonElement>("brain-btn"),
     cardsEl = q("cards"),
-    scissors = q<SVGSVGElement>("scissors"),
-    dash = q("dash"),
     rig = q("rig"),
     headPos = q("head-pos"),
     note = q("note"),
@@ -46,7 +50,7 @@ export function init(root: HTMLElement): () => void {
     tip = q("tip"),
     noteClose = q("note-close"),
     cursor = q("cursor"),
-    canvas = q<HTMLCanvasElement>("confetti"),
+    canvas = q<HTMLCanvasElement>("burst"),
     pop = q("pop"),
     scrim = q("pop-scrim"),
     panel = q("pop-panel"),
@@ -96,7 +100,62 @@ export function init(root: HTMLElement): () => void {
           { scaleY: 1, scaleX: 1, duration: 0.45, ease: "elastic.out(1,.4)", overwrite: "auto" },
         ),
       );
+    // the brain's own face follows: sucking while the thoughts go in, exploding for a moment on
+    // every burst, then back to rest (or exploding again while the pointer is on the brain)
+    boomCall?.kill();
+    boomCall = null;
+    if (name === "pain") brainFace("suck");
+    else if (name === "super") {
+      brainFace("boom");
+      boomCall = run(() =>
+        gsap.delayedCall(T(1.6), () => {
+          boomCall = null;
+          settleBrain();
+        }),
+      );
+    } else settleBrain();
   }
+
+  /* the brain's faces: rest, suck, boom; a swap is instant */
+  const bfaces = Object.fromEntries(
+    ["rest", "suck", "boom"].map((n) => [
+      n,
+      brain.querySelector<SVGGElement>(`.mindblown__bface--${n}`)!,
+    ]),
+  ) as Record<"rest" | "suck" | "boom", SVGGElement>;
+  let bface: keyof typeof bfaces = "rest",
+    boomCall: gsap.core.Tween | null = null;
+  function brainFace(n: keyof typeof bfaces) {
+    if (n === bface) return;
+    run(() => {
+      gsap.set(bfaces[bface], { autoAlpha: 0 });
+      gsap.set(bfaces[n], { autoAlpha: 1 });
+    });
+    bface = n;
+  }
+  const overBrain = () => !brainBtn.hidden && brainBtn.matches(":hover, :focus-visible");
+  function settleBrain() {
+    if (boomCall || face === "pain") return;
+    brainFace(state === "open" && overBrain() ? "boom" : "rest");
+  }
+  // now and then the brows give a little lift, out of step with each other
+  if (!RM)
+    run(() =>
+      gsap
+        .timeline({ repeat: -1, repeatDelay: 2.4, delay: 1.5 })
+        .to(brain.querySelectorAll(".mindblown__brow"), {
+          y: -2,
+          duration: 0.16,
+          ease: "power2.out",
+          stagger: { each: 0.06, from: "random" },
+        })
+        .to(brain.querySelectorAll(".mindblown__brow"), {
+          y: 0,
+          duration: 0.4,
+          ease: "bounce.out",
+          stagger: { each: 0.06, from: "random" },
+        }),
+    );
 
   /* ---------- cards ---------- */
   const narrow = () => stage.clientWidth < 1000;
@@ -129,7 +188,7 @@ export function init(root: HTMLElement): () => void {
   /* ---------- intro ---------- */
   let idle: gsap.core.Tween | null = null;
   run(() => {
-    gsap.set(brain, { yPercent: 130 });
+    gsap.set(brain, { yPercent: 112 });
     gsap.from(headPos, { yPercent: 40, duration: T(1), ease: "back.out(1.4)", delay: 0.1 });
     gsap.from(note, {
       scale: 0,
@@ -145,6 +204,8 @@ export function init(root: HTMLElement): () => void {
 
   /* ---------- state ---------- */
   let state: "closed" | "busy" | "open" = "closed";
+  let peeking = false,
+    peekTl: gsap.core.Timeline | null = null;
   let floats: gsap.core.Tween[] = [];
   const rel = (el: Element) => {
     const s = stage.getBoundingClientRect(),
@@ -277,11 +338,15 @@ export function init(root: HTMLElement): () => void {
   function openHead() {
     if (state !== "closed") return;
     state = "busy";
+    peeking = false;
+    head.classList.remove("mindblown__head--peek");
+    headLook();
+    peekTl?.kill();
+    cut(true);
     head.setAttribute("aria-expanded", "true");
     head.setAttribute("aria-label", "Close my head");
     idle?.pause();
     gsap.killTweensOf(note);
-    rig.classList.add("mindblown__rig--armed");
     setFace("super");
     const o = rel(hole);
     pickActive(true);
@@ -295,18 +360,9 @@ export function init(root: HTMLElement): () => void {
         tl.to(intro, { opacity: 0, y: -24, duration: T(0.6), ease: "power2.inOut" }, 0).set(intro, {
           pointerEvents: "none",
         });
-      // 1. scissors cut along the line
+      // 1. the lid pops straight off (from wherever the hover peek left it)
       tl.to(note, { scale: 0, rotation: 20, duration: T(0.25), ease: "back.in(2)" }, 0)
-        .set(scissors, { transition: "none" }, 0)
-        .fromTo(scissors, { opacity: 1, x: 0, rotation: 0 }, { opacity: 1, duration: 0.01 }, 0)
-        .add(() => scissors.classList.add("mindblown__scissors--snip"), 0)
-        .to(scissors, { left: "100%", duration: T(0.7), ease: "power1.inOut" }, 0.05)
-        .to(scissors, { y: -3, duration: T(0.07), repeat: 9, yoyo: true, ease: "sine.inOut" }, 0.05)
-        .add(() => scissors.classList.remove("mindblown__scissors--snip"))
-        .to(scissors, { x: 60, rotation: 25, opacity: 0, duration: T(0.3), ease: "power2.in" })
-        .to(dash, { opacity: 0, duration: T(0.12) }, "<")
-        // 2. lid pops
-        .add("pop")
+        .add("pop", 0.1)
         .to(
           lid,
           {
@@ -318,28 +374,24 @@ export function init(root: HTMLElement): () => void {
           },
           "pop",
         )
-        .to(hole, { scaleY: 1, duration: T(0.5), ease: "back.out(2.5)" }, "pop")
         .add(() => {
           shake();
-          confetti(o.x, o.y);
+          blast(o.x, o.y);
           say("ow.");
         }, "pop")
-        .fromTo(
+        .to(
           brain,
-          { yPercent: 130 },
-          { yPercent: 4, duration: T(0.7), ease: "back.out(2.2)", onUpdate: () => look() },
-          "pop+=.9",
+          { yPercent: 0, duration: T(0.7), ease: "back.out(2.2)", onUpdate: () => look() },
+          "pop+=.5",
         );
-      // 3. thoughts erupt
+      // 2. thoughts erupt
       erupt(tl, tl.labels.pop!, o);
-      tl.add(() => rig.classList.remove("mindblown__rig--armed"), "-=.5")
-        .to(tip, { opacity: 1, duration: T(0.4) }, "-=.4")
-        .fromTo(
-          noteClose,
-          { autoAlpha: 1, scale: 0, rotation: 20 },
-          { scale: 1, rotation: 0, duration: T(0.5), ease: "back.out(2.5)" },
-          "<",
-        );
+      tl.to(tip, { opacity: 1, duration: T(0.4) }, "-=.4").fromTo(
+        noteClose,
+        { autoAlpha: 1, scale: 0, rotation: 20 },
+        { scale: 1, rotation: 0, duration: T(0.5), ease: "back.out(2.5)" },
+        "<",
+      );
     });
   }
 
@@ -395,6 +447,7 @@ export function init(root: HTMLElement): () => void {
     startFloats();
     for (const c of active) c.tabIndex = 0;
     brainBtn.hidden = false;
+    settleBrain();
   }
 
   /* brain click: suck every thought in (pained face, the brain strains), then the super-shocked
@@ -434,7 +487,7 @@ export function init(root: HTMLElement): () => void {
     pickActive(false);
     layout();
     shake();
-    confetti(o.x, o.y);
+    blast(o.x, o.y);
     say(gsap.utils.random(["more!", "again?!", "ow!"]));
     run(() =>
       erupt(
@@ -472,23 +525,29 @@ export function init(root: HTMLElement): () => void {
         .to(noteClose, { scale: 0, rotation: -20, duration: T(0.25), ease: "back.in(2)" }, 0)
         .set(noteClose, { autoAlpha: 0 });
       suck(tl, o);
-      tl.to(brain, { yPercent: 130, duration: T(0.3), ease: "power2.in" }, "-=.3")
+      tl.to(brain, { yPercent: 112, duration: T(0.3), ease: "power2.in" }, "-=.3")
         .to(
           lid,
-          { y: 0, yPercent: 0, xPercent: 0, rotation: 0, duration: T(0.45), ease: "bounce.out" },
+          {
+            x: 0,
+            y: 0,
+            yPercent: 0,
+            xPercent: 0,
+            rotation: 0,
+            duration: T(0.45),
+            ease: "bounce.out",
+          },
           ">-0.05",
         )
-        .to(hole, { scaleY: 0, duration: T(0.15) }, "<+.12")
         .add(() => {
           shake();
           setFace("shock");
         }, "<+.1")
         .add(() => {
+          cut(false);
           setFace("rest");
           say("much better.");
         }, "+=.45")
-        .set(scissors, { left: 0, x: 0, rotation: 0, clearProps: "opacity,transition,transform" })
-        .set(dash, { clearProps: "opacity" })
         .to(note, { scale: 1, rotation: 0, duration: T(0.5), ease: "back.out(2.5)" });
       if (intro)
         tl.set(intro, { clearProps: "pointerEvents" }, "<").to(
@@ -513,20 +572,35 @@ export function init(root: HTMLElement): () => void {
         }),
       ),
     );
+    // the risen brain floats over the well; its shadow shrinks as it rises
+    const bob = { duration: 1.5, yoyo: true, repeat: -1, ease: "sine.inOut" };
+    floats.push(
+      ...run(() => [
+        gsap.to(brain, { y: () => -brain.getBoundingClientRect().height * 0.07, ...bob }),
+        gsap.to(shadow, { scale: 0.86, opacity: 0.75, ...bob }),
+      ]),
+    );
   }
   function stopFloats() {
     for (const f of floats) f.kill();
     floats = [];
-    run(() =>
+    run(() => {
       gsap.to(
         active.map((c) => c._in),
         { y: 0, rotation: 0, duration: 0.2 },
-      ),
-    );
+      );
+      gsap.to(brain, { y: 0, duration: 0.2 });
+      gsap.to(shadow, { scale: 1, opacity: 1, duration: 0.2 });
+    });
   }
 
   /* ---------- head interactions ---------- */
   brainBtn.addEventListener("click", rethink, on);
+  // pointing at the risen brain excites it
+  brainBtn.addEventListener("pointerenter", settleBrain, on);
+  brainBtn.addEventListener("pointerleave", () => requestAnimationFrame(settleBrain), on);
+  brainBtn.addEventListener("focus", settleBrain, on);
+  brainBtn.addEventListener("blur", () => requestAnimationFrame(settleBrain), on);
   head.addEventListener("click", () => (state === "closed" ? openHead() : closeHead()), on);
   head.addEventListener(
     "keydown",
@@ -538,42 +612,61 @@ export function init(root: HTMLElement): () => void {
     },
     on,
   );
-  head.addEventListener(
-    "pointerenter",
+  /* while the lid hovers, it leans and drifts towards the pointer */
+  const lean = {
+    r: run(() => gsap.quickTo(lid, "rotation", { duration: 0.8, ease: "power3" })),
+    x: run(() => gsap.quickTo(lid, "x", { duration: 0.8, ease: "power3" })),
+  };
+  function leanTo(mx: number) {
+    lean.r(-1.5 + mx * 4);
+    lean.x(mx * 8);
+  }
+  stage.addEventListener(
+    "pointermove",
     (e) => {
-      if (state !== "closed" || e.pointerType !== "mouse") return;
-      rig.classList.add("mindblown__rig--armed");
-      setFace("shock");
-      run(() =>
-        gsap.to(lid, {
-          y: -8,
-          rotation: -2,
-          duration: T(0.4),
-          ease: "back.out(3)",
-          overwrite: "auto",
-        }),
-      );
+      if (!peeking || RM) return;
+      const r = head.getBoundingClientRect(),
+        clamp = gsap.utils.clamp(-1, 1);
+      leanTo(clamp((e.clientX - (r.left + r.width * 0.455)) / (r.width * 0.6)));
     },
     on,
   );
-  head.addEventListener(
-    "pointerleave",
-    () => {
-      if (state !== "closed") return;
-      rig.classList.remove("mindblown__rig--armed");
-      setFace("rest");
-      run(() =>
-        gsap.to(lid, {
-          y: 0,
-          rotation: 0,
-          duration: T(0.5),
-          ease: "elastic.out(1,.4)",
-          overwrite: "auto",
-        }),
-      );
-    },
-    on,
-  );
+
+  /* closed head, mouse hover or keyboard focus: the lid floats up and the brain peeks out */
+  const cut = (on: boolean) => head.classList.toggle("mindblown__head--cut", on);
+  function peek(on: boolean) {
+    if (state !== "closed" || on === peeking) return;
+    peeking = on;
+    head.classList.toggle("mindblown__head--peek", on);
+    setFace(on ? "shock" : "rest", false);
+    peekTl?.kill();
+    if (on) cut(true);
+    run(() => {
+      const tl = (peekTl = gsap.timeline({ onComplete: () => !peeking && cut(false) }));
+      // the lid covers the top of the brain: only its eyes show above the rim
+      if (on) {
+        leanTo(0);
+        tl.to(lid, { yPercent: -PEEK_LIFT * 100, duration: T(0.8), ease: "power3.out" }, 0).to(
+          brain,
+          { yPercent: PEEK_BRAIN, duration: T(0.8), ease: "power3.out", onUpdate: () => look() },
+          0.1,
+        );
+      } else {
+        // the lean's own quickTo tweens bring rotation and x home: a second tween on the same
+        // props would end first and let the lean land the lid at an angle; the empty tween keeps
+        // the hole cut until the lean has settled
+        lean.r(0);
+        lean.x(0);
+        tl.to(brain, { yPercent: 112, duration: T(0.35), ease: "power2.in" }, 0)
+          .to(lid, { yPercent: 0, duration: T(0.5), ease: "power2.inOut" }, 0.05)
+          .to({}, { duration: 0.8 }, 0);
+      }
+    });
+  }
+  head.addEventListener("pointerenter", (e) => e.pointerType === "mouse" && peek(true), on);
+  head.addEventListener("pointerleave", () => peek(false), on);
+  head.addEventListener("focus", () => head.matches(":focus-visible") && peek(true), on);
+  head.addEventListener("blur", () => peek(false), on);
 
   /* ---------- drag + click on cards ---------- */
   for (const c of cards) {
@@ -774,18 +867,17 @@ export function init(root: HTMLElement): () => void {
     on,
   );
 
-  /* ---------- confetti ---------- */
+  /* ---------- the burst: energy beams, dots and sparkles fly out with the thoughts ---------- */
   const c2d = canvas.getContext("2d")!;
   const styles = getComputedStyle(root);
-  const COLORS = [1, 2, 3, 4, 5, 6].map((n) => styles.getPropertyValue(`--mb-cf-${n}`).trim());
-  const INK = styles.getPropertyValue("--mb-art-ink").trim();
+  const COLORS = [1, 2, 3, 4, 5].map((n) => styles.getPropertyValue(`--mb-fx-${n}`).trim());
   type Part = {
+    kind: "beam" | "dot" | "spark";
     x: number;
     y: number;
     vx: number;
     vy: number;
-    w: number;
-    h: number;
+    size: number;
     r: number;
     vr: number;
     c: string;
@@ -793,80 +885,159 @@ export function init(root: HTMLElement): () => void {
   };
   let parts: Part[] = [],
     raf = 0;
-  function confetti(x: number, y: number) {
+  const pick = () => COLORS[Math.floor(Math.random() * COLORS.length)]!;
+  function blast(x: number, y: number) {
     if (RM) return;
     const dpr = Math.min(2, devicePixelRatio || 1);
     canvas.width = stage.clientWidth * dpr;
     canvas.height = stage.clientHeight * dpr;
     c2d.setTransform(dpr, 0, 0, dpr, 0, 0);
-    for (let i = 0; i < 90; i++) {
-      const a = -Math.PI / 2 + (Math.random() - 0.5) * 2.2,
-        v = 6 + Math.random() * 11;
-      parts.push({
-        x,
-        y,
-        vx: Math.cos(a) * v,
-        vy: Math.sin(a) * v,
-        w: 6 + Math.random() * 10,
-        h: 4 + Math.random() * 8,
-        r: Math.random() * 6,
-        vr: (Math.random() - 0.5) * 0.4,
-        c: COLORS[i % COLORS.length]!,
-        life: 1,
-      });
-    }
+    const add = (kind: Part["kind"], n: number, spread: number, v0: number, v1: number) => {
+      for (let i = 0; i < n; i++) {
+        const a = -Math.PI / 2 + (Math.random() - 0.5) * spread,
+          v = v0 + Math.random() * (v1 - v0);
+        parts.push({
+          kind,
+          x,
+          y,
+          vx: Math.cos(a) * v,
+          vy: Math.sin(a) * v,
+          size:
+            kind === "beam"
+              ? 1.5 + Math.random() * 2.5
+              : kind === "dot"
+                ? 2 + Math.random() * 3.5
+                : 5 + Math.random() * 7,
+          r: Math.random() * Math.PI,
+          vr: (Math.random() - 0.5) * 0.25,
+          c: pick(),
+          life: 1,
+        });
+      }
+    };
+    // beams shoot out fast and fade; dots and sparkles arc up and drift down
+    add("beam", 30, 3.4, 16, 30);
+    add("dot", 40, 2.6, 5, 15);
+    add("spark", 16, 2.4, 4, 11);
     if (!raf) raf = requestAnimationFrame(tick);
+  }
+  function star(size: number) {
+    const k = size * 0.24;
+    c2d.beginPath();
+    c2d.moveTo(0, -size);
+    c2d.lineTo(k, -k);
+    c2d.lineTo(size, 0);
+    c2d.lineTo(k, k);
+    c2d.lineTo(0, size);
+    c2d.lineTo(-k, k);
+    c2d.lineTo(-size, 0);
+    c2d.lineTo(-k, -k);
+    c2d.closePath();
+    c2d.fill();
   }
   function tick() {
     c2d.clearRect(0, 0, canvas.width, canvas.height);
     for (const p of parts) {
-      p.vy += 0.32;
-      p.vx *= 0.985;
+      if (p.kind === "beam") {
+        p.vx *= 0.92;
+        p.vy *= 0.92;
+        p.life -= 0.028;
+      } else {
+        p.vy += p.kind === "dot" ? 0.26 : 0.12;
+        p.vx *= 0.985;
+        p.life -= p.kind === "dot" ? 0.008 : 0.01;
+      }
       p.x += p.vx;
       p.y += p.vy;
       p.r += p.vr;
-      p.life -= 0.006;
-      c2d.save();
-      c2d.translate(p.x, p.y);
-      c2d.rotate(p.r);
-      c2d.globalAlpha = Math.max(0, p.life);
-      c2d.fillStyle = p.c;
-      c2d.strokeStyle = INK;
-      c2d.lineWidth = 2;
-      c2d.fillRect(-p.w / 2, -p.h / 2, p.w, p.h);
-      c2d.strokeRect(-p.w / 2, -p.h / 2, p.w, p.h);
-      c2d.restore();
+      c2d.globalAlpha = Math.max(0, Math.min(1, p.life * 1.5));
+      c2d.fillStyle = c2d.strokeStyle = p.c;
+      if (p.kind === "beam") {
+        const len = 2.4 + p.life * 3;
+        c2d.lineWidth = p.size;
+        c2d.lineCap = "round";
+        c2d.beginPath();
+        c2d.moveTo(p.x, p.y);
+        c2d.lineTo(p.x - p.vx * len, p.y - p.vy * len);
+        c2d.stroke();
+      } else if (p.kind === "dot") {
+        c2d.beginPath();
+        c2d.arc(p.x, p.y, p.size, 0, Math.PI * 2);
+        c2d.fill();
+      } else {
+        c2d.save();
+        c2d.translate(p.x, p.y);
+        c2d.rotate(p.r);
+        star(p.size * (0.75 + 0.25 * Math.sin(p.life * 30)));
+        c2d.restore();
+      }
     }
+    c2d.globalAlpha = 1;
     parts = parts.filter((p) => p.life > 0 && p.y < stage.clientHeight + 40);
     raf = parts.length ? requestAnimationFrame(tick) : 0;
   }
 
   /* ---------- brain eyes follow the pointer ---------- */
-  const pupils = [...brain.querySelectorAll(".mindblown__pupil")];
-  const eyeC = [
-    [60, 56],
-    [84, 56],
-  ] as const;
+  // every face has its own pair of eyes. The black eye leans a little towards the pointer and
+  // its white glint slides right up to the eye's edge on that side, so it's clear where the
+  // brain looks. Each eye knows (in brain units) its centre, how far the glint may travel, and
+  // where the glint is drawn.
+  const eyes = [...brain.querySelectorAll<SVGGElement>(".mindblown__look")].map((g) => {
+    const n = (k: string) => Number(g.dataset[k]);
+    return {
+      g,
+      glint: g.querySelector(".mindblown__glint")!,
+      c: [n("cx"), n("cy")] as const,
+      r: n("r"),
+      off: [n("gx") - n("cx"), n("gy") - n("cy")] as const,
+    };
+  });
   let lookX = innerWidth / 2,
     lookY = 0,
     lookRaf = 0;
+  /* open, the super-shocked face looks up, left or right towards the pointer (straight at you
+     when it's close to his eyes or below them) */
+  let headDir = "",
+    mouseSeen = false;
+  function headLook() {
+    let dir = "";
+    if (mouseSeen && state !== "closed" && !peeking) {
+      const r = head.getBoundingClientRect(),
+        dx = lookX - (r.left + r.width * 0.455),
+        dy = lookY - (r.top + r.height * 0.47);
+      if (Math.hypot(dx, dy) > r.width * 0.16) {
+        if (dy < 0 && -dy > Math.abs(dx) * 0.8) dir = "up";
+        else if (Math.abs(dx) > r.width * 0.12) dir = dx < 0 ? "left" : "right";
+      }
+    }
+    if (dir === headDir) return;
+    for (const d of ["up", "left", "right"])
+      head.classList.toggle(`mindblown__head--look-${d}`, d === dir);
+    headDir = dir;
+  }
   function look() {
     lookRaf = 0;
     const r = brain.getBoundingClientRect();
     if (!r.width) return;
-    const k = r.width / 140;
-    pupils.forEach((p, i) => {
-      const ex = r.left + eyeC[i]![0] * k,
-        ey = r.top + eyeC[i]![1] * k;
-      const dx = lookX - ex,
-        dy = lookY - ey,
+    const k = r.width / 142;
+    for (const e of eyes) {
+      const dx = lookX - (r.left + e.c[0] * k),
+        dy = lookY - (r.top + e.c[1] * k),
         d = Math.hypot(dx, dy) || 1,
-        m = Math.min(4.5, d / 30);
-      p.setAttribute(
+        // full reach a little way out from the eye, so the look reads at any distance
+        m = Math.min(1, d / (20 * k)),
+        ux = (dx / d) * m,
+        uy = (dy / d) * m,
+        lean = 0.9;
+      e.g.setAttribute(
         "transform",
-        `translate(${((dx / d) * m).toFixed(2)} ${((dy / d) * m * 1.1).toFixed(2)})`,
+        `translate(${(ux * lean).toFixed(2)} ${(uy * lean).toFixed(2)})`,
       );
-    });
+      e.glint.setAttribute(
+        "transform",
+        `translate(${(ux * (e.r - lean) - e.off[0]).toFixed(2)} ${(uy * (e.r - lean) - e.off[1]).toFixed(2)})`,
+      );
+    }
   }
   addEventListener(
     "pointermove",
@@ -874,6 +1045,10 @@ export function init(root: HTMLElement): () => void {
       lookX = e.clientX;
       lookY = e.clientY;
       if (!lookRaf) lookRaf = requestAnimationFrame(look);
+      if (e.pointerType === "mouse") {
+        mouseSeen = true;
+        headLook();
+      }
     },
     { passive: true, signal: abort.signal },
   );
@@ -893,7 +1068,7 @@ export function init(root: HTMLElement): () => void {
         else if (t?.closest(".mindblown__brain-btn"))
           label = state === "open" ? "new thoughts" : "";
         else if (t?.closest(".mindblown__head") && root.contains(t))
-          label = state === "closed" ? "snip snip" : "close it";
+          label = state === "closed" ? "pop it open" : "close it";
         if (label) cursor.textContent = label;
         cursor.classList.toggle("mindblown__cursor--on", !!label && !popOpen);
       },
