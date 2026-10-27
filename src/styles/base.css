@@ -123,8 +123,8 @@
 @layer base {
   /*
    * Page transition: the old page sinks back and dims over the ink backdrop while the new one
-   * rises as a sheet with rounded top corners. Named elements (the nav, a case-study cover)
-   * morph separately on top.
+   * rises as a sheet with rounded top corners. The same transition runs between every page; only
+   * the nav is named, so it stays put on top.
    */
   ::view-transition {
     background-color: var(--color-text);

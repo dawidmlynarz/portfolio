@@ -55,6 +55,6 @@ export const SERVICES: Service[] = [
       "Error, refusal and recovery states",
       "Prototypes built on real models",
     ],
-    proof: ["newsweek-ai-experience"],
+    proof: [],
   },
 ];

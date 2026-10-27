@@ -201,6 +201,13 @@ const objectPosition = `${((face[0] + face[1]) / 2) * 100}% ${((face[2] + face[3
       opacity: 1;
     }
 
+    /* The canvas paints both layers itself, so once it has faded in the static image is hidden.
+       Left underneath, it would show through the photo's soft, semi-transparent edges (the hair). */
+    [data-ready] > .liquid__image {
+      visibility: hidden;
+      transition: visibility 0s var(--duration-reveal);
+    }
+
     /* Motion layer: the portrait fades in from 0 to 100% once its image has decoded
        (data-shown, set by the image's onload or liquid-reveal.ts). Failsafe: visible after 3s regardless. */
     :global(.motion) .liquid {

@@ -5,9 +5,11 @@ interface Props extends HTMLAttributes<"a"> {
   href: string;
   /** underline: animated underline (default) · quiet: underline only on hover */
   variant?: "underline" | "quiet";
+  /** arrow: a forward arrow for calls to action (e.g. Contact). External links always get ↗. */
+  icon?: "arrow";
 }
 
-const { href, variant = "underline", class: className, ...attrs } = Astro.props;
+const { href, variant = "underline", icon, class: className, ...attrs } = Astro.props;
 const external = /^https?:\/\//.test(href) && !href.startsWith(Astro.site?.origin ?? "");
 ---
 
@@ -18,10 +20,16 @@ const external = /^https?:\/\//.test(href) && !href.startsWith(Astro.site?.origi
   {...attrs}
 >
   <slot />
-  {external && (
+  {external ? (
     <svg class="link__icon" viewBox="0 0 16 16" aria-hidden="true">
       <path d="M5 11 11 5M6 5h5v5" />
     </svg>
+  ) : (
+    icon === "arrow" && (
+      <svg class="link__icon link__icon--arrow" viewBox="0 0 16 16" aria-hidden="true">
+        <path d="M3.5 8h9M9 4.5 12.5 8 9 11.5" />
+      </svg>
+    )
   )}
 </a>
 
@@ -48,6 +56,14 @@ const external = /^https?:\/\//.test(href) && !href.startsWith(Astro.site?.origi
       stroke-width: 1.5;
       stroke-linecap: round;
       stroke-linejoin: round;
+    }
+
+    .link__icon--arrow {
+      transition: translate var(--duration-link) var(--ease-out-expo);
+    }
+
+    .link:hover .link__icon--arrow {
+      translate: var(--space-1) 0;
     }
   }
 </style>

@@ -48,10 +48,12 @@ const jsonLd = {
     lead="I bring 15 years of product experience to the AI era, helping you architect AI-ready design systems, safe agentic workflows, and impactful product strategies."
   >
     <Fragment slot="actions">
-      {SOCIAL_LINKS.map(({ href, label }) => (
-        <Link href={href}>{label}</Link>
-      ))}
-      <Link href={`mailto:${SITE.email}`}>Contact</Link>
+      <Link href="/about" icon="arrow">
+        About me
+      </Link>
+      <Link href={`mailto:${SITE.email}`} icon="arrow">
+        Contact
+      </Link>
     </Fragment>
   </HomeHero>
 

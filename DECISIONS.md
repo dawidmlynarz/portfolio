@@ -126,7 +126,7 @@ Built on `v2` so `main` stays live until the redesign is ready to swap in. The d
   7. Explorations.
   8. A sign-off whose last words cycle.
 - **Motion layer replaces "zero JS by default".** One module (`src/scripts/motion.ts`) runs Lenis, GSAP, ScrollTrigger and SplitText on every page, about 50 KB gzipped. It runs only when `html.motion` is set, which happens before first paint unless the visitor prefers reduced motion. Elements marked `[data-reveal]` wait hidden until the script sets them up, and a 3s CSS failsafe shows them if it never does.
-- **Page transitions use native cross-document View Transitions.** The old page sinks back and dims, the new one rises as a sheet, and a work cover morphs into the case-study cover (`view-transition-name: cover-<slug>`). The nav stays put. Browsers without support, and reduced motion, get a normal page load.
+- **Page transitions use native cross-document View Transitions.** The old page sinks back and dims, the new one rises as a sheet. The nav stays put. Every page uses the same transition: opening a case study used to morph the work cover into the case-study cover, but it read as a different transition from the rest of the site and was dropped. Browsers without support, and reduced motion, get a normal page load.
 - **Left for the next passes:** the case-study template (Astapable-style opening), the About story, the "How I work" section, and real numbers.
 
 ## 2026-10-26 · Mobile nav is a hamburger menu
@@ -265,3 +265,7 @@ What changed versus the embed, and why:
 **Only DM Sans is installed.** The plan listed Playfair Display, but `tokens.css` has no serif role and the type faces are placeholders until the new ones are chosen. Swap by installing a fontsource package, importing it in `global.css`, and changing `--font-heading` / `--font-body`.
 
 **TypeScript 6, not 7.** `@astrojs/check` peers on the TS 6 JS API; npm resolved 6.0.x. Revisit when the Astro language server supports TS 7.
+
+**Newsweek AI case study dropped.** It won't be written, so the entry is deleted rather than kept as a draft, and `/work/newsweek-ai-experience` redirects to `/work` (`public/_redirects`). The Agentic UX service has no proof link until a new case study exists.
+
+**Hero actions are site links, not social.** The hero shows About me and Contact with the forward arrow (`Link icon="arrow"`); LinkedIn and Dribbble stay in the footer and in the JSON-LD `sameAs`.
