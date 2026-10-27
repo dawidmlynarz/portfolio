@@ -9,7 +9,8 @@ Non-obvious choices, newest first. One entry per decision: what, why, and what i
 - **`seoDescription`** joins `seoTitle` in the case-study schema, so the card summary and lead can stay long while search gets a ~155-character version. The build warns (`[seo]` lines) when an indexable page's title runs past 60 characters or its description past 160. Warnings, not errors, so copy edits never block a deploy.
 - **Structured data shares one Person.** `src/lib/schema.ts` builds the Person (with `@id` `/#person`, the headshot, `alternateName` without the ł, country and `knowsAbout`) and WebSite (`/#website`). Home carries both; About is a `ProfilePage` with the Person as `mainEntity`; case studies point their `author` at the `@id` and add a `BreadcrumbList`.
 - **Analytics: Cloudflare Web Analytics**, cookieless, so no consent banner. The beacon is added only on production builds with `CF_WEB_ANALYTICS_TOKEN` set. Turning on Pages' automatic injection instead would also count preview traffic.
-- **The share image (`public/og.png`) still shows the old tagline.** Its alt text matches the image, so both change together when the image is redrawn.
+- **Search phrases: AI-ready design systems, agentic UX and freelance product designer** (Dawid's pick; product strategy stays a service but isn't a search target). Every indexable page now has a title of 60 characters or fewer and a description of 160 or fewer, written around those phrases. Case studies keep their long headline and summary on the page and use `seoTitle`/`seoDescription` for search. Revisit with real Search Console queries 4 to 6 weeks after launch.
+- **The share image (`public/og.png`) still shows the old tagline.** Dawid is redrawing it. Its alt text (`SITE.ogImage.alt`) describes the current image, so update both together.
 
 ## 2026-10-27 · Soft rise page transition
 
