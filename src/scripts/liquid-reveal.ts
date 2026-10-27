@@ -14,8 +14,8 @@
  * Layers: every blob carries one of the layers below and reveals that one. The head picks a new
  * layer when the pointer arrives, on each tap, and every few seconds after that; it pours the new
  * layer in as a blob that wells up inside the old one, while the old trail heals in its own layer.
- * Each roaming drop picks a new layer whenever it has dried up. Picks are weighted (a layer can be
- * rare) and never repeat the layer just shown. Where layers overlap, the deepest (freshest) liquid
+ * Each roaming drop picks a new layer whenever it has dried up. Picks are weighted, so a layer can
+ * be rare (a pick of the current layer changes nothing). Where layers overlap, the deepest liquid
  * shows.
  *
  * Rendering (WebGL, all on the GPU):
@@ -748,14 +748,17 @@ class LiquidReveal extends HTMLElement {
     this.#scratch.width = this.#scratch.height = 0;
   }
 
-  /** A random loaded layer other than `not`, weighted; `not` itself if it is the only one. */
-  #pickLayer(not: number) {
+  /**
+   * A random loaded layer, by weight. It can be the current one (then nothing switches): excluding
+   * it would make a rare layer come up every other time when there are only two.
+   */
+  #pickLayer(current: number) {
     const ready = this.#slots
       .map((slot, i) => ({ i, w: slot.img ? slot.data.weight : 0 }))
-      .filter((c) => c.w > 0 && c.i !== not);
+      .filter((c) => c.w > 0);
     let roll = Math.random() * ready.reduce((sum, c) => sum + c.w, 0);
     for (const c of ready) if ((roll -= c.w) <= 0) return c.i;
-    return ready[ready.length - 1]?.i ?? not;
+    return ready[ready.length - 1]?.i ?? current;
   }
 
   #baseRadius() {

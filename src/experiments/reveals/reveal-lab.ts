@@ -1,6 +1,6 @@
 /**
  * <reveal-lab data-mode>: one tile of the reveal playground. The photo on top; three layers below
- * (clay, marble, iridescent: the home portrait's set, themed, weighted the same way). The pointer
+ * (marble and iridescent: the home portrait's set, themed, weighted the same way). The pointer
  * (or, at rest, a wandering autopilot) drives one of the reveal modes below.
  *
  * Most modes share a paint field: a small RGBA texture, one channel per layer, ping-ponged each
@@ -394,14 +394,14 @@ class RevealLab extends HTMLElement {
     this.#kick();
   }
 
-  /** A loaded layer (0–2) other than `not`, weighted. */
-  #pick(not: number) {
+  /** A loaded layer, by weight (the current one included, so a rare layer stays rare). */
+  #pick(current: number) {
     const ready = this.#data.layers
       .map((l, i) => ({ i, w: this.#loaded[i + 1] ? l.weight : 0 }))
-      .filter((c) => c.w > 0 && c.i !== not);
+      .filter((c) => c.w > 0);
     let roll = Math.random() * ready.reduce((s, c) => s + c.w, 0);
     for (const c of ready) if ((roll -= c.w) <= 0) return c.i;
-    return ready[ready.length - 1]?.i ?? not;
+    return ready[ready.length - 1]?.i ?? current;
   }
 
   #kick() {
