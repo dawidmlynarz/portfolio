@@ -3,6 +3,7 @@ import SiteLayout from "@/layouts/SiteLayout.astro";
 import Section from "@/components/layout/Section.astro";
 import Container from "@/components/layout/Container.astro";
 import WorkGrid from "@/components/blocks/WorkGrid.astro";
+import HeroBackdrop from "@/components/blocks/HeroBackdrop.astro";
 import { getListedWork } from "@/lib/work";
 
 const work = await getListedWork();
@@ -12,7 +13,8 @@ const work = await getListedWork();
   title="Work"
   description="Case studies by Dawid Młynarz: AI products, design systems, conversion optimisation and product design for Newsweek, NerdWallet, BeatStars, Google and more."
 >
-  <Section space="md" aria-labelledby="work-title">
+  <Section space="md" class="hero-backdrop-host" aria-labelledby="work-title">
+    <HeroBackdrop />
     <Container class="work-page">
       <div class="work-page__head">
         <p class="text-caption work-page__muted">Selected work 2020 – 2025</p>

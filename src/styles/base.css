@@ -232,6 +232,21 @@
     animation-name: page-in-back;
   }
 
+  /*
+   * The hero grain (HeroBackdrop) is left out of the moving page images and holds still at the
+   * top: no move, no fade, the new page's grain from the first frame. It sits above the page images
+   * while they settle, which doesn't show: it is a few percent of ink with no fill.
+   */
+  ::view-transition-group(hero-backdrop),
+  ::view-transition-new(hero-backdrop) {
+    animation: none;
+  }
+
+  ::view-transition-old(hero-backdrop) {
+    animation: none;
+    opacity: 0;
+  }
+
   ::view-transition-group(nav) {
     animation-duration: var(--duration-page);
     animation-timing-function: var(--ease-in-out-quart);

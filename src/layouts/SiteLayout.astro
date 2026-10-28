@@ -101,7 +101,7 @@ const { navOverlap = false, ...base } = Astro.props;
 
     /* Keep content clear of the floating nav pill unless the page opts in to run under it. */
     main {
-      padding-block-start: calc(var(--space-4) + var(--space-12) + var(--space-8));
+      padding-block-start: var(--nav-clearance);
     }
 
     .site--nav-overlap main {

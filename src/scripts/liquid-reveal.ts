@@ -42,7 +42,7 @@
  *   image stays.
  * - Lazy: the other layers load one at a time at low priority once the canvas is running, each
  *   uploaded in its own idle slot, and join the picks when ready. Skipped on Save-Data or 2G/3G.
- * - Transparent: the cutouts stay cutouts, so the hero backdrop (--bg-hero) shows around them.
+ * - Transparent: the cutouts stay cutouts, so the hero grain (HeroBackdrop) shows around them.
  *   The liquid masks every layer, so a soft edge never lets one image bleed through another.
  * - Theme-aware: the resolved --color-bg picks each layer's light or dark variant, and the canvas
  *   repaints on theme change (the `themechange` event from ThemeToggle; its waitUntil holds the

@@ -7,6 +7,7 @@
  * section scrolls over it (data-hero).
  */
 import LiquidReveal from "@/components/blocks/LiquidReveal.astro";
+import HeroBackdrop from "@/components/blocks/HeroBackdrop.astro";
 import RevealPicker from "@/components/blocks/RevealPicker.astro";
 import { PORTRAIT_LAYERS, portraitPhoto } from "@/lib/portrait";
 import { isProduction } from "@/lib/site";
@@ -31,7 +32,8 @@ const SIZES =
   "(min-width: 62em) max(50vw, 134vh, 54rem), (min-width: 48em) max(56vw, 134vh, 54rem), max(100vw, 83vh, 37rem)";
 ---
 
-<section class="home-hero" aria-labelledby="home-hero-title" data-hero>
+<section class="home-hero hero-backdrop-host" aria-labelledby="home-hero-title" data-hero>
+  <HeroBackdrop flush />
   <div class="home-hero__copy">
     {label && <p class="text-caption home-hero__label">{label}</p>}
     <h1 id="home-hero-title" data-reveal="lines">
@@ -63,7 +65,6 @@ const SIZES =
   @layer components {
     .home-hero {
       display: grid;
-      background: var(--bg-hero);
     }
 
     .home-hero__copy {
