@@ -2,6 +2,17 @@
 
 Non-obvious choices, newest first. One entry per decision: what, why, and what it rules out.
 
+## 2026-10-28 · Password-protected case studies, locked on the server
+
+`protected: true` now locks a case study on every build, production included. NerdWallet is the first one (Dawid's pick). This replaces "protected drafts get no page on previews" and removes `SHOW_PROTECTED_DRAFTS`.
+
+- **The content never ships as a static file.** Astro builds the full page and a locked page (`/work/<slug>/locked`). After the build, `tooling/protected-work.mjs` moves the full page's HTML into a generated module (`.generated/protected-pages.js`, git-ignored) and puts the locked page at `/work/<slug>`. Cloudflare Pages bundles that module into the Pages Function `functions/work/_middleware.ts`, which is the only place the content exists. A client-side lock (blur, JS check, encrypted HTML) was ruled out: the text would still be in the download.
+- **The gate.** The form posts the password to `/work/<slug>`. The function compares it in constant time with `CASE_STUDY_PASSWORD` (a Pages secret, set per environment), then sets an HttpOnly, Secure, SameSite=Lax cookie for 30 days and redirects back. The cookie is the expiry signed (HMAC-SHA256) with the password, so there is no second secret, and changing the password locks everyone out. One password opens every protected case study. Unlocked responses are `private, no-store` and `noindex`. Without the secret nothing unlocks.
+- **Wrong password:** the function serves the locked page with a 401 and the form switched to its error state, so it works without JS. The field takes a heavier red ring, a faint red tint and a red warning sign, the message shows under it in red, left-aligned with the field, and the field skips sideways once. Typing again clears it.
+- **Locked state:** `LockPanel` centred on the first screen over the hero grain (`HeroBackdrop`), as on other heroes: padlock, "This case study is password protected", password field with a plain Unlock button, and a full-width line inviting people to email for access. A blurred stand-in of the page behind it was tried first; Dawid preferred the plain grain. Cards of protected work show a small padlock after the company.
+- **Not covered:** images used only inside a protected case study are still files in `/_astro/` under hashed names. Nothing public links to them, but they are not behind the password. Brute force is not rate limited by the function; a Cloudflare rate-limiting rule on `POST /work/*` covers that if needed.
+- **New tokens:** `--shadow-panel`, and the site's only colour, for errors: `--red-600` / `--red-400` primitives, `--color-danger` (5.9:1 on white, 7.1:1 on the dark background, AA) and `--color-danger-bg` (add to Figma).
+
 ## 2026-10-28 · Scroll budget: idle loops yield to scrolling
 
 Profiled scrolling on every page (Chromium, 1440 desktop and 375 mobile with 4× CPU throttling). Only two pages spend frames on things the visitor isn't looking at, so those are the fixes; the motion itself is unchanged.

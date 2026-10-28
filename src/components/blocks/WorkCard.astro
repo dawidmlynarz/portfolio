@@ -70,7 +70,18 @@ const sizes =
     </div>
   </div>
   <div class="work-card__body">
-    <p class="text-caption work-card__meta">{meta}</p>
+    <p class="text-caption work-card__meta">
+      {meta}
+      {data.protected && (
+        <span class="work-card__lock" title="Password protected">
+          <svg viewBox="0 0 24 24" aria-hidden="true">
+            <rect x="5" y="10.5" width="14" height="10" rx="2.5" />
+            <path d="M8.5 10.5V7.5a3.5 3.5 0 0 1 7 0v3" />
+          </svg>
+          <span class="visually-hidden">Password protected</span>
+        </span>
+      )}
+    </p>
     <Heading class="work-card__title">
       {href ? (
         <a href={href} data-no-tear>
@@ -245,6 +256,23 @@ const sizes =
     .work-card__summary,
     .work-card__more {
       color: var(--color-text-muted);
+    }
+
+    /* Password-protected case studies carry a small padlock after the meta line. */
+    .work-card__meta {
+      display: flex;
+      align-items: center;
+      gap: var(--space-2);
+    }
+
+    .work-card__lock svg {
+      inline-size: 1.15em;
+      block-size: 1.15em;
+      fill: none;
+      stroke: currentcolor;
+      stroke-width: 2;
+      stroke-linecap: round;
+      stroke-linejoin: round;
     }
 
     .work-card__title {

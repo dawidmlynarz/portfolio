@@ -48,9 +48,9 @@ const work = defineCollection({
       /** false: listed as a card without its own case-study page (no write-up exists). */
       page: z.boolean().default(true),
       /**
-       * Was password-protected on Webflow. A protected draft gets no page on previews either
-       * (preview URLs are public) unless SHOW_PROTECTED_DRAFTS is set for an Access-protected
-       * preview environment. Remove the flag once the content is cleared to be public.
+       * Private work: the page is locked behind a password on every build. Only the locked state
+       * (header and cover, blurred) is public; the content is served by a Pages Function once the
+       * password is entered (tooling/protected-work.mjs, functions/work/_middleware.ts).
        */
       protected: z.boolean().default(false),
     }),

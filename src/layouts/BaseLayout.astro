@@ -15,6 +15,8 @@ interface Props {
   jsonLd?: Record<string, unknown>;
   /** Force noindex for this page (styleguide, 404, drafts). Previews are always noindex. */
   noindex?: boolean;
+  /** Canonical path when the page is served at another URL than it is built at (locked pages). */
+  canonicalPath?: string;
 }
 
 const {
@@ -24,11 +26,13 @@ const {
   type = "website",
   image = SITE.ogImage,
   jsonLd,
+  canonicalPath: canonicalOverride,
 } = Astro.props;
 
 const pageTitle = title ? `${title} — ${SITE.name}` : SITE.title;
 // build.format "file" exposes "/about.html" and "/index.html"; canonical URLs are extensionless.
-const canonicalPath = Astro.url.pathname.replace(/(index)?\.html$/, "").replace(/(.)\/$/, "$1");
+const canonicalPath =
+  canonicalOverride ?? Astro.url.pathname.replace(/(index)?\.html$/, "").replace(/(.)\/$/, "$1");
 const canonical = new URL(canonicalPath || "/", Astro.site);
 const robots = noindex || !isProduction ? "noindex, nofollow" : undefined;
 const imageUrl = new URL(image.src, Astro.site);

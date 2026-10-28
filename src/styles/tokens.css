@@ -21,7 +21,8 @@
  *   Toggle: set dataset.theme + localStorage.theme (see ThemeToggle.astro).
  *   Gotchas: use currentColor in the logo SVG; the PortraitReveal canvas reads the current --color-bg
  *   (to pick the light or dark clay) and re-inits on theme change.
- *   v2 is black and white: no accent colour; emphasis comes from the inverse surface.
+ *   v2 is black and white: no accent colour; emphasis comes from the inverse surface. The only
+ *   colour is --color-danger, for errors.
  */
 @layer reset, tokens, base, components, utilities;
 
@@ -41,6 +42,9 @@
     --neutral-850: #242424;
     --neutral-900: #141414;
     --neutral-950: #0a0a0a;
+    /* The one colour: errors only (AA: 5.9:1 on white, 7.1:1 on neutral-950) */
+    --red-400: #ff6b6b;
+    --red-600: #c8102e;
 
     /* ---------- 2. Semantic color: light-dark(light, dark) ---------- */
     --color-bg: light-dark(var(--neutral-0), var(--neutral-950));
@@ -55,6 +59,9 @@
     --color-border-muted: light-dark(var(--neutral-300), var(--neutral-800));
     --color-border-subtle: light-dark(var(--neutral-200), var(--neutral-850));
     --color-focus: var(--color-text);
+    /* Errors (wrong password): text, ring and icon, plus a faint tint behind the field */
+    --color-danger: light-dark(var(--red-600), var(--red-400));
+    --color-danger-bg: color-mix(in srgb, var(--color-danger) 6%, var(--color-bg));
     /* Inverse surface (story panel, primary buttons, menu contact) and the text on it */
     --color-inverse-bg: light-dark(var(--neutral-950), var(--neutral-50));
     --color-on-inverse: light-dark(var(--neutral-0), var(--neutral-950));
@@ -168,6 +175,7 @@
     --shift-page-in: 6vh; /* page transition: how far below the new page starts */
     --ease-in-out-quart: cubic-bezier(0.77, 0, 0.175, 1);
     --z-nav: 100;
+    --shadow-panel: 0 24px 64px -24px light-dark(rgb(0 0 0 / 28%), rgb(0 0 0 / 80%));
     /* Space above content on pages that don't run under the floating nav (SiteLayout) */
     --nav-clearance: calc(var(--space-4) + var(--space-12) + var(--space-8));
 
