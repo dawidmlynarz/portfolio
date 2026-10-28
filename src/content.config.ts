@@ -30,6 +30,8 @@ const work = defineCollection({
       /** Agency or partner the work was done through, e.g. "XWP.co". */
       via: z.string().optional(),
       year: z.number().int().optional(),
+      /** "Date" in the case-study facts, as Dawid writes it ("2021", "2016–2025"). Falls back to `year`. */
+      date: z.string().optional(),
       industry: z.string(),
       business: z.string(),
       /** Label shown before `business` on cards ("Model" for SaaS/agency/product work). */

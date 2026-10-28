@@ -1,10 +1,11 @@
 ---
 /**
  * Case-study contents as a mini map, fixed at the right edge from 62em. One short line per h2.
- * Hovering the map opens the rows up a little; the hovered (or focused) row swaps its line for its
- * section title, one at a time, with no panel behind it. The title arrives with the "signal
- * settle" from the link playground: letters come in as noise and lock in from the left. Each row links to its
- * section (Lenis smooths the jump when the motion layer runs).
+ * Hovering the map opens the rows up a little; the hovered (or focused) row darkens its line and
+ * shows its section title to the left of it, clear of the pointer, one at a time, with no panel
+ * behind it. The title arrives with the "signal settle" from the link playground: letters come in
+ * as noise and lock in from the left. Each row links to its section (Lenis smooths the jump when
+ * the motion layer runs).
  *
  * Progress: each line fills as you read its section, so the filled lines show where you are; the
  * current section's title is in the text colour (aria-current). The map only shows while the
@@ -146,9 +147,9 @@ const sections = headings.filter(({ depth }) => depth === 2);
       padding: var(--space-2) 0;
     }
 
-    /* A row is just its line. The title sits on top of it, folded away, and only the hovered or
-       focused row swaps its line for its title. The rows open up a little while the map is
-       hovered, so a title has room between its neighbours. */
+    /* A row is just its line. Its title waits, hidden, to the left of the row, and only the
+       hovered or focused row shows it. The rows open up a little while the map is hovered, so a
+       title has room between its neighbours. */
     .toc__link {
       --underline-size: 0%;
 
@@ -176,7 +177,9 @@ const sections = headings.filter(({ depth }) => depth === 2);
     .toc__label {
       position: absolute;
       inset-block-start: 50%;
-      inset-inline-end: 0;
+
+      /* Clear of the row (line and its padding), so the pointer on the line never covers it. */
+      inset-inline-end: calc(100% + var(--space-2));
       max-inline-size: 20rem;
       overflow: hidden;
       white-space: nowrap;
@@ -210,24 +213,21 @@ const sections = headings.filter(({ depth }) => depth === 2);
 
     .toc__bar {
       overflow: hidden;
-      inline-size: var(--space-4);
+      inline-size: var(--space-2);
       block-size: calc(2 * var(--border-width));
       border-radius: var(--radius-pill);
       background-color: var(--color-border-muted);
-      transform-origin: right;
       transition:
         inline-size var(--duration-fast) var(--ease-standard),
-        opacity var(--duration-fast) var(--ease-standard),
-        scale var(--duration-fast) var(--ease-standard);
+        background-color var(--duration-fast) var(--ease-standard);
     }
 
     .toc__link:is(:hover, :focus-visible) .toc__bar {
-      opacity: 0;
-      scale: 0 1;
+      background-color: var(--color-text);
     }
 
     .toc__link[aria-current] .toc__bar {
-      inline-size: var(--space-6);
+      inline-size: var(--space-3);
     }
 
     .toc__fill {
