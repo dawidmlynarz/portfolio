@@ -38,7 +38,8 @@ const OPTIONS = [
   } catch {
     // Storage blocked: the choice lasts for this page only.
   }
-  apply(initial && names.includes(initial) ? initial : "liquid");
+  const preset = document.querySelector<HTMLElement>("liquid-reveal")?.dataset.style ?? "liquid";
+  apply(initial && names.includes(initial) ? initial : preset);
 
   for (const b of buttons) {
     b.addEventListener("click", () => {
