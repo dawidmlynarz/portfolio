@@ -2,6 +2,12 @@
 
 Non-obvious choices, newest first. One entry per decision: what, why, and what it rules out.
 
+## 2026-10-28 · Case study pages: full-bleed cover, client logo, navigation playground
+
+- **The cover runs edge to edge** at every size, with no radius. Phones (below 48em) crop it to 3:2, centred; from 48em it keeps its own proportions, so a 4:3 cover (CSS Peeper) is tall on wide screens. `sizes="100vw"`, up to the 3200px rendition.
+- **The client logo is back above the title**, in place of the "Case study · Company" line. New optional `client` field in the schema (a key of `CLIENTS`), and a new `ClientLogo` (ui) that inlines one logo in the text colour; `ClientLogos` now renders through it. Its accessible name is "Case study for <company>". Case studies without a logo file (CSS Peeper, NerdWallet) keep the text line until a logo is added to `src/assets/clients/`.
+- **Navigation playground (previews only).** Six ways to move between case studies next to today's "Next case study", picked with a switcher at the top and bottom of every case study (`?nav=` or the last pick in the session): Split, Pull through, Index, Filmstrip, Remote, Stories. Isolated in `src/experiments/case-nav/`; `CaseStudyLayout` renders it only when the build is not production, so main still ships the current block. Every option uses the case studies in `order`, not the curated `next`, so "03 / 08" means the same thing everywhere. To be replaced by the picked option.
+
 ## 2026-10-28 · Scroll budget: idle loops yield to scrolling
 
 Profiled scrolling on every page (Chromium, 1440 desktop and 375 mobile with 4× CPU throttling). Only two pages spend frames on things the visitor isn't looking at, so those are the fixes; the motion itself is unchanged.

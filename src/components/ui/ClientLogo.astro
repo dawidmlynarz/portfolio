@@ -1,0 +1,36 @@
+---
+import { CLIENTS, nextLogoId, type Client } from "@/lib/clients";
+
+/**
+ * One client logo, inlined from src/assets/clients/<client>.svg. The SVGs share a 48px-tall
+ * artboard, so they read at an even size. Black becomes currentColor, so the logo follows the
+ * surrounding text colour in both themes (white is only used inside masks and clip paths and stays
+ * as is). Mask and clip ids get a unique suffix, so the same logo can appear twice on a page.
+ *
+ * The SVG is `role="img"` named after the client. Size it from the parent with `block-size` on the
+ * svg; `inline-size` follows the artboard.
+ */
+const files = import.meta.glob<string>("/src/assets/clients/*.svg", {
+  query: "?raw",
+  import: "default",
+  eager: true,
+});
+
+interface Props {
+  client: Client;
+  /** Accessible name; defaults to the client's name. */
+  label?: string;
+}
+
+const { client, label = CLIENTS[client] } = Astro.props;
+const raw = files[`/src/assets/clients/${client}.svg`];
+const suffix = nextLogoId();
+const svg = raw
+  ?.replace(/<\?xml[^>]*>/, "")
+  .replace(/fill="(black|#000|#000000)"/gi, 'fill="currentColor"')
+  .replace(/\bid="([^"]+)"/g, `id="$1-${suffix}"`)
+  .replace(/url\(#([^)]+)\)/g, `url(#$1-${suffix})`)
+  .replace(/<svg\b/, `<svg role="img" aria-label="${label}" focusable="false"`);
+---
+
+{svg && <Fragment set:html={svg} />}

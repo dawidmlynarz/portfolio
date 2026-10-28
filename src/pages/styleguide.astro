@@ -18,6 +18,7 @@ import SectionIntro from "@/components/blocks/SectionIntro.astro";
 import Services from "@/components/blocks/Services.astro";
 import StoryIntro from "@/components/blocks/StoryIntro.astro";
 import ClientLogos from "@/components/blocks/ClientLogos.astro";
+import ClientLogo from "@/components/ui/ClientLogo.astro";
 import { getEntry } from "astro:content";
 import { COLOR_ROLES, SPACE } from "@/lib/tokens";
 import { SERVICES } from "@/lib/services";
@@ -368,6 +369,12 @@ const SECTIONS = [
         <ClientLogos />
         <ClientLogos spread />
         <h3 class="text-caption muted">
+          ClientLogo · one logo in the text colour (case-study header, sized by its parent)
+        </h3>
+        <p class="styleguide__client-logo">
+          <ClientLogo client="pantheon" />
+        </p>
+        <h3 class="text-caption muted">
           Metrics · up to three numbers inside case studies, content width by default, top-aligned
         </h3>
         <Metrics
@@ -393,6 +400,12 @@ const SECTIONS = [
   @layer components {
     .muted {
       color: var(--color-text-muted);
+    }
+
+    .styleguide__client-logo :global(svg) {
+      display: block;
+      inline-size: auto;
+      block-size: var(--space-12);
     }
 
     .measure {

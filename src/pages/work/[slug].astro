@@ -12,16 +12,22 @@ export async function getStaticPaths() {
   const visible = await getPagedWork();
   return visible.map((entry, index) => ({
     params: { slug: entry.id },
-    props: { entry, fallbackNext: visible[(index + 1) % visible.length] },
+    props: {
+      entry,
+      fallbackNext: visible[(index + 1) % visible.length],
+      all: visible,
+    },
   }));
 }
 
 interface Props {
   entry: Work;
   fallbackNext?: Work;
+  /** Every case study with a page, in order (the navigation playground on previews). */
+  all: Work[];
 }
 
-const { entry, fallbackNext } = Astro.props;
+const { entry, fallbackNext, all } = Astro.props;
 const { Content } = await render(entry);
 
 // Prefer the curated "next" link; fall back to the next published case study.
@@ -33,6 +39,6 @@ const next = nextCandidate && nextCandidate.id !== entry.id ? nextCandidate : un
 const components = { Figure, ImageGrid, Metrics, Callout, Quote };
 ---
 
-<CaseStudyLayout entry={entry} next={next}>
+<CaseStudyLayout entry={entry} next={next} all={all}>
   <Content components={components} />
 </CaseStudyLayout>

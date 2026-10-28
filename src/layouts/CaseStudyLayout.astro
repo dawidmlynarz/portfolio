@@ -5,18 +5,25 @@ import SiteLayout from "@/layouts/SiteLayout.astro";
 import Container from "@/components/layout/Container.astro";
 import Tag from "@/components/ui/Tag.astro";
 import Link from "@/components/ui/Link.astro";
+import ClientLogo from "@/components/ui/ClientLogo.astro";
 import Prose from "@/components/content/Prose.astro";
 import Metrics from "@/components/content/Metrics.astro";
 import NextProject from "@/components/content/NextProject.astro";
 import HeroBackdrop from "@/components/blocks/HeroBackdrop.astro";
+import CaseNavLab from "@/experiments/case-nav/CaseNavLab.astro";
+import { isProduction } from "@/lib/site";
 import type { Work } from "@/lib/work";
 
 interface Props {
   entry: Work;
   next?: Work;
+  /** Every case study with a page, in order. Feeds the navigation playground on previews. */
+  all?: Work[];
 }
 
-const { entry, next } = Astro.props;
+const { entry, next, all = [] } = Astro.props;
+// PREVIEW: six ways to move between case studies, picked with a switcher (not on production).
+const navLab = !isProduction && all.length > 1;
 const { data } = entry;
 
 // Share image: the cover cropped to 1200×630.
@@ -67,7 +74,13 @@ const facts = [
     <header class="case-study__header hero-backdrop-host">
       <HeroBackdrop />
       <Container class="case-study__intro">
-        <p class="text-caption case-study__eyebrow">Case study · {data.company}</p>
+        {data.client ? (
+          <p class="case-study__logo">
+            <ClientLogo client={data.client} label={`Case study for ${data.company}`} />
+          </p>
+        ) : (
+          <p class="text-caption case-study__eyebrow">Case study · {data.company}</p>
+        )}
         <h1 class="case-study__title" data-reveal="lines">
           {data.title}
         </h1>
@@ -79,17 +92,15 @@ const facts = [
         </ul>
       </Container>
 
-      <Container>
-        <Image
-          class="case-study__cover"
-          src={data.cover}
-          alt={data.coverAlt}
-          widths={[800, 1200, 1600, 2400, 3200].filter((w) => w <= data.cover.width)}
-          sizes="(min-width: 84rem) 80rem, calc(100vw - 2rem)"
-          loading="eager"
-          fetchpriority="high"
-        />
-      </Container>
+      <Image
+        class="case-study__cover"
+        src={data.cover}
+        alt={data.coverAlt}
+        widths={[800, 1200, 1600, 2400, 3200].filter((w) => w <= data.cover.width)}
+        sizes="100vw"
+        loading="eager"
+        fetchpriority="high"
+      />
 
       <Container>
         <dl class="case-study__facts">
@@ -117,7 +128,13 @@ const facts = [
     </Prose>
   </article>
 
-  {next && <NextProject entry={next} />}
+  {navLab ? (
+    <CaseNavLab entry={entry} all={all} next={next}>
+      {next && <NextProject entry={next} />}
+    </CaseNavLab>
+  ) : (
+    next && <NextProject entry={next} />
+  )}
 </SiteLayout>
 
 <style>
@@ -132,6 +149,13 @@ const facts = [
       display: grid;
       justify-items: start;
       gap: var(--space-6);
+    }
+
+    /* The client's logo stands in for the "Case study · Company" line. */
+    .case-study__logo :global(svg) {
+      display: block;
+      inline-size: auto;
+      block-size: var(--space-12);
     }
 
     .case-study__eyebrow,
@@ -154,10 +178,13 @@ const facts = [
       padding: 0;
     }
 
+    /* Edge to edge at every size. Phones crop it to 3:2 (centred); from 48em it keeps its own
+       proportions. */
     .case-study__cover {
       inline-size: 100%;
       block-size: auto;
-      border-radius: var(--radius-lg);
+      aspect-ratio: 3 / 2;
+      object-fit: cover;
       background-color: var(--color-bg-subtle);
     }
 
@@ -185,6 +212,18 @@ const facts = [
 
     .case-study__body {
       padding-block-end: var(--space-section-md);
+    }
+
+    @media (width < 48em) {
+      .case-study__logo :global(svg) {
+        block-size: var(--space-10);
+      }
+    }
+
+    @media (width >= 48em) {
+      .case-study__cover {
+        aspect-ratio: auto;
+      }
     }
   }
 </style>
