@@ -462,3 +462,7 @@ What changed versus the embed, and why:
 **The grain holds still during page transitions.** While a transition runs it gets `view-transition-name: hero-backdrop`, which takes it out of the page images that fade, blur and rise, and base.css turns its animation off, so the new page's grain is in place from the first frame. It sits above the page images for that second, which doesn't show since it is only grain. A transition name must be unique, so there is one HeroBackdrop per page (the styleguide shows it inside the Hero).
 
 **`will-change: transform` on the grain.** Without its own layer, the Home hero's scroll scale made the browser re-raster the masked grain every frame (about a third more raster work on Home). With it, the grain costs next to nothing: no change to FCP, LCP or main-thread paint, raster within a few percent.
+
+## 2026-10-28 · Work link on case studies
+
+**Section links say `aria-current="true"`, not `"page"`.** The nav marked Work as the current page on every `/work/<slug>`, and the menu's click handler turns a link to the current page into "just close the menu", so Work did nothing on case studies. Now the nav uses `"page"` only on the page itself and `"true"` inside its section: Work still looks current on a case study, and the handler only swallows clicks on `"page"`.
