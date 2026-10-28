@@ -27,8 +27,8 @@ function smoothScroll() {
   const lenis = new Lenis({
     autoRaf: false,
     anchors: true,
-    // Let popovers (the mobile menu sheet) scroll natively.
-    prevent: (node) => Boolean(node.closest("[popover]")),
+    // Let popovers and the open nav menu scroll natively.
+    prevent: (node) => Boolean(node.closest("[popover], [data-nav-panel]")),
   });
   lenis.on("scroll", ScrollTrigger.update);
   gsap.ticker.add((time) => lenis.raf(time * 1000));

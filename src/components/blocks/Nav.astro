@@ -1,114 +1,231 @@
 ---
 /**
- * Floating top pill: the M mark (home), Work, Services, About and the theme toggle.
- * The name is not repeated here; it lives in the page storytelling. Contact is not in the nav:
- * the hero, the footer and the mobile menu carry the email.
- * Below 48em the pill becomes a full-width bar: the mark on the left, a menu button on the right.
- * The menu is a full-screen inverse sheet (a native popover, so it works without JS; Esc and
- * outside clicks close it). With JS it opens with the same circle "ink spread" as the theme
- * switch and closes by shrinking back into the button. The sheet repeats the bar, so its close
- * button sits exactly where the menu button was.
+ * The site nav: one floating bar for every screen size that grows into the menu, instead of a
+ * desktop pill and a separate full-screen mobile sheet. Behaviour studied from thedesignsociety.fr (the
+ * bar widens, then drops open) and anthracitestudio.be (the open menu is frosted glass over the
+ * page).
+ *
+ * Opening runs in two steps. First the bar makes room: on desktop it widens a little and its
+ * surface grows a few pixels past the content; below 48em the surface grows out to the screen
+ * edges and the top. Then it drops open and the links come in one after another. Closing runs
+ * backwards. The content never moves: only the box around it and the surface behind it change.
+ *
+ * The bar and the menu are one box, so the mark stays put and the menu icon turns into the close
+ * icon in place. The box animates its real size (Web Animations); the menu content keeps its final
+ * width while it is revealed, so nothing reflows. Esc, a click outside or tabbing out closes it.
+ * Without JS the menu button is hidden and the links sit in the bar. Reduced motion: no morph.
  */
 import ThemeToggle from "@/components/blocks/ThemeToggle.astro";
-import { NAV_LINKS, SITE, SOCIAL_LINKS } from "@/lib/site";
+import { NAV_LINKS, SITE } from "@/lib/site";
 
 const path = Astro.url.pathname.replace(/\.html$/, "");
+const isHome = path === "/" || path === "/index";
 const isCurrent = (href: string) => path === href || path.startsWith(`${href}/`);
+const menu = [{ href: "/", label: "Home" }, ...NAV_LINKS];
 ---
 
-<header class="nav">
-  <nav class="nav__pill" aria-label="Primary">
-    <a
-      class="nav__home"
-      href="/"
-      aria-current={path === "/" || path === "/index" ? "page" : undefined}
-    >
-      {[0, 1].map(() => (
-        <svg class="nav__mark" viewBox="0 0 32 24" aria-hidden="true">
-          <path d="M23.84 0 15.99 7.94 8.15 0 0 17.69h9.1l1.01-2.21L16 24l5.87-8.52 1.06 2.21H32z" />
-        </svg>
-      ))}
-      <span class="visually-hidden">{SITE.name}, home</span>
-    </a>
-    <ul class="nav__links" role="list">
-      {NAV_LINKS.map(({ href, label }) => (
-        <li>
-          <a class="nav__link" href={href} aria-current={isCurrent(href) ? "page" : undefined}>
-            {label}
-          </a>
-        </li>
-      ))}
-    </ul>
-    <ThemeToggle />
-    <button
-      class="nav__toggle"
-      type="button"
-      popovertarget="nav-sheet"
-      aria-label="Open menu"
-      data-nav-menu
-    >
-      <svg class="nav__toggle-icon" viewBox="0 0 24 24" aria-hidden="true">
-        <path d="M4 9h16M4 15h16"></path>
-      </svg>
-    </button>
-  </nav>
-
-  <div class="nav__sheet" id="nav-sheet" popover>
-    <div class="nav__sheet-bar">
-      <a class="nav__home nav__home--inverse" href="/">
-        <svg class="nav__mark" viewBox="0 0 32 24" aria-hidden="true">
-          <path d="M23.84 0 15.99 7.94 8.15 0 0 17.69h9.1l1.01-2.21L16 24l5.87-8.52 1.06 2.21H32z" />
-        </svg>
-        <span class="visually-hidden">{SITE.name}, home</span>
-      </a>
-      <button
-        class="nav__toggle nav__close"
-        type="button"
-        popovertarget="nav-sheet"
-        popovertargetaction="hide"
-        aria-label="Close menu"
-        data-nav-menu
-      >
-        <svg class="nav__toggle-icon" viewBox="0 0 24 24" aria-hidden="true">
-          <path d="M6 6l12 12M18 6 6 18"></path>
-        </svg>
-      </button>
-    </div>
-    <nav class="nav__sheet-body" aria-label="Menu">
-      <ul class="nav__sheet-links" role="list">
-        <li style={`--i: 0`}>
-          <a href="/">Home</a>
-        </li>
-        {NAV_LINKS.map(({ href, label }, i) => (
-          <li style={`--i: ${i + 1}`}>
-            <a href={href} aria-current={isCurrent(href) ? "page" : undefined}>
-              {label}
-            </a>
-          </li>
-        ))}
-      </ul>
-      <div class="nav__sheet-meta">
-        <a href={`mailto:${SITE.email}`}>{SITE.email}</a>
-        {SOCIAL_LINKS.map(({ href, label }) => (
-          <a href={href}>{label}</a>
-        ))}
-        <ThemeToggle />
+<header class="nav" data-nav>
+  <div class="nav__scrim" data-nav-scrim></div>
+  <nav class="nav__box" aria-label="Primary">
+    <div class="nav__surface" aria-hidden="true"></div>
+    <div class="nav__clip">
+      <div class="nav__bar">
+        <a class="nav__home" href="/" aria-current={isHome ? "page" : undefined}>
+          <span class="nav__mark" aria-hidden="true">
+            {[0, 1].map(() => (
+              <svg class="nav__mark-svg" viewBox="0 0 32 24">
+                <path d="M23.84 0 15.99 7.94 8.15 0 0 17.69h9.1l1.01-2.21L16 24l5.87-8.52 1.06 2.21H32z" />
+              </svg>
+            ))}
+          </span>
+          <span class="nav__name">{SITE.name}</span>
+          <span class="visually-hidden">, home</span>
+        </a>
+        <ul class="nav__links" role="list">
+          {NAV_LINKS.map(({ href, label }) => (
+            <li>
+              <a class="nav__link" href={href} aria-current={isCurrent(href) ? "page" : undefined}>
+                {label}
+              </a>
+            </li>
+          ))}
+        </ul>
+        <span class="nav__bar-theme">
+          <ThemeToggle />
+        </span>
+        <button
+          class="nav__toggle"
+          type="button"
+          aria-expanded="false"
+          aria-controls="nav-panel"
+          data-nav-toggle
+        >
+          <!-- Same 24-unit grid, box and stroke as the theme switch icon, so the two balance. -->
+          <svg class="nav__toggle-icon" viewBox="0 0 24 24" aria-hidden="true">
+            <path class="nav__toggle-line" d="M3.5 8.5h17"></path>
+            <path class="nav__toggle-line" d="M3.5 15.5h17"></path>
+          </svg>
+          <span class="visually-hidden">Menu</span>
+        </button>
       </div>
-    </nav>
-  </div>
+
+      <div class="nav__panel" id="nav-panel" data-nav-panel>
+        <ul class="nav__menu" role="list">
+          {menu.map(({ href, label }, i) => (
+            <li class="nav__reveal" style={`--i: ${i}`}>
+              <a
+                class="nav__menu-link"
+                href={href}
+                aria-current={(href === "/" ? isHome : isCurrent(href)) ? "page" : undefined}
+              >
+                {label}
+              </a>
+            </li>
+          ))}
+        </ul>
+        <div class="nav__meta nav__reveal" style={`--i: ${menu.length}`}>
+          <a class="nav__contact" href={`mailto:${SITE.email}`}>
+            {SITE.email}
+          </a>
+        </div>
+      </div>
+    </div>
+  </nav>
 </header>
 
-<script>
-  import { spread } from "@/scripts/spread";
+<script is:inline>
+  // Arrived from a link in the open menu (see the click handler below): start with the menu open,
+  // exactly as the last page left it, so it can collapse during the page transition.
+  (() => {
+    try {
+      const from = JSON.parse(sessionStorage.getItem("nav-collapse"));
+      sessionStorage.removeItem("nav-collapse");
+      const here = location.pathname.replace(/\.html$/, "");
+      if (!from || from.to !== here || Date.now() - from.at > 10000) return;
+      if (matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+      const nav = document.querySelector("[data-nav]");
+      nav.setAttribute("data-open", "");
+      nav.setAttribute("data-restore", "");
+      nav.querySelector("[data-nav-toggle]").setAttribute("aria-expanded", "true");
+      document.documentElement.dataset.navCollapse = "";
+    } catch {}
+  })();
+</script>
 
-  // Open with the ink spread from the menu button; close by shrinking back into it.
-  const sheet = document.getElementById("nav-sheet");
-  for (const button of document.querySelectorAll<HTMLButtonElement>("[data-nav-menu]")) {
-    button.addEventListener("click", (event) => {
-      if (!sheet || !("togglePopover" in sheet)) return;
-      event.preventDefault(); // replace the native popover toggle with the animated one
-      const open = sheet.matches(":popover-open");
-      spread(button, () => sheet.togglePopover(!open), open ? "out" : "in");
+<script>
+  const nav = document.querySelector<HTMLElement>("[data-nav]");
+  const box = nav?.querySelector<HTMLElement>(".nav__box");
+  const toggle = nav?.querySelector<HTMLButtonElement>("[data-nav-toggle]");
+  const panel = nav?.querySelector<HTMLElement>("[data-nav-panel]");
+  const scrim = nav?.querySelector<HTMLElement>("[data-nav-scrim]");
+
+  if (nav && box && toggle && panel && scrim) {
+    const root = document.documentElement;
+    let animation: Animation | undefined;
+
+    /** Read a duration token in ms (the build may minify "700ms" to ".7s"). */
+    const duration = (name: string) => {
+      const value = getComputedStyle(root).getPropertyValue(name).trim();
+      return parseFloat(value) * (value.endsWith("ms") ? 1 : 1000);
+    };
+    const token = (name: string) => getComputedStyle(root).getPropertyValue(name).trim();
+    const size = () => {
+      const { width, height } = box.getBoundingClientRect();
+      return { width: `${width}px`, height: `${height}px`, w: width };
+    };
+    const isOpen = () => nav.hasAttribute("data-open");
+
+    const setOpen = (open: boolean) => {
+      if (open === isOpen()) return;
+      const from = size(); // mid-animation sizes included, so a quick re-toggle reverses smoothly
+      animation?.cancel();
+      nav.toggleAttribute("data-open", open);
+      nav.toggleAttribute("data-closing", !open);
+      toggle.setAttribute("aria-expanded", String(open));
+      toggle.querySelector(".visually-hidden")!.textContent = open ? "Close menu" : "Menu";
+
+      // The target size: the open box, or the closed one measured without the panel.
+      if (!open) nav.removeAttribute("data-closing");
+      const to = size();
+      if (!open) nav.setAttribute("data-closing", "");
+
+      const finish = () => {
+        nav.removeAttribute("data-closing");
+        panel.style.removeProperty("inline-size");
+      };
+      if (!box.animate || matchMedia("(prefers-reduced-motion: reduce)").matches) {
+        finish();
+        return;
+      }
+
+      // The panel keeps the open width while the box grows or shrinks around it.
+      panel.style.inlineSize = `${Math.max(from.w, to.w)}px`;
+
+      // Two steps: open widens (the surface grows out meanwhile), then drops; close lifts, then
+      // narrows. On phones the width does not change, so the first step only lets the surface
+      // reach the screen edges.
+      const curve = token("--ease-in-out-quart");
+      const middle = open
+        ? { width: to.width, height: from.height, offset: 0.35 }
+        : { width: from.width, height: to.height, offset: 0.6 };
+      animation = box.animate(
+        [
+          { width: from.width, height: from.height, easing: curve },
+          { ...middle, easing: curve },
+          { width: to.width, height: to.height },
+        ],
+        { duration: duration("--duration-menu") },
+      );
+      animation.finished.then(finish, () => {});
+    };
+
+    toggle.addEventListener("click", () => setOpen(!isOpen()));
+    scrim.addEventListener("click", () => setOpen(false));
+    document.addEventListener("keydown", (event) => {
+      if (event.key === "Escape" && isOpen()) {
+        setOpen(false);
+        toggle.focus();
+      }
+    });
+    // Tabbing out of the box closes it.
+    box.addEventListener("focusout", (event) => {
+      const next = event.relatedTarget;
+      if (isOpen() && next instanceof Node && !box.contains(next)) setOpen(false);
+    });
+    // Leaving through a link in the open menu: the page changes right away and the menu collapses
+    // as part of the page transition. The new page starts with the menu open (inline script after
+    // the header) and closes it there, live, while the page rises in. A link to the page you are
+    // on only closes the menu. New-tab clicks, downloads and mailto links are left alone.
+    box.addEventListener("click", (event) => {
+      const link = event.target instanceof Element && event.target.closest("a[href]");
+      if (!isOpen() || !(link instanceof HTMLAnchorElement)) return;
+      if (event.defaultPrevented || event.button !== 0) return;
+      if (event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return;
+      if (link.target || link.hasAttribute("download") || link.origin !== location.origin) return;
+      if (link.hasAttribute("aria-current")) {
+        event.preventDefault();
+        setOpen(false);
+        return;
+      }
+      try {
+        const to = link.pathname.replace(/\.html$/, "");
+        sessionStorage.setItem("nav-collapse", JSON.stringify({ to, at: Date.now() }));
+      } catch {
+        // Storage blocked: the new page simply starts with the menu closed.
+      }
+    });
+    // Arrived from a link in the open menu: finish the collapse here.
+    if (nav.hasAttribute("data-restore")) {
+      box.getBoundingClientRect(); // commit the open state first, without transitions
+      nav.removeAttribute("data-restore");
+      setOpen(false);
+    }
+    // Coming back through the history cache: start closed.
+    addEventListener("pageshow", (event) => {
+      if (event.persisted && isOpen()) {
+        nav.removeAttribute("data-open");
+        toggle.setAttribute("aria-expanded", "false");
+      }
     });
   }
 </script>
@@ -116,8 +233,11 @@ const isCurrent = (href: string) => path === href || path.startsWith(`${href}/`)
 <style>
   @layer components {
     .nav {
-      /* Every item in the pill is this tall; the pill adds an even --space-1 all round. */
+      /* Every control in the bar is this tall; the bar adds an even --space-1 all round. */
       --nav-item-size: var(--space-10);
+      --nav-radius: calc(var(--nav-item-size) / 2 + var(--space-1));
+      --nav-bar-size: 22rem;
+      --nav-open-size: 28rem;
 
       position: fixed;
       inset-block-start: var(--space-4);
@@ -127,30 +247,131 @@ const isCurrent = (href: string) => path === href || path.startsWith(`${href}/`)
       justify-content: center;
       padding-inline: var(--gutter);
       pointer-events: none;
-      view-transition-name: nav; /* stays put during page transitions */
     }
 
-    /* The wrapper spans the width but only its pill and the open sheet take pointer input. */
-    .nav__pill,
-    .nav__sheet {
+    /* Stays put during page transitions. Named only while one runs (html[data-vt], BaseLayout):
+       a named element is a backdrop root, so at rest it would stop the bar and menu blurring. */
+    :global(:root[data-vt]) .nav {
+      view-transition-name: nav;
+    }
+
+    /* Restoring the open menu on arrival: no transitions, it simply is open. */
+    .nav[data-restore],
+    .nav[data-restore] * {
+      transition: none !important;
+    }
+
+    /* ---------- Scrim: a light dim behind the open menu; a click on it closes the menu ---------- */
+    .nav__scrim {
+      position: fixed;
+      inset: 0;
+      background-color: var(--color-scrim);
+      opacity: 0;
+      visibility: hidden;
+      transition:
+        opacity var(--duration-page) var(--ease-standard),
+        visibility 0s linear var(--duration-page);
+    }
+
+    .nav[data-open] .nav__scrim {
+      pointer-events: auto;
+      opacity: 1;
+      visibility: visible;
+      transition:
+        opacity var(--duration-page) var(--ease-standard),
+        visibility 0s;
+    }
+
+    /* ---------- The box: its size is animated; the surface behind may grow past it ---------- */
+    .nav__box {
+      position: relative;
+      display: grid;
+      grid-template-rows: minmax(0, 1fr);
+      inline-size: var(--nav-bar-size);
+      max-inline-size: 100%;
       pointer-events: auto;
     }
 
-    .nav__pill {
+    .nav[data-open] .nav__box {
+      inline-size: var(--nav-open-size);
+    }
+
+    @media (width < 48em) {
+      .nav__box,
+      .nav[data-open] .nav__box {
+        inline-size: 100%;
+      }
+    }
+
+    /* Closed: the frosted bar. Open: thinner frosted glass with a stronger blur (the page shows
+       through, softly), grown a little past the content on desktop and to the edges on phones. */
+    .nav__surface {
+      position: absolute;
+      inset: 0;
+      border: var(--border-width) solid var(--color-border-subtle);
+      border-radius: var(--nav-radius);
+      background-color: var(--color-overlay);
+      backdrop-filter: blur(var(--blur-nav));
+      box-shadow: var(--shadow-bar);
+      transition-property: inset, border-radius, background-color, backdrop-filter;
+      transition-duration: var(--duration-page);
+      transition-timing-function: var(--ease-out-expo);
+    }
+
+    .nav[data-open] .nav__surface {
+      inset: calc(-1 * var(--space-2));
+      background-color: var(--color-glass);
+      backdrop-filter: blur(var(--blur-menu));
+    }
+
+    /* Closing: the surface pulls back in once the menu has lifted. */
+    .nav[data-closing] .nav__surface {
+      transition-delay: calc(var(--duration-menu) * 0.45);
+    }
+
+    @media (width < 48em) {
+      .nav[data-open] .nav__surface {
+        inset: calc(-1 * var(--space-4)) calc(-1 * var(--gutter));
+        border-start-start-radius: 0;
+        border-start-end-radius: 0;
+      }
+    }
+
+    .nav__clip {
+      position: relative;
+      display: grid;
+      grid-template-rows: auto minmax(0, 1fr);
+      grid-template-columns: minmax(0, 1fr);
+      max-block-size: calc(100dvh - 2 * var(--space-4));
+      overflow: clip;
+      border-radius: var(--nav-radius);
+    }
+
+    .nav__bar {
       display: flex;
       align-items: center;
       gap: var(--space-1);
       padding: var(--space-1);
-      border: var(--border-width) solid var(--color-border-subtle);
-      border-radius: var(--radius-pill);
-      background-color: var(--color-overlay);
-      backdrop-filter: blur(var(--blur-nav));
-      box-shadow: var(--shadow-bar);
     }
 
+    /* Mark and name: on hover the M rolls up and out while its twin rolls in from below. */
     .nav__home {
       --underline-size: 0%;
 
+      display: flex;
+      flex-shrink: 0;
+      align-items: center;
+      gap: var(--space-3);
+      padding-inline-end: var(--space-3);
+      border-radius: var(--radius-pill);
+      color: var(--color-text);
+    }
+
+    .nav__home:hover {
+      --underline-size: 0%;
+    }
+
+    .nav__mark {
       display: grid;
       place-items: center;
       inline-size: var(--nav-item-size);
@@ -160,12 +381,7 @@ const isCurrent = (href: string) => path === href || path.startsWith(`${href}/`)
       background-color: var(--color-text);
     }
 
-    .nav__home:hover {
-      --underline-size: 0%;
-    }
-
-    /* Two stacked marks: on hover the M rolls up and out while its twin rolls in from below. */
-    .nav__mark {
+    .nav__mark-svg {
       grid-area: 1 / 1;
       inline-size: 1.25rem;
       block-size: auto;
@@ -173,22 +389,29 @@ const isCurrent = (href: string) => path === href || path.startsWith(`${href}/`)
       transition: translate var(--duration-link) var(--ease-out-expo);
     }
 
-    .nav__mark + .nav__mark {
+    .nav__mark-svg + .nav__mark-svg {
       translate: 0 var(--nav-item-size);
     }
 
-    .nav__home:hover .nav__mark,
-    .nav__home:focus-visible .nav__mark {
+    .nav__home:hover .nav__mark-svg,
+    .nav__home:focus-visible .nav__mark-svg {
       translate: 0 calc(-1 * var(--nav-item-size));
     }
 
-    .nav__home:hover .nav__mark + .nav__mark,
-    .nav__home:focus-visible .nav__mark + .nav__mark {
+    .nav__home:hover .nav__mark-svg + .nav__mark-svg,
+    .nav__home:focus-visible .nav__mark-svg + .nav__mark-svg {
       translate: 0 0;
     }
 
+    .nav__name {
+      font-size: var(--text-small);
+      font-weight: var(--weight-medium);
+      white-space: nowrap;
+    }
+
+    /* Bar links: only without JS, when there is no menu. */
     .nav__links {
-      display: flex;
+      display: none;
       gap: var(--space-1);
       padding: 0;
     }
@@ -215,16 +438,30 @@ const isCurrent = (href: string) => path === href || path.startsWith(`${href}/`)
       background-color: var(--color-bg-subtle);
     }
 
-    /* The theme switch matches the M circle: same size, round, no border. */
-    .nav__pill :global(.theme-toggle) {
-      inline-size: var(--nav-item-size);
-      block-size: var(--nav-item-size);
-      padding: 0;
-      border-color: transparent;
+    :global(:root:not(.js)) .nav__links {
+      display: flex;
+      margin-inline-start: auto;
     }
 
-    .nav__toggle {
+    :global(:root:not(.js)) .nav__name,
+    :global(:root:not(.js)) .nav__toggle {
       display: none;
+    }
+
+    :global(:root:not(.js)) .nav__box {
+      inline-size: auto;
+    }
+
+    .nav__bar-theme {
+      display: flex;
+      margin-inline-start: auto;
+    }
+
+    /* The theme switch and the menu button: same size, round, no border, same icon box. */
+    .nav__bar-theme :global(.theme-toggle:not([hidden])),
+    .nav__toggle {
+      display: grid;
+      flex-shrink: 0;
       place-items: center;
       inline-size: var(--nav-item-size);
       block-size: var(--nav-item-size);
@@ -233,158 +470,138 @@ const isCurrent = (href: string) => path === href || path.startsWith(`${href}/`)
       border-radius: var(--radius-pill);
       color: var(--color-text);
       background: transparent;
+      transition: background-color var(--duration-fast) var(--ease-standard);
     }
 
+    .nav__toggle:hover {
+      background-color: var(--color-bg-subtle);
+    }
+
+    /* Matches .theme-toggle__icon: 1.125em box, 24-unit grid, 1.75 stroke. */
     .nav__toggle-icon {
-      inline-size: 1.5rem;
-      block-size: 1.5rem;
+      inline-size: 1.125em;
+      block-size: 1.125em;
+      overflow: visible;
       fill: none;
       stroke: currentcolor;
       stroke-width: 1.75;
       stroke-linecap: round;
     }
 
-    /* Mobile: a full-width bar with the mark and the menu button; the rest moves into the sheet. */
-    @media (width < 48em) {
-      .nav {
-        inset-block-start: 0;
-        padding-inline: 0;
-      }
-
-      .nav__pill {
-        justify-content: space-between;
-        inline-size: 100%;
-        padding: var(--space-2) var(--gutter);
-        border-width: 0 0 var(--border-width);
-        border-radius: 0;
-        box-shadow: none;
-      }
-
-      .nav__links,
-      .nav__pill :global(.theme-toggle) {
-        display: none;
-      }
-
-      .nav__toggle {
-        display: grid;
-      }
-
-      @supports not selector(:popover-open) {
-        .nav__pill .nav__toggle {
-          display: none;
-        }
-
-        .nav__links {
-          display: flex;
-        }
-      }
+    /* Two lines that meet in the middle and turn into a cross. */
+    .nav__toggle-line {
+      transform-box: view-box;
+      transform-origin: 12px 8.5px; /* each line turns about its own centre */
+      transition:
+        translate var(--duration-page) var(--ease-in-out-quart),
+        rotate var(--duration-page) var(--ease-in-out-quart);
     }
 
-    /* The sheet: hidden until opened (UA popover style), never shown from 48em up. */
-    .nav__sheet {
-      inset: 0;
-      inline-size: auto;
-      block-size: auto;
-      margin: 0;
-      padding: 0;
-      overflow-y: auto;
-      border: 0;
-      color: var(--color-on-inverse);
-      background-color: var(--color-inverse-bg);
+    .nav__toggle-line + .nav__toggle-line {
+      transform-origin: 12px 15.5px;
     }
 
-    .nav__sheet:popover-open {
-      display: grid;
-      grid-template-rows: auto 1fr;
+    .nav[data-open] .nav__toggle-line {
+      translate: 0 3.5px;
+      rotate: 45deg;
     }
 
-    @media (width >= 48em) {
-      .nav__sheet:popover-open {
-        display: none;
-      }
+    .nav[data-open] .nav__toggle-line + .nav__toggle-line {
+      translate: 0 -3.5px;
+      rotate: -45deg;
     }
 
-    /* The sheet's own bar: same box as the page bar, so the close button replaces the menu button. */
-    .nav__sheet-bar {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      padding: var(--space-2) var(--gutter);
-      border-block-end: var(--border-width) solid var(--color-on-inverse-muted);
-    }
-
-    .nav__home--inverse {
-      background-color: var(--color-on-inverse);
-    }
-
-    .nav__home--inverse .nav__mark {
-      fill: var(--color-inverse-bg);
-    }
-
-    .nav__close {
-      display: grid;
-      color: var(--color-on-inverse);
-    }
-
-    .nav__sheet-body {
-      display: grid;
-      align-content: end;
+    /* ---------- Panel ---------- */
+    .nav__panel {
+      display: none;
       gap: var(--space-8);
-      padding: var(--space-8) var(--gutter);
+      justify-self: unsafe center; /* stays centred while the box is narrower than it */
+      inline-size: 100%;
+      min-block-size: 0;
+      overflow-y: auto;
+      padding: var(--space-4) var(--space-1) var(--space-1); /* the bar's inset: lines up with its mark and icons */
+      contain: inline-size; /* takes the box's width, never widens it */
     }
 
-    .nav__sheet-links {
+    .nav[data-open] .nav__panel,
+    .nav[data-closing] .nav__panel {
       display: grid;
-      gap: var(--space-1);
-      padding: 0;
-      font: var(--weight-medium) var(--text-h1) / var(--leading-h1) var(--font-heading);
-      letter-spacing: var(--tracking-h1);
     }
 
-    .nav__sheet-links a {
+    .nav__menu {
+      display: grid;
+      padding: 0;
+      font: var(--weight-medium) var(--text-h2) / var(--leading-h2) var(--font-heading);
+      letter-spacing: var(--tracking-h2);
+    }
+
+    .nav__menu-link {
       --underline-size: 0%;
 
-      color: var(--color-on-inverse);
-    }
-
-    .nav__sheet-links a[aria-current="page"] {
-      --underline-size: 100%;
-    }
-
-    .nav__sheet-meta {
-      display: flex;
-      flex-wrap: wrap;
+      display: inline-flex;
       align-items: center;
-      gap: var(--space-3) var(--space-6);
-      font: var(--weight-medium) var(--text-caption) / var(--leading-caption) var(--font-mono);
-      letter-spacing: var(--tracking-caption);
-      text-transform: uppercase;
+      gap: var(--space-3);
+      padding-block: var(--space-1);
+      color: var(--color-text);
+      transition: color var(--duration-fast) var(--ease-standard);
     }
 
-    .nav__sheet-meta a {
-      color: var(--color-on-inverse);
+    .nav__menu-link:hover {
+      --underline-size: 0%;
     }
 
-    .nav__sheet-meta :global(.theme-toggle) {
-      color: var(--color-on-inverse);
-      border-color: var(--color-on-inverse-muted);
+    /* The other links step back while one is hovered. */
+    .nav__menu:has(.nav__menu-link:hover) .nav__menu-link:not(:hover) {
+      color: var(--color-text-muted);
     }
 
-    :global(html):has(.nav__sheet:popover-open) {
-      overflow: hidden;
+    /* The page you are on gets a dot. */
+    .nav__menu-link[aria-current="page"]::after {
+      content: "";
+      inline-size: var(--space-2);
+      block-size: var(--space-2);
+      border-radius: var(--radius-pill);
+      background-color: currentcolor;
     }
 
+    .nav__meta {
+      display: flex;
+      padding-block-start: var(--space-4);
+      border-block-start: var(--border-width) solid var(--color-border-subtle);
+    }
+
+    .nav__contact {
+      --underline-size: 0%;
+
+      padding: var(--space-2) var(--space-4);
+      border-radius: var(--radius-pill);
+      font-size: var(--text-small);
+      font-weight: var(--weight-medium);
+      color: var(--color-bg);
+      background-color: var(--color-text);
+    }
+
+    .nav__contact:hover {
+      --underline-size: 0%;
+    }
+
+    /* ---------- Content reveal: after the box has made room, one item after another ---------- */
     @media (prefers-reduced-motion: no-preference) {
-      .nav__sheet:popover-open .nav__sheet-links li {
+      .nav[data-open] .nav__reveal {
         transition:
           translate var(--duration-page) var(--ease-out-expo),
           opacity var(--duration-page) var(--ease-out-expo);
-        transition-delay: calc(150ms + var(--i) * 50ms);
+        transition-delay: calc(var(--duration-menu) * 0.45 + var(--i) * 40ms);
 
         @starting-style {
-          translate: 0 40%;
+          translate: 0 var(--space-6);
           opacity: 0;
         }
+      }
+
+      .nav[data-closing] .nav__reveal {
+        opacity: 0;
+        transition: opacity var(--duration-fast) var(--ease-standard);
       }
     }
   }

@@ -24,7 +24,7 @@ export const SOCIAL_LINKS = [
   { href: "https://dribbble.com/dawidmlynarz/", label: "Dribbble" },
 ] as const;
 
-/** Primary navigation. Contact is not in it: the hero, the footer and the mobile menu carry the email. */
+/** Primary navigation. Contact is not in it: the hero, the footer and the open menu carry the email. */
 export const NAV_LINKS = [
   { href: "/work", label: "Work" },
   { href: "/services", label: "Services" },

@@ -56,20 +56,35 @@ const imageType = /\.jpe?g$/i.test(image.src) ? "image/jpeg" : "image/png";
         }
       }
     </style>
-    <!-- Before first paint: apply a saved dark theme (light is the default) and flag the motion layer. -->
+    <!-- Before first paint: apply a saved dark theme (light is the default), flag JS and the motion layer. -->
     <script is:inline>
       try {
         if (localStorage.getItem("theme") === "dark")
           document.documentElement.dataset.theme = "dark";
       } catch {}
+      document.documentElement.classList.add("js");
       // Opt in to the motion layer (src/scripts/motion.ts) unless the visitor prefers less motion.
       if (!matchMedia("(prefers-reduced-motion: reduce)").matches) {
         document.documentElement.classList.add("motion");
       }
     </script>
-    <!-- Going back through history gets the "back" transition type, so the page motion reverses. -->
+    <!--
+      Going back through history gets the "back" transition type, so the page motion reverses.
+      html[data-vt] marks a running page transition: the nav takes its view-transition-name only
+      then (see Nav), because a named element blocks backdrop blur inside it the rest of the time.
+    -->
     <script is:inline>
+      addEventListener("pageswap", (event) => {
+        if (event.viewTransition) document.documentElement.dataset.vt = "";
+      });
+      addEventListener("pageshow", (event) => {
+        if (event.persisted) delete document.documentElement.dataset.vt;
+      });
       addEventListener("pagereveal", (event) => {
+        if (!event.viewTransition) return;
+        const root = document.documentElement;
+        root.dataset.vt = "";
+        event.viewTransition.finished.finally(() => delete root.dataset.vt);
         const activation = window.navigation?.activation;
         if (
           event.viewTransition &&
