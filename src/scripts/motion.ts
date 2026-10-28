@@ -6,6 +6,8 @@
  * - [data-reveal="lines"]: headings rise line by line from behind a mask (SplitText).
  * - [data-reveal="fade"]: blocks fade and rise in once they enter the viewport.
  * - [data-story]: the About statement after the home hero lights up word by word as it scrolls.
+ * - [data-parallax]: a frame whose image is taller than it (the case-study cover from 48em); the
+ *   image drifts from its top edge to its bottom edge while the frame scrolls past.
  * - [data-cover-follow]: in a list of links ("Next up"), the hovered link's cover follows the
  *   pointer, beside it.
  * - Links: the "row tear" hover (styles in base.css). Links marked [data-no-tear] keep their own
@@ -95,6 +97,34 @@ function story() {
       scrollTrigger: { trigger: text, start: "top 85%", end: "bottom 55%", scrub: 0.6 },
     },
   );
+}
+
+/** Case-study cover from 48em: the 16:9 image drifts through its 2:1 frame as it scrolls past. */
+function parallax() {
+  const mm = gsap.matchMedia();
+  mm.add("(width >= 48em)", () => {
+    for (const frame of document.querySelectorAll<HTMLElement>("[data-parallax]")) {
+      const img = frame.querySelector<HTMLElement>("img");
+      if (!img) continue;
+      // Half the overhang: how far the centred image can move before an edge shows.
+      const reach = () => Math.max(0, (img.offsetHeight - frame.offsetHeight) / 2);
+      gsap.fromTo(
+        img,
+        { y: () => -reach() },
+        {
+          y: () => reach(),
+          ease: "none",
+          scrollTrigger: {
+            trigger: frame,
+            start: "top bottom",
+            end: "bottom top",
+            scrub: true,
+            invalidateOnRefresh: true,
+          },
+        },
+      );
+    }
+  });
 }
 
 /**
@@ -230,6 +260,7 @@ if (root.classList.contains("motion")) {
   revealFades();
   revealLines();
   story();
+  parallax();
   coverFollow();
   linkTear();
 }

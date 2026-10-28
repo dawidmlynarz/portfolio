@@ -4,7 +4,6 @@ import { SITE, SOCIAL_LINKS } from "@/lib/site";
 import SiteLayout from "@/layouts/SiteLayout.astro";
 import Container from "@/components/layout/Container.astro";
 import Tag from "@/components/ui/Tag.astro";
-import Link from "@/components/ui/Link.astro";
 import ClientLogo from "@/components/ui/ClientLogo.astro";
 import Prose from "@/components/content/Prose.astro";
 import Metrics from "@/components/content/Metrics.astro";
@@ -54,11 +53,9 @@ const jsonLd = {
 };
 
 const facts = [
-  { term: "Role", detail: data.via ? `${data.role} (via ${data.via})` : data.role },
-  { term: "Company", detail: data.company },
+  { term: "My role", detail: data.via ? `${data.role} (via ${data.via})` : data.role },
   { term: "Industry", detail: data.industry },
   { term: "Business", detail: data.business },
-  ...(data.year ? [{ term: "Year", detail: String(data.year) }] : []),
 ];
 ---
 
@@ -91,15 +88,17 @@ const facts = [
         </ul>
       </Container>
 
-      <Image
-        class="case-study__cover"
-        src={data.cover}
-        alt={data.coverAlt}
-        widths={[800, 1200, 1600, 2400, 3200].filter((w) => w <= data.cover.width)}
-        sizes="100vw"
-        loading="eager"
-        fetchpriority="high"
-      />
+      <div class="case-study__cover" data-parallax>
+        <Image
+          class="case-study__cover-img"
+          src={data.cover}
+          alt={data.coverAlt}
+          widths={[800, 1200, 1600, 2400, 3200].filter((w) => w <= data.cover.width)}
+          sizes="100vw"
+          loading="eager"
+          fetchpriority="high"
+        />
+      </div>
 
       <Container>
         <dl class="case-study__facts">
@@ -109,14 +108,6 @@ const facts = [
               <dd>{detail}</dd>
             </div>
           ))}
-          {data.link && (
-            <div class="case-study__fact">
-              <dt class="text-caption">Project</dt>
-              <dd>
-                <Link href={data.link.href}>{data.link.label}</Link>
-              </dd>
-            </div>
-          )}
         </dl>
       </Container>
     </header>
@@ -172,13 +163,20 @@ const facts = [
       padding: 0;
     }
 
-    /* Edge to edge at every size, cropped (centred) to 3:2 on phones and 16:9 from 48em. */
+    /* Edge to edge at every size: a 3:2 crop on phones. From 48em the frame is 2:1 and holds the
+       cover at 16:9, centred; the motion layer drifts it through the frame as the page scrolls
+       past ([data-parallax], motion.ts). Without motion it stays centred. */
     .case-study__cover {
-      inline-size: 100%;
-      block-size: auto;
+      position: relative;
+      overflow: hidden;
       aspect-ratio: 3 / 2;
-      object-fit: cover;
       background-color: var(--color-bg-subtle);
+    }
+
+    .case-study__cover-img {
+      inline-size: 100%;
+      block-size: 100%;
+      object-fit: cover;
     }
 
     .case-study__facts {
@@ -215,7 +213,16 @@ const facts = [
 
     @media (width >= 48em) {
       .case-study__cover {
+        aspect-ratio: 2 / 1;
+      }
+
+      .case-study__cover-img {
+        position: absolute;
+        inset-block-start: 50%;
+        inset-inline-start: 0;
+        block-size: auto;
         aspect-ratio: 16 / 9;
+        translate: 0 -50%;
       }
     }
   }

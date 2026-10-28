@@ -39,7 +39,6 @@ const work = defineCollection({
       coverAlt: z.string().min(1, "Cover images need alt text."),
       /** Headline numbers shown in the case-study header. */
       metrics: z.array(z.object({ value: z.string(), label: z.string() })).default([]),
-      link: z.object({ href: z.url(), label: z.string() }).optional(),
       /** Sort order on the Work and Home pages (ascending). */
       order: z.number(),
       next: reference("work").optional(),
