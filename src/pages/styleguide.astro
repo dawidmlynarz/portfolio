@@ -22,6 +22,7 @@ import ClientLogo from "@/components/ui/ClientLogo.astro";
 import NextUp from "@/components/content/NextUp.astro";
 import CaseStudyToc from "@/components/content/CaseStudyToc.astro";
 import { getPagedWork } from "@/lib/work";
+import LockPanel from "@/components/blocks/LockPanel.astro";
 import { getEntry } from "astro:content";
 import { COLOR_ROLES, SPACE } from "@/lib/tokens";
 import { SERVICES } from "@/lib/services";
@@ -308,6 +309,19 @@ const SECTIONS = [
             alt="Figma library structure: foundations feeding the marketing and product libraries."
             caption="Placeholder variant: leave out src while the image is being made. Previews only; production skips it."
           />
+        </Stack>
+
+        <Stack gap="4">
+          <h3>LockPanel</h3>
+          <p class="muted measure">
+            The password panel on a locked case study (<code>protected: true</code>), over the
+            blurred page. It posts to the case study's URL, where the Pages Function checks the
+            password. A wrong one brings it back in the error state with one sideways jolt.
+          </p>
+          <div class="row">
+            <LockPanel action="#components" company="Pantheon" headingLevel={3} />
+            <LockPanel action="#components" company="Pantheon" headingLevel={3} error />
+          </div>
         </Stack>
       </Stack>
     </Container>
