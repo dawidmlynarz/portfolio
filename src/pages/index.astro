@@ -59,7 +59,14 @@ const jsonLd = {
   <StoryIntro
     label="About"
     text="I'm Dawid Młynarz, a senior product designer with 15 years of turning complex problems into clear, useful products. I've shaped newsrooms, fintech and creator platforms, and built the design systems behind them. Today I help teams bring AI into their products in ways people understand, trust and actually use."
-  />
+  >
+    <div class="home__clients">
+      <Container>
+        <p class="text-caption home__muted">Trusted by teams at</p>
+      </Container>
+      <ClientLogos marquee />
+    </div>
+  </StoryIntro>
 
   <Section id="work" space="lg" aria-labelledby="work-title">
     <Container class="home__stack">
@@ -89,15 +96,6 @@ const jsonLd = {
       <Services services={SERVICES} />
     </Container>
   </Section>
-
-  <Section space="md" aria-labelledby="clients-title" class="home__clients">
-    <Container>
-      <p class="text-caption home__muted" id="clients-title">
-        Trusted by teams at
-      </p>
-    </Container>
-    <ClientLogos marquee />
-  </Section>
 </SiteLayout>
 
 <style>
@@ -113,7 +111,7 @@ const jsonLd = {
 
     .home__clients {
       display: grid;
-      gap: var(--space-section-sm);
+      gap: var(--space-8);
     }
 
     .home__cta {
