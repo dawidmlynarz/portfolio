@@ -19,7 +19,7 @@
  *   Put this inline in <head> BEFORE the CSS to avoid a flash:
  *     <script>try{if(localStorage.getItem('theme')==='dark')document.documentElement.dataset.theme='dark'}catch(e){}</script>
  *   Toggle: set dataset.theme + localStorage.theme (see ThemeToggle.astro).
- *   Gotchas: use currentColor in the logo SVG; the LiquidReveal canvas reads the current --color-bg
+ *   Gotchas: use currentColor in the logo SVG; the PortraitReveal canvas reads the current --color-bg
  *   (to pick the light or dark clay) and re-inits on theme change.
  *   v2 is black and white: no accent colour; emphasis comes from the inverse surface.
  */
@@ -155,7 +155,7 @@
     --duration-glitch: 420ms; /* case-study cover hover: torn rows, then clean */
     --underline-offset-quiet: 0.14em; /* quiet links: the hover line sits nearer the baseline */
     --duration-fade: 1200ms; /* portrait fade-in on page load */
-    --duration-reveal: 600ms; /* media fading in once ready (liquid reveal canvas) */
+    --duration-reveal: 600ms; /* media fading in once ready (portrait reveal canvas) */
     --duration-zoom: 800ms; /* case-study cover zoom on hover */
     --duration-marquee: 40s; /* one full loop of the client logo marquee */
     --ease-out-expo: cubic-bezier(0.19, 1, 0.22, 1);

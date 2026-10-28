@@ -13,7 +13,7 @@
  * - Leaving: the band lets go and rolls on from where it was. The second band waits during hover.
  * - Reduced motion: no rolling band or hiccups; a clean band at the pointer only.
  *
- * Row data lives in JS and is uploaded each frame as a rows × 2 texture (unit 6, NEAREST):
+ * Row data lives in JS and is uploaded each frame as a rows × 2 texture (unit 5, NEAREST):
  * row 0 = left, right, offset, open; row 1 = layer, colour split.
  */
 import {
@@ -25,7 +25,6 @@ import {
   STATE_UNIT,
   texture,
   type Program,
-  type StyleEngine,
   type StyleFrame,
 } from "./reveal-gl";
 
@@ -62,7 +61,7 @@ type Row = {
   ragged: [number, number]; // how far past the span each end reaches, 0–1
 };
 
-export class GlitchSignal implements StyleEngine {
+export class GlitchSignal {
   #gl: WebGLRenderingContext;
   #show!: Program;
   #tex!: WebGLTexture;
@@ -87,6 +86,7 @@ export class GlitchSignal implements StyleEngine {
     this.#gl = gl;
   }
 
+  /** (Re)creates GL resources; also after a lost context is restored. */
   init() {
     const gl = this.#gl;
     const show = program(gl, SHOW, ["res", "rows", "count", "topTex", "l0", "l1", "l2", "l3"]);
@@ -133,6 +133,7 @@ export class GlitchSignal implements StyleEngine {
     return true;
   }
 
+  /** Advances and draws one frame. */
   frame(f: StyleFrame) {
     const { now, dt, W, H, cursor } = f;
     const rm = f.reduceMotion;

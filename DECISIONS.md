@@ -2,6 +2,10 @@
 
 Non-obvious choices, newest first. One entry per decision: what, why, and what it rules out.
 
+## 2026-10-28 · Portrait reveal: glitch only
+
+With glitch picked, the liquid and pixels styles are gone, and the component is renamed for what it is: `LiquidReveal` → `PortraitReveal` (`<portrait-reveal>`, `portrait-reveal.ts`, `.portrait-reveal` classes). It has no `reveal` prop or `data-style` any more, and the liquid's tuning props (size, soft, pull, wobble, fade, orbit) went with it. `portrait-reveal.ts` now only hosts the glitch: canvas, layer textures, loading, theme, pointer and the frame loop. The liquid's trail mask and composite shaders, its motion model and `reveal-pixels.ts` are deleted, so the hero script is about 12 KB instead of 26 KB. The glitch engine is unchanged; its row texture moved from unit 6 to the now free unit 5. Without WebGL, or if the glitch shader fails, the static photo stays (there is no liquid to fall back to). The "Liquid (current)" tile left the reveal playground.
+
 ## 2026-10-28 · About hand-off: Flow
 
 Dawid asked for alternatives to the inverse panel that grew over the held hero, so the About statement reads as a continuation of the hero rather than a separate block, with mobile first. Six were built on a preview with a switcher (Flow, Ink, Split, Sheet, Bridge, Avatar); Dawid shortlisted Flow and Split and picked **Flow**.

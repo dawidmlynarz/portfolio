@@ -1,14 +1,14 @@
 /**
- * WebGL pieces shared by the portrait reveal styles (liquid-reveal.ts and the pixel and glitch
- * engines). One full-screen quad; every pass is a fragment shader over it.
+ * WebGL pieces for the portrait's glitch reveal (portrait-reveal.ts and reveal-glitch.ts). One
+ * full-screen quad; every pass is a fragment shader over it.
  *
- * Texture units are fixed for the whole canvas: 0 the top image, 1–4 the layers, 5 the liquid's
- * trail mask, 6 a style's own state (pixel cells, glitch rows).
+ * Texture units are fixed for the whole canvas: 0 the top image, 1–4 the layers, 5 the glitch's
+ * row state.
  */
 
 export type Program = { p: WebGLProgram; u: Record<string, WebGLUniformLocation | null> };
 
-/** What a style engine gets each frame from <liquid-reveal>, in CSS pixels and seconds. */
+/** What the glitch gets each frame from <portrait-reveal>, in CSS pixels and seconds. */
 export type StyleFrame = {
   now: number; // ms
   dt: number; // s
@@ -19,21 +19,10 @@ export type StyleFrame = {
   arrived: boolean; // the pointer came over the portrait this frame
   tapped: boolean;
   reduceMotion: boolean;
-  active: number[]; // per layer slot, 1 once loaded
   pick: (current: number) => number; // a loaded layer by weight (may return `current`)
-  facePoint: () => { x: number; y: number }; // a random point on the face
 };
 
-/** A reveal style that runs on <liquid-reveal>'s canvas instead of the liquid. */
-export interface StyleEngine {
-  /** (Re)creates GL resources; also after a lost context is restored. */
-  init(): boolean;
-  resize(W: number, H: number): void;
-  /** Advances and draws one frame. */
-  frame(f: StyleFrame): void;
-}
-
-export const STATE_UNIT = 6;
+export const STATE_UNIT = 5;
 
 export const VERTEX = `attribute vec2 p;varying vec2 uv;
 void main(){uv=vec2(p.x*.5+.5,.5-p.y*.5);gl_Position=vec4(p,0.,1.);}`;
@@ -46,7 +35,6 @@ precision mediump float;
 varying vec2 uv;
 uniform vec2 res;
 vec4 onehot(float c){return vec4(equal(vec4(c),vec4(0.,1.,2.,3.)));}
-float hash(vec3 p){p=fract(p*vec3(.1031,.103,.0973));p+=dot(p,p.yxz+33.33);return fract((p.x+p.y)*p.z);}
 `;
 
 /** Samples the layers by a weight per slot and lays them under the top image. */
@@ -78,7 +66,7 @@ export function program(gl: WebGLRenderingContext, fragment: string, uniforms: s
   return { p, u } as Program;
 }
 
-/** A texture on the active unit; NEAREST for state that must not blend between cells. */
+/** A texture on the active unit; NEAREST for state that must not blend between rows. */
 export function texture(gl: WebGLRenderingContext, filter: number = gl.LINEAR) {
   const tex = gl.createTexture()!;
   gl.bindTexture(gl.TEXTURE_2D, tex);

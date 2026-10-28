@@ -1,17 +1,16 @@
 ---
 /**
- * LiquidReveal: the portrait hero. The top image (the photo) is a real responsive <img>; once JS
- * runs, a canvas fades in over it and a liquid mask follows the pointer to reveal up to four layers
- * below it, picked at random (each layer can be weighted, so one can be rare). At rest the liquid
- * roams the face on its own.
+ * PortraitReveal: the portrait hero. The top image (the photo) is a real responsive <img>; once JS
+ * runs, a canvas fades in over it and a glitch reveals up to four layers below it, picked at
+ * random (each layer can be weighted, so one can be rare). At rest two tracking bands roll down
+ * the picture; the pointer is interference that tears the rows open around it.
  *
  * All images must be transparent cutouts with identical framing. They stay transparent, so
  * whatever is behind (the hero's grain) shows around the figure in light and dark. A
- * layer can have a dark-theme variant. Behaviour lives in src/scripts/liquid-reveal.ts.
+ * layer can have a dark-theme variant. Behaviour lives in src/scripts/portrait-reveal.ts and
+ * reveal-glitch.ts.
  *
- * Styles: liquid (default; roams the face at rest), pixels (growing cell colonies) and glitch
- * (a rolling tracking band); each has its own resting animation and hover physics.
- * Reduced motion: no orbit, lobes or wobble; the liquid appears only while pointing.
+ * Reduced motion: no rolling bands, hiccups or tearing; a clean band at the pointer only.
  * No JS or no WebGL: the top image alone.
  */
 import { Image, getImage } from "astro:assets";
@@ -31,20 +30,6 @@ interface Props {
   layers: Layer[];
   /** Describes the top image. */
   alt: string;
-  /** How the layers are revealed; can also be changed later through data-style. */
-  reveal?: "liquid" | "pixels" | "glitch";
-  /** Blob size, 6–60. */
-  size?: number;
-  /** Edge softness, 0–100. */
-  soft?: number;
-  /** Magnet pull towards the pointer, 0–100. */
-  pull?: number;
-  /** Edge wobble, 0–100. */
-  wobble?: number;
-  /** Trail heal time in seconds. */
-  fade?: number;
-  /** Resting orbit speed, 0–100. */
-  orbit?: number;
   /** Part of the image always kept in frame: [x0, x1, y0, y1], 0–1. */
   face?: [number, number, number, number];
   /** image: the box takes the image's aspect ratio · fill: fills its parent (full-bleed heroes). */
@@ -58,13 +43,6 @@ const {
   top,
   layers,
   alt,
-  reveal = "liquid",
-  size = 22,
-  soft = 30,
-  pull = 55,
-  wobble = 55,
-  fade = 1.8,
-  orbit = 40,
   face = [0.27, 0.71, 0.04, 0.86],
   fit = "image",
   loading = "eager",
@@ -78,8 +56,8 @@ const widthsFor = (img: ImageMetadata) => {
   return [...fits, img.width];
 };
 
-// The top is the LCP and stays sharp; the layers only show through moving liquid, so they take a
-// lower quality (about half the bytes, no visible difference at 100%).
+// The top is the LCP and stays sharp; the layers only show through the moving glitch, so they take
+// a lower quality (about half the bytes, no visible difference at 100%).
 const TOP_QUALITY = 65;
 const LAYER_QUALITY = 55;
 
@@ -102,27 +80,26 @@ const [topSources, layerSources] = await Promise.all([
     })),
   ),
 ]);
-const config = { size, soft, pull, wobble, fade, orbit, face };
+const config = { face };
 
 // Page-load fade: the image marks the portrait as shown as soon as it has loaded, without waiting
-// for the module scripts (which would push LCP back). liquid-reveal.ts does the same as a fallback.
+// for the module scripts (which would push LCP back). portrait-reveal.ts does the same as a fallback.
 const markShown = "this.parentNode.dataset.shown=''";
 
 // The static <img> and the canvas share this crop: cover, positioned on the face centre.
 const objectPosition = `${((face[0] + face[1]) / 2) * 100}% ${((face[2] + face[3]) / 2) * 100}%`;
 ---
 
-<liquid-reveal
-  class:list={["liquid", `liquid--${fit}`, className]}
+<portrait-reveal
+  class:list={["portrait-reveal", `portrait-reveal--${fit}`, className]}
   data-config={JSON.stringify(config)}
-  data-style={reveal}
   data-top={JSON.stringify(topSources)}
   data-layers={JSON.stringify(layerSources)}
   data-ratio={top.width / top.height}
-  style={`--liquid-ratio: ${top.width} / ${top.height}`}
+  style={`--portrait-reveal-ratio: ${top.width} / ${top.height}`}
 >
   <Image
-    class="liquid__image"
+    class="portrait-reveal__image"
     src={top}
     alt={alt}
     widths={widthsFor(top)}
@@ -134,51 +111,51 @@ const objectPosition = `${((face[0] + face[1]) / 2) * 100}% ${((face[2] + face[3
     style={`object-position: ${objectPosition}`}
     onload={markShown}
   />
-  <canvas class="liquid__canvas" aria-hidden="true"></canvas>
-</liquid-reveal>
+  <canvas class="portrait-reveal__canvas" aria-hidden="true"></canvas>
+</portrait-reveal>
 
 <script>
-  import "@/scripts/liquid-reveal";
+  import "@/scripts/portrait-reveal";
 </script>
 
 <style>
   @layer components {
-    .liquid {
+    .portrait-reveal {
       position: relative;
       display: block;
       overflow: hidden;
     }
 
-    .liquid--image {
-      aspect-ratio: var(--liquid-ratio);
+    .portrait-reveal--image {
+      aspect-ratio: var(--portrait-reveal-ratio);
     }
 
     /* Narrow screens: a square box crops the cutout's empty sides so the face reads larger.
        The canvas framing keeps the face in frame at any aspect ratio. */
     @media (width < 48em) {
-      .liquid--image {
+      .portrait-reveal--image {
         aspect-ratio: 1;
       }
     }
 
-    .liquid--fill {
+    .portrait-reveal--fill {
       inline-size: 100%;
       block-size: 100%;
     }
 
-    .liquid__image,
-    .liquid__canvas {
+    .portrait-reveal__image,
+    .portrait-reveal__canvas {
       position: absolute;
       inset: 0;
       inline-size: 100%;
       block-size: 100%;
     }
 
-    .liquid__image {
+    .portrait-reveal__image {
       object-fit: cover;
     }
 
-    .liquid__canvas {
+    .portrait-reveal__canvas {
       /* Read by the script: the resolved page background, which picks light or dark layers. */
       color: var(--color-bg);
       pointer-events: none;
@@ -186,29 +163,29 @@ const objectPosition = `${((face[0] + face[1]) / 2) * 100}% ${((face[2] + face[3
       transition: opacity var(--duration-reveal) var(--ease-standard);
     }
 
-    [data-ready] > .liquid__canvas {
+    [data-ready] > .portrait-reveal__canvas {
       opacity: 1;
     }
 
     /* The canvas paints both layers itself, so once it has faded in the static image is hidden.
        Left underneath, it would show through the layers' soft, semi-transparent edges (the hair). */
-    [data-ready] > .liquid__image {
+    [data-ready] > .portrait-reveal__image {
       visibility: hidden;
       transition: visibility 0s var(--duration-reveal);
     }
 
     /* Motion layer: the portrait fades in from 0 to 100% once its image has decoded
-       (data-shown, set by the image's onload or liquid-reveal.ts). Failsafe: visible after 3s regardless. */
-    :global(.motion) .liquid {
+       (data-shown, set by the image's onload or portrait-reveal.ts). Failsafe: visible after 3s regardless. */
+    :global(.motion) .portrait-reveal {
       transition: opacity var(--duration-fade) var(--ease-standard);
     }
 
-    :global(.motion) .liquid:not([data-shown]) {
+    :global(.motion) .portrait-reveal:not([data-shown]) {
       opacity: 0;
-      animation: liquid-failsafe 0s 3s forwards;
+      animation: portrait-reveal-failsafe 0s 3s forwards;
     }
 
-    @keyframes liquid-failsafe {
+    @keyframes portrait-reveal-failsafe {
       to {
         opacity: 1;
       }
