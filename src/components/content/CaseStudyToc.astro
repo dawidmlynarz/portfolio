@@ -1,8 +1,8 @@
 ---
 /**
  * Case-study contents as a mini map, fixed at the right edge from 62em. One short line per h2.
- * Hovering the map opens the rows up a little; the hovered (or focused) row darkens its line and
- * shows its section title to the left of it, clear of the pointer, one at a time, with no panel
+ * Hovering the map opens the rows up a little; the hovered (or focused) row's line shrinks to half
+ * and its section title shows to the left of it, clear of the pointer, one at a time, with no panel
  * behind it. The title arrives with the "signal settle" from the link playground: letters come in
  * as noise and lock in from the left. Each row links to its section (Lenis smooths the jump when
  * the motion layer runs).
@@ -178,8 +178,9 @@ const sections = headings.filter(({ depth }) => depth === 2);
       position: absolute;
       inset-block-start: 50%;
 
-      /* Clear of the row (line and its padding), so the pointer on the line never covers it. */
-      inset-inline-end: calc(100% + var(--space-2));
+      /* From the row's right edge, past the longest (current) line and a gap: the row's width
+         changes as its line shrinks, its right edge doesn't. */
+      inset-inline-end: calc(var(--space-6) + var(--space-2));
       max-inline-size: 20rem;
       overflow: hidden;
       white-space: nowrap;
@@ -213,7 +214,7 @@ const sections = headings.filter(({ depth }) => depth === 2);
 
     .toc__bar {
       overflow: hidden;
-      inline-size: var(--space-2);
+      inline-size: var(--space-4);
       block-size: calc(2 * var(--border-width));
       border-radius: var(--radius-pill);
       background-color: var(--color-border-muted);
@@ -222,12 +223,19 @@ const sections = headings.filter(({ depth }) => depth === 2);
         background-color var(--duration-fast) var(--ease-standard);
     }
 
+    /* The hovered line shrinks to half, and its title sits to the left of where the full line
+       was, so the pointer on the line never covers it. */
     .toc__link:is(:hover, :focus-visible) .toc__bar {
+      inline-size: var(--space-2);
       background-color: var(--color-text);
     }
 
-    .toc__link[aria-current] .toc__bar {
+    .toc__link[aria-current]:is(:hover, :focus-visible) .toc__bar {
       inline-size: var(--space-3);
+    }
+
+    .toc__link[aria-current] .toc__bar {
+      inline-size: var(--space-6);
     }
 
     .toc__fill {
