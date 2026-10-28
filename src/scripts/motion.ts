@@ -163,12 +163,6 @@ const TEAR_MS = 300; // a little longer than --duration-tear
 function tearLabel(link: HTMLAnchorElement) {
   const existing = link.querySelector<HTMLElement>(":scope > .link-tear");
   if (existing) return existing;
-  // A link can name its label (the nav logo tears only the name, the mark tears in Nav).
-  const named = link.querySelector<HTMLElement>(":scope > [data-tear-label]");
-  if (named) {
-    named.classList.add("link-tear");
-    return named;
-  }
   const label = document.createElement("span");
   label.className = "link-tear";
   const icon = [...link.childNodes].find((node) => node instanceof SVGElement);
@@ -213,6 +207,12 @@ function tearLines(label: HTMLElement) {
 
 /** Lays the two torn rows (top and bottom, middle) over each line of the label, then runs. */
 function tear(link: HTMLAnchorElement) {
+  // [data-tear-self]: the link tears its own parts in CSS (the nav mark), no text rows.
+  if (link.hasAttribute("data-tear-self")) {
+    link.setAttribute("data-tearing", "");
+    setTimeout(() => link.removeAttribute("data-tearing"), TEAR_MS);
+    return;
+  }
   const label = tearLabel(link);
   const lines = tearLines(label);
   if (!lines.length) return;

@@ -1,6 +1,6 @@
 ---
 import ClientLogo from "@/components/ui/ClientLogo.astro";
-import { CLIENTS, type Client } from "@/lib/clients";
+import { WORKED_WITH, type Client } from "@/lib/clients";
 
 /**
  * Client logos (each one a `ClientLogo`, in the text colour).
@@ -22,7 +22,7 @@ interface Props {
 }
 
 const {
-  clients = Object.keys(CLIENTS) as Client[],
+  clients = WORKED_WITH,
   label = "Companies I have worked with",
   spread = false,
   marquee = false,

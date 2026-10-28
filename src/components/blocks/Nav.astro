@@ -31,7 +31,7 @@ const menu = [{ href: "/", label: "Home" }, ...NAV_LINKS];
     <div class="nav__surface" aria-hidden="true"></div>
     <div class="nav__clip">
       <div class="nav__bar">
-        <a class="nav__home" href="/" aria-current={isHome ? "page" : undefined}>
+        <a class="nav__home" href="/" aria-current={isHome ? "page" : undefined} data-tear-self>
           <span class="nav__mark" aria-hidden="true">
             {["base", "outer", "middle"].map((part) => (
               <svg class={`nav__mark-svg nav__mark-svg--${part}`} viewBox="0 0 32 24">
@@ -39,9 +39,7 @@ const menu = [{ href: "/", label: "Home" }, ...NAV_LINKS];
               </svg>
             ))}
           </span>
-          <span class="nav__name" data-tear-label>
-            {SITE.name}
-          </span>
+          <span class="nav__name">{SITE.name}</span>
           <span class="visually-hidden">, home</span>
         </a>
         <ul class="nav__links" role="list">
@@ -392,8 +390,8 @@ const menu = [{ href: "/", label: "Home" }, ...NAV_LINKS];
       fill: var(--color-bg);
     }
 
-    /* Hover: the mark and the name get the links' row tear (base.css; motion.ts sets
-       [data-tearing] and tears the name). The mark tears with two copies of itself. */
+    /* Hover: the mark gets the links' row tear (base.css keyframes; motion.ts sets
+       [data-tearing]). It tears with two copies of itself. The name stays still. */
     .nav__mark-svg--outer,
     .nav__mark-svg--middle {
       opacity: 0;

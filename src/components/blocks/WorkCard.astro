@@ -32,7 +32,7 @@ const { entry, layout = "tile", headingLevel = 3, eager = false } = Astro.props;
 const { data } = entry;
 const Heading = `h${headingLevel}` as const;
 const href = hasPage(entry) ? workHref(entry) : undefined;
-const meta = [data.company, data.year, data.draft && "Draft"].filter(Boolean).join(" · ");
+const meta = [data.role, data.company, data.draft && "Draft"].filter(Boolean).join(" · ");
 const tags = data.tags.slice(0, MAX_TAGS);
 const moreTags = data.tags.length - tags.length;
 const widths = [480, 800, 1200, 1600].filter((w) => w <= data.cover.width);
