@@ -1,0 +1,405 @@
+---
+/**
+ * One specimen link in the link lab (/playground/links): the same words in each hover option.
+ * Roles follow the proposed system: text (inline, hairline at rest), action (standalone, with an
+ * arrow) and quiet (nav, card titles, footer: no line at rest).
+ *
+ * Isolated experiment (CLAUDE.md rule 6): reads semantic site tokens only. Each option's end state
+ * is complete on its own, so reduced motion (animations cut to their last frame) still shows it.
+ */
+export type Option = "current" | "band" | "tear" | "split" | "settle" | "rows" | "snap";
+
+interface Props {
+  option: Option;
+  role?: "text" | "action" | "quiet";
+  text: string;
+}
+
+const { option, role = "text", text } = Astro.props;
+---
+
+<a
+  href="#"
+  class:list={["lab-link", `lab-link--${option}`, role !== "text" && `lab-link--${role}`]}
+  data-text={text}
+  data-settle={option === "settle" ? "" : undefined}
+>
+  {option === "settle" ? (
+    <span class="lab-link__label">
+      <span class="lab-link__text">{text}</span>
+      <span class="lab-link__noise" aria-hidden="true" />
+    </span>
+  ) : (
+    text
+  )}
+  {role === "action" && (
+    <svg class="lab-link__arrow" viewBox="0 0 16 16" aria-hidden="true">
+      <path d="M3.5 8h9M9 4.5 12.5 8 9 11.5" />
+    </svg>
+  )}
+</a>
+
+<style>
+  @layer components {
+    /* ---------- Shared: roles ---------- */
+    .lab-link {
+      --lab-row: 0.25em; /* one "scan line" of the glitch, in text units */
+      --lab-scan: 3px; /* rows for "Rows open": whole pixels, so odd and even rows meet without seams */
+      --lab-ghost-a: var(--color-text-muted);
+      --lab-ghost-b: var(--color-border-muted);
+      --lab-thick: calc(var(--border-width) * 3);
+
+      position: relative;
+    }
+
+    :global(.link-lab__inverse) .lab-link {
+      --lab-ghost-a: var(--color-on-inverse-muted);
+      --lab-ghost-b: var(--color-on-inverse-muted);
+    }
+
+    .lab-link--quiet {
+      --underline-size: 0%;
+      --underline-origin: right;
+    }
+
+    .lab-link--quiet:is(:hover, :focus-visible, [data-hot]),
+    :global(.link-lab__trigger:hover) .lab-link--quiet {
+      --underline-size: 100%;
+      --underline-origin: left;
+    }
+
+    .lab-link--action {
+      display: inline-flex;
+      align-items: center;
+      gap: var(--space-1);
+    }
+
+    .lab-link__arrow {
+      inline-size: 0.75em;
+      block-size: 0.75em;
+      fill: none;
+      stroke: currentcolor;
+      stroke-width: 1.5;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+      transition: translate var(--duration-link) var(--ease-out-expo);
+    }
+
+    .lab-link:is(:hover, :focus-visible, [data-hot]) .lab-link__arrow {
+      translate: var(--space-1) 0;
+    }
+
+    /* The card and nav triggers in the lab hover their link, as WorkCard does on the site. */
+    :global(.link-lab__trigger:hover) .lab-link {
+      --underline-thickness: var(--lab-thick);
+    }
+
+    /* ---------- 1 · Tracking band ----------
+       An inverted scan band rolls down through the word in row steps, like a mistracked tape,
+       and lands at the baseline as the underline. backdrop-filter inverts whatever is under it,
+       so it works on any surface in both themes. */
+    .lab-link--band::after {
+      content: "";
+      position: absolute;
+      inset-inline: calc(-1 * var(--border-width));
+      inset-block-end: 0;
+      block-size: var(--lab-thick);
+      pointer-events: none;
+      opacity: 0;
+      backdrop-filter: invert(1);
+    }
+
+    .lab-link--band:is(:hover, :focus-visible, [data-hot]),
+    :global(.link-lab__trigger:hover) .lab-link--band {
+      --underline-size: 0%;
+    }
+
+    .lab-link--band:is(:hover, :focus-visible, [data-hot])::after,
+    :global(.link-lab__trigger:hover) .lab-link--band::after {
+      opacity: 1;
+      animation: lab-band 520ms both;
+    }
+
+    @keyframes lab-band {
+      0% {
+        inset-block-end: calc(100% - var(--lab-row) * 1.6);
+        block-size: calc(var(--lab-row) * 1.6);
+        animation-timing-function: steps(6, end);
+      }
+
+      75% {
+        inset-block-end: 0;
+        block-size: calc(var(--lab-row) * 1.6);
+        animation-timing-function: var(--ease-out-expo);
+      }
+
+      100% {
+        inset-block-end: 0;
+        block-size: var(--lab-thick);
+      }
+    }
+
+    /* ---------- 2 · Row tear ----------
+       A hiccup: the word splits into three rows that jolt sideways for a few frames, then snaps
+       back clean. Two copies of the label (::before top and bottom rows, ::after the middle)
+       stand in for the real text only while it runs. */
+    .lab-link--tear::before,
+    .lab-link--tear::after {
+      content: attr(data-text) / "";
+      position: absolute;
+      inset: 0;
+      white-space: nowrap;
+      pointer-events: none;
+      opacity: 0;
+      -webkit-text-fill-color: currentcolor;
+    }
+
+    .lab-link--tear::before {
+      clip-path: polygon(0 0, 100% 0, 100% 34%, 0 34%, 0 67%, 100% 67%, 100% 100%, 0 100%);
+    }
+
+    .lab-link--tear::after {
+      clip-path: inset(34% 0 33% 0);
+    }
+
+    .lab-link--tear:is(:hover, :focus-visible, [data-hot]),
+    :global(.link-lab__trigger:hover) .lab-link--tear {
+      animation: lab-tear-hide 260ms steps(1, end);
+    }
+
+    .lab-link--tear:is(:hover, :focus-visible, [data-hot])::before,
+    :global(.link-lab__trigger:hover) .lab-link--tear::before {
+      animation: lab-tear-a 260ms steps(1, end);
+    }
+
+    .lab-link--tear:is(:hover, :focus-visible, [data-hot])::after,
+    :global(.link-lab__trigger:hover) .lab-link--tear::after {
+      animation: lab-tear-b 260ms steps(1, end);
+    }
+
+    @keyframes lab-tear-hide {
+      from,
+      to {
+        -webkit-text-fill-color: transparent;
+      }
+    }
+
+    @keyframes lab-tear-a {
+      0% {
+        opacity: 1;
+        translate: -0.14em 0;
+      }
+
+      25% {
+        opacity: 1;
+        translate: 0.2em 0;
+      }
+
+      50% {
+        opacity: 1;
+        translate: -0.05em 0;
+      }
+
+      75% {
+        opacity: 1;
+        translate: 0.08em 0;
+      }
+
+      100% {
+        opacity: 1;
+        translate: 0 0;
+      }
+    }
+
+    @keyframes lab-tear-b {
+      0% {
+        opacity: 1;
+        translate: 0.22em 0;
+      }
+
+      25% {
+        opacity: 1;
+        translate: -0.1em 0;
+      }
+
+      50% {
+        opacity: 1;
+        translate: 0.14em 0;
+      }
+
+      75% {
+        opacity: 1;
+        translate: -0.04em 0;
+      }
+
+      100% {
+        opacity: 1;
+        translate: 0 0;
+      }
+    }
+
+    /* ---------- 3 · Colour split ----------
+       The glitch's colour split in black and white: two grey ghosts pull apart on arrival,
+       jitter for a few frames and settle back into the word. Text shadows wrap with the text,
+       so it is safe for long links in a paragraph. */
+    .lab-link--split:is(:hover, :focus-visible, [data-hot]),
+    :global(.link-lab__trigger:hover) .lab-link--split {
+      animation: lab-split 460ms both;
+    }
+
+    @keyframes lab-split {
+      0% {
+        text-shadow:
+          -0.16em 0 var(--lab-ghost-a),
+          0.16em 0 var(--lab-ghost-b);
+        animation-timing-function: steps(1, end);
+      }
+
+      15% {
+        text-shadow:
+          0.1em 0 var(--lab-ghost-a),
+          -0.12em 0 var(--lab-ghost-b);
+        animation-timing-function: steps(1, end);
+      }
+
+      30% {
+        text-shadow:
+          -0.07em 0 var(--lab-ghost-a),
+          0.09em 0 var(--lab-ghost-b);
+        animation-timing-function: var(--ease-out-expo);
+      }
+
+      100% {
+        text-shadow:
+          0 0 transparent,
+          0 0 transparent;
+      }
+    }
+
+    /* ---------- 4 · Signal settle ----------
+       Letters come in as noise and lock in from left to right (link-lab.ts). The real text keeps
+       the box, so nothing around it moves. */
+    .lab-link__label {
+      position: relative;
+      white-space: nowrap;
+    }
+
+    .lab-link__noise {
+      position: absolute;
+      inset: 0;
+      overflow: clip;
+      opacity: 0;
+    }
+
+    .lab-link__label[data-settling] .lab-link__text {
+      opacity: 0;
+    }
+
+    .lab-link__label[data-settling] .lab-link__noise {
+      opacity: 1;
+    }
+
+    /* ---------- 5 · Rows open ----------
+       Interference: the inverse surface opens behind the link in scan lines. Odd and even rows
+       arrive at different speeds, so the edge is ragged until it closes into a solid block, and
+       on the way out the rows let go one set at a time. */
+    .lab-link--rows::before,
+    .lab-link--rows::after {
+      content: "";
+      position: absolute;
+      inset: 0 calc(-1 * var(--space-1));
+      pointer-events: none;
+      backdrop-filter: invert(1);
+      scale: 0 1;
+      transform-origin: left;
+      mask: repeating-linear-gradient(
+        to bottom,
+        currentcolor 0 var(--lab-scan),
+        transparent var(--lab-scan) calc(var(--lab-scan) * 2)
+      );
+      transition: scale 220ms steps(5, end);
+    }
+
+    .lab-link--rows::after {
+      mask: repeating-linear-gradient(
+        to bottom,
+        transparent 0 var(--lab-scan),
+        currentcolor var(--lab-scan) calc(var(--lab-scan) * 2)
+      );
+      transition: scale 300ms steps(4, end) 60ms;
+    }
+
+    .lab-link--rows:is(:hover, :focus-visible, [data-hot]),
+    :global(.link-lab__trigger:hover) .lab-link--rows {
+      --underline-size: 0%;
+    }
+
+    .lab-link--rows:is(:hover, :focus-visible, [data-hot])::before,
+    :global(.link-lab__trigger:hover) .lab-link--rows::before {
+      scale: 1 1;
+      transition-duration: 300ms;
+    }
+
+    .lab-link--rows:is(:hover, :focus-visible, [data-hot])::after,
+    :global(.link-lab__trigger:hover) .lab-link--rows::after {
+      scale: 1 1;
+      transition-duration: 200ms;
+      transition-delay: 0ms;
+    }
+
+    /* ---------- 6 · Torn underline ----------
+       The quietest one. The hairline breaks into three pieces that jump sideways and up for a
+       couple of frames, then lock into one thick line. */
+    .lab-link--snap {
+      --lab-seg: calc(var(--underline-size) * 0.34);
+      --lab-line: var(--underline-thickness);
+
+      background-image:
+        linear-gradient(currentcolor, currentcolor), linear-gradient(currentcolor, currentcolor),
+        linear-gradient(currentcolor, currentcolor);
+      background-position:
+        0 100%,
+        50% 100%,
+        100% 100%;
+      background-size: var(--lab-seg) var(--lab-line);
+      background-repeat: no-repeat;
+    }
+
+    .lab-link--snap:is(:hover, :focus-visible, [data-hot]),
+    :global(.link-lab__trigger:hover) .lab-link--snap {
+      --underline-size: 100%;
+
+      animation: lab-snap 300ms steps(1, end) both;
+    }
+
+    @keyframes lab-snap {
+      0% {
+        background-position:
+          -0.12em calc(100% - 0.3em),
+          calc(50% + 0.18em) 100%,
+          calc(100% + 0.06em) calc(100% - 0.12em);
+      }
+
+      33% {
+        background-position:
+          0.08em 100%,
+          calc(50% - 0.1em) calc(100% - 0.36em),
+          calc(100% - 0.14em) 100%;
+      }
+
+      66% {
+        background-position:
+          -0.04em calc(100% - 0.1em),
+          calc(50% + 0.05em) 100%,
+          calc(100% + 0.1em) calc(100% - 0.2em);
+      }
+
+      100% {
+        background-position:
+          0 100%,
+          50% 100%,
+          100% 100%;
+      }
+    }
+  }
+</style>

@@ -2,6 +2,14 @@
 
 Non-obvious choices, newest first. One entry per decision: what, why, and what it rules out.
 
+## 2026-10-28 · Link playground (audit + six hovers)
+
+- **Audit first.** The site has twelve hover behaviours across links, pills and buttons (listed on the page). Proposal: three link roles (text, action with arrow, quiet) sharing one hover; pills become Buttons; the logo roll stays as the one exception.
+- **Six options from the glitch reveal**, each shown in every role on light, dark and the inverse surface: tracking band, row tear, colour split, signal settle, rows open, torn underline. Black and white only, so the glitch's colour split becomes grey ghosts (no new tokens).
+- **`backdrop-filter: invert(1)` for the band and the rows.** Inverting what is underneath gives the inverse surface in both themes and on the inverse panel without knowing the colours.
+- **Rows use whole-pixel scan lines (3px)** with complementary masks, so odd and even rows meet without hairline seams when closed.
+- **Isolated** under `src/experiments/links/`, page `/playground/links` (private: noindex, out of the sitemap via the existing `/playground` prefix). Not production code; the picked option gets rebuilt in `base.css` / `Link`.
+
 ## 2026-10-28 · One navigation for every screen size
 
 - **One bar that grows into the menu, at every size.** Studied on thedesignsociety.fr and anthracitestudio.be: a compact floating bar (mark, name, theme, menu) that is the same on desktop and mobile and opens in place instead of covering the screen. Round 2, after Dawid's feedback: the drop-down content (big links, email) with the two-step motion. First the bar makes room (on desktop it widens from 22 to 28rem and its surface grows a few pixels past the content; on phones the surface grows out to the screen edges and the top), then it drops open. Social links left out. Tried on a preview switcher against the old nav; Dawid approved it, so it replaced the desktop pill and the full-screen mobile sheet in `Nav` (the switcher is gone).
