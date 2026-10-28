@@ -6,7 +6,12 @@ interface Props extends Omit<HTMLAttributes<"button">, "class" | "type"> {
   href?: string;
   type?: "button" | "submit" | "reset";
   variant?: "primary" | "secondary" | "ghost";
-  size?: "md" | "sm";
+  /** sm: menu contact · md: default · lg: footer email */
+  size?: "sm" | "md" | "lg";
+  /** arrow: after the label (calls to action) · arrow-up: Back to top */
+  icon?: "arrow" | "arrow-up";
+  /** Makes an icon-only button: the icon is all that shows and this is its accessible name. */
+  label?: string;
   class?: string;
 }
 
@@ -15,69 +20,306 @@ const {
   type = "button",
   variant = "primary",
   size = "md",
+  icon,
+  label,
   class: className,
   ...attrs
 } = Astro.props;
-const classes = ["button", `button--${variant}`, `button--${size}`, className];
+const iconOnly = Boolean(label && icon);
+const classes = [
+  "button",
+  `button--${variant}`,
+  `button--${size}`,
+  iconOnly && "button--icon",
+  className,
+];
+const content = iconOnly ? "" : await Astro.slots.render("default");
+const ICONS = { arrow: "M5 12h14M13 6l6 6-6 6", "arrow-up": "M12 19V5M5 12l7-7 7 7" };
+// The face is the button at rest. Text buttons add two copies in the hover colours for the row
+// tear (top and bottom rows, middle row); icon buttons animate the icon instead.
+const layers = iconOnly ? ["face"] : ["face", "outer", "middle"];
 ---
 
-{href ? (
-  <a class:list={classes} href={href} data-no-tear {...(attrs as HTMLAttributes<"a">)}>
-    <slot />
-  </a>
-) : (
-  <button class:list={classes} type={type} {...attrs}>
-    <slot />
-  </button>
-)}
+{(() => {
+  const inner = layers.map((layer) => (
+    <span
+      class:list={[
+        layer === "face" ? "button__face" : "button__tear",
+        layer !== "face" && `button__tear--${layer}`,
+      ]}
+      aria-hidden={layer === "face" ? undefined : "true"}
+    >
+      {content && <span set:html={content} />}
+      {icon && (
+        <svg
+          class:list={["button__icon", `button__icon--${icon}`]}
+          viewBox="0 0 24 24"
+          aria-hidden="true"
+        >
+          <path d={ICONS[icon]} />
+        </svg>
+      )}
+    </span>
+  ));
+  return href ? (
+    <a
+      class:list={classes}
+      href={href}
+      data-no-tear
+      aria-label={iconOnly ? label : undefined}
+      {...(attrs as HTMLAttributes<"a">)}
+    >
+      {inner}
+    </a>
+  ) : (
+    <button class:list={classes} type={type} aria-label={iconOnly ? label : undefined} {...attrs}>
+      {inner}
+    </button>
+  );
+})()}
 
 <style>
   @layer components {
+    /*
+     * One button family, black and white. The anchor or button is a one-cell grid: the face is the
+     * button at rest, and text buttons stack two copies of it in the hover colours in the same cell.
+     * Hover is the links' row tear, scaled up: the copies arrive as three rows that jolt sideways
+     * for a few frames, then lock together as the inverted button. Icon buttons skip the tear and
+     * move their icon the way it points. Reduced motion (reset.css) keeps only the end state.
+     */
     .button {
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      gap: var(--space-2);
-      padding: var(--space-3) var(--space-6);
-      border: var(--border-width) solid transparent;
+      --button-pad: var(--space-3) var(--space-6);
+
+      display: inline-grid;
+      padding: 0;
+      border: 0;
       border-radius: var(--radius-pill);
       font-weight: var(--weight-medium);
       line-height: 1.2;
       text-align: center;
-      background-color: transparent;
-      background-image: none;
-      transition:
-        background-color var(--duration-fast) var(--ease-standard),
-        border-color var(--duration-fast) var(--ease-standard),
-        color var(--duration-fast) var(--ease-standard);
+      background-image: none; /* no link underline */
+      transition: scale var(--duration-fast) var(--ease-standard);
     }
 
-    .button--sm {
-      padding: var(--space-2) var(--space-4);
-      font-size: var(--text-small);
+    .button:focus-visible {
+      outline-offset: var(--space-1);
     }
 
+    .button:not(:disabled):active {
+      scale: 0.97;
+    }
+
+    /* Rest and hover colours. Primary inverts to an outline. Secondary and ghost stay outlines:
+       subtle (or none) at rest, black after the tear. */
     .button--primary {
-      color: var(--color-bg);
-      background-color: var(--color-brand);
+      --rest-bg: var(--color-inverse-bg);
+      --rest-fg: var(--color-on-inverse);
+      --rest-ring: var(--color-inverse-bg);
+      --hot-bg: var(--color-bg);
+      --hot-fg: var(--color-text);
+      --hot-ring: var(--color-text);
     }
 
-    .button--primary:hover {
-      background-color: var(--color-brand-strong);
-    }
-
-    .button--secondary {
-      color: var(--color-text);
-      border-color: var(--color-border);
+    .button--secondary,
+    .button--ghost {
+      --rest-bg: transparent;
+      --rest-fg: var(--color-text);
+      --rest-ring: var(--color-border-muted);
+      --hot-bg: transparent;
+      --hot-fg: var(--color-text);
+      --hot-ring: var(--color-text);
     }
 
     .button--ghost {
-      color: var(--color-text);
+      --rest-ring: transparent;
     }
 
-    .button--secondary:hover,
-    .button--ghost:hover {
-      background-color: var(--color-bg-subtle);
+    .button--sm {
+      --button-pad: var(--space-2) var(--space-4);
+
+      font-size: var(--text-small);
+    }
+
+    .button--lg {
+      --button-pad: var(--space-4) var(--space-6);
+
+      font-size: var(--text-lead);
+    }
+
+    .button--icon {
+      --button-pad: var(--space-3);
+    }
+
+    .button__face,
+    .button__tear {
+      display: flex;
+      grid-area: 1 / 1;
+      gap: var(--space-2);
+      align-items: center;
+      justify-content: center;
+      padding: var(--button-pad);
+      border-radius: inherit;
+      white-space: nowrap;
+    }
+
+    .button__face {
+      overflow: clip;
+      color: var(--rest-fg);
+      background-color: var(--rest-bg);
+      box-shadow: inset 0 0 0 var(--border-width) var(--rest-ring);
+      transition:
+        color var(--duration-fast) var(--ease-standard),
+        background-color var(--duration-fast) var(--ease-standard),
+        box-shadow var(--duration-fast) var(--ease-standard);
+    }
+
+    .button__tear {
+      color: var(--hot-fg);
+      background-color: var(--hot-bg);
+      box-shadow: inset 0 0 0 var(--border-width) var(--hot-ring);
+      pointer-events: none;
+      opacity: 0;
+    }
+
+    .button__icon {
+      flex-shrink: 0;
+      inline-size: 1em;
+      block-size: 1em;
+      fill: none;
+      stroke: currentcolor;
+      stroke-width: 1.75;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+      transition: translate var(--duration-link) var(--ease-out-expo);
+    }
+
+    .button--icon .button__icon {
+      inline-size: 1.25em;
+      block-size: 1.25em;
+    }
+
+    /* ---------- Text buttons: the row tear ----------
+       The copies stand in for the face, as the link tear hides the real text while it runs.
+       After the tear the top copy stays whole and the middle copy hides, so no seams show. */
+    .button:not(:disabled, .button--icon):is(:hover, :focus-visible) .button__face {
+      opacity: 0;
+    }
+
+    .button:not(:disabled):is(:hover, :focus-visible) .button__tear--outer {
+      opacity: 1;
+      animation: button-tear-outer var(--duration-tear) steps(1, end);
+    }
+
+    .button:not(:disabled):is(:hover, :focus-visible) .button__tear--middle {
+      animation: button-tear-middle var(--duration-tear) steps(1, end);
+    }
+
+    .button:not(:disabled, .button--icon):is(:hover, :focus-visible) .button__icon {
+      translate: var(--space-1) 0;
+    }
+
+    @keyframes button-tear-outer {
+      0% {
+        translate: -0.3em 0;
+        clip-path: polygon(0 0, 100% 0, 100% 34%, 0 34%, 0 67%, 100% 67%, 100% 100%, 0 100%);
+      }
+
+      25% {
+        translate: 0.4em 0;
+        clip-path: polygon(0 0, 100% 0, 100% 34%, 0 34%, 0 67%, 100% 67%, 100% 100%, 0 100%);
+      }
+
+      50% {
+        translate: -0.1em 0;
+        clip-path: polygon(0 0, 100% 0, 100% 34%, 0 34%, 0 67%, 100% 67%, 100% 100%, 0 100%);
+      }
+
+      75% {
+        translate: 0.15em 0;
+        clip-path: polygon(0 0, 100% 0, 100% 34%, 0 34%, 0 67%, 100% 67%, 100% 100%, 0 100%);
+      }
+    }
+
+    @keyframes button-tear-middle {
+      0% {
+        opacity: 1;
+        translate: 0.45em 0;
+        clip-path: inset(34% 0 33% 0);
+      }
+
+      25% {
+        opacity: 1;
+        translate: -0.25em 0;
+        clip-path: inset(34% 0 33% 0);
+      }
+
+      50% {
+        opacity: 1;
+        translate: 0.2em 0;
+        clip-path: inset(34% 0 33% 0);
+      }
+
+      75% {
+        opacity: 1;
+        translate: -0.08em 0;
+        clip-path: inset(34% 0 33% 0);
+      }
+    }
+
+    /* ---------- Icon buttons: same colours, the icon goes where it points ----------
+       The arrow leaves through the edge it points at and comes back in from the opposite one. */
+    .button--icon:not(:disabled):is(:hover, :focus-visible) .button__face {
+      color: var(--hot-fg);
+      background-color: var(--hot-bg);
+      box-shadow: inset 0 0 0 var(--border-width) var(--hot-ring);
+    }
+
+    .button--icon:not(:disabled):is(:hover, :focus-visible) .button__icon--arrow {
+      animation: button-icon-right 560ms;
+    }
+
+    .button--icon:not(:disabled):is(:hover, :focus-visible) .button__icon--arrow-up {
+      animation: button-icon-up 560ms;
+    }
+
+    @keyframes button-icon-right {
+      0% {
+        translate: 0 0;
+        animation-timing-function: var(--ease-standard);
+      }
+
+      40% {
+        translate: 200% 0;
+      }
+
+      41% {
+        translate: -200% 0;
+        animation-timing-function: var(--ease-out-expo);
+      }
+
+      100% {
+        translate: 0 0;
+      }
+    }
+
+    @keyframes button-icon-up {
+      0% {
+        translate: 0 0;
+        animation-timing-function: var(--ease-standard);
+      }
+
+      40% {
+        translate: 0 -200%;
+      }
+
+      41% {
+        translate: 0 200%;
+        animation-timing-function: var(--ease-out-expo);
+      }
+
+      100% {
+        translate: 0 0;
+      }
     }
 
     .button:disabled {
