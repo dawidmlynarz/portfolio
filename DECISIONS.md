@@ -2,6 +2,26 @@
 
 Non-obvious choices, newest first. One entry per decision: what, why, and what it rules out.
 
+## 2026-10-28 · Links: one hover, the row tear
+
+Dawid picked **row tear** from the link playground, with one change: the underline never thickens. Every text, action and quiet link now keeps its hairline and, on hover or keyboard focus, tears into three rows that jolt sideways for 260 ms (`--duration-tear`, needs mirroring in Figma), then snaps back.
+
+- **Built in `motion.ts`, styled in `base.css`.** On first hover the label (everything before the link's icon) is wrapped in `.link-tear`; each run lays two aria-hidden copies over every rendered line, so wrapped links (card titles, long links in case studies) tear line by line, and removes them afterwards. The real text stays in the DOM, so the accessible name never changes. Pseudo-elements were ruled out because card titles, Next project and the menu's current-page dot already use `::after`.
+- **Opt-out with `[data-no-tear]`:** buttons, the footer email and menu contact pills, Back to top and the skip link keep their own hovers.
+- **Quiet links don't tear** (Dawid: too much motion). Menu links, work card titles and Next project only draw the hairline in on hover. The menu's current-page dot is gone.
+- **Quiet links sit their line nearer the baseline** (`--underline-offset`, token `--underline-offset-quiet` 0.14em, needs mirroring in Figma). Text links keep the line at the bottom of the text box.
+- **The logo tears instead of rolling.** The M tears with two copies of its SVG (styled in `Nav`, same keyframes); the name is named as the label with `[data-tear-label]`. No underline on the logo.
+- **Reduced motion and no JS:** no tear, just the hairline. That is the complete state; the tear is decoration.
+- Not done yet from the audit: turning the pills into Buttons and the other role clean-ups (footer social quiet, consistent card-title motion, ↗ on external links in MDX).
+
+## 2026-10-28 · Link playground (audit + six hovers)
+
+- **Audit first.** The site has twelve hover behaviours across links, pills and buttons (listed on the page). Proposal: three link roles (text, action with arrow, quiet) sharing one hover; pills become Buttons; the logo roll stays as the one exception.
+- **Six options from the glitch reveal**, each shown in every role on light, dark and the inverse surface: tracking band, row tear, colour split, signal settle, rows open, torn underline. Black and white only, so the glitch's colour split becomes grey ghosts (no new tokens).
+- **`backdrop-filter: invert(1)` for the band and the rows.** Inverting what is underneath gives the inverse surface in both themes and on the inverse panel without knowing the colours.
+- **Rows use whole-pixel scan lines (3px)** with complementary masks, so odd and even rows meet without hairline seams when closed.
+- **Isolated** under `src/experiments/links/`, page `/playground/links` (private: noindex, out of the sitemap via the existing `/playground` prefix). Not production code; the picked option gets rebuilt in `base.css` / `Link`.
+
 ## 2026-10-28 · One navigation for every screen size
 
 - **One bar that grows into the menu, at every size.** Studied on thedesignsociety.fr and anthracitestudio.be: a compact floating bar (mark, name, theme, menu) that is the same on desktop and mobile and opens in place instead of covering the screen. Round 2, after Dawid's feedback: the drop-down content (big links, email) with the two-step motion. First the bar makes room (on desktop it widens from 22 to 28rem and its surface grows a few pixels past the content; on phones the surface grows out to the screen edges and the top), then it drops open. Social links left out. Tried on a preview switcher against the old nav; Dawid approved it, so it replaced the desktop pill and the full-screen mobile sheet in `Nav` (the switcher is gone).

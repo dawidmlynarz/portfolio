@@ -22,7 +22,7 @@ const classes = ["button", `button--${variant}`, `button--${size}`, className];
 ---
 
 {href ? (
-  <a class:list={classes} href={href} {...(attrs as HTMLAttributes<"a">)}>
+  <a class:list={classes} href={href} data-no-tear {...(attrs as HTMLAttributes<"a">)}>
     <slot />
   </a>
 ) : (

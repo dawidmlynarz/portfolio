@@ -14,7 +14,7 @@ const { navOverlap = false, ...base } = Astro.props;
 
 <BaseLayout {...base}>
   <div class:list={["site", { "site--nav-overlap": navOverlap }]} id="top">
-    <a class="skip-link" href="#main">
+    <a class="skip-link" href="#main" data-no-tear>
       Skip to content
     </a>
     <Nav />
@@ -22,7 +22,7 @@ const { navOverlap = false, ...base } = Astro.props;
       <slot />
     </main>
     <Footer />
-    <a class="to-top" href="#top">
+    <a class="to-top" href="#top" data-no-tear>
       <svg class="to-top__icon" viewBox="0 0 24 24" aria-hidden="true">
         <path d="M12 19V5M5 12l7-7 7 7" />
       </svg>

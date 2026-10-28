@@ -15,7 +15,9 @@ const { entry } = Astro.props;
       <p class="text-caption next-project__eyebrow">Next case study</p>
       <p class="text-small next-project__role">{roleLine(entry)}</p>
       <h2 class="next-project__title" id="next-project-title">
-        <a href={workHref(entry)}>{entry.data.title}</a>
+        <a href={workHref(entry)} data-no-tear>
+          {entry.data.title}
+        </a>
       </h2>
     </div>
     <Image
@@ -55,6 +57,7 @@ const { entry } = Astro.props;
     .next-project__title a {
       --underline-size: 0%;
       --underline-origin: right;
+      --underline-offset: var(--underline-offset-quiet);
     }
 
     .next-project__title a::after {

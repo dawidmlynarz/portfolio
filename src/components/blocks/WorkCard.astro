@@ -37,7 +37,13 @@ const meta = [data.company, data.year, data.draft && "Draft"].filter(Boolean).jo
   <div class="work-card__body">
     <p class="text-caption work-card__meta">{meta}</p>
     <Heading class="work-card__title">
-      {href ? <a href={href}>{data.title}</a> : data.title}
+      {href ? (
+        <a href={href} data-no-tear>
+          {data.title}
+        </a>
+      ) : (
+        data.title
+      )}
     </Heading>
   </div>
 </article>
@@ -84,6 +90,7 @@ const meta = [data.company, data.year, data.draft && "Draft"].filter(Boolean).jo
     /* Quiet at rest; the underline draws in when the tile is hovered or the link focused. */
     .work-card__title a {
       --underline-size: 0%;
+      --underline-offset: var(--underline-offset-quiet);
     }
 
     .work-card__title a::after {

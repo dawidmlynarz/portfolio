@@ -1,0 +1,39 @@
+---
+// Link playground: an audit of today's link styles and six hover options from the glitch reveal.
+// Private: noindex, out of the sitemap, not linked anywhere.
+import SiteLayout from "@/layouts/SiteLayout.astro";
+import Container from "@/components/layout/Container.astro";
+import Section from "@/components/layout/Section.astro";
+import Stack from "@/components/layout/Stack.astro";
+import LinkLab from "@/experiments/links/LinkLab.astro";
+---
+
+<SiteLayout
+  title="Link playground"
+  description="An audit of the site's link styles and six hover options."
+  noindex
+>
+  <Section space="lg">
+    <Container>
+      <Stack gap="12">
+        <Stack gap="4">
+          <h1>Link playground</h1>
+          <p class="text-lead playground__lead">
+            Fewer link styles, one hover. First what the site does today, then six hovers built from
+            the glitch reveal on the home portrait.
+          </p>
+        </Stack>
+        <LinkLab />
+      </Stack>
+    </Container>
+  </Section>
+</SiteLayout>
+
+<style>
+  @layer components {
+    .playground__lead {
+      max-inline-size: var(--measure);
+      color: var(--color-text-muted);
+    }
+  }
+</style>

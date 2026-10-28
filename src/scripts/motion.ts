@@ -7,6 +7,8 @@
  * - [data-reveal="fade"]: blocks fade and rise in once they enter the viewport.
  * - [data-hero] + [data-story]: the hero holds while the inverse story panel grows over it,
  *   then the statement lights up word by word.
+ * - Links: the "row tear" hover (styles in base.css). Links marked [data-no-tear] keep their own
+ *   hover: buttons, pills and quiet links (menu, case-study cards, Next project).
  *
  * Elements marked [data-reveal] stay hidden by base.css until this script has set their
  * starting state (data-reveal-ready), with a 3s CSS failsafe if it never runs.
@@ -123,10 +125,108 @@ function story() {
   timeline.to({}, { duration: 0.25 });
 }
 
+const TEAR_MS = 300; // a little longer than --duration-tear
+
+/** Wraps a link's label (everything before its icon) in .link-tear, once. */
+function tearLabel(link: HTMLAnchorElement) {
+  const existing = link.querySelector<HTMLElement>(":scope > .link-tear");
+  if (existing) return existing;
+  // A link can name its label (the nav logo tears only the name, the mark tears in Nav).
+  const named = link.querySelector<HTMLElement>(":scope > [data-tear-label]");
+  if (named) {
+    named.classList.add("link-tear");
+    return named;
+  }
+  const label = document.createElement("span");
+  label.className = "link-tear";
+  const icon = [...link.childNodes].find((node) => node instanceof SVGElement);
+  for (const node of [...link.childNodes]) {
+    if (node === icon) break;
+    label.append(node);
+  }
+  link.prepend(label);
+  return label;
+}
+
+/** The label's text split into the lines it renders on, with where each line sits. */
+function tearLines(label: HTMLElement) {
+  const lines: { text: string; rect: DOMRect }[] = [];
+  const walker = document.createTreeWalker(label, NodeFilter.SHOW_TEXT);
+  const range = document.createRange();
+  for (let node = walker.nextNode(); node; node = walker.nextNode()) {
+    const text = node.textContent ?? "";
+    for (let i = 0; i < text.length; i++) {
+      range.setStart(node, i);
+      range.setEnd(node, i + 1);
+      const rect = range.getBoundingClientRect();
+      const line = lines.at(-1);
+      // Collapsed white space has no box: it belongs to the line it is on.
+      if (!rect.width) {
+        if (line) line.text += text[i];
+      } else if (line && Math.abs(rect.top - line.rect.top) < rect.height / 2) {
+        line.text += text[i];
+        line.rect = new DOMRect(
+          line.rect.x,
+          line.rect.y,
+          rect.right - line.rect.x,
+          line.rect.height,
+        );
+      } else {
+        lines.push({ text: text[i]!, rect });
+      }
+    }
+  }
+  return lines.filter((line) => line.text.trim());
+}
+
+/** Lays the two torn rows (top and bottom, middle) over each line of the label, then runs. */
+function tear(link: HTMLAnchorElement) {
+  const label = tearLabel(link);
+  const lines = tearLines(label);
+  if (!lines.length) return;
+  // Where absolutely positioned copies start from, inside the (possibly wrapped) label.
+  const probe = document.createElement("span");
+  probe.className = "link-tear__row";
+  label.append(probe);
+  const origin = probe.getBoundingClientRect();
+  probe.remove();
+  for (const { text, rect } of lines) {
+    for (const part of ["outer", "middle"]) {
+      const row = document.createElement("span");
+      row.className = `link-tear__row link-tear__row--${part}`;
+      row.setAttribute("aria-hidden", "true");
+      row.textContent = text.trim();
+      row.style.cssText = `inset:auto;left:${rect.left - origin.left}px;top:${rect.top - origin.top}px;width:${rect.width}px;height:${rect.height}px`;
+      label.append(row);
+    }
+  }
+  link.setAttribute("data-tearing", "");
+  setTimeout(() => {
+    link.removeAttribute("data-tearing");
+    for (const row of label.querySelectorAll(".link-tear__row")) row.remove();
+  }, TEAR_MS);
+}
+
+function linkTear() {
+  const start = (target: EventTarget | null) => {
+    const link = (target as Element | null)?.closest?.<HTMLAnchorElement>("a[href]");
+    if (!link || link.hasAttribute("data-no-tear") || link.hasAttribute("data-tearing")) return;
+    tear(link);
+  };
+  document.addEventListener("pointerover", (event) => {
+    const from = (event.relatedTarget as Element | null)?.closest?.("a[href]");
+    if (from !== (event.target as Element).closest?.("a[href]")) start(event.target);
+  });
+  document.addEventListener("focusin", (event) => {
+    if ((event.target as Element).matches?.(":focus-visible")) start(event.target);
+  });
+}
+
 if (root.classList.contains("motion")) {
   gsap.registerPlugin(ScrollTrigger, SplitText);
   smoothScroll();
   revealFades();
   revealLines();
   story();
+  linkTear();
 }
