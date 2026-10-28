@@ -9,7 +9,7 @@ industry: Software Development
 business: SaaS
 businessLabel: Model
 tags: [Design Systems, Governance, Documentation, Mentoring, Storybook]
-cover: ./cover.jpg
+cover: ./cover.avif
 coverAlt: Pantheon design system components and documentation pages.
 link:
   href: https://pantheon-systems.github.io/design-toolkit-react
@@ -19,4 +19,35 @@ next: nerdwallet
 draft: false
 ---
 
-{/* No case-study body yet: the Webflow page was a "Work in Progress" placeholder. */}
+import typography from "./pantheon-typography.avif";
+import linksButtons from "./pantheon-links-buttons.avif";
+import spacingGrid from "./pantheon-spacing-grid.avif";
+
+{/* Short first write-up built around the design system pages. Review and expand. */}
+
+## Foundations first
+
+I started with the foundations, because every component later leans on them. Typography pairs Poppins for headings with Aleo italic for editorial moments. Marketing pages get their own scale: 1.25 on desktop and a tighter 1.2 on mobile, so headings still fit on a small screen.
+
+<Figure
+  src={typography}
+  alt="Two typography documentation pages: Poppins Bold and Aleo Italic specimens, and heading sizes h1 to h5 with font, size, line height and weight values for desktop and mobile."
+/>
+
+## Documentation people can use
+
+A component is only half done until someone else can pick it up without asking me. Each page explains when to use a pattern and when not to, then shows every variant. Links and buttons were a good example: the button pyramid makes the hierarchy of primary, secondary and tertiary actions obvious at a glance.
+
+<Figure
+  src={linksButtons}
+  alt="Documentation pages for links and buttons: usage guidelines, link styles in default and hover states, and a pyramid showing high, medium and low emphasis buttons."
+/>
+
+## Spacing and layout
+
+Spacing follows a formula instead of a list of numbers someone has to remember. It uses a 1.25 Major Third scale, where 1rem is 16px on the smallest viewport and 24px on the largest. The grid goes from 4 columns on mobile to 6 on tablets and 12 on desktop, with examples of nested grids and fixed sidebars so engineers could see how it works in real product screens.
+
+<Figure
+  src={spacingGrid}
+  alt="Spacing and grid documentation: a spacing formula table from 3XS to 3XL, column spanning on 4, 6 and 12 column grids, and layout examples with a fixed sidebar and nested grids."
+/>

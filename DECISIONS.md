@@ -2,6 +2,10 @@
 
 Non-obvious choices, newest first. One entry per decision: what, why, and what it rules out.
 
+## 2026-10-28 · Case study images are AVIF
+
+Every image in `src/content/work/` is stored as AVIF (sharp, quality 80, 4:4:4 chroma so UI text and thin lines stay crisp), and `Figure`, `WorkCard`, `NextProject` and the case-study cover render AVIF instead of Astro's default WebP. Sources went from 22.9 MB to 12.2 MB. The share image stays JPEG because social previews don't read AVIF. New case-study images should be added as AVIF too.
+
 ## 2026-10-26 · Work tiles cropped to 4:3
 
 Every case-study cover in the work grid is cropped to 4:3 (`object-fit: cover`, centred), so tiles of different widths read as one set. This replaces "covers keep their original ratio" from v2 revision 2. The case-study page still shows the cover uncropped. If a cover crops badly, set a per-entry focal point (an `object-position` field in the schema) rather than changing the ratio.

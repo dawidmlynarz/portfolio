@@ -32,6 +32,7 @@ const meta = [data.company, data.year, data.draft && "Draft"].filter(Boolean).jo
       widths={[480, 800, 1200, 1600].filter((w) => w <= data.cover.width)}
       sizes="(min-width: 62em) 55vw, (min-width: 48em) 50vw, 100vw"
       loading={eager ? "eager" : "lazy"}
+      format="avif"
       style={href ? `view-transition-name: cover-${entry.id}` : undefined}
     />
   </div>
