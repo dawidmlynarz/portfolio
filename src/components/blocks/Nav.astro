@@ -127,7 +127,11 @@ const isCurrent = (href: string) => path === href || path.startsWith(`${href}/`)
       justify-content: center;
       padding-inline: var(--gutter);
       pointer-events: none;
-      view-transition-name: nav; /* stays put during page transitions */
+    }
+
+    /* Stays put during page transitions; named only while one runs (see SiteNav). */
+    :global(:root[data-vt]) .nav {
+      view-transition-name: nav;
     }
 
     /* The wrapper spans the width but only its pill and the open sheet take pointer input. */

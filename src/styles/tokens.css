@@ -60,7 +60,8 @@
     --color-on-inverse: light-dark(var(--neutral-0), var(--neutral-950));
     --color-on-inverse-muted: light-dark(var(--neutral-500), var(--neutral-700));
     --color-overlay: color-mix(in srgb, var(--color-bg) 88%, transparent); /* sticky nav */
-    --color-scrim: color-mix(in srgb, var(--color-bg) 55%, transparent); /* behind the open menu */
+    --color-scrim: color-mix(in srgb, var(--color-bg) 35%, transparent); /* behind the open menu */
+    --color-glass: color-mix(in srgb, var(--color-bg) 64%, transparent); /* the open menu */
     /* Hero backdrop: a faint dot grid on the page background (Home, About, every Hero) */
     --color-pattern: color-mix(in srgb, var(--color-border-subtle) 70%, var(--color-bg));
 
@@ -144,6 +145,7 @@
     --bg-hero: var(--pattern-dots), var(--color-bg);
     --shadow-bar: 0 12px 30px -20px light-dark(rgb(0 0 0 / 30%), rgb(0 0 0 / 70%));
     --blur-nav: 12px; /* backdrop blur behind the sticky nav */
+    --blur-menu: 16px; /* backdrop blur behind the open menu */
     --blur-page: 12px; /* page transition: pages blur out and in */
     --ease-standard: cubic-bezier(0.4, 0, 0.2, 1);
     --duration-fast: 150ms;
@@ -154,6 +156,7 @@
     --duration-marquee: 40s; /* one full loop of the client logo marquee */
     --ease-out-expo: cubic-bezier(0.19, 1, 0.22, 1);
     --duration-page: 700ms; /* ink spread (theme switch, mobile menu); the nav during page changes */
+    --duration-menu: 900ms; /* nav menu: makes room, then drops open */
     --duration-page-out: 320ms; /* page transition: the old page fades out */
     --duration-page-in: 1000ms; /* page transition: the new page settles in */
     --delay-page-in: 200ms; /* page transition: the new page starts as the old one is nearly gone */

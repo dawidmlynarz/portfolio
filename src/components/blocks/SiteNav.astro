@@ -1,45 +1,40 @@
 ---
 /**
  * PREVIEW: one floating bar for every screen size that grows into the menu, instead of a desktop
- * pill and a separate full-screen mobile sheet. Behaviour studied from anthracitestudio.be (the bar
- * drops open) and thedesignsociety.fr (it widens, then drops). Three variants, picked by
- * html[data-nav] from the NavPicker or ?nav=:
+ * pill and a separate full-screen mobile sheet. Behaviour studied from thedesignsociety.fr (the
+ * bar widens, then drops open) and anthracitestudio.be (the open menu is frosted glass over the
+ * page). The NavPicker (or ?nav=current) switches back to today's nav for comparison.
  *
- *   drop     The bar (mark, name, menu) drops open at its own width into the menu.
- *   twostep  The bar widens first, then drops; desktop adds a featured case study beside the links.
- *   pill     Desktop keeps today's pill with its links; the menu button drops it open with
- *            contact and featured work. Below 48em it behaves like "drop".
- *
- * Every variant keeps the theme switch in the bar, next to the menu button.
+ * Opening runs in two steps. First the bar makes room: on desktop it widens a little and its
+ * surface grows a few pixels past the content; below 48em the surface grows out to the screen
+ * edges and the top. Then it drops open and the links come in one after another. Closing runs
+ * backwards. The content never moves: only the box around it and the surface behind it change.
  *
  * The bar and the menu are one box, so the mark stays put and the menu icon turns into the close
  * icon in place. The box animates its real size (Web Animations); the menu content keeps its final
  * width while it is revealed, so nothing reflows. Esc, a click outside or tabbing out closes it.
  * Without JS the menu button is hidden and the links sit in the bar. Reduced motion: no morph.
  */
-import { Image } from "astro:assets";
 import ThemeToggle from "@/components/blocks/ThemeToggle.astro";
-import { NAV_LINKS, SITE, SOCIAL_LINKS } from "@/lib/site";
-import { getPagedWork, workHref } from "@/lib/work";
+import { NAV_LINKS, SITE } from "@/lib/site";
 
 const path = Astro.url.pathname.replace(/\.html$/, "");
 const isHome = path === "/" || path === "/index";
 const isCurrent = (href: string) => path === href || path.startsWith(`${href}/`);
 const menu = [{ href: "/", label: "Home" }, ...NAV_LINKS];
-const [featured] = await getPagedWork();
 ---
 
 <script is:inline>
-  // PREVIEW: pick the nav variant before first paint (?nav= wins and is remembered).
+  // PREVIEW: pick the nav before first paint (?nav= wins and is remembered).
   (() => {
     const root = document.documentElement;
-    const names = ["current", "drop", "twostep", "pill"];
+    const names = ["current", "new"];
     let nav = new URLSearchParams(location.search).get("nav");
     try {
       if (names.includes(nav)) localStorage.setItem("nav", nav);
       nav = localStorage.getItem("nav");
     } catch {}
-    root.dataset.nav = names.includes(nav) ? nav : "drop";
+    root.dataset.nav = names.includes(nav) ? nav : "new";
     root.classList.add("js");
   })();
 </script>
@@ -47,49 +42,53 @@ const [featured] = await getPagedWork();
 <header class="site-nav" data-site-nav>
   <div class="site-nav__scrim" data-site-nav-scrim></div>
   <nav class="site-nav__box" aria-label="Primary">
-    <div class="site-nav__bar">
-      <a class="site-nav__home" href="/" aria-current={isHome ? "page" : undefined}>
-        <span class="site-nav__mark" aria-hidden="true">
-          {[0, 1].map(() => (
-            <svg class="site-nav__mark-svg" viewBox="0 0 32 24">
-              <path d="M23.84 0 15.99 7.94 8.15 0 0 17.69h9.1l1.01-2.21L16 24l5.87-8.52 1.06 2.21H32z" />
-            </svg>
+    <div class="site-nav__surface" aria-hidden="true"></div>
+    <div class="site-nav__clip">
+      <div class="site-nav__bar">
+        <a class="site-nav__home" href="/" aria-current={isHome ? "page" : undefined}>
+          <span class="site-nav__mark" aria-hidden="true">
+            {[0, 1].map(() => (
+              <svg class="site-nav__mark-svg" viewBox="0 0 32 24">
+                <path d="M23.84 0 15.99 7.94 8.15 0 0 17.69h9.1l1.01-2.21L16 24l5.87-8.52 1.06 2.21H32z" />
+              </svg>
+            ))}
+          </span>
+          <span class="site-nav__name">{SITE.name}</span>
+          <span class="visually-hidden">, home</span>
+        </a>
+        <ul class="site-nav__links" role="list">
+          {NAV_LINKS.map(({ href, label }) => (
+            <li>
+              <a
+                class="site-nav__link"
+                href={href}
+                aria-current={isCurrent(href) ? "page" : undefined}
+              >
+                {label}
+              </a>
+            </li>
           ))}
+        </ul>
+        <span class="site-nav__bar-theme">
+          <ThemeToggle />
         </span>
-        <span class="site-nav__name">{SITE.name}</span>
-        <span class="visually-hidden">, home</span>
-      </a>
-      <ul class="site-nav__links" role="list">
-        {NAV_LINKS.map(({ href, label }) => (
-          <li>
-            <a
-              class="site-nav__link"
-              href={href}
-              aria-current={isCurrent(href) ? "page" : undefined}
-            >
-              {label}
-            </a>
-          </li>
-        ))}
-      </ul>
-      <span class="site-nav__bar-theme">
-        <ThemeToggle />
-      </span>
-      <button
-        class="site-nav__toggle"
-        type="button"
-        aria-expanded="false"
-        aria-controls="site-nav-panel"
-        data-site-nav-toggle
-      >
-        <span class="site-nav__toggle-line" aria-hidden="true"></span>
-        <span class="site-nav__toggle-line" aria-hidden="true"></span>
-        <span class="visually-hidden">Menu</span>
-      </button>
-    </div>
+        <button
+          class="site-nav__toggle"
+          type="button"
+          aria-expanded="false"
+          aria-controls="site-nav-panel"
+          data-site-nav-toggle
+        >
+          <!-- Same 24-unit grid, box and stroke as the theme switch icon, so the two balance. -->
+          <svg class="site-nav__toggle-icon" viewBox="0 0 24 24" aria-hidden="true">
+            <path class="site-nav__toggle-line" d="M3.5 8.5h17"></path>
+            <path class="site-nav__toggle-line" d="M3.5 15.5h17"></path>
+          </svg>
+          <span class="visually-hidden">Menu</span>
+        </button>
+      </div>
 
-    <div class="site-nav__panel" id="site-nav-panel" data-site-nav-panel>
-      <div class="site-nav__panel-main">
+      <div class="site-nav__panel" id="site-nav-panel" data-site-nav-panel>
         <ul class="site-nav__menu" role="list">
           {menu.map(({ href, label }, i) => (
             <li class="site-nav__reveal" style={`--i: ${i}`}>
@@ -107,29 +106,8 @@ const [featured] = await getPagedWork();
           <a class="site-nav__contact" href={`mailto:${SITE.email}`}>
             {SITE.email}
           </a>
-          <span class="site-nav__social">
-            {SOCIAL_LINKS.map(({ href, label }) => (
-              <a href={href}>{label}</a>
-            ))}
-          </span>
         </div>
       </div>
-      {featured && (
-        <a class="site-nav__feature site-nav__reveal" href={workHref(featured)} style={`--i: 1`}>
-          <Image
-            class="site-nav__feature-image"
-            src={featured.data.cover}
-            alt=""
-            widths={[400, 800]}
-            sizes="20rem"
-            loading="lazy"
-          />
-          <span class="site-nav__feature-text">
-            <span class="text-caption site-nav__feature-label">Featured work</span>
-            <span class="site-nav__feature-title">{featured.data.company}</span>
-          </span>
-        </a>
-      )}
     </div>
   </nav>
 </header>
@@ -150,7 +128,7 @@ const [featured] = await getPagedWork();
       const value = getComputedStyle(root).getPropertyValue(name).trim();
       return parseFloat(value) * (value.endsWith("ms") ? 1 : 1000);
     };
-    const ease = () => getComputedStyle(root).getPropertyValue("--ease-in-out-quart").trim();
+    const token = (name: string) => getComputedStyle(root).getPropertyValue(name).trim();
     const size = () => {
       const { width, height } = box.getBoundingClientRect();
       return { width: `${width}px`, height: `${height}px`, w: width };
@@ -181,21 +159,22 @@ const [featured] = await getPagedWork();
       }
 
       // The panel keeps the open width while the box grows or shrinks around it.
-      const border = box.offsetWidth - box.clientWidth;
-      panel.style.inlineSize = `${Math.max(from.w, to.w) - border}px`;
+      panel.style.inlineSize = `${Math.max(from.w, to.w)}px`;
 
-      const curve = ease();
-      const widens = root.dataset.nav === "twostep" && Math.abs(to.w - from.w) > 1;
-      // Two steps: open widens, then drops; close lifts, then narrows.
+      // Two steps: open widens (the surface grows out meanwhile), then drops; close lifts, then
+      // narrows. On phones the width does not change, so the first step only lets the surface
+      // reach the screen edges.
+      const curve = token("--ease-in-out-quart");
       const middle = open
-        ? { width: to.width, height: from.height, offset: 0.4 }
-        : { width: from.width, height: to.height, offset: 0.55 };
-      const frames: Keyframe[] = widens
-        ? [{ ...from, easing: curve }, { ...middle, easing: curve }, to]
-        : [{ ...from, easing: curve }, to];
+        ? { width: to.width, height: from.height, offset: 0.35 }
+        : { width: from.width, height: to.height, offset: 0.6 };
       animation = box.animate(
-        frames.map(({ width, height, offset, easing }) => ({ width, height, offset, easing })),
-        { duration: duration("--duration-page") * (widens ? 1.3 : 1) },
+        [
+          { width: from.width, height: from.height, easing: curve },
+          { ...middle, easing: curve },
+          { width: to.width, height: to.height },
+        ],
+        { duration: duration("--duration-menu") },
       );
       animation.finished.then(finish, () => {});
     };
@@ -235,8 +214,8 @@ const [featured] = await getPagedWork();
       /* Every control in the bar is this tall; the bar adds an even --space-1 all round. */
       --nav-item-size: var(--space-10);
       --nav-radius: calc(var(--nav-item-size) / 2 + var(--space-1));
-      --nav-bar-size: auto;
-      --nav-open-size: var(--nav-bar-size);
+      --nav-bar-size: 22rem;
+      --nav-open-size: 28rem;
 
       position: fixed;
       inset-block-start: var(--space-4);
@@ -246,35 +225,23 @@ const [featured] = await getPagedWork();
       justify-content: center;
       padding-inline: var(--gutter);
       pointer-events: none;
-      view-transition-name: nav; /* stays put during page transitions */
+    }
+
+    /* Stays put during page transitions. Named only while one runs (html[data-vt], BaseLayout):
+       a named element is a backdrop root, so at rest it would stop the bar and menu blurring. */
+    :global(:root[data-vt]) .site-nav {
+      view-transition-name: nav;
     }
 
     :global(:root[data-nav="current"]) .site-nav {
       display: none;
     }
 
-    /* Desktop sizes per variant; below 48em the bar spans the gutter in every variant. */
-    @media (width >= 48em) {
-      :global(:root[data-nav="drop"]) .site-nav {
-        --nav-bar-size: 26rem;
-      }
-
-      :global(:root[data-nav="twostep"]) .site-nav {
-        --nav-bar-size: 22rem;
-        --nav-open-size: 44rem;
-      }
-
-      :global(:root[data-nav="pill"]) .site-nav {
-        --nav-open-size: auto;
-      }
-    }
-
-    /* ---------- Scrim: dims and blurs the page while the menu is open ---------- */
+    /* ---------- Scrim: a light dim behind the open menu; a click on it closes the menu ---------- */
     .site-nav__scrim {
       position: fixed;
       inset: 0;
       background-color: var(--color-scrim);
-      backdrop-filter: blur(var(--blur-nav));
       opacity: 0;
       visibility: hidden;
       transition:
@@ -291,28 +258,18 @@ const [featured] = await getPagedWork();
         visibility 0s;
     }
 
-    /* ---------- The box: bar on top, menu panel below ---------- */
+    /* ---------- The box: its size is animated; the surface behind may grow past it ---------- */
     .site-nav__box {
       position: relative;
       display: grid;
-      grid-template-rows: auto minmax(0, 1fr);
-      grid-template-columns: minmax(0, 1fr);
+      grid-template-rows: minmax(0, 1fr);
       inline-size: var(--nav-bar-size);
       max-inline-size: 100%;
-      max-block-size: calc(100dvh - 2 * var(--space-4));
-      overflow: clip;
-      border: var(--border-width) solid var(--color-border-subtle);
-      border-radius: var(--nav-radius);
-      background-color: var(--color-overlay);
-      backdrop-filter: blur(var(--blur-nav));
-      box-shadow: var(--shadow-bar);
       pointer-events: auto;
-      transition: background-color var(--duration-page) var(--ease-standard);
     }
 
     .site-nav[data-open] .site-nav__box {
       inline-size: var(--nav-open-size);
-      background-color: var(--color-bg);
     }
 
     @media (width < 48em) {
@@ -320,6 +277,50 @@ const [featured] = await getPagedWork();
       .site-nav[data-open] .site-nav__box {
         inline-size: 100%;
       }
+    }
+
+    /* Closed: the frosted bar. Open: thinner frosted glass with a stronger blur (the page shows
+       through, softly), grown a little past the content on desktop and to the edges on phones. */
+    .site-nav__surface {
+      position: absolute;
+      inset: 0;
+      border: var(--border-width) solid var(--color-border-subtle);
+      border-radius: var(--nav-radius);
+      background-color: var(--color-overlay);
+      backdrop-filter: blur(var(--blur-nav));
+      box-shadow: var(--shadow-bar);
+      transition-property: inset, border-radius, background-color, backdrop-filter;
+      transition-duration: var(--duration-page);
+      transition-timing-function: var(--ease-out-expo);
+    }
+
+    .site-nav[data-open] .site-nav__surface {
+      inset: calc(-1 * var(--space-2));
+      background-color: var(--color-glass);
+      backdrop-filter: blur(var(--blur-menu));
+    }
+
+    /* Closing: the surface pulls back in once the menu has lifted. */
+    .site-nav[data-closing] .site-nav__surface {
+      transition-delay: calc(var(--duration-menu) * 0.45);
+    }
+
+    @media (width < 48em) {
+      .site-nav[data-open] .site-nav__surface {
+        inset: calc(-1 * var(--space-4)) calc(-1 * var(--gutter));
+        border-start-start-radius: 0;
+        border-start-end-radius: 0;
+      }
+    }
+
+    .site-nav__clip {
+      position: relative;
+      display: grid;
+      grid-template-rows: auto minmax(0, 1fr);
+      grid-template-columns: minmax(0, 1fr);
+      max-block-size: calc(100dvh - 2 * var(--space-4));
+      overflow: clip;
+      border-radius: var(--nav-radius);
     }
 
     .site-nav__bar {
@@ -384,7 +385,7 @@ const [featured] = await getPagedWork();
       white-space: nowrap;
     }
 
-    /* Bar links: only the pill on desktop, or without JS. */
+    /* Bar links: only without JS, when there is no menu. */
     .site-nav__links {
       display: none;
       gap: var(--space-1);
@@ -413,48 +414,28 @@ const [featured] = await getPagedWork();
       background-color: var(--color-bg-subtle);
     }
 
-    .site-nav__bar-theme {
-      display: flex;
-      margin-inline-start: auto;
-    }
-
-    .site-nav__bar-theme :global(.theme-toggle) {
-      inline-size: var(--nav-item-size);
-      block-size: var(--nav-item-size);
-      padding: 0;
-      border-color: transparent;
-    }
-
     :global(:root:not(.js)) .site-nav__links {
       display: flex;
       margin-inline-start: auto;
     }
 
-    :global(:root:not(.js)) .site-nav__name {
+    :global(:root:not(.js)) .site-nav__name,
+    :global(:root:not(.js)) .site-nav__toggle {
       display: none;
     }
 
-    @media (width >= 48em) {
-      :global(:root[data-nav="pill"]) .site-nav__links {
-        display: flex;
-      }
-
-      :global(:root[data-nav="pill"]) .site-nav__name {
-        display: none;
-      }
-
-      :global(:root[data-nav="pill"]) .site-nav__home {
-        padding-inline-end: 0;
-      }
-
-      :global(:root[data-nav="pill"]) .site-nav__bar-theme {
-        margin-inline-start: 0;
-      }
+    :global(:root:not(.js)) .site-nav__box {
+      inline-size: auto;
     }
 
-    /* Menu button: two lines that turn into a cross. */
+    .site-nav__bar-theme {
+      display: flex;
+      margin-inline-start: auto;
+    }
+
+    /* The theme switch and the menu button: same size, round, no border, same icon box. */
+    .site-nav__bar-theme :global(.theme-toggle:not([hidden])),
     .site-nav__toggle {
-      position: relative;
       display: grid;
       flex-shrink: 0;
       place-items: center;
@@ -472,57 +453,55 @@ const [featured] = await getPagedWork();
       background-color: var(--color-bg-subtle);
     }
 
-    :global(:root:not(.js)) .site-nav__toggle {
-      display: none;
+    /* Matches .theme-toggle__icon: 1.125em box, 24-unit grid, 1.75 stroke. */
+    .site-nav__toggle-icon {
+      inline-size: 1.125em;
+      block-size: 1.125em;
+      overflow: visible;
+      fill: none;
+      stroke: currentcolor;
+      stroke-width: 1.75;
+      stroke-linecap: round;
     }
 
+    /* Two lines that meet in the middle and turn into a cross. */
     .site-nav__toggle-line {
-      grid-area: 1 / 1;
-      inline-size: var(--space-4);
-      block-size: calc(var(--border-width) * 1.75);
-      border-radius: var(--radius-pill);
-      background-color: currentcolor;
-      translate: 0 calc(-1 * var(--space-1));
+      transform-box: view-box;
+      transform-origin: 12px 8.5px; /* each line turns about its own centre */
       transition:
         translate var(--duration-page) var(--ease-in-out-quart),
         rotate var(--duration-page) var(--ease-in-out-quart);
     }
 
     .site-nav__toggle-line + .site-nav__toggle-line {
-      translate: 0 var(--space-1);
+      transform-origin: 12px 15.5px;
     }
 
     .site-nav[data-open] .site-nav__toggle-line {
-      translate: 0 0;
+      translate: 0 3.5px;
       rotate: 45deg;
     }
 
     .site-nav[data-open] .site-nav__toggle-line + .site-nav__toggle-line {
+      translate: 0 -3.5px;
       rotate: -45deg;
     }
 
     /* ---------- Panel ---------- */
     .site-nav__panel {
       display: none;
-      gap: var(--space-6);
+      gap: var(--space-8);
       justify-self: unsafe center; /* stays centred while the box is narrower than it */
       inline-size: 100%;
       min-block-size: 0;
       overflow-y: auto;
-      padding: var(--space-4) var(--space-4) var(--space-4);
+      padding: var(--space-4);
       contain: inline-size; /* takes the box's width, never widens it */
     }
 
     .site-nav[data-open] .site-nav__panel,
     .site-nav[data-closing] .site-nav__panel {
       display: grid;
-    }
-
-    .site-nav__panel-main {
-      display: grid;
-      align-content: space-between;
-      gap: var(--space-8);
-      min-inline-size: 0;
     }
 
     .site-nav__menu {
@@ -563,10 +542,6 @@ const [featured] = await getPagedWork();
 
     .site-nav__meta {
       display: flex;
-      flex-wrap: wrap;
-      align-items: center;
-      justify-content: space-between;
-      gap: var(--space-3) var(--space-4);
       padding-block-start: var(--space-4);
       border-block-start: var(--border-width) solid var(--color-border-subtle);
     }
@@ -586,93 +561,13 @@ const [featured] = await getPagedWork();
       --underline-size: 0%;
     }
 
-    .site-nav__social {
-      display: flex;
-      gap: var(--space-4);
-      font: var(--weight-medium) var(--text-caption) / var(--leading-caption) var(--font-mono);
-      letter-spacing: var(--tracking-caption);
-      text-transform: uppercase;
-    }
-
-    .site-nav__social a {
-      color: var(--color-text);
-    }
-
-    /* Featured case study: desktop two-step (beside the links) and pill (the menu's lead). */
-    .site-nav__feature {
-      --underline-size: 0%;
-
-      display: none;
-      align-content: start;
-      gap: var(--space-3);
-      color: var(--color-text);
-    }
-
-    .site-nav__feature:hover {
-      --underline-size: 0%;
-    }
-
-    .site-nav__feature-image {
-      inline-size: 100%;
-      block-size: auto;
-      aspect-ratio: 4 / 3;
-      object-fit: cover;
-      border-radius: var(--radius-md);
-      transition: scale var(--duration-zoom) var(--ease-out-expo);
-    }
-
-    .site-nav__feature:hover .site-nav__feature-image {
-      scale: 1.02;
-    }
-
-    .site-nav__feature-text {
-      display: grid;
-      gap: var(--space-1);
-    }
-
-    .site-nav__feature-label {
-      color: var(--color-text-muted);
-    }
-
-    .site-nav__feature-title {
-      font: var(--weight-medium) var(--text-h4) / var(--leading-h4) var(--font-heading);
-    }
-
-    @media (width >= 48em) {
-      :global(:root[data-nav="twostep"]) .site-nav__panel {
-        grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
-      }
-
-      :global(:root[data-nav="twostep"]) .site-nav__feature,
-      :global(:root[data-nav="pill"]) .site-nav__feature {
-        display: grid;
-      }
-
-      /* The pill keeps its links in the bar, so the menu leads with the featured work. */
-      :global(:root[data-nav="pill"]) .site-nav__menu {
-        display: none;
-      }
-
-      :global(:root[data-nav="pill"]) .site-nav__feature {
-        order: -1;
-      }
-    }
-
     /* ---------- Content reveal: after the box has made room, one item after another ---------- */
     @media (prefers-reduced-motion: no-preference) {
-      .site-nav {
-        --nav-reveal-delay: 180ms;
-      }
-
-      :global(:root[data-nav="twostep"]) .site-nav {
-        --nav-reveal-delay: 420ms;
-      }
-
       .site-nav[data-open] .site-nav__reveal {
         transition:
           translate var(--duration-page) var(--ease-out-expo),
           opacity var(--duration-page) var(--ease-out-expo);
-        transition-delay: calc(var(--nav-reveal-delay) + var(--i) * 40ms);
+        transition-delay: calc(var(--duration-menu) * 0.45 + var(--i) * 40ms);
 
         @starting-style {
           translate: 0 var(--space-6);

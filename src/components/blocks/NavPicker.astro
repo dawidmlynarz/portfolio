@@ -1,14 +1,12 @@
 ---
 /**
- * PREVIEW ONLY: a floating switcher to compare the navigation variants (SiteNav, html[data-nav]).
+ * PREVIEW ONLY: a floating switcher to compare the new navigation with the current one (SiteNav, html[data-nav]).
  * The choice is remembered, so it carries across every page; ?nav=<name> also works. Never
  * rendered on production; it goes away once a variant is picked.
  */
 const OPTIONS = [
+  { value: "new", label: "New" },
   { value: "current", label: "Current" },
-  { value: "drop", label: "1. Drop-down" },
-  { value: "twostep", label: "2. Two-step" },
-  { value: "pill", label: "3. Pill + menu" },
 ] as const;
 ---
 
@@ -24,7 +22,7 @@ const OPTIONS = [
 <script>
   const root = document.documentElement;
   for (const select of document.querySelectorAll<HTMLSelectElement>("[data-nav-picker]")) {
-    select.value = root.dataset.nav ?? "drop";
+    select.value = root.dataset.nav ?? "new";
     select.addEventListener("change", () => {
       document.dispatchEvent(new Event("navchange")); // close an open menu first
       root.dataset.nav = select.value;
@@ -53,6 +51,9 @@ const OPTIONS = [
       color: var(--color-text);
       background-color: var(--color-overlay);
       backdrop-filter: blur(var(--blur-nav));
+    }
+
+    :global(:root[data-vt]) .nav-picker {
       view-transition-name: nav-picker;
     }
 

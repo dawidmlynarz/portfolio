@@ -67,9 +67,23 @@ const imageType = /\.jpe?g$/i.test(image.src) ? "image/jpeg" : "image/png";
         document.documentElement.classList.add("motion");
       }
     </script>
-    <!-- Going back through history gets the "back" transition type, so the page motion reverses. -->
+    <!--
+      Going back through history gets the "back" transition type, so the page motion reverses.
+      html[data-vt] marks a running page transition: the nav takes its view-transition-name only
+      then (see Nav), because a named element blocks backdrop blur inside it the rest of the time.
+    -->
     <script is:inline>
+      addEventListener("pageswap", (event) => {
+        if (event.viewTransition) document.documentElement.dataset.vt = "";
+      });
+      addEventListener("pageshow", (event) => {
+        if (event.persisted) delete document.documentElement.dataset.vt;
+      });
       addEventListener("pagereveal", (event) => {
+        if (!event.viewTransition) return;
+        const root = document.documentElement;
+        root.dataset.vt = "";
+        event.viewTransition.finished.finally(() => delete root.dataset.vt);
         const activation = window.navigation?.activation;
         if (
           event.viewTransition &&
