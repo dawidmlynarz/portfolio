@@ -25,7 +25,7 @@ export const SERVICES: Service[] = [
       "Fast prototypes to test ideas with real users",
       "Experiments and A/B tests that prove the impact",
     ],
-    proof: ["nerdwallet", "beatstars-product-design", "google-wordpress-plugin"],
+    proof: ["nerdwallet", "beatstars-product-design", "csspeeper", "google-wordpress-plugin"],
   },
   {
     id: "design-systems",
@@ -40,7 +40,7 @@ export const SERVICES: Service[] = [
       "Machine-readable docs and rules for AI coding agents",
       "Governance and contribution that keep it alive",
     ],
-    proof: ["newsweek-design-system", "beatstars-design-system", "csspeeper"],
+    proof: ["zazmic-anvil-ui", "newsweek-design-system", "pantheon", "beatstars-design-system"],
   },
   {
     id: "agentic-ux",
@@ -55,6 +55,6 @@ export const SERVICES: Service[] = [
       "Error, refusal and recovery states",
       "Prototypes built on real models",
     ],
-    proof: [],
+    proof: ["zazmic-anvil-ui"],
   },
 ];
