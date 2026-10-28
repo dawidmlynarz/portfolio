@@ -64,9 +64,9 @@
   }
 
   /*
-   * Default link: a hairline underline drawn as a background, so it can animate.
-   * Hover: the line thickens with an ease-out. Components tune it with --underline-size
-   * (0% hides it at rest, e.g. the nav) and --underline-origin (where it grows from).
+   * Default link: a hairline underline drawn as a background, so it can animate. It stays a
+   * hairline on hover; the hover is the row tear below. Components tune it with --underline-size
+   * (0% hides it at rest, e.g. card titles) and --underline-origin (where it grows from).
    * Reduced motion: reset.css removes the transition; the line still changes state.
    */
   a {
@@ -81,8 +81,97 @@
     transition: background-size var(--duration-link) var(--ease-out-expo);
   }
 
-  a:hover {
-    --underline-thickness: calc(var(--border-width) * 3);
+  /*
+   * Link hover, "row tear" (from the glitch reveal): for a few frames the label splits into three
+   * rows that jolt sideways, then it snaps back clean. motion.ts wraps the label in .link-tear and,
+   * for one run ([data-tearing]), lays two copies over each rendered line (top and bottom rows,
+   * middle row), so wrapped links tear line by line. The real text is only hidden while the copies
+   * stand in; the copies are aria-hidden and removed afterwards. Not run with reduced motion.
+   */
+  .link-tear {
+    position: relative;
+  }
+
+  .link-tear__row {
+    position: absolute;
+    inset: 0;
+    white-space: nowrap;
+    pointer-events: none;
+    opacity: 0;
+    -webkit-text-fill-color: currentcolor;
+  }
+
+  .link-tear__row--outer {
+    clip-path: polygon(0 0, 100% 0, 100% 34%, 0 34%, 0 67%, 100% 67%, 100% 100%, 0 100%);
+  }
+
+  .link-tear__row--middle {
+    clip-path: inset(34% 0 33% 0);
+  }
+
+  [data-tearing] > .link-tear {
+    animation: link-tear-hide var(--duration-tear) steps(1, end);
+  }
+
+  [data-tearing] .link-tear__row--outer {
+    animation: link-tear-outer var(--duration-tear) steps(1, end);
+  }
+
+  [data-tearing] .link-tear__row--middle {
+    animation: link-tear-middle var(--duration-tear) steps(1, end);
+  }
+
+  @keyframes link-tear-hide {
+    0%,
+    100% {
+      -webkit-text-fill-color: transparent;
+    }
+  }
+
+  @keyframes link-tear-outer {
+    0% {
+      opacity: 1;
+      translate: -0.14em 0;
+    }
+
+    25% {
+      opacity: 1;
+      translate: 0.2em 0;
+    }
+
+    50% {
+      opacity: 1;
+      translate: -0.05em 0;
+    }
+
+    75%,
+    100% {
+      opacity: 1;
+      translate: 0.08em 0;
+    }
+  }
+
+  @keyframes link-tear-middle {
+    0% {
+      opacity: 1;
+      translate: 0.22em 0;
+    }
+
+    25% {
+      opacity: 1;
+      translate: -0.1em 0;
+    }
+
+    50% {
+      opacity: 1;
+      translate: 0.14em 0;
+    }
+
+    75%,
+    100% {
+      opacity: 1;
+      translate: -0.04em 0;
+    }
   }
 
   :focus-visible {

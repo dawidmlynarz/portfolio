@@ -30,7 +30,7 @@ const menu = [{ href: "/", label: "Home" }, ...NAV_LINKS];
     <div class="nav__surface" aria-hidden="true"></div>
     <div class="nav__clip">
       <div class="nav__bar">
-        <a class="nav__home" href="/" aria-current={isHome ? "page" : undefined}>
+        <a class="nav__home" href="/" data-no-tear aria-current={isHome ? "page" : undefined}>
           <span class="nav__mark" aria-hidden="true">
             {[0, 1].map(() => (
               <svg class="nav__mark-svg" viewBox="0 0 32 24">
@@ -84,7 +84,7 @@ const menu = [{ href: "/", label: "Home" }, ...NAV_LINKS];
           ))}
         </ul>
         <div class="nav__meta nav__reveal" style={`--i: ${menu.length}`}>
-          <a class="nav__contact" href={`mailto:${SITE.email}`}>
+          <a class="nav__contact" data-no-tear href={`mailto:${SITE.email}`}>
             {SITE.email}
           </a>
         </div>

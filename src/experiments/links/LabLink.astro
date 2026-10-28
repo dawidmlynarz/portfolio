@@ -20,6 +20,7 @@ const { option, role = "text", text } = Astro.props;
 
 <a
   href="#"
+  data-no-tear
   class:list={["lab-link", `lab-link--${option}`, role !== "text" && `lab-link--${role}`]}
   data-text={text}
   data-settle={option === "settle" ? "" : undefined}
