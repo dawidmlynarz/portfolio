@@ -109,7 +109,8 @@ const layers = iconOnly ? ["face"] : ["face", "outer", "middle"];
       scale: 0.97;
     }
 
-    /* Rest and hover colours. Primary inverts to an outline; secondary and ghost fill with ink. */
+    /* Rest and hover colours. Primary inverts to an outline. Secondary and ghost stay outlines:
+       subtle (or none) at rest, black after the tear. */
     .button--primary {
       --rest-bg: var(--color-inverse-bg);
       --rest-fg: var(--color-on-inverse);
@@ -123,10 +124,10 @@ const layers = iconOnly ? ["face"] : ["face", "outer", "middle"];
     .button--ghost {
       --rest-bg: transparent;
       --rest-fg: var(--color-text);
-      --rest-ring: var(--color-border);
-      --hot-bg: var(--color-inverse-bg);
-      --hot-fg: var(--color-on-inverse);
-      --hot-ring: var(--color-inverse-bg);
+      --rest-ring: var(--color-border-muted);
+      --hot-bg: transparent;
+      --hot-fg: var(--color-text);
+      --hot-ring: var(--color-text);
     }
 
     .button--ghost {
@@ -198,7 +199,12 @@ const layers = iconOnly ? ["face"] : ["face", "outer", "middle"];
     }
 
     /* ---------- Text buttons: the row tear ----------
+       The copies stand in for the face, as the link tear hides the real text while it runs.
        After the tear the top copy stays whole and the middle copy hides, so no seams show. */
+    .button:not(:disabled, .button--icon):is(:hover, :focus-visible) .button__face {
+      opacity: 0;
+    }
+
     .button:not(:disabled):is(:hover, :focus-visible) .button__tear--outer {
       opacity: 1;
       animation: button-tear-outer var(--duration-tear) steps(1, end);
