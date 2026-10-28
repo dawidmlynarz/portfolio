@@ -145,6 +145,20 @@
     animation-timing-function: var(--ease-in-out-quart);
   }
 
+  /*
+   * Leaving through a link in the open menu (SiteNav): the new page starts with the menu open and
+   * collapses it live, so the nav shows only the new page's live image and follows its size.
+   */
+  :root[data-nav-collapse]::view-transition-group(nav),
+  :root[data-nav-collapse]::view-transition-new(nav) {
+    animation: none;
+  }
+
+  :root[data-nav-collapse]::view-transition-old(nav) {
+    animation: none;
+    opacity: 0;
+  }
+
   @keyframes page-out {
     to {
       opacity: 0;
