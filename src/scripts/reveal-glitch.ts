@@ -1,16 +1,17 @@
 /**
  * Glitch: the portrait is a weak video signal. Everything happens in horizontal 6 px rows.
  *
- * - At rest: a tracking band rolls slowly down the picture, as on a mistracked VHS tape. Inside it
- *   the rows show another layer, slightly torn sideways; each time it wraps it picks a new layer.
- *   Every 6–12 s a hiccup tears a few rows elsewhere for about 150 ms.
+ * - At rest: two thin tracking streaks at a time race up or down the face from random heights,
+ *   each showing a layer picked with equal chance (weights don't apply), slightly torn sideways,
+ *   with a short tail of rows that close behind it. Each lives about a second, then another
+ *   starts elsewhere. Every 4–8 s a hiccup tears a few rows elsewhere for about 150 ms.
  * - The pointer is interference, like a magnet held near a CRT: the band snaps to its height and
  *   widens, and its rows open across a span around the pointer with ragged ends. Speed drives the
  *   tearing (rows jump sideways, colours split); holding still lets the signal settle into a clean
  *   view. Rows the band leaves behind hold for a moment, then close one at a time. A layer switch
  *   (on arrival, on a tap and every 3–5 s) is a hiccup; hiccups have a 1.4 s cooldown.
- * - Leaving: the band lets go and rolls on from where it was.
- * - Reduced motion: no rolling band or hiccups; a clean band at the pointer only.
+ * - Leaving: the band lets go (its rows close one at a time) and the streaks take over again.
+ * - Reduced motion: no streaks or hiccups; a clean band at the pointer only.
  *
  * Row data lives in JS and is uploaded each frame as a rows × 2 texture (unit 6, NEAREST):
  * row 0 = left, right, offset, open; row 1 = layer, colour split.
@@ -31,6 +32,7 @@ import {
 const ROW = 6; // CSS px
 const HICCUP = 0.15; // s
 const COOLDOWN = 1400; // ms between bursts
+const STREAKS = 2;
 
 const SHOW = `${HEADER}${LAYERS}
 uniform sampler2D rows;
@@ -51,6 +53,8 @@ void main(){
   gl_FragColor=over(open,c);
 }`;
 
+type Streak = { y: number; vy: number; half: number; layer: number; from: number; until: number };
+
 type Row = {
   open: number;
   hold: number; // s left before it closes
@@ -70,7 +74,7 @@ export class GlitchSignal implements StyleEngine {
   #rows: Row[] = [];
   #data = new Uint8Array(4);
   #band = { y: 0, vy: 0, half: 0 };
-  #restLayer = 0;
+  #streaks: Streak[] = [];
   #layer = 0;
   #nextSwitch = 0;
   #nextHiccup = 0;
@@ -118,6 +122,20 @@ export class GlitchSignal implements StyleEngine {
     };
   }
 
+  /** A streak at a random height on the face, after a short gap; any loaded layer, equally. */
+  #streak(f: StyleFrame, gap: number): Streak {
+    const loaded = f.active.flatMap((on, i) => (on ? [i] : []));
+    const from = f.now + gap;
+    return {
+      y: f.facePoint().y,
+      vy: (Math.random() < 0.5 ? -1 : 1) * f.H * between(0.35, 0.7),
+      half: f.H * between(0.012, 0.03),
+      layer: loaded[Math.floor(Math.random() * loaded.length)] ?? 0,
+      from,
+      until: from + between(700, 1500),
+    };
+  }
+
   /** A burst of tearing, unless one started within the cooldown. */
   #burst(now: number, amount: number, rm: boolean) {
     if (rm || now - this.#burstAt < COOLDOWN) return false;
@@ -145,7 +163,7 @@ export class GlitchSignal implements StyleEngine {
     // Moving fast tears the signal, within the same cooldown.
     if (f.pointing && this.#speed > 1400) this.#burst(now, 0.6, rm);
 
-    // The band: rolls at rest, locks onto the pointer's height on hover.
+    // The band locks onto the pointer's height on hover and lets go when it leaves.
     if (f.pointing) {
       const omega = 16;
       const e = band.y - cursor.y;
@@ -156,24 +174,29 @@ export class GlitchSignal implements StyleEngine {
       band.half += (H * 0.07 - band.half) * (1 - Math.exp(-dt * 10));
     } else {
       band.vy = 0;
-      band.half += ((rm ? 0 : H * 0.03) - band.half) * (1 - Math.exp(-dt * 3));
-      if (!rm) band.y += H * 0.08 * dt;
-      if (band.y - band.half > H) {
-        band.y = -band.half;
-        this.#restLayer = f.pick(this.#restLayer);
-      }
+      band.half = 0;
     }
+
+    // Streaks at rest: each races for about a second, then another starts elsewhere.
+    const streaking = !f.pointing && !rm;
+    if (this.#streaks.length !== STREAKS)
+      this.#streaks = Array.from({ length: STREAKS }, (_, i) => this.#streak(f, i * 500));
+    this.#streaks.forEach((s, i) => {
+      if (now > s.until && streaking) this.#streaks[i] = this.#streak(f, between(150, 600));
+      else if (now > s.from) s.y += s.vy * dt;
+    });
+    const live = streaking ? this.#streaks.filter((s) => now > s.from && now < s.until) : [];
 
     // Rare hiccup at rest: a few rows elsewhere tear for a moment.
     if (!f.pointing && !rm && now > this.#nextHiccup) {
-      this.#nextHiccup = now + between(6000, 12000);
+      this.#nextHiccup = now + between(4000, 8000);
       if (this.#burst(now, 1, rm)) {
         const from = Math.floor(Math.random() * this.#rows.length);
         this.#hiccup = {
           from,
           to: from + 3 + Math.floor(Math.random() * 4),
           until: now + HICCUP * 1000,
-          layer: f.pick(this.#restLayer),
+          layer: f.pick(-1),
         };
       }
     }
@@ -188,19 +211,24 @@ export class GlitchSignal implements StyleEngine {
     this.#rows.forEach((row, i) => {
       const y = (i + 0.5) * ROW;
       const inBand =
-        band.half > 1 && Math.abs(y - band.y) < band.half * (0.8 + 0.4 * row.ragged[0]);
+        f.pointing &&
+        band.half > 1 &&
+        Math.abs(y - band.y) < band.half * (0.8 + 0.4 * row.ragged[0]);
+      const streak = live.find((s) => Math.abs(y - s.y) < s.half * (0.8 + 0.4 * row.ragged[0]));
       const inHiccup = hiccup && i >= hiccup.from && i < hiccup.to;
       if (inBand) {
         row.open = 1;
         row.hold = between(0.1, 0.7);
-        row.layer = f.pointing ? this.#layer : this.#restLayer;
-        if (f.pointing) {
-          row.left = cursor.x - span * (0.5 + row.ragged[0]);
-          row.right = cursor.x + span * (0.5 + row.ragged[1]);
-        } else {
-          row.left = 0;
-          row.right = W;
-        }
+        row.layer = this.#layer;
+        row.left = cursor.x - span * (0.5 + row.ragged[0]);
+        row.right = cursor.x + span * (0.5 + row.ragged[1]);
+      } else if (streak) {
+        // A short tail: rows a streak passes close soon after.
+        row.open = 1;
+        row.hold = between(0.05, 0.3);
+        row.layer = streak.layer;
+        row.left = 0;
+        row.right = W;
       } else if (inHiccup) {
         row.open = 1;
         row.hold = 0;
