@@ -7,8 +7,8 @@
  * - [data-reveal="fade"]: blocks fade and rise in once they enter the viewport.
  * - [data-hero] + [data-story]: the hero holds while the inverse story panel grows over it,
  *   then the statement lights up word by word.
- * - Links: the "row tear" hover (styles in base.css). Links marked [data-no-tear] (buttons, pills,
- *   the logo) keep their own hover.
+ * - Links: the "row tear" hover (styles in base.css). Links marked [data-no-tear] keep their own
+ *   hover: buttons, pills and quiet links (menu, case-study cards, Next project).
  *
  * Elements marked [data-reveal] stay hidden by base.css until this script has set their
  * starting state (data-reveal-ready), with a 3s CSS failsafe if it never runs.
@@ -131,6 +131,12 @@ const TEAR_MS = 300; // a little longer than --duration-tear
 function tearLabel(link: HTMLAnchorElement) {
   const existing = link.querySelector<HTMLElement>(":scope > .link-tear");
   if (existing) return existing;
+  // A link can name its label (the nav logo tears only the name, the mark tears in Nav).
+  const named = link.querySelector<HTMLElement>(":scope > [data-tear-label]");
+  if (named) {
+    named.classList.add("link-tear");
+    return named;
+  }
   const label = document.createElement("span");
   label.className = "link-tear";
   const icon = [...link.childNodes].find((node) => node instanceof SVGElement);

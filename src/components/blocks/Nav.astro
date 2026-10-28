@@ -30,15 +30,17 @@ const menu = [{ href: "/", label: "Home" }, ...NAV_LINKS];
     <div class="nav__surface" aria-hidden="true"></div>
     <div class="nav__clip">
       <div class="nav__bar">
-        <a class="nav__home" href="/" data-no-tear aria-current={isHome ? "page" : undefined}>
+        <a class="nav__home" href="/" aria-current={isHome ? "page" : undefined}>
           <span class="nav__mark" aria-hidden="true">
-            {[0, 1].map(() => (
-              <svg class="nav__mark-svg" viewBox="0 0 32 24">
+            {["base", "outer", "middle"].map((part) => (
+              <svg class={`nav__mark-svg nav__mark-svg--${part}`} viewBox="0 0 32 24">
                 <path d="M23.84 0 15.99 7.94 8.15 0 0 17.69h9.1l1.01-2.21L16 24l5.87-8.52 1.06 2.21H32z" />
               </svg>
             ))}
           </span>
-          <span class="nav__name">{SITE.name}</span>
+          <span class="nav__name" data-tear-label>
+            {SITE.name}
+          </span>
           <span class="visually-hidden">, home</span>
         </a>
         <ul class="nav__links" role="list">
@@ -75,6 +77,7 @@ const menu = [{ href: "/", label: "Home" }, ...NAV_LINKS];
             <li class="nav__reveal" style={`--i: ${i}`}>
               <a
                 class="nav__menu-link"
+                data-no-tear
                 href={href}
                 aria-current={(href === "/" ? isHome : isCurrent(href)) ? "page" : undefined}
               >
@@ -386,21 +389,40 @@ const menu = [{ href: "/", label: "Home" }, ...NAV_LINKS];
       inline-size: 1.25rem;
       block-size: auto;
       fill: var(--color-bg);
-      transition: translate var(--duration-link) var(--ease-out-expo);
     }
 
-    .nav__mark-svg + .nav__mark-svg {
-      translate: 0 var(--nav-item-size);
+    /* Hover: the mark and the name get the links' row tear (base.css; motion.ts sets
+       [data-tearing] and tears the name). The mark tears with two copies of itself. */
+    .nav__mark-svg--outer,
+    .nav__mark-svg--middle {
+      opacity: 0;
     }
 
-    .nav__home:hover .nav__mark-svg,
-    .nav__home:focus-visible .nav__mark-svg {
-      translate: 0 calc(-1 * var(--nav-item-size));
+    .nav__mark-svg--outer {
+      clip-path: polygon(0 0, 100% 0, 100% 34%, 0 34%, 0 67%, 100% 67%, 100% 100%, 0 100%);
     }
 
-    .nav__home:hover .nav__mark-svg + .nav__mark-svg,
-    .nav__home:focus-visible .nav__mark-svg + .nav__mark-svg {
-      translate: 0 0;
+    .nav__mark-svg--middle {
+      clip-path: inset(34% 0 33% 0);
+    }
+
+    .nav__home[data-tearing] .nav__mark-svg--base {
+      animation: nav-mark-hide var(--duration-tear) steps(1, end);
+    }
+
+    .nav__home[data-tearing] .nav__mark-svg--outer {
+      animation: link-tear-outer var(--duration-tear) steps(1, end);
+    }
+
+    .nav__home[data-tearing] .nav__mark-svg--middle {
+      animation: link-tear-middle var(--duration-tear) steps(1, end);
+    }
+
+    @keyframes nav-mark-hide {
+      0%,
+      100% {
+        opacity: 0;
+      }
     }
 
     .nav__name {
@@ -535,8 +557,10 @@ const menu = [{ href: "/", label: "Home" }, ...NAV_LINKS];
       letter-spacing: var(--tracking-h2);
     }
 
+    /* Quiet links: no row tear here (too much motion in a list); the line draws in instead. */
     .nav__menu-link {
       --underline-size: 0%;
+      --underline-origin: right;
 
       display: inline-flex;
       align-items: center;
@@ -547,21 +571,13 @@ const menu = [{ href: "/", label: "Home" }, ...NAV_LINKS];
     }
 
     .nav__menu-link:hover {
-      --underline-size: 0%;
+      --underline-size: 100%;
+      --underline-origin: left;
     }
 
     /* The other links step back while one is hovered. */
     .nav__menu:has(.nav__menu-link:hover) .nav__menu-link:not(:hover) {
       color: var(--color-text-muted);
-    }
-
-    /* The page you are on gets a dot. */
-    .nav__menu-link[aria-current="page"]::after {
-      content: "";
-      inline-size: var(--space-2);
-      block-size: var(--space-2);
-      border-radius: var(--radius-pill);
-      background-color: currentcolor;
     }
 
     .nav__meta {

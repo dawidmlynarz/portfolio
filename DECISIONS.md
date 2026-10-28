@@ -7,7 +7,9 @@ Non-obvious choices, newest first. One entry per decision: what, why, and what i
 Dawid picked **row tear** from the link playground, with one change: the underline never thickens. Every text, action and quiet link now keeps its hairline and, on hover or keyboard focus, tears into three rows that jolt sideways for 260 ms (`--duration-tear`, needs mirroring in Figma), then snaps back.
 
 - **Built in `motion.ts`, styled in `base.css`.** On first hover the label (everything before the link's icon) is wrapped in `.link-tear`; each run lays two aria-hidden copies over every rendered line, so wrapped links (card titles, long links in case studies) tear line by line, and removes them afterwards. The real text stays in the DOM, so the accessible name never changes. Pseudo-elements were ruled out because card titles, Next project and the menu's current-page dot already use `::after`.
-- **Opt-out with `[data-no-tear]`:** buttons, the logo, the footer email and menu contact pills, Back to top and the skip link keep their own hovers.
+- **Opt-out with `[data-no-tear]`:** buttons, the footer email and menu contact pills, Back to top and the skip link keep their own hovers.
+- **Quiet links don't tear** (Dawid: too much motion). Menu links, work card titles and Next project only draw the hairline in on hover. The menu's current-page dot is gone.
+- **The logo tears instead of rolling.** The M tears with two copies of its SVG (styled in `Nav`, same keyframes); the name is named as the label with `[data-tear-label]`. No underline on the logo.
 - **Reduced motion and no JS:** no tear, just the hairline. That is the complete state; the tear is decoration.
 - Not done yet from the audit: turning the pills into Buttons and the other role clean-ups (footer social quiet, consistent card-title motion, ↗ on external links in MDX).
 
