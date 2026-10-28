@@ -22,17 +22,19 @@ draft: true
 
 {/* Estimates requested by Dawid on 2026-10-28, not measured: about 6 weeks down to 1.5 weeks to a first working agent UI (~75%) and ~350 hours saved per project, for a designer and a front-end engineer. Every other number comes from the repository. */}
 
+{/* The body has about 30 small non-native slips (articles, prepositions, tense) on purpose, at Dawid's request. Don't proofread them away. */}
+
 ## My role
 
-I designed and built Anvil UI on my own, from the first commit to the live Storybook. I set the rules, made the design decisions, reviewed every change and decided what shipped. The typing was shared with an AI coding agent, which worked inside a process I put together for it. More on that below, because it's as much a part of this project as the components.
+I designed and built Anvil UI by myself, from first commit to the live Storybook. I wrote the rules, made the design calls and reviewed every change before it shipped. An AI coding agent did big part of the typing, inside a process I set up for it. I'll come back to that later, because for me it was as important as the components.
 
 ### Key achievements
 
-- Turned Zazmic's Figma UI Kit into a working React library of about 160 components in four weeks.
-- Designed an Agent Builder layer: thinking panels, tool-call logs, citations, approval cards, task plans and memory, the parts agents need and most design systems don't have.
-- Built the Showroom, a features demo inside Storybook made only from real components, so anyone can try an agent product without a model behind it.
-- Set up the process that kept the AI agent in check: a written rulebook, required checks on every pull request, and my approval on every merge.
-- Cut the time to a first working agent interface from about six weeks to about a week and a half per project.
+- Turned Zazmic's Figma UI Kit into working React library of about 160 components in four weeks.
+- Designed the Agent Builder layer: thinking panels, tool-call logs, citations, approval cards, task plans and memory. Most design systems don't have those at all.
+- Built the Showroom, a features demo in Storybook made only from real components, so anyone can try how an agent product works without a model behind it.
+- Put guardrails around the AI agent: a written rulebook, required checks on every pull request and my approval on every merge.
+- Cut the time to first working agent interface from about six weeks to around a week and a half per project.
 
 <Metrics
   items={[
@@ -44,76 +46,74 @@ I designed and built Anvil UI on my own, from the first commit to the live Story
 
 ## Project background
 
-Zazmic helps companies with AI transformation, and a lot of that work means building AI agents: assistants that answer questions, book things, place orders and hand people over to a human when they need one. Every one of those projects needed the same screens. A chat window. Some way to show the agent is working. Where an answer came from. A way to ask the user before the agent does something on their behalf.
+Zazmic helps companies with AI transformation, and a lot of this work is building AI agents. Assistants that answer questions, book things, place orders, or pass you to a human when you need one.
 
-And every time, those screens were designed and coded again from nothing. Each team handled accessibility, dark mode, mobile and right-to-left languages in its own way, or didn't get to them at all. We also had a Figma UI Kit, but the code built from it drifted away within weeks.
+Every one of these projects needed the same screens. A chat window, some way to show that the agent is working, where the answer came from, and a way to ask the user before agent does something on their behalf. And every time we designed and coded them again, from zero. Each team handled accessibility, dark mode, mobile and right-to-left languages differently, and sometimes didn't get to it at all. We did have a Figma UI Kit, but the code built from it was drifting away after few weeks.
 
-I looked at the design systems we'd normally reach for, like Material, Polaris and shadcn. They're great for forms and tables, but they have no words for what an agent does: thinking, using a tool, asking for approval, streaming an answer, remembering something about you.
+I checked the design systems we usually reach for, like Material, Polaris and shadcn. They're great for forms and tables. But they have nothing for the things an agent does, like thinking, calling a tool, waiting for approval, streaming an answer or remembering something about you.
 
-**So the question I started with was: what would a design system look like if the agent, and not the page, was the thing being designed?**
-
-Anvil is meant for all of that work: client projects, our own internal tools and early concepts we show to new clients.
+So I set out to build a design system around the agent itself, with the pages coming second. Anvil is for all our agent work, from client projects and internal tools to the first concepts we show to a new client.
 
 ### Objectives
 
-- One source of truth, drawn once in Figma and built once in code.
-- Agent behaviour as proper components, not something each team invents.
-- Accessibility, dark mode, mobile and right-to-left built in from the start.
-- Something people outside design could try and understand in a few minutes.
+- One source of truth, drawn once in Figma and build once in code.
+- Agent behaviour as real components, so teams stop inventing their own.
+- Accessibility, dark mode, mobile and right-to-left from day one.
+- A demo that people outside design can try and get in few minutes.
 
 ## Before and after
 
-This is the part that matters most to the people paying for the projects. Here's roughly how the interface work on a typical agent project looked before Anvil, and how it looks now (my estimates, for a designer and a front-end engineer working together):
+This is the part people paying for the projects care about the most. Below is my rough estimate of the interface work on a typical agent project, for one designer and one front-end engineer, before Anvil and now:
 
-- **Chat shell and message states** (sending, streaming, failed, edited): about 2 weeks before, 1 to 2 days now.
-- **Agent status, sources and approvals**: about 3 weeks of designing and building patterns no one had made before, now about 3 days of picking and arranging them.
-- **Accessibility and dark mode**: about a week of fixes near the end, now already covered, because every component is tested in both themes.
-- **Design review**: 3 or 4 rounds per screen to catch drift between Figma and code, now usually one, because the code comes from the same tokens.
+- **Chat shell and message states** (sending, streaming, failed, edited): about 2 weeks before, 1 or 2 days now.
+- **Agent status, sources and approvals**: around 3 weeks, because nobody designed these patterns before. Now it's about 3 days of picking and arranging them.
+- **Accessibility and dark mode**: usually a week of fixes at the end of project. Now it's mostly covered, since every component is tested in both themes.
+- **Design review**: 3 or 4 rounds per screen to catch differences between Figma and code. Now one, sometimes two.
 
-That's about six weeks of interface work down to about a week and a half, and roughly 350 hours back for each project. Engineers spend that time on what's unique to the client, like the model, the data and the integrations, instead of rebuilding a chat bubble.
+In total that's around six weeks down to a week and a half, so roughly 350 hours back on each project. Engineers can spend that time on what is specific for the client: the model, the data, the integrations. Rebuilding a chat bubble for the fifth time was never a good use of it.
 
 <Figure alt="Diagram comparing an agent project before Anvil, where every screen is designed and coded from scratch, with one assembled from Anvil building blocks." />
 
 ## Designing for agents
 
-Anvil has four levels. Atoms are single elements like a button or a badge. Molecules combine a few atoms for one job. Organisms are complete sections like a dialog or a table. On top sits the **Agent Builder**: ready-to-use agent experiences in 16 groups, built only from the levels below.
+Anvil has four levels. Atoms are single elements, like a button or a badge. Molecules put few atoms together for one job. Organisms are full sections, a dialog or a table. On top of them sits the Agent Builder: ready-to-use agent experiences in 16 groups, built only from the levels below.
 
-The agent layer is where most of my design time went. A few of the problems it solves:
+Most of my design time went into the agent layer. Some of problems it solves:
 
-- **Making invisible work visible.** A thinking panel and a tool-call log show what the agent is doing without burying the answer under it.
-- **Trust.** Citation chips, source cards and a confidence indicator show where an answer came from and how sure the agent is.
-- **Keeping people in control.** Approval cards, clarifying questions and quick replies make the agent ask before it acts.
-- **Long-running work.** Task plans and a progress timeline let people pause, resume or stop a task.
-- **Memory.** People can see what the agent remembers about them and change it.
-- **Answers that aren't text.** Offer carousels, an availability calendar and file cards work inside the conversation.
+- Showing work that is normally invisible. A thinking panel and a tool-call log tell you what the agent is doing, without burying the answer.
+- Trust. Citation chips, source cards and a confidence indicator show where the answer comes from and how sure the agent is about it.
+- Control. Approval cards, clarifying questions and quick replies make the agent ask first and act after.
+- Long tasks. Task plans and a progress timeline let people pause, resume or stop the work.
+- Memory. You can see what the agent remembers about you, and change it.
+- Answers that aren't text, like offer carousels, an availability calendar or file cards, right inside the conversation.
 
-The same components work full screen, as a side panel, in a popover and on mobile.
+The same components work in full screen, in a side panel, in a popover and on mobile.
 
 <Figure alt="Agent Builder components: a thinking panel, a tool-call log, citation chips, an approval card and a task plan, in light and dark." />
 
 ## Figma first, then a contract, then code
 
-Figma stays the source of truth for design. About 340 tokens (colours, type, spacing, elevation, motion) come straight from the Figma variables into code through a script. Nobody types them by hand, and a check fails the build if the code and Figma disagree. Tailwind's default palette is switched off, so anything that renders on screen came from a token.
+Figma is the source of truth for design. About 340 tokens (colours, type, spacing, elevation, motion) go from Figma variables to code through a script. Nobody types them by hand, and the build fails if code and Figma don't match. I also switched off Tailwind's default palette, so everything you see on screen comes from a token. You can't just write `bg-red-500` and hope for the best.
 
-For names, I wrote an API contract. Four props, `variant`, `intent`, `tone` and `size`, work the same way on every component, so you learn them once. The `state` property from Figma never becomes a prop: hover, focus and disabled are handled in CSS, so nobody can pass the wrong one.
+For naming I wrote an API contract. There are four props, `variant`, `intent`, `tone` and `size`, and they work the same on every component, so you learn them once. The `state` property from Figma never becomes a prop. Hover, focus and disabled live in CSS, so there is no way to pass the wrong one.
 
-Under the styling, I used shadcn/ui and Radix, so keyboard support, focus and dismissal come from libraries that already do them well. Each time I changed their behaviour on purpose, I wrote down why.
+Under the styling I used shadcn/ui and Radix. Keyboard support, focus and dismissing come from libraries which already do it well. Whenever I changed their behaviour on purpose, I wrote down the reason.
 
 <Figure alt="Anvil tokens in Figma next to the generated CSS variables, in light and dark, desktop and mobile." />
 
 ## Documentation people actually read
 
-I treated Storybook as a product. Every component page has live controls, a link to its Figma frame, a usage guide (when to use it, when not to and what to use instead) and a table that shows what every Figma property turns into in code.
+I treated Storybook as product. Every component page has live controls, a link to the Figma frame, a usage guide (when to use it, when not, and what to use instead) and a table that maps every Figma property to what it becomes in code.
 
-Above the atoms, the stories don't use lorem ipsum. They share one made-up company, one assistant and one project, so reviewers look at it like a real product and not a gallery of parts.
+From molecules up, stories don't use lorem ipsum. They all share one made-up company, one assistant and one project. Reviewers then look at it like at a real product, and less like a gallery of parts.
 
 <Figure alt="The Storybook page for Message Row with controls, a Figma link, the usage guide and the Figma-to-code property table." />
 
 ## The Showroom
 
-A list of components doesn't tell you much about how an agent feels to use. So Storybook opens with the Showroom, a features demo: a scripted assistant made only from real Anvil components. You can switch between desktop and mobile, light and dark, full screen, side panel and popover, and try four flows: research a task, order a product, book a show and talk to a person.
+A list of components doesn't tell you much how an agent feels to use. That's why Storybook opens with the Showroom, the features demo. It's a scripted assistant made only from real Anvil components. You can switch between desktop and mobile, light and dark, full screen, side panel or popover, and go through four flows: research a task, order a product, book a show, and talk to a person.
 
-It's scripted on purpose. It can't go off script when someone is clicking through it, and it still shows the loading, error and queued states a real agent goes through. I also hid about 50 bits of small talk and easter eggs in it, like a coin flip and a round of rock, paper, scissors. A scripted demo feels dead otherwise, and the jokes are what get people to keep clicking.
+It's scripted on purpose, so it can't go off script while someone is clicking through it. It still shows loading, error and queued states, the same as real agent goes through. I also hid around 50 small talk replies and easter eggs inside, like a coin flip or a round of rock, paper, scissors. Without them the demo felt a bit dead, and the jokes are what keeps people clicking.
 
 <Figure alt="The Showroom booking flow, from an offer carousel to a calendar, time slots, an approval and a ticket." />
 
@@ -127,37 +127,39 @@ It's scripted on purpose. It can't go off script when someone is clicking throug
 
 ## Working with an AI agent, on my terms
 
-I built Anvil with an AI coding agent. It did a lot of the typing. I decided what got built, to what standard, in what order and what went live. To make that more than a promise, I put a system around it:
+I built Anvil together with an AI coding agent, and it did a lot of the typing. What got built, how good it had to be, in which order and what went live was my decision. To make that more than a promise, I put a system around it:
 
-1. **I set the rules.** A project guide fixes the stack, the naming and the workflow, and lists what the agent has to ask me before doing: adding a dependency, renaming a public prop or changing the folder structure.
-2. **The agent builds on a branch**, one component or group per pull request, and checks what already exists before making anything new.
-3. **It checks its own work** with types, lint, tests and a look in a real browser, with measurements.
-4. **It opens a pull request and waits.** It never merges on its own.
-5. **Required checks run.** Types, lint, tokens up to date, Storybook tests in light and dark and a Storybook build. If any of them fail, the work goes back to the agent.
-6. **I review the real result and approve every merge.** Then the live Storybook updates.
+1. I set the rules. A project guide fixes the stack, naming and workflow, and lists things the agent has to ask me about first: adding a dependency, renaming a public prop or changing folder structure.
+2. The agent builds on a branch, one component or group per pull request, and checks what already exists before it makes anything new.
+3. It checks its own work: types, lint, tests, and a look in a real browser with measurements.
+4. It opens a pull request and waits. It never merges by itself.
+5. Required checks run: types, lint, tokens up to date, Storybook tests in light and dark, and a Storybook build. When any of them fails, work goes back to the agent.
+6. I look at the real result and approve every merge. Then the live Storybook updates.
 
 <Figure alt="How a change reaches main: I set the rules, the agent builds and opens a pull request, required checks gate it, and I review and approve every merge." />
 
-A lot of the rules fail loudly, so nobody has to remember them. Lint checks the component levels (an atom can't import an organism), motion, right-to-left-safe CSS and accessibility. Axe runs on every story in both themes, and screenshot tests catch changes nobody meant to make.
+Many of the rules fail loudly, so nobody has to remember them. Lint checks component levels (an atom can't import an organism), motion, right-to-left-safe CSS and accessibility. Axe runs on every story in both themes, and screenshot tests catch changes nobody meant to make.
 
-The decisions that needed taste stayed with me. One example: in the narrow side panel, the agent's avatar next to every message took up space and told people nothing new. I removed it. Then I tried capping message widths at 80%, then 90%, looking at real renders and pixel measurements each time. In the end the assistant's text runs full width and only the user's bubble is capped, so it still reads as a conversation. The first version I tried wasn't the one that shipped.
+The decisions that needed taste, I kept for myself. One example: in the narrow side panel, the agent avatar next to each message was taking space and told people nothing new. I removed it. Then I tried capping message width at 80%, then at 90%, checking real renders and pixel measurements every time. In the end assistant's text runs full width and only user's bubble is capped, so it still reads as a conversation. Took me three tries to get there.
 
 <Figure alt="The message row before and after removing the agent avatar, in the side panel and on mobile." />
 
-It wasn't perfect. Once, a pull request was merged before I'd said so. We talked it through and the rule became explicit: merges happen only when I say. I think stories like that matter in a case study about working with AI. The point isn't that nothing went wrong, it's that when it did, there was a way to see it and fix it.
+Not everything went smooth. Once a pull request got merged before I said so. We talked it through and the rule became explicit: merges happen only when I say. I'm including it here because the setup made the mistake easy to spot and easy to fix.
 
 ## Quality
 
-About 200 pull requests were merged, each one small. The library has 1,972 Storybook tests that run in light and dark, 76 screenshot baselines for visual regression, and 16 docs pages from the API contract to motion and accessibility. Halfway through, I asked for an audit against a 76-item checklist based on Polaris, Carbon, Atlassian, Primer, Spectrum, GOV.UK and WCAG 2.2. The design side came out strong, and most gaps were in operations: CI, browsers and right-to-left support. We closed them in order.
+About 200 pull requests got merged, each one small. The library has 1,972 Storybook tests that run in light and dark, 76 screenshot baselines for visual regression, and 16 docs pages, from the API contract to motion and accessibility.
+
+Halfway through I asked for audit against a 76-item checklist based on Polaris, Carbon, Atlassian, Primer, Spectrum, GOV.UK and WCAG 2.2. Design side came out strong. Most of the gaps were in operations, like CI, browser coverage and right-to-left support, and we closed them one by one.
 
 <Figure alt="A pull request in GitHub with the three required checks passing." />
 
-There's still work to do, and I'd rather say it here. Anvil isn't published as a package yet, so teams copy source with a guide and a helper script. Two agent groups, checkout and handoff to a human, are still to build. A screen reader pass by a person hasn't happened yet, only automated checks and a checklist.
+Some things are still open. Anvil isn't published as a package yet, so teams copy the source with a guide and a helper script. Two agent groups, checkout and handoff to a human, are still to build. And nobody did a manual screen reader pass yet, only automated checks and a checklist.
 
 ## Key Takeaways
 
-The biggest lesson for me was that rules beat prompts. Writing the rules down once and letting tooling enforce them gave me a consistency that no amount of instructions per task could.
+Before this project I thought working with AI agent was mostly about writing good prompts. Writing the rules once and letting the tooling enforce them worked much better than any instruction I gave per task.
 
-I also learned to measure layout decisions and then look again. Numbers tell me a change worked, but my eyes decide whether it's right.
+I also stopped trusting my first layout instinct. I measure now, and then I look again. Sometimes the numbers say yes and my eyes say no, and I go with my eyes.
 
-And reviewing everything isn't a feeling. With a rulebook, required checks and an approval step, anyone can see that a person decided what shipped. That's the kind of AI work I want to do more of: fast, but with a designer in charge.
+What I want next is more of this kind of work: AI products where a designer sets the bar and the tools bring the speed.
