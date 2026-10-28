@@ -15,6 +15,13 @@ Replacing a Webflow site with a clean, Webflow-agnostic build. Keep the `/work/<
 8. **Accessibility:** visible focus (`--color-focus`), semantic HTML, respect `prefers-reduced-motion` (including the liquid reveal and link underline).
 9. **Performance:** no framework JS by default; hydrate islands lazily (`client:visible`). Motion lives in one module, `src/scripts/motion.ts` (GSAP + Lenis). Keep it lean, and make sure everything it animates is complete without it (no JS, reduced motion).
 
+## Writing case studies
+
+- Write only what Dawid did, in his voice (first person, plain, like the NerdWallet and BeatStars pages). Facts come from him; anything not from him is flagged before it ships.
+- Numbers: never invent one silently. If Dawid asks for an estimate, label it "(estimate)" on the page and note it in a one-line MDX comment.
+- Make it read as written by a person: varied sentence length, plain verbs, specific details, a little unevenness. Avoid AI tells: "not X, it's Y" contrasts, tidy triplets everywhere, "the turning point", "the biggest lever", "game-changer", "seamless", "leverage", "delve", "robust", em dashes, rhetorical questions, bold on every paragraph, and takeaways that restate the page.
+- `<Metrics>` takes at most three numbers.
+
 ## Commands
 
 `npm run dev` · `npm run build` · `npm run check` (astro check + stylelint + prettier)

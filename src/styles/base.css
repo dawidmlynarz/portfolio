@@ -23,13 +23,6 @@
   size-adjust: 99.9837%;
 }
 
-/* Page transitions between documents (Chrome, Edge, Safari). Others get a normal page load. */
-@media (prefers-reduced-motion: no-preference) {
-  @view-transition {
-    navigation: auto;
-  }
-}
-
 @layer base {
   html {
     scroll-padding-block-start: var(--space-24);
@@ -122,42 +115,65 @@
 
 @layer base {
   /*
-   * Page transition: the old page sinks back and dims over the ink backdrop while the new one
-   * rises as a sheet with rounded top corners. The same transition runs between every page; only
-   * the nav is named, so it stays put on top.
+   * Page transition "soft rise": the old page fades and lifts out of focus, then the new one
+   * settles up into place with a long ease-out. Going back, both move the other way. The same
+   * transition runs between every page; only the nav is named, so it stays put on top.
+   * The opt-in (@view-transition) and the "back" type are set inline in BaseLayout.
    */
-  ::view-transition {
-    background-color: var(--color-text);
+  :root:not([data-spread])::view-transition {
+    background-color: var(--color-bg);
   }
 
-  ::view-transition-group(*) {
+  :root:not([data-spread])::view-transition-old(root) {
+    animation: page-out var(--duration-page-out) var(--ease-standard) both;
+  }
+
+  :root:not([data-spread])::view-transition-new(root) {
+    animation: page-in var(--duration-page-in) var(--ease-out-expo) var(--delay-page-in) both;
+  }
+
+  :root:active-view-transition-type(back)::view-transition-old(root) {
+    animation-name: page-out-back;
+  }
+
+  :root:active-view-transition-type(back)::view-transition-new(root) {
+    animation-name: page-in-back;
+  }
+
+  ::view-transition-group(nav) {
     animation-duration: var(--duration-page);
     animation-timing-function: var(--ease-in-out-quart);
   }
 
-  ::view-transition-old(root) {
-    animation: page-out var(--duration-page) var(--ease-in-out-quart) both;
-  }
-
-  ::view-transition-new(root) {
-    animation: page-in var(--duration-page) var(--ease-in-out-quart) both;
-  }
-
   @keyframes page-out {
     to {
-      opacity: 0.35;
-      scale: 0.94;
-      translate: 0 -3%;
+      opacity: 0;
+      filter: blur(var(--blur-page));
+      translate: 0 calc(-1 * var(--shift-page-out));
     }
   }
 
   @keyframes page-in {
     from {
-      clip-path: inset(100% 0 0 0 round var(--radius-xl) var(--radius-xl) 0 0);
+      opacity: 0;
+      filter: blur(var(--blur-page));
+      translate: 0 var(--shift-page-in);
     }
+  }
 
+  @keyframes page-out-back {
     to {
-      clip-path: inset(0 0 0 0 round 0);
+      opacity: 0;
+      filter: blur(var(--blur-page));
+      translate: 0 var(--shift-page-out);
+    }
+  }
+
+  @keyframes page-in-back {
+    from {
+      opacity: 0;
+      filter: blur(var(--blur-page));
+      translate: 0 calc(-1 * var(--shift-page-in));
     }
   }
 
