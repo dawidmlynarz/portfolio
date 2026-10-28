@@ -1,0 +1,175 @@
+---
+/**
+ * Reveal lab: the home portrait's layers run through alternative reveal techniques, side by side
+ * with the real liquid, to compare them. A private playground (/playground), not linked anywhere.
+ * Behaviour: reveal-lab.ts (one small WebGL canvas per tile, paused off screen).
+ *
+ * Isolated experiment (CLAUDE.md rule 6): classes live under .lab and read only semantic site
+ * tokens. Without JS or WebGL each tile shows the photo.
+ */
+import { Image, getImage } from "astro:assets";
+import LiquidReveal from "@/components/blocks/LiquidReveal.astro";
+import { PORTRAIT_LAYERS, portraitPhoto } from "@/lib/portrait";
+
+const MODES = [
+  {
+    mode: "lens",
+    name: "Glass lens",
+    note: "A magnifying lens follows the pointer and shows another layer through the glass, with a little refraction at the rim. Each new layer opens like an iris.",
+  },
+  {
+    mode: "ink",
+    name: "Ink burn",
+    note: "The brush soaks through like ink on paper: a noisy, organic edge with a dark rim that keeps creeping after you stop.",
+  },
+  {
+    mode: "dither",
+    name: "Pixel dither",
+    note: "The edge dissolves through an ordered dither on chunky pixels, like a 1-bit screen. Retro, crisp and very light.",
+  },
+  {
+    mode: "halftone",
+    name: "Halftone",
+    note: "The layer below shows through a grid of dots that swell under the pointer and shrink as they heal, like print.",
+  },
+  {
+    mode: "shards",
+    name: "Shards",
+    note: "The portrait is cut into glass cells. Cells near the pointer flip to another layer one by one and slip a little out of place.",
+  },
+  {
+    mode: "slices",
+    name: "Glitch slices",
+    note: "Thin horizontal strips slide sideways and swap layers, faster when you move faster. Loud on purpose.",
+  },
+  {
+    mode: "wave",
+    name: "Shockwave",
+    note: "No brush: entering or tapping sends a ring out from the pointer that swaps the whole portrait to the next layer. At rest it cycles on its own.",
+  },
+];
+
+// One file per image at a width that suits a tile on a retina screen.
+const url = async (img: ImageMetadata) =>
+  (await getImage({ src: img, width: 1600, format: "avif", quality: 55 })).src;
+const images = {
+  top: await url(portraitPhoto),
+  layers: await Promise.all(
+    PORTRAIT_LAYERS.map(async (layer) => ({
+      light: await url(layer.light),
+      dark: layer.dark && (await url(layer.dark)),
+      weight: layer.weight ?? 1,
+    })),
+  ),
+};
+---
+
+<div class="lab">
+  <article class="lab__tile">
+    <div class="lab__stage">
+      <LiquidReveal
+        top={portraitPhoto}
+        layers={PORTRAIT_LAYERS}
+        alt="Portrait of Dawid Młynarz"
+        loading="lazy"
+        sizes="(min-width: 62em) 50vw, 100vw"
+      />
+    </div>
+    <h2 class="lab__name">Liquid (current)</h2>
+    <p class="lab__note">
+      What the home page runs: a gooey blob with a healing trail; each blob carries its own layer.
+    </p>
+  </article>
+  {MODES.map(({ mode, name, note }) => (
+    <article class="lab__tile">
+      <reveal-lab class="lab__stage" data-mode={mode} data-images={JSON.stringify(images)}>
+        <Image
+          class="lab__image"
+          src={portraitPhoto}
+          alt=""
+          widths={[800, 1600]}
+          sizes="(min-width: 62em) 50vw, 100vw"
+          format="avif"
+          quality={55}
+          loading="lazy"
+        />
+        <canvas class="lab__canvas" aria-hidden="true" />
+      </reveal-lab>
+      <h2 class="lab__name">{name}</h2>
+      <p class="lab__note">{note}</p>
+    </article>
+  ))}
+</div>
+
+<script>
+  import "./reveal-lab";
+</script>
+
+<style>
+  @layer components {
+    .lab {
+      display: grid;
+      gap: var(--space-12) var(--space-8);
+    }
+
+    @media (width >= 48em) {
+      .lab {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+    }
+
+    .lab__tile {
+      display: grid;
+      gap: var(--space-2);
+      align-content: start;
+    }
+
+    .lab__stage {
+      position: relative;
+      display: block;
+      aspect-ratio: 2400 / 1792;
+      overflow: hidden;
+      border: 1px solid var(--color-border-subtle);
+      border-radius: var(--radius-md);
+      background: var(--bg-hero);
+      touch-action: pan-y;
+    }
+
+    .lab__stage :global(.liquid) {
+      position: absolute;
+      inset: 0;
+    }
+
+    .lab__image,
+    .lab__canvas {
+      position: absolute;
+      inset: 0;
+      inline-size: 100%;
+      block-size: 100%;
+    }
+
+    .lab__canvas {
+      opacity: 0;
+      transition: opacity var(--duration-reveal) var(--ease-standard);
+    }
+
+    [data-ready] > .lab__canvas {
+      opacity: 1;
+    }
+
+    [data-ready] > .lab__image {
+      visibility: hidden;
+      transition: visibility 0s var(--duration-reveal);
+    }
+
+    .lab__name {
+      margin-block-start: var(--space-2);
+      font-size: var(--text-h4);
+    }
+
+    .lab__note {
+      max-inline-size: 38rem;
+      color: var(--color-text-muted);
+    }
+  }
+</style>

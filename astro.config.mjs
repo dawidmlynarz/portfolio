@@ -4,7 +4,7 @@ import mdx from "@astrojs/mdx";
 import sitemap from "@astrojs/sitemap";
 
 // Pages that must never be indexed or listed in the sitemap.
-const PRIVATE_PATHS = ["/styleguide", "/404"];
+const PRIVATE_PATHS = ["/styleguide", "/404", "/playground"];
 
 export default defineConfig({
   site: "https://mlynarz.com",
