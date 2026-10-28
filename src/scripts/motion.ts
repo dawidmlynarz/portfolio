@@ -5,8 +5,7 @@
  * - Lenis smooth scrolling, driven by the GSAP ticker so ScrollTrigger stays in sync.
  * - [data-reveal="lines"]: headings rise line by line from behind a mask (SplitText).
  * - [data-reveal="fade"]: blocks fade and rise in once they enter the viewport.
- * - [data-hero] + [data-story]: the hero holds while the inverse story panel grows over it,
- *   then the statement lights up word by word.
+ * - [data-story]: the About statement after the home hero lights up word by word as it scrolls.
  * - Links: the "row tear" hover (styles in base.css). Links marked [data-no-tear] keep their own
  *   hover: buttons, pills and quiet links (menu, case-study cards, Next project).
  *
@@ -74,29 +73,15 @@ function revealFades() {
   }
 }
 
-/** The hero holds in place while the next section slides over it, easing back as it goes. */
-function holdHero(hero: HTMLElement, section: HTMLElement, scale: number, alpha: number) {
-  ScrollTrigger.create({
-    trigger: hero,
-    start: "bottom bottom",
-    end: () => `+=${window.innerHeight}`,
-    pin: true,
-    pinSpacing: false,
-  });
-  gsap.to(hero, {
-    scale,
-    autoAlpha: alpha,
-    transformOrigin: "50% 100%",
-    ease: "none",
-    scrollTrigger: { trigger: section, start: "top bottom", end: "top top", scrub: true },
-  });
-}
-
-/** Words light up in reading order while the statement scrolls through the screen (no pin). */
-function lightWordsInPlace(section: HTMLElement, words: NodeListOf<HTMLElement>) {
-  const text = section.querySelector<HTMLElement>(".story__text") ?? section;
+/**
+ * The About statement after the home hero ([data-story]): words light up in reading order while
+ * it scrolls through the screen. Nothing is pinned.
+ */
+function story() {
+  const text = document.querySelector<HTMLElement>("[data-story-text]");
+  if (!text) return;
   gsap.fromTo(
-    words,
+    text.querySelectorAll<HTMLElement>("[data-story-word]"),
     { opacity: 0.16 },
     {
       opacity: 1,
@@ -105,89 +90,6 @@ function lightWordsInPlace(section: HTMLElement, words: NodeListOf<HTMLElement>)
       scrollTrigger: { trigger: text, start: "top 85%", end: "bottom 55%", scrub: 0.6 },
     },
   );
-}
-
-/** Words light up while the panel is pinned; the tall track comes from StoryIntro's CSS. */
-function lightWordsPinned(
-  words: NodeListOf<HTMLElement>,
-  timeline: gsap.core.Timeline,
-  at: number,
-) {
-  const span = 1.3;
-  timeline.fromTo(
-    words,
-    { opacity: 0.16 },
-    {
-      opacity: 1,
-      duration: 0.12,
-      stagger: words.length > 1 ? (span - 0.12) / (words.length - 1) : 0,
-    },
-    at,
-  );
-  timeline.to({}, { duration: 0.25 });
-}
-
-/**
- * The hand-off from the hero to the About statement ([data-story]). html[data-about] picks the
- * PREVIEW variant (see StoryIntro); no attribute is the inverse panel growing over the held hero.
- */
-function story() {
-  const section = document.querySelector<HTMLElement>("[data-story]");
-  const panel = section?.querySelector<HTMLElement>("[data-story-panel]");
-  if (!section || !panel) return;
-  const words = section.querySelectorAll<HTMLElement>("[data-story-word]");
-  const hero = document.querySelector<HTMLElement>("[data-hero]");
-  const variant = root.dataset.about ?? "current";
-
-  if (variant === "current") {
-    const radius = getComputedStyle(root).getPropertyValue("--radius-xl").trim() || "0px";
-    if (hero) holdHero(hero, section, 0.92, 0.3);
-    const timeline = gsap.timeline({
-      defaults: { ease: "none" },
-      scrollTrigger: { trigger: section, start: "top bottom", end: "bottom bottom", scrub: 0.6 },
-    });
-    // Enter (one screen of scroll): the panel grows from an inset card to full bleed.
-    timeline.fromTo(
-      panel,
-      { clipPath: `inset(10% 6% 0% 6% round ${radius})` },
-      { clipPath: "inset(0% 0% 0% 0% round 0px)", duration: 1 },
-    );
-    // Pinned (the rest): words light up in reading order, with a short hold at the end.
-    lightWordsPinned(words, timeline, 1.05);
-    return;
-  }
-
-  lightWordsInPlace(section, words);
-
-  if (variant === "flow") {
-    const rule = section.querySelector<HTMLElement>("[data-story-rule]");
-    if (rule)
-      gsap.fromTo(
-        rule,
-        { scaleX: 0 },
-        {
-          scaleX: 1,
-          ease: "none",
-          scrollTrigger: { trigger: rule, start: "top 95%", end: "top 50%", scrub: 0.6 },
-        },
-      );
-  }
-
-  if (variant === "split" && hero) {
-    // Wider screens: the portrait column stays on screen until the statement has passed.
-    const media = hero.querySelector<HTMLElement>(".home-hero__media");
-    gsap.matchMedia().add("(width >= 48em)", () => {
-      if (!media) return;
-      ScrollTrigger.create({
-        trigger: hero,
-        start: "bottom bottom",
-        endTrigger: section,
-        end: "bottom bottom",
-        pin: media,
-        pinSpacing: false,
-      });
-    });
-  }
 }
 
 const TEAR_MS = 300; // a little longer than --duration-tear

@@ -2,15 +2,14 @@
 
 Non-obvious choices, newest first. One entry per decision: what, why, and what it rules out.
 
-## 2026-10-28 · About hand-off: Flow or Split (not picked yet)
+## 2026-10-28 · About hand-off: Flow
 
-Dawid asked for alternatives to the inverse panel that grows over the held hero, so the About statement feels like a continuation of the hero rather than a separate block, with mobile first. Six were built (Flow, Ink, Split, Sheet, Bridge, Avatar); Dawid shortlisted **Flow** and **Split** and the other four were removed. The two are switchable on preview builds with a floating "About" select (`AboutPicker`, `?about=flow|split`, remembered in localStorage). Production has no attribute and keeps the current panel until one is picked.
+Dawid asked for alternatives to the inverse panel that grew over the held hero, so the About statement reads as a continuation of the hero rather than a separate block, with mobile first. Six were built on a preview with a switcher (Flow, Ink, Split, Sheet, Bridge, Avatar); Dawid shortlisted Flow and Split and picked **Flow**.
 
-- **One component, variants keyed on `html[data-about]`.** The attribute is set by an inline script before first paint, so the page never flashes the wrong layout; `StoryIntro` and `HomeHero` style off it and `motion.ts` branches on it. Switching reloads the page at the top so the hand-off can be scrolled again.
-- **Both are complete without the motion layer.** No JS or reduced motion: words are fully lit, the rule is drawn, Split stacks normally.
-- **Split keeps the full statement size** (h2), except h3 in the narrow tablet column. A step smaller was tried and rolled back (Dawid).
-
-Once Dawid picks, the other variant, the picker, the current panel and `src/lib/about-variants.ts` go.
+- **Same surface as the hero, nothing pinned.** The statement sits on the page background right after the hero; its words light up in reading order as it scrolls through the screen (scrubbed, `motion.ts`). The hero no longer holds or eases back, so `data-hero` and the 260svh pinned track are gone, and on mobile the hero keeps the whole first screen.
+- **No separator.** A hairline that drew in above the label was tried and dropped (Dawid: redundant).
+- **No bottom padding** on the section: the Selected work section brings its own space above it.
+- **Complete without the motion layer**: all words fully lit.
 
 ## 2026-10-28 · Buttons: one family, the row tear
 
