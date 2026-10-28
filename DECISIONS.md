@@ -8,7 +8,7 @@ Non-obvious choices, newest first. One entry per decision: what, why, and what i
 - **The cover is a stand-in**: a screenshot of the live Showroom booking flow from the public Storybook, until Dawid sends the final one.
 - **The time savings are estimates Dawid asked for**, not measurements (about six weeks down to a week and a half of interface work, about 350 hours per project), labelled "(estimate)" in the highlights. Every other number comes from the Anvil repository.
 - **The Anthony Marin quote is a placeholder** written for the draft, at Dawid's request, until Dawid sends the real one.
-- **Small grammar slips on purpose.** At Dawid's request the body carries about 30 minor non-native slips (missing articles, prepositions, tense), roughly 2% of its words, so it reads like his own writing. Title, description, lead, headings, highlights, alt text and the quote stay clean. An MDX comment warns against proofreading them away.
+- **Small grammar slips on purpose.** At Dawid's request the body carries about 25 minor non-native slips (missing articles, prepositions, tense), roughly 2% of its words, so it reads like his own writing. Title, description, lead, headings, highlights, alt text and the quote stay clean. An MDX comment warns against proofreading them away.
 - **`Figure` grid track is `minmax(0, 1fr)`** so a long placeholder label can't push the figure 1px past a 375px viewport.
 
 ## 2026-10-28 · Client logos move into the About statement on Home
