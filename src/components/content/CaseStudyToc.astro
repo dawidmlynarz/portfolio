@@ -2,8 +2,9 @@
 /**
  * Case-study contents as a mini map, fixed at the right edge from 62em. One short line per h2.
  * Hovering the map opens the rows up a little; the hovered (or focused) row swaps its line for its
- * section title, one at a time, with no panel behind it. Each row links to its section (Lenis
- * smooths the jump when the motion layer runs).
+ * section title, one at a time, with no panel behind it. The title arrives with the row tear (CSS
+ * only: two aria-hidden copies and the link-tear keyframes from base.css). Each row links to its
+ * section (Lenis smooths the jump when the motion layer runs).
  *
  * Progress: each line fills as you read its section, so the filled lines show where you are; the
  * current section's title is in the text colour (aria-current). The map only shows while the
@@ -28,7 +29,14 @@ const sections = headings.filter(({ depth }) => depth === 2);
       {sections.map(({ slug, text }) => (
         <li>
           <a class="toc__link" href={`#${slug}`} data-toc-link={slug} data-no-tear>
-            <span class="toc__label">{text}</span>
+            <span class="toc__label">
+              <span class="toc__text">{text}</span>
+              {["outer", "middle"].map((part) => (
+                <span class:list={["toc__tear", `toc__tear--${part}`]} aria-hidden="true">
+                  {text}
+                </span>
+              ))}
+            </span>
             <span class="toc__bar" aria-hidden="true">
               <span class="toc__fill" />
             </span>
@@ -87,7 +95,7 @@ const sections = headings.filter(({ depth }) => depth === 2);
       .toc[data-ready] {
         position: fixed;
         inset-block-start: 50%;
-        inset-inline-end: var(--space-4);
+        inset-inline-end: var(--space-8); /* in line with Back to top */
         z-index: calc(var(--z-nav) - 1);
         display: block;
         opacity: 0;
@@ -120,7 +128,7 @@ const sections = headings.filter(({ depth }) => depth === 2);
       position: relative;
       display: grid;
       justify-items: end;
-      padding-block: calc(0.75 * var(--space-1));
+      padding-block: var(--space-1);
       padding-inline-start: var(--space-4);
       font-size: var(--text-small);
       line-height: var(--leading-small);
@@ -146,17 +154,48 @@ const sections = headings.filter(({ depth }) => depth === 2);
       overflow: hidden;
       white-space: nowrap;
       text-overflow: ellipsis;
-      opacity: 0;
+      visibility: hidden;
       pointer-events: none;
-      translate: var(--space-2) -50%;
-      transition:
-        opacity var(--duration-fast) var(--ease-standard),
-        translate var(--duration-fast) var(--ease-standard);
+      translate: 0 -50%;
     }
 
+    /* The title arrives with the site's row tear: two copies cut into rows jolt sideways for
+       --duration-tear while the real text waits, then the clean title stays. */
     .toc__link:is(:hover, :focus-visible) .toc__label {
-      opacity: 1;
-      translate: 0 -50%;
+      visibility: visible;
+    }
+
+    .toc__tear {
+      position: absolute;
+      inset: 0;
+      opacity: 0;
+    }
+
+    .toc__tear--outer {
+      clip-path: polygon(0 0, 100% 0, 100% 34%, 0 34%, 0 67%, 100% 67%, 100% 100%, 0 100%);
+    }
+
+    .toc__tear--middle {
+      clip-path: inset(34% 0 33% 0);
+    }
+
+    .toc__link:is(:hover, :focus-visible) .toc__text {
+      animation: toc-tear-hide var(--duration-tear) steps(1, end);
+    }
+
+    .toc__link:is(:hover, :focus-visible) .toc__tear--outer {
+      animation: link-tear-outer var(--duration-tear) steps(1, end);
+    }
+
+    .toc__link:is(:hover, :focus-visible) .toc__tear--middle {
+      animation: link-tear-middle var(--duration-tear) steps(1, end);
+    }
+
+    @keyframes toc-tear-hide {
+      0%,
+      100% {
+        opacity: 0;
+      }
     }
 
     .toc__bar {
@@ -192,9 +231,12 @@ const sections = headings.filter(({ depth }) => depth === 2);
     @media (prefers-reduced-motion: reduce) {
       .toc[data-ready],
       .toc__link,
-      .toc__label,
       .toc__bar {
         transition: none;
+      }
+
+      .toc__link:is(:hover, :focus-visible) :is(.toc__text, .toc__tear) {
+        animation: none;
       }
     }
   }
