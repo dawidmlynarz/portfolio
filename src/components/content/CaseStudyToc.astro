@@ -1,8 +1,9 @@
 ---
 /**
- * Case-study contents as a mini map, fixed at the right edge from 62em. One short line per h2;
- * hovering or focusing the map opens it on a glass panel with the section titles beside their
- * lines. Each row links to its section (Lenis smooths the jump when the motion layer runs).
+ * Case-study contents as a mini map, fixed at the right edge from 62em. One short line per h2.
+ * Hovering the map opens the rows up a little; the hovered (or focused) row swaps its line for its
+ * section title, one at a time, with no panel behind it. Each row links to its section (Lenis
+ * smooths the jump when the motion layer runs).
  *
  * Progress: each line fills as you read its section, so the filled lines show where you are; the
  * current section's title is in the text colour (aria-current). The map only shows while the
@@ -106,69 +107,78 @@ const sections = headings.filter(({ depth }) => depth === 2);
 
     .toc__list {
       display: grid;
-      padding: var(--space-3);
-      border: var(--border-width) solid transparent;
-      border-radius: var(--radius-md);
-      transition:
-        background-color var(--duration-fast) var(--ease-standard),
-        border-color var(--duration-fast) var(--ease-standard);
+      justify-items: end;
+      padding: var(--space-2) 0;
     }
 
-    /* Open: a glass panel, like the nav menu, so the titles read over the page. */
-    .toc:is(:hover, :focus-within) .toc__list {
-      border-color: var(--color-border-subtle);
-      background-color: var(--color-glass);
-      backdrop-filter: blur(var(--blur-menu));
-      box-shadow: var(--shadow-bar);
-    }
-
+    /* A row is just its line. The title sits on top of it, folded away, and only the hovered or
+       focused row swaps its line for its title. The rows open up a little while the map is
+       hovered, so a title has room between its neighbours. */
     .toc__link {
       --underline-size: 0%;
 
-      display: flex;
-      gap: var(--space-4);
-      align-items: center;
-      justify-content: end;
-      padding-block: var(--space-1);
+      position: relative;
+      display: grid;
+      justify-items: end;
+      padding-block: calc(0.75 * var(--space-1));
+      padding-inline-start: var(--space-4);
       font-size: var(--text-small);
       line-height: var(--leading-small);
       color: var(--color-text-muted);
+      transition: padding-block var(--duration-fast) var(--ease-standard);
+    }
+
+    .toc:is(:hover, :focus-within) .toc__link {
+      padding-block: calc(1.5 * var(--space-1));
     }
 
     .toc__link:hover,
+    .toc__link:focus-visible,
     .toc__link[aria-current] {
       color: var(--color-text);
     }
 
-    /* Titles are folded away until the map opens. */
     .toc__label {
+      position: absolute;
+      inset-block-start: 50%;
+      inset-inline-end: 0;
+      max-inline-size: 20rem;
       overflow: hidden;
-      max-inline-size: 0;
       white-space: nowrap;
       text-overflow: ellipsis;
       opacity: 0;
+      pointer-events: none;
+      translate: var(--space-2) -50%;
       transition:
-        max-inline-size var(--duration-link) var(--ease-out-expo),
-        opacity var(--duration-fast) var(--ease-standard);
+        opacity var(--duration-fast) var(--ease-standard),
+        translate var(--duration-fast) var(--ease-standard);
     }
 
-    .toc:is(:hover, :focus-within) .toc__label {
-      max-inline-size: 18rem;
+    .toc__link:is(:hover, :focus-visible) .toc__label {
       opacity: 1;
+      translate: 0 -50%;
     }
 
     .toc__bar {
-      flex-shrink: 0;
       overflow: hidden;
-      inline-size: var(--space-6);
+      inline-size: var(--space-4);
       block-size: calc(2 * var(--border-width));
       border-radius: var(--radius-pill);
       background-color: var(--color-border-muted);
-      transition: inline-size var(--duration-fast) var(--ease-standard);
+      transform-origin: right;
+      transition:
+        inline-size var(--duration-fast) var(--ease-standard),
+        opacity var(--duration-fast) var(--ease-standard),
+        scale var(--duration-fast) var(--ease-standard);
+    }
+
+    .toc__link:is(:hover, :focus-visible) .toc__bar {
+      opacity: 0;
+      scale: 0 1;
     }
 
     .toc__link[aria-current] .toc__bar {
-      inline-size: var(--space-8);
+      inline-size: var(--space-6);
     }
 
     .toc__fill {
@@ -181,7 +191,7 @@ const sections = headings.filter(({ depth }) => depth === 2);
 
     @media (prefers-reduced-motion: reduce) {
       .toc[data-ready],
-      .toc__list,
+      .toc__link,
       .toc__label,
       .toc__bar {
         transition: none;
