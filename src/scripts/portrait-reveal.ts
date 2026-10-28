@@ -1,5 +1,5 @@
 /**
- * <liquid-reveal>: a portrait on top; a glitch reveals up to four layers below it.
+ * <portrait-reveal>: a portrait on top; a glitch reveals up to four layers below it.
  *
  * The glitch itself (a weak video signal: rolling tracking bands at rest, interference under the
  * pointer) lives in reveal-glitch.ts. This element owns everything around it: the canvas and the
@@ -140,7 +140,7 @@ const isDark = (color: string) => {
   return 0.2126 * r + 0.7152 * g + 0.0722 * b < 128;
 };
 
-class LiquidReveal extends HTMLElement {
+class PortraitReveal extends HTMLElement {
   #abort = new AbortController();
   #cfg!: Config;
   #reduceMotion = false;
@@ -180,9 +180,9 @@ class LiquidReveal extends HTMLElement {
     this.#slots = layers.slice(0, MAX_LAYERS).map((data) => ({ data, variants: {}, img: null }));
 
     // Page-load fade: mark the portrait as shown once the static image has decoded
-    // (LiquidReveal.astro fades it in from 0 to 100% opacity under the motion layer). The image's
+    // (PortraitReveal.astro fades it in from 0 to 100% opacity under the motion layer). The image's
     // own onload usually gets there first; this covers a load that beat the attribute.
-    const shown = this.querySelector<HTMLImageElement>(".liquid__image");
+    const shown = this.querySelector<HTMLImageElement>(".portrait-reveal__image");
     const markShown = () => (this.dataset.shown = "");
     if (!shown || shown.complete) markShown();
     else shown.decode().then(markShown, markShown);
@@ -375,7 +375,7 @@ class LiquidReveal extends HTMLElement {
 
   /** The static <img>'s file when it is big enough, else a pick. */
   #topUrl(sources: Source[]) {
-    const current = this.querySelector<HTMLImageElement>(".liquid__image")?.currentSrc;
+    const current = this.querySelector<HTMLImageElement>(".portrait-reveal__image")?.currentSrc;
     const path = current && new URL(current, location.href).pathname;
     const shown = sources.find((s) => s.url === path);
     return shown && shown.w >= this.#drawnWidth * 0.8
@@ -387,7 +387,7 @@ class LiquidReveal extends HTMLElement {
 
   /**
    * Same crop as the static <img> (object-fit: cover; object-position at the face centre), so the
-   * canvas lines up with it exactly when it fades in. Keep in sync with LiquidReveal.astro.
+   * canvas lines up with it exactly when it fades in. Keep in sync with PortraitReveal.astro.
    */
   #computeLayout(iw: number, ih: number): Layout {
     const [x0, x1, y0, y1] = this.#cfg.face;
@@ -506,4 +506,5 @@ class LiquidReveal extends HTMLElement {
   }
 }
 
-if (!customElements.get("liquid-reveal")) customElements.define("liquid-reveal", LiquidReveal);
+if (!customElements.get("portrait-reveal"))
+  customElements.define("portrait-reveal", PortraitReveal);

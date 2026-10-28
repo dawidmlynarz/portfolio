@@ -1,5 +1,5 @@
 /**
- * WebGL pieces for the portrait's glitch reveal (liquid-reveal.ts and reveal-glitch.ts). One
+ * WebGL pieces for the portrait's glitch reveal (portrait-reveal.ts and reveal-glitch.ts). One
  * full-screen quad; every pass is a fragment shader over it.
  *
  * Texture units are fixed for the whole canvas: 0 the top image, 1–4 the layers, 5 the glitch's
@@ -8,7 +8,7 @@
 
 export type Program = { p: WebGLProgram; u: Record<string, WebGLUniformLocation | null> };
 
-/** What the glitch gets each frame from <liquid-reveal>, in CSS pixels and seconds. */
+/** What the glitch gets each frame from <portrait-reveal>, in CSS pixels and seconds. */
 export type StyleFrame = {
   now: number; // ms
   dt: number; // s
