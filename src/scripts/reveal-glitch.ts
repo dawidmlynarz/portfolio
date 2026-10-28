@@ -4,12 +4,15 @@
  * - At rest: two tracking bands roll slowly down the picture, as on a mistracked VHS tape. Inside
  *   them the rows show another layer, slightly torn sideways; each time a band wraps it picks a new
  *   layer and comes back in after a random gap, so the distance between the two keeps changing.
+ *   The two bands never show the same layer: when a wrap makes them match, the other band
+ *   switches with a small tear.
  *   Every 6–8 s a hiccup tears a few rows elsewhere for about 150 ms.
  * - The pointer is interference, like a magnet held near a CRT: the band snaps to its height and
  *   widens, and its rows open across a span around the pointer with ragged ends. Speed drives the
  *   tearing (rows jump sideways, colours split); holding still lets the signal settle into a clean
  *   view. Rows the band leaves behind hold for a moment, then close one at a time. A layer switch
- *   (on arrival, on a tap and every 3–5 s) is a hiccup; hiccups have a 1.4 s cooldown.
+ *   (on arrival, on a tap and every 3–5 s) is a hiccup; hiccups have a 1.4 s cooldown. Taps and
+ *   timed switches always change the layer.
  * - Leaving: the band lets go and rolls on from where it was. The second band waits during hover.
  * - Reduced motion: no rolling band or hiccups; a clean band at the pointer only.
  *
@@ -146,7 +149,7 @@ export class GlitchSignal {
 
     // Layer switches are hiccups.
     if (f.arrived || f.tapped || (f.pointing && !rm && now > this.#nextSwitch)) {
-      this.#layer = f.pick(this.#layer);
+      this.#layer = f.arrived ? f.pick(this.#layer) : f.pair(this.#layer);
       this.#nextSwitch = now + between(3200, 5000);
       this.#burst(now, 1, rm);
     }
@@ -169,20 +172,30 @@ export class GlitchSignal {
       if (band.y - band.half > H) {
         band.y = this.#reenter(band.half, this.#second.y, H);
         this.#restLayer = f.pick(this.#restLayer);
+        if (this.#restLayer === this.#second.layer) {
+          this.#second.layer = f.pair(this.#restLayer);
+          this.#burst(now, 0.6, rm);
+        }
       }
     }
     const second = this.#second;
     if (Number.isNaN(second.y)) {
       second.y = band.y - H * between(0.3, 0.6);
-      second.layer = f.pick(-1);
+      second.layer = f.pair(this.#restLayer);
     }
     if (!f.pointing && !rm) {
       second.y += H * 0.08 * dt;
       if (second.y - band.half > H) {
         second.y = this.#reenter(band.half, band.y, H);
         second.layer = f.pick(second.layer);
+        if (second.layer === this.#restLayer) {
+          this.#restLayer = f.pair(second.layer);
+          this.#burst(now, 0.6, rm);
+        }
       }
     }
+    // Until a second layer has loaded both bands show the first; the second band takes the new one.
+    if (second.layer === this.#restLayer) second.layer = f.pair(this.#restLayer);
 
     // Rare hiccup at rest: a few rows elsewhere tear for a moment.
     if (!f.pointing && !rm && now > this.#nextHiccup) {
