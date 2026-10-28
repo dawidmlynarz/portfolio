@@ -1,0 +1,257 @@
+---
+/**
+ * Case-study contents as a mini map, fixed at the right edge from 62em. One short line per h2.
+ * Hovering the map opens the rows up a little; the hovered (or focused) row's line shrinks to half
+ * and its section title shows to the left of it, clear of the pointer, one at a time, with no panel
+ * behind it. The title arrives with the "signal settle" from the link playground: letters come in
+ * as noise and lock in from the left. Each row links to its section (Lenis smooths the jump when
+ * the motion layer runs).
+ *
+ * Progress: each line fills as you read its section, so the filled lines show where you are; the
+ * current section's title is in the text colour (aria-current). The map only shows while the
+ * case-study body is on screen. Both need the small script below; without it the map stays
+ * hidden (the page is complete without it).
+ */
+import type { MarkdownHeading } from "astro";
+
+interface Props {
+  headings: MarkdownHeading[];
+  /** Selector of the element that holds the sections (its end closes the last one). */
+  body: string;
+}
+
+const { headings, body } = Astro.props;
+const sections = headings.filter(({ depth }) => depth === 2);
+---
+
+{sections.length > 1 && (
+  <nav class="toc" aria-label="On this page" data-toc data-toc-body={body}>
+    <ol class="toc__list" role="list">
+      {sections.map(({ slug, text }) => (
+        <li>
+          <a class="toc__link" href={`#${slug}`} data-toc-link={slug} data-no-tear>
+            <span class="toc__label">
+              <span class="toc__text">{text}</span>
+              <span class="toc__noise" aria-hidden="true" />
+            </span>
+            <span class="toc__bar" aria-hidden="true">
+              <span class="toc__fill" />
+            </span>
+          </a>
+        </li>
+      ))}
+    </ol>
+  </nav>
+)}
+
+<script>
+  // Fills each section's line as it is read, marks the current one, and shows the map only while
+  // the case-study body is on screen. Titles arrive with the signal settle. The reading line sits a third of the way down the screen.
+  const toc = document.querySelector<HTMLElement>("[data-toc]");
+  const body = toc && document.querySelector<HTMLElement>(toc.dataset.tocBody ?? "");
+  if (toc && body) {
+    const rows = [...toc.querySelectorAll<HTMLAnchorElement>("[data-toc-link]")].flatMap((link) => {
+      const heading = document.getElementById(link.dataset.tocLink ?? "");
+      return heading ? [{ link, heading }] : [];
+    });
+
+    let frame = 0;
+    const update = () => {
+      frame = 0;
+      const line = innerHeight / 3;
+      const end = body.getBoundingClientRect().bottom;
+      toc.toggleAttribute(
+        "data-visible",
+        body.getBoundingClientRect().top < innerHeight / 2 && end > line,
+      );
+      rows.forEach(({ link, heading }, i) => {
+        const top = heading.getBoundingClientRect().top;
+        const next = rows[i + 1]?.heading.getBoundingClientRect().top ?? end;
+        const fill = Math.min(1, Math.max(0, (line - top) / Math.max(1, next - top)));
+        link.style.setProperty("--toc-fill", String(fill));
+        if (top <= line && next > line) link.setAttribute("aria-current", "location");
+        else link.removeAttribute("aria-current");
+      });
+    };
+    const schedule = () => (frame ||= requestAnimationFrame(update));
+
+    // Signal settle: the hovered or focused title arrives as noise and locks in from the left, at
+    // a coarse frame rate so it reads as a signal, not a tween. Skipped with reduced motion.
+    const NOISE = "ABCDEFGHJKLMNPRSTUVWXYZ#%&*+=/<>_";
+    const SETTLE_MS = 420;
+    const FRAME_MS = 40;
+    const reduced = matchMedia("(prefers-reduced-motion: reduce)");
+    const settle = (link: HTMLElement) => {
+      const label = link.querySelector<HTMLElement>(".toc__label");
+      const noise = label?.querySelector<HTMLElement>(".toc__noise");
+      const text = label?.querySelector(".toc__text")?.textContent ?? "";
+      if (!label || !noise || reduced.matches || label.hasAttribute("data-settling")) return;
+      label.setAttribute("data-settling", "");
+      const start = performance.now();
+      const tick = () => {
+        const t = Math.min(1, (performance.now() - start) / SETTLE_MS);
+        const locked = Math.floor(t * text.length);
+        noise.textContent = [...text]
+          .map((char, i) =>
+            i < locked || char === " " ? char : NOISE[Math.floor(Math.random() * NOISE.length)],
+          )
+          .join("");
+        if (t < 1) setTimeout(tick, FRAME_MS);
+        else label.removeAttribute("data-settling");
+      };
+      tick();
+    };
+    for (const { link } of rows) {
+      link.addEventListener("pointerenter", () => settle(link));
+      link.addEventListener("focus", () => settle(link));
+    }
+
+    addEventListener("scroll", schedule, { passive: true });
+    addEventListener("resize", schedule);
+    toc.setAttribute("data-ready", "");
+    update();
+  }
+</script>
+
+<style>
+  @layer components {
+    .toc {
+      display: none;
+    }
+
+    @media (width >= 62em) {
+      .toc[data-ready] {
+        position: fixed;
+        inset-block-start: 50%;
+        inset-inline-end: var(--space-8); /* in line with Back to top */
+        z-index: calc(var(--z-nav) - 1);
+        display: block;
+        opacity: 0;
+        visibility: hidden;
+        translate: 0 -50%;
+        transition:
+          opacity var(--duration-link) var(--ease-standard),
+          visibility var(--duration-link);
+      }
+
+      .toc[data-visible],
+      .toc:focus-within {
+        opacity: 1;
+        visibility: visible;
+      }
+    }
+
+    .toc__list {
+      display: grid;
+      justify-items: end;
+      padding: var(--space-2) 0;
+    }
+
+    /* A row is just its line. Its title waits, hidden, to the left of the row, and only the
+       hovered or focused row shows it. The rows open up a little while the map is hovered, so a
+       title has room between its neighbours. */
+    .toc__link {
+      --underline-size: 0%;
+
+      position: relative;
+      display: grid;
+      justify-items: end;
+      padding-block: var(--space-1);
+      padding-inline-start: var(--space-4);
+      font-size: var(--text-small);
+      line-height: var(--leading-small);
+      color: var(--color-text-muted);
+      transition: padding-block var(--duration-fast) var(--ease-standard);
+    }
+
+    .toc:is(:hover, :focus-within) .toc__link {
+      padding-block: calc(1.5 * var(--space-1));
+    }
+
+    .toc__link:hover,
+    .toc__link:focus-visible,
+    .toc__link[aria-current] {
+      color: var(--color-text);
+    }
+
+    .toc__label {
+      position: absolute;
+      inset-block-start: 50%;
+
+      /* From the row's right edge, past the longest (current) line and a gap: the row's width
+         changes as its line shrinks, its right edge doesn't. */
+      inset-inline-end: calc(var(--space-6) + var(--space-2));
+      max-inline-size: 20rem;
+      overflow: hidden;
+      white-space: nowrap;
+      text-overflow: ellipsis;
+      visibility: hidden;
+      pointer-events: none;
+      translate: 0 -50%;
+    }
+
+    /* "Signal settle": the title arrives as noise and locks in letter by letter from the left
+       (script above). The real text keeps the box and the accessible name; it only hides while
+       the noise stands in. */
+    .toc__link:is(:hover, :focus-visible) .toc__label {
+      visibility: visible;
+    }
+
+    .toc__noise {
+      position: absolute;
+      inset: 0;
+      overflow: clip;
+      opacity: 0;
+    }
+
+    .toc__label[data-settling] .toc__text {
+      opacity: 0;
+    }
+
+    .toc__label[data-settling] .toc__noise {
+      opacity: 1;
+    }
+
+    .toc__bar {
+      overflow: hidden;
+      inline-size: var(--space-4);
+      block-size: calc(2 * var(--border-width));
+      border-radius: var(--radius-pill);
+      background-color: var(--color-border-muted);
+      transition:
+        inline-size var(--duration-fast) var(--ease-standard),
+        background-color var(--duration-fast) var(--ease-standard);
+    }
+
+    /* The hovered line shrinks to half, and its title sits to the left of where the full line
+       was, so the pointer on the line never covers it. */
+    .toc__link:is(:hover, :focus-visible) .toc__bar {
+      inline-size: var(--space-2);
+      background-color: var(--color-text);
+    }
+
+    .toc__link[aria-current]:is(:hover, :focus-visible) .toc__bar {
+      inline-size: var(--space-3);
+    }
+
+    .toc__link[aria-current] .toc__bar {
+      inline-size: var(--space-6);
+    }
+
+    .toc__fill {
+      display: block;
+      block-size: 100%;
+      background-color: var(--color-text);
+      transform-origin: left;
+      scale: var(--toc-fill, 0) 1;
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      .toc[data-ready],
+      .toc__link,
+      .toc__bar {
+        transition: none;
+      }
+    }
+  }
+</style>

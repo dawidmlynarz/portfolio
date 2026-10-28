@@ -6,6 +6,10 @@
  * - [data-reveal="lines"]: headings rise line by line from behind a mask (SplitText).
  * - [data-reveal="fade"]: blocks fade and rise in once they enter the viewport.
  * - [data-story]: the About statement after the home hero lights up word by word as it scrolls.
+ * - [data-parallax]: a frame whose image is taller than it (the case-study cover from 48em); the
+ *   image drifts from its top edge to its bottom edge while the frame scrolls past.
+ * - [data-cover-follow]: in a list of links ("Next up"), the hovered link's cover follows the
+ *   pointer, beside it.
  * - Links: the "row tear" hover (styles in base.css). Links marked [data-no-tear] keep their own
  *   hover: buttons, pills and quiet links (menu, case-study cards, Next project).
  *
@@ -95,18 +99,70 @@ function story() {
   );
 }
 
+/** Case-study cover from 48em: the 16:9 image drifts through its 2:1 frame as it scrolls past. */
+function parallax() {
+  const mm = gsap.matchMedia();
+  mm.add("(width >= 48em)", () => {
+    for (const frame of document.querySelectorAll<HTMLElement>("[data-parallax]")) {
+      const img = frame.querySelector<HTMLElement>("img");
+      if (!img) continue;
+      // Half the overhang: how far the centred image can move before an edge shows.
+      const reach = () => Math.max(0, (img.offsetHeight - frame.offsetHeight) / 2);
+      gsap.fromTo(
+        img,
+        { y: () => -reach() },
+        {
+          y: () => reach(),
+          ease: "none",
+          scrollTrigger: {
+            trigger: frame,
+            start: "top bottom",
+            end: "bottom top",
+            scrub: true,
+            invalidateOnRefresh: true,
+          },
+        },
+      );
+    }
+  });
+}
+
+/**
+ * "Next up": the hovered row's cover floats beside the pointer, on whichever side has room.
+ * Links carry [data-cover-index], the frame [data-cover-frame], its images [data-cover-img].
+ */
+function coverFollow() {
+  const GAP = 32;
+  for (const list of document.querySelectorAll<HTMLElement>("[data-cover-follow]")) {
+    const frame = list.querySelector<HTMLElement>("[data-cover-frame]");
+    if (!frame) continue;
+    const images = [...frame.querySelectorAll<HTMLElement>("[data-cover-img]")];
+    list.addEventListener("pointermove", (event) => {
+      const width = frame.offsetWidth;
+      const x =
+        event.clientX + GAP + width < innerWidth
+          ? event.clientX + GAP
+          : event.clientX - GAP - width;
+      frame.style.setProperty("--cover-x", `${x}px`);
+      frame.style.setProperty("--cover-y", `${event.clientY}px`);
+    });
+    list.addEventListener("pointerover", (event) => {
+      const link = (event.target as Element).closest<HTMLElement>("[data-cover-index]");
+      if (!link) return frame.removeAttribute("data-active");
+      const index = link.dataset.coverIndex;
+      for (const img of images) img.toggleAttribute("data-shown", img.dataset.coverImg === index);
+      frame.setAttribute("data-active", "");
+    });
+    list.addEventListener("pointerleave", () => frame.removeAttribute("data-active"));
+  }
+}
+
 const TEAR_MS = 300; // a little longer than --duration-tear
 
 /** Wraps a link's label (everything before its icon) in .link-tear, once. */
 function tearLabel(link: HTMLAnchorElement) {
   const existing = link.querySelector<HTMLElement>(":scope > .link-tear");
   if (existing) return existing;
-  // A link can name its label (the nav logo tears only the name, the mark tears in Nav).
-  const named = link.querySelector<HTMLElement>(":scope > [data-tear-label]");
-  if (named) {
-    named.classList.add("link-tear");
-    return named;
-  }
   const label = document.createElement("span");
   label.className = "link-tear";
   const icon = [...link.childNodes].find((node) => node instanceof SVGElement);
@@ -151,6 +207,12 @@ function tearLines(label: HTMLElement) {
 
 /** Lays the two torn rows (top and bottom, middle) over each line of the label, then runs. */
 function tear(link: HTMLAnchorElement) {
+  // [data-tear-self]: the link tears its own parts in CSS (the nav mark), no text rows.
+  if (link.hasAttribute("data-tear-self")) {
+    link.setAttribute("data-tearing", "");
+    setTimeout(() => link.removeAttribute("data-tearing"), TEAR_MS);
+    return;
+  }
   const label = tearLabel(link);
   const lines = tearLines(label);
   if (!lines.length) return;
@@ -198,5 +260,7 @@ if (root.classList.contains("motion")) {
   revealFades();
   revealLines();
   story();
+  parallax();
+  coverFollow();
   linkTear();
 }

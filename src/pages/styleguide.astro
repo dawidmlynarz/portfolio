@@ -18,12 +18,28 @@ import SectionIntro from "@/components/blocks/SectionIntro.astro";
 import Services from "@/components/blocks/Services.astro";
 import StoryIntro from "@/components/blocks/StoryIntro.astro";
 import ClientLogos from "@/components/blocks/ClientLogos.astro";
+import ClientLogo from "@/components/ui/ClientLogo.astro";
+import NextUp from "@/components/content/NextUp.astro";
+import CaseStudyToc from "@/components/content/CaseStudyToc.astro";
+import { getPagedWork } from "@/lib/work";
 import LockPanel from "@/components/blocks/LockPanel.astro";
 import { getEntry } from "astro:content";
 import { COLOR_ROLES, SPACE } from "@/lib/tokens";
 import { SERVICES } from "@/lib/services";
 import { PORTRAIT_LAYERS, portraitPhoto } from "@/lib/portrait";
 import figureSample from "@/assets/placeholders/figure-sample.jpg";
+
+// Contents mini map (right edge, from 62em) over this page's own sections, as on case studies.
+const STYLEGUIDE_SECTIONS = [
+  ["color-title", "Color"],
+  ["type-title", "Typography"],
+  ["space-title", "Spacing"],
+  ["shape-title", "Shape & depth"],
+  ["layout-title", "Layout"],
+  ["components-title", "Components"],
+  ["blocks-title", "Blocks"],
+].map(([slug, text]) => ({ depth: 2, slug: slug!, text: text! }));
+const nextUpSample = (await getPagedWork()).slice(0, 3);
 
 const TYPE_ROLES = [
   { role: "h1", tag: "h1", sample: "Designing calm products" },
@@ -382,6 +398,12 @@ const SECTIONS = [
         <ClientLogos />
         <ClientLogos spread />
         <h3 class="text-caption muted">
+          ClientLogo · one logo in the text colour (case-study header, sized by its parent)
+        </h3>
+        <p class="styleguide__client-logo">
+          <ClientLogo client="pantheon" />
+        </p>
+        <h3 class="text-caption muted">
           Metrics · up to three numbers inside case studies, content width by default, top-aligned
         </h3>
         <Metrics
@@ -401,12 +423,20 @@ const SECTIONS = [
     label="StoryIntro · inverse hand-off statement"
     text="With the motion layer on, the panel grows from an inset card to full bleed and the words light up as you scroll. Without it, or with reduced motion, the full statement simply shows."
   />
+  <NextUp entries={nextUpSample} />
+  <CaseStudyToc headings={STYLEGUIDE_SECTIONS} body="main" />
 </SiteLayout>
 
 <style>
   @layer components {
     .muted {
       color: var(--color-text-muted);
+    }
+
+    .styleguide__client-logo :global(svg) {
+      display: block;
+      inline-size: auto;
+      block-size: var(--space-12);
     }
 
     .measure {

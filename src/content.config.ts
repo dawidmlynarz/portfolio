@@ -1,6 +1,7 @@
 import { defineCollection, reference } from "astro:content";
 import { glob } from "astro/loaders";
 import { z } from "astro/zod";
+import { CLIENTS, type Client } from "./lib/clients";
 
 /**
  * Case studies: one folder per case study, src/content/work/<slug>/index.mdx, with its images
@@ -23,10 +24,14 @@ const work = defineCollection({
       /** Page intro under the headline, when it differs from the card summary. */
       lead: z.string().optional(),
       company: z.string(),
+      /** Logo above the case-study title: a key of CLIENTS (src/lib/clients.ts). */
+      client: z.enum(Object.keys(CLIENTS) as [Client, ...Client[]]).optional(),
       role: z.string(),
       /** Agency or partner the work was done through, e.g. "XWP.co". */
       via: z.string().optional(),
       year: z.number().int().optional(),
+      /** "Date" in the case-study facts, as Dawid writes it ("2021", "2016–2025"). Falls back to `year`. */
+      date: z.string().optional(),
       industry: z.string(),
       business: z.string(),
       /** Label shown before `business` on cards ("Model" for SaaS/agency/product work). */
@@ -36,7 +41,6 @@ const work = defineCollection({
       coverAlt: z.string().min(1, "Cover images need alt text."),
       /** Headline numbers shown in the case-study header. */
       metrics: z.array(z.object({ value: z.string(), label: z.string() })).default([]),
-      link: z.object({ href: z.url(), label: z.string() }).optional(),
       /** Sort order on the Work and Home pages (ascending). */
       order: z.number(),
       next: reference("work").optional(),
