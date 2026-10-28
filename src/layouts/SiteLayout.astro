@@ -2,8 +2,6 @@
 import BaseLayout from "@/layouts/BaseLayout.astro";
 import Nav from "@/components/blocks/Nav.astro";
 import Footer from "@/components/blocks/Footer.astro";
-import BackdropPicker from "@/components/blocks/BackdropPicker.astro";
-import { isProduction } from "@/lib/site";
 import type { ComponentProps } from "astro/types";
 
 type Props = ComponentProps<typeof BaseLayout> & {
@@ -19,7 +17,6 @@ const { navOverlap = false, ...base } = Astro.props;
     <a class="skip-link" href="#main" data-no-tear>
       Skip to content
     </a>
-    {!isProduction && <BackdropPicker />}
     <Nav />
     <main id="main" tabindex="-1">
       <slot />

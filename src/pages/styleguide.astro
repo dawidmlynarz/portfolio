@@ -11,7 +11,6 @@ import Button from "@/components/ui/Button.astro";
 import Tag from "@/components/ui/Tag.astro";
 import Figure from "@/components/ui/Figure.astro";
 import Hero from "@/components/blocks/Hero.astro";
-import HeroBackdrop from "@/components/blocks/HeroBackdrop.astro";
 import LiquidReveal from "@/components/blocks/LiquidReveal.astro";
 import WorkGrid from "@/components/blocks/WorkGrid.astro";
 import Metrics from "@/components/content/Metrics.astro";
@@ -293,11 +292,13 @@ const SECTIONS = [
       <Stack gap="4">
         <h2 id="blocks-title">Blocks</h2>
         <p class="muted measure">
-          Nav and Footer frame this page. Below: the split Hero with the LiquidReveal. At rest the
-          liquid orbits the face; point at the portrait and it is pulled towards the cursor (tap on
-          touch). Each blob reveals one of the layers under the photo (marble, and a rare iridescent
-          one), picked at random; marble switches variants with the theme. With reduced motion it
-          only appears while pointing, without orbit or wobble.
+          Nav and Footer frame this page. Below: the split Hero with the LiquidReveal, on the hero
+          grain (HeroBackdrop: fine noise that fades out over the first screen and stays put during
+          page transitions; also on Home, About, Services, Work and case studies, one per page). At
+          rest the liquid orbits the face; point at the portrait and it is pulled towards the cursor
+          (tap on touch). Each blob reveals one of the layers under the photo (marble, and a rare
+          iridescent one), picked at random; marble switches variants with the theme. With reduced
+          motion it only appears while pointing, without orbit or wobble.
         </p>
       </Stack>
     </Container>
@@ -321,20 +322,6 @@ const SECTIONS = [
       loading="lazy"
     />
   </Hero>
-  <Section aria-label="Hero backdrop" class="hero-backdrop-host">
-    <HeroBackdrop />
-    <Container>
-      <Stack gap="4">
-        <h3 class="text-caption muted">
-          HeroBackdrop · the hero texture (--bg-hero) behind a page head, reaching up under the nav
-          and fading out · used on Services, Work and case studies
-        </h3>
-        <p class="measure">
-          A page head sits here, on the same texture as the Home and About heroes.
-        </p>
-      </Stack>
-    </Container>
-  </Section>
   <Section aria-label="Work grid">
     <Container>
       <Stack gap="6">

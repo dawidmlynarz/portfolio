@@ -47,7 +47,6 @@
     overflow-x: clip;
     line-height: var(--leading-small);
     color: var(--mb-ink);
-    background: var(--bg-hero);
   }
 
   /* the prototype was built on content-box sizing: keep it so every size matches 1:1 */
