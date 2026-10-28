@@ -495,6 +495,8 @@ const menu = [{ href: "/", label: "Home" }, ...NAV_LINKS];
       transition: background-color var(--duration-fast) var(--ease-standard);
     }
 
+    /* Same hover for both. The rule above outranks ThemeToggle's own, so it is restated here. */
+    .nav__bar-theme :global(.theme-toggle:not([hidden]):hover),
     .nav__toggle:hover {
       background-color: var(--color-bg-subtle);
     }
@@ -567,7 +569,9 @@ const menu = [{ href: "/", label: "Home" }, ...NAV_LINKS];
       gap: var(--space-3);
       padding-block: var(--space-1);
       color: var(--color-text);
-      transition: color var(--duration-fast) var(--ease-standard);
+      transition:
+        color var(--duration-fast) var(--ease-standard),
+        background-size var(--duration-link) var(--ease-out-expo);
     }
 
     .nav__menu-link:hover {
