@@ -134,9 +134,9 @@ const SIZES =
       }
     }
 
-    /* PREVIEW (StoryIntro, html[data-about]): split and avatar move the portrait over the
+    /* PREVIEW (StoryIntro, html[data-about]): split keeps the portrait on screen beside the
        statement, so the hero stacks above it. */
-    :global(:root:is([data-about="split"], [data-about="avatar"])) .home-hero {
+    :global(:root[data-about="split"]) .home-hero {
       z-index: 2;
     }
 
