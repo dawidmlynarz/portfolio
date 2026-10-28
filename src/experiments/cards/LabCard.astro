@@ -1,0 +1,420 @@
+---
+/**
+ * One case-study card in one of the lab's layouts. Same content model as WorkCard (cover, meta,
+ * title as a quiet link that covers the whole card) plus the case study's intro and tags.
+ * The intro renders both texts (page intro and card summary); CardLab's switch shows one.
+ *
+ * Isolated experiment (CLAUDE.md rule 6): classes live under .lab-card and read only semantic
+ * site tokens.
+ */
+import { Image } from "astro:assets";
+import Tag from "@/components/ui/Tag.astro";
+import { hasPage, workHref, type Work } from "@/lib/work";
+
+export type Layout = "split" | "index" | "headline" | "grid" | "feature" | "row" | "list" | "panel";
+
+interface Props {
+  entry: Work;
+  layout: Layout;
+  /** split: cover on the right instead of the left. */
+  flip?: boolean;
+  /** The cover's `sizes`, which depends on the layout's column. */
+  sizes: string;
+  eager?: boolean;
+  /** list: the row's index, so the sticky preview can follow it. */
+  index?: number;
+}
+
+const { entry, layout, flip = false, sizes, eager = false, index } = Astro.props;
+const { data } = entry;
+const href = hasPage(entry) ? workHref(entry) : undefined;
+const meta = [data.company, data.industry, data.draft && "Draft"].filter(Boolean).join(" · ");
+const pillTags = ["split", "grid", "feature", "panel"].includes(layout);
+const widths = [480, 800, 1200, 1600].filter((w) => w <= data.cover.width);
+---
+
+<article
+  class:list={[
+    "lab-card",
+    `lab-card--${layout}`,
+    { "lab-card--flip": flip, "lab-card--linked": href },
+  ]}
+  data-preview-index={index}
+>
+  <div class="lab-card__media">
+    <Image
+      class="lab-card__cover"
+      src={data.cover}
+      alt={data.coverAlt}
+      widths={widths}
+      sizes={sizes}
+      loading={eager ? "eager" : "lazy"}
+    />
+  </div>
+  <div class="lab-card__body">
+    <p class="text-caption lab-card__meta">{meta}</p>
+    <h3 class="lab-card__title">
+      {href ? (
+        <a href={href} data-no-tear>
+          {data.title}
+        </a>
+      ) : (
+        data.title
+      )}
+    </h3>
+    <div class="lab-card__detail">
+      <p class="lab-card__intro">
+        <span class="lab-card__lead">{data.lead ?? data.description}</span>
+        <span class="lab-card__summary">{data.description}</span>
+      </p>
+      {pillTags ? (
+        <ul class="lab-card__tags" role="list">
+          {data.tags.map((tag) => (
+            <Tag as="li">{tag}</Tag>
+          ))}
+        </ul>
+      ) : (
+        <p class="text-small lab-card__tag-line">{data.tags.join(" · ")}</p>
+      )}
+      {layout === "panel" && (
+        <span class="lab-card__more" aria-hidden="true">
+          Read the case study
+          <svg viewBox="0 0 16 16">
+            <path d="M3.5 8h9M9 4.5 12.5 8 9 11.5" />
+          </svg>
+        </span>
+      )}
+    </div>
+  </div>
+</article>
+
+<style>
+  @layer components {
+    /* ---------- Shared ---------- */
+    .lab-card {
+      position: relative;
+      display: grid;
+      align-content: start;
+      gap: var(--space-6);
+    }
+
+    .lab-card__media {
+      overflow: hidden;
+      border-radius: var(--radius-md);
+      background-color: var(--color-bg-subtle);
+    }
+
+    .lab-card__cover {
+      inline-size: 100%;
+      block-size: 100%;
+      aspect-ratio: 4 / 3;
+      object-fit: cover;
+      transition: scale var(--duration-zoom) var(--ease-out-expo);
+    }
+
+    .lab-card__body,
+    .lab-card__detail {
+      display: grid;
+      align-content: start;
+      gap: var(--space-3);
+    }
+
+    .lab-card__body {
+      gap: var(--space-2);
+    }
+
+    .lab-card__detail {
+      margin-block-start: var(--space-2);
+      gap: var(--space-4);
+    }
+
+    .lab-card__meta,
+    .lab-card__intro,
+    .lab-card__tag-line {
+      color: var(--color-text-muted);
+    }
+
+    .lab-card__intro {
+      max-inline-size: 38rem;
+    }
+
+    /* Bigger than today's h4: the quiet link starts at h3. */
+    .lab-card__title {
+      font: var(--weight-medium) var(--text-h3) / var(--leading-h3) var(--font-heading);
+      letter-spacing: var(--tracking-h3);
+      text-wrap: balance;
+    }
+
+    .lab-card__title a {
+      --underline-size: 0%;
+      --underline-offset: var(--underline-offset-quiet);
+    }
+
+    .lab-card__title a::after {
+      content: "";
+      position: absolute;
+      inset: 0;
+    }
+
+    .lab-card--linked:hover .lab-card__title a,
+    .lab-card__title a:focus-visible {
+      --underline-size: 100%;
+    }
+
+    .lab-card--linked:hover .lab-card__cover {
+      scale: 1.03;
+    }
+
+    .lab-card__tags {
+      display: flex;
+      flex-wrap: wrap;
+      gap: var(--space-2);
+      padding: 0;
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      .lab-card__cover {
+        transition: none;
+      }
+
+      .lab-card--linked:hover .lab-card__cover {
+        scale: none;
+      }
+    }
+
+    /* ---------- 1 · Split: cover and text side by side, alternating ---------- */
+    @media (width >= 48em) {
+      .lab-card--split {
+        grid-template-columns: minmax(0, 7fr) minmax(0, 5fr);
+        align-items: center;
+        gap: var(--space-8);
+      }
+
+      .lab-card--split.lab-card--flip {
+        grid-template-columns: minmax(0, 5fr) minmax(0, 7fr);
+      }
+
+      .lab-card--split.lab-card--flip .lab-card__media {
+        order: 2;
+      }
+    }
+
+    @media (width >= 62em) {
+      .lab-card--split {
+        gap: var(--space-16);
+      }
+    }
+
+    /* ---------- 2 · Index: a hairline-ruled list, cover always on the left ---------- */
+    .lab-card--index {
+      padding-block: var(--space-8);
+      border-block-start: var(--border-width) solid var(--color-border-subtle);
+    }
+
+    @media (width >= 48em) {
+      .lab-card--index {
+        grid-template-columns: minmax(0, 5fr) minmax(0, 7fr);
+        gap: var(--space-8);
+      }
+    }
+
+    @media (width >= 62em) {
+      .lab-card--index {
+        grid-template-columns: repeat(12, minmax(0, 1fr));
+      }
+
+      .lab-card--index .lab-card__media {
+        grid-column: 1 / span 5;
+      }
+
+      .lab-card--index .lab-card__body {
+        grid-column: 7 / span 6;
+      }
+    }
+
+    /* ---------- 3 · Headline: the title leads at h2 size, a wide cover follows ---------- */
+    .lab-card--headline .lab-card__media {
+      order: 2;
+    }
+
+    .lab-card--headline .lab-card__cover {
+      aspect-ratio: 16 / 9;
+    }
+
+    .lab-card--headline .lab-card__title {
+      font-size: var(--text-h2);
+      line-height: var(--leading-h2);
+      letter-spacing: var(--tracking-h2);
+    }
+
+    @media (width >= 62em) {
+      .lab-card--headline .lab-card__body {
+        grid-template-columns: repeat(12, minmax(0, 1fr));
+        column-gap: var(--space-8);
+        align-items: end;
+      }
+
+      .lab-card--headline .lab-card__meta {
+        grid-column: 1 / -1;
+      }
+
+      .lab-card--headline .lab-card__title {
+        grid-column: 1 / span 8;
+      }
+
+      .lab-card--headline .lab-card__detail {
+        grid-column: 9 / span 4;
+        margin-block-start: 0;
+      }
+    }
+
+    /* ---------- 4 · Grid: even columns, cover on top, intro clipped to three lines ---------- */
+    .lab-card--grid .lab-card__intro {
+      display: -webkit-box;
+      overflow: hidden;
+      -webkit-box-orient: vertical;
+      -webkit-line-clamp: 3;
+      line-clamp: 3;
+    }
+
+    /* ---------- 5 · Feature: one big split, then compact rows ---------- */
+    .lab-card--feature .lab-card__title {
+      font-size: var(--text-h2);
+      line-height: var(--leading-h2);
+      letter-spacing: var(--tracking-h2);
+    }
+
+    @media (width >= 62em) {
+      .lab-card--feature {
+        grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+        align-items: center;
+        gap: var(--space-12);
+      }
+    }
+
+    .lab-card--row {
+      grid-template-columns: minmax(0, 1fr) minmax(0, 2fr);
+      gap: var(--space-4);
+      padding-block-start: var(--space-6);
+      border-block-start: var(--border-width) solid var(--color-border-subtle);
+    }
+
+    .lab-card--row .lab-card__intro {
+      display: none;
+    }
+
+    @media (width < 48em) {
+      .lab-card--row .lab-card__title {
+        font-size: var(--text-h4);
+        line-height: var(--leading-h4);
+        letter-spacing: var(--tracking-h4);
+      }
+
+      .lab-card--row .lab-card__detail {
+        margin-block-start: 0;
+      }
+    }
+
+    @media (width >= 48em) {
+      .lab-card--row {
+        grid-template-columns: minmax(0, 1fr) minmax(0, 3fr);
+        gap: var(--space-8);
+      }
+
+      .lab-card--row .lab-card__intro {
+        display: -webkit-box;
+        overflow: hidden;
+        -webkit-box-orient: vertical;
+        -webkit-line-clamp: 2;
+        line-clamp: 2;
+      }
+    }
+
+    /* ---------- 6 · List: titles only on desktop, the cover waits in a sticky preview ---------- */
+    .lab-card--list {
+      padding-block: var(--space-6);
+      border-block-start: var(--border-width) solid var(--color-border-subtle);
+    }
+
+    .lab-card--list .lab-card__intro {
+      display: -webkit-box;
+      overflow: hidden;
+      -webkit-box-orient: vertical;
+      -webkit-line-clamp: 2;
+      line-clamp: 2;
+    }
+
+    @media (width >= 62em) {
+      .lab-card--list .lab-card__media {
+        display: none;
+      }
+
+      .lab-card--list {
+        padding-inline: var(--space-4);
+        transition: background-color var(--duration-fast) var(--ease-standard);
+      }
+
+      .lab-card--list:hover,
+      .lab-card--list:focus-within {
+        background-color: var(--color-bg-subtle);
+      }
+    }
+
+    /* ---------- 7 · Panel: a contained surface, cover inside on the left ---------- */
+    .lab-card--panel {
+      padding: var(--space-4);
+      border-radius: var(--radius-lg);
+      background-color: var(--color-bg-subtle);
+    }
+
+    .lab-card--panel .lab-card__media {
+      background-color: var(--color-bg);
+    }
+
+    .lab-card--panel .lab-card__body {
+      padding: var(--space-2);
+    }
+
+    .lab-card__more {
+      display: inline-flex;
+      align-items: center;
+      gap: var(--space-2);
+      margin-block-start: var(--space-2);
+      font-weight: var(--weight-medium);
+    }
+
+    .lab-card__more svg {
+      inline-size: 1em;
+      block-size: 1em;
+      fill: none;
+      stroke: currentcolor;
+      stroke-width: 1.5;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+      transition: translate var(--duration-link) var(--ease-out-expo);
+    }
+
+    .lab-card--panel:hover .lab-card__more svg {
+      translate: var(--space-1) 0;
+    }
+
+    @media (width >= 48em) {
+      .lab-card--panel {
+        grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+        align-items: stretch;
+        gap: var(--space-8);
+        padding: var(--space-6);
+      }
+
+      .lab-card--panel .lab-card__body {
+        padding: var(--space-4) var(--space-4) var(--space-4) 0;
+      }
+    }
+
+    @media (width >= 62em) {
+      .lab-card--panel {
+        grid-template-columns: minmax(0, 7fr) minmax(0, 5fr);
+      }
+    }
+  }
+</style>

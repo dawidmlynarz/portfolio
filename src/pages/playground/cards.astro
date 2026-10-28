@@ -1,0 +1,40 @@
+---
+// Card playground: case-study card layouts for Home and Work, with intro and tags.
+// Private: noindex, out of the sitemap, not linked anywhere.
+import SiteLayout from "@/layouts/SiteLayout.astro";
+import Container from "@/components/layout/Container.astro";
+import Section from "@/components/layout/Section.astro";
+import Stack from "@/components/layout/Stack.astro";
+import CardLab from "@/experiments/cards/CardLab.astro";
+---
+
+<SiteLayout
+  title="Card playground"
+  description="Case-study card layouts for Home and Work."
+  noindex
+>
+  <Section space="lg">
+    <Container>
+      <Stack gap="12">
+        <Stack gap="4">
+          <h1>Card playground</h1>
+          <p class="text-lead playground__lead">
+            Today’s work grid, then seven ways to lay out the case-study cards with more context:
+            bigger titles, the intro and the tags from each case study. Switch between the Home set
+            and the full Work list, and between the page intro and the shorter card summary.
+          </p>
+        </Stack>
+        <CardLab />
+      </Stack>
+    </Container>
+  </Section>
+</SiteLayout>
+
+<style>
+  @layer components {
+    .playground__lead {
+      max-inline-size: var(--measure);
+      color: var(--color-text-muted);
+    }
+  }
+</style>

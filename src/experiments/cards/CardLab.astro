@@ -1,0 +1,362 @@
+---
+/**
+ * Card lab: today's work grid next to seven case-study card layouts, all fed by the real case
+ * studies (title, intro, tags, cover). A private playground (/playground/cards), not linked anywhere.
+ * Two switches (CSS only, :has()): Home shows the first four, Work all of them; the intro is either
+ * the case study's page intro or its shorter card summary. Behaviour: card-lab.ts (the list's
+ * sticky preview).
+ *
+ * Isolated experiment (CLAUDE.md rule 6): classes live under .card-lab and read only semantic site
+ * tokens.
+ */
+import { Image } from "astro:assets";
+import WorkGrid from "@/components/blocks/WorkGrid.astro";
+import LabCard, { type Layout } from "./LabCard.astro";
+import { getListedWork } from "@/lib/work";
+
+const work = await getListedWork();
+
+const OPTIONS: {
+  id: string;
+  layout: Layout;
+  name: string;
+  note: string;
+  fit: string;
+  sizes: string;
+}[] = [
+  {
+    id: "split",
+    layout: "split",
+    name: "Alternating split",
+    note: "Cover and text side by side, swapping sides on every row. Each case gets a full row, so the intro and every tag fit without crowding.",
+    fit: "Home and Work · mobile stacks",
+    sizes: "(min-width: 48em) 55vw, 100vw",
+  },
+  {
+    id: "index",
+    layout: "index",
+    name: "Ruled index",
+    note: "The cover always on the left, text on the right, rows divided by a hairline. Calmer than the split and quicker to scan, tags as a plain line.",
+    fit: "Best on Work · mobile stacks",
+    sizes: "(min-width: 62em) 38vw, (min-width: 48em) 40vw, 100vw",
+  },
+  {
+    id: "headline",
+    layout: "headline",
+    name: "Headline first",
+    note: "Editorial. The outcome title leads at h2 size with the intro beside it, then a wide cover. Fewest cases per screen, loudest titles.",
+    fit: "Best on Home",
+    sizes: "100vw",
+  },
+  {
+    id: "grid",
+    layout: "grid",
+    name: "Even grid with context",
+    note: "Two equal columns, cover on top, then title, an intro clipped to three lines and the tags. The most familiar pattern and the densest with full context.",
+    fit: "Home and Work · one column on mobile",
+    sizes: "(min-width: 48em) 50vw, 100vw",
+  },
+  {
+    id: "feature",
+    layout: "feature",
+    name: "Feature and rows",
+    note: "The first case gets a big split with an h2 title; the rest follow as compact rows with a small cover on the left. Keeps the small cover on mobile too.",
+    fit: "Home and Work",
+    sizes: "(min-width: 62em) 55vw, 100vw",
+  },
+  {
+    id: "list",
+    layout: "list",
+    name: "List with sticky preview",
+    note: "Text first. On desktop the rows carry no covers; one sticky cover on the right follows whichever row you hover or tab to. On smaller screens each row gets its cover back.",
+    fit: "Best on Work · needs a little JS on desktop",
+    sizes: "(min-width: 62em) 1px, 100vw",
+  },
+  {
+    id: "panel",
+    layout: "panel",
+    name: "Contained panel",
+    note: "Each case on its own grey surface, cover inside on the left, an explicit “Read the case study” at the bottom. The most card-like and the clearest tap target.",
+    fit: "Home and Work · mobile stacks",
+    sizes: "(min-width: 62em) 50vw, (min-width: 48em) 45vw, 100vw",
+  },
+];
+
+const layoutFor = (layout: Layout, i: number): Layout =>
+  layout === "feature" && i > 0 ? "row" : layout;
+
+const sizesFor = (option: (typeof OPTIONS)[number], i: number) =>
+  option.layout === "feature" && i > 0 ? "(min-width: 48em) 20vw, 33vw" : option.sizes;
+---
+
+<div class="card-lab">
+  <section class="card-lab__controls" aria-labelledby="card-lab-controls">
+    <h2 id="card-lab-controls" class="text-caption card-lab__muted">
+      Switches
+    </h2>
+    <fieldset class="card-lab__switch">
+      <legend class="text-small card-lab__muted">Page</legend>
+      <label>
+        <input type="radio" name="card-lab-view" value="home" checked /> Home · first 4
+      </label>
+      <label>
+        <input type="radio" name="card-lab-view" value="work" /> Work · all {work.length}
+      </label>
+    </fieldset>
+    <fieldset class="card-lab__switch">
+      <legend class="text-small card-lab__muted">Intro</legend>
+      <label>
+        <input type="radio" name="card-lab-intro" value="lead" checked /> Page intro
+      </label>
+      <label>
+        <input type="radio" name="card-lab-intro" value="summary" /> Card summary
+      </label>
+    </fieldset>
+    <nav class="card-lab__jump" aria-label="Options">
+      <a href="#option-current">Today</a>
+      {OPTIONS.map(({ id, name }, i) => (
+        <a href={`#option-${id}`}>
+          {i + 1} · {name}
+        </a>
+      ))}
+    </nav>
+  </section>
+
+  <section class="card-lab__option" id="option-current" aria-labelledby="title-current">
+    <header class="card-lab__head">
+      <p class="text-caption card-lab__muted">Reference · on main today</p>
+      <h2 id="title-current">Staggered grid, title only</h2>
+      <p class="card-lab__muted card-lab__note">
+        For comparison: the cover, company and the outcome title at h4 size. No intro or tags.
+      </p>
+    </header>
+    <div class="card-lab__ref">
+      <WorkGrid entries={work} />
+    </div>
+  </section>
+
+  {OPTIONS.map((option, n) => (
+    <section
+      class="card-lab__option"
+      id={`option-${option.id}`}
+      aria-labelledby={`title-${option.id}`}
+    >
+      <header class="card-lab__head">
+        <p class="text-caption card-lab__muted">
+          Option {n + 1} · {option.fit}
+        </p>
+        <h2 id={`title-${option.id}`}>{option.name}</h2>
+        <p class="card-lab__muted card-lab__note">{option.note}</p>
+      </header>
+      {option.layout === "list" ? (
+        <div class="card-lab__preview-wrap" data-preview>
+          <ul class="card-lab__list card-lab__list--list" role="list">
+            {work.map((entry, i) => (
+              <li>
+                <LabCard entry={entry} layout="list" sizes={option.sizes} index={i} />
+              </li>
+            ))}
+          </ul>
+          <div class="card-lab__preview" aria-hidden="true">
+            {work.map((entry, i) => (
+              <Image
+                class="card-lab__preview-cover"
+                src={entry.data.cover}
+                alt=""
+                widths={[480, 800, 1200].filter((w) => w <= entry.data.cover.width)}
+                sizes="(min-width: 62em) 40vw, 1px"
+                loading="lazy"
+                data-active={i === 0 ? "" : undefined}
+              />
+            ))}
+          </div>
+        </div>
+      ) : (
+        <ul class:list={["card-lab__list", `card-lab__list--${option.layout}`]} role="list">
+          {work.map((entry, i) => (
+            <li>
+              <LabCard
+                entry={entry}
+                layout={layoutFor(option.layout, i)}
+                flip={option.layout === "split" && i % 2 === 1}
+                sizes={sizesFor(option, i)}
+              />
+            </li>
+          ))}
+        </ul>
+      )}
+    </section>
+  ))}
+</div>
+
+<script>
+  import "./card-lab.ts";
+</script>
+
+<style>
+  @layer components {
+    .card-lab {
+      display: grid;
+      gap: var(--space-section-lg);
+    }
+
+    .card-lab__muted {
+      color: var(--color-text-muted);
+    }
+
+    /* ---------- Switches ---------- */
+    .card-lab__controls {
+      display: flex;
+      flex-wrap: wrap;
+      gap: var(--space-4) var(--space-8);
+      align-items: start;
+      padding: var(--space-6);
+      border: var(--border-width) solid var(--color-border-subtle);
+      border-radius: var(--radius-lg);
+    }
+
+    .card-lab__controls > h2 {
+      flex-basis: 100%;
+    }
+
+    .card-lab__switch {
+      display: flex;
+      flex-wrap: wrap;
+      gap: var(--space-2) var(--space-4);
+      align-items: center;
+      margin: 0;
+      padding: 0;
+      border: 0;
+    }
+
+    .card-lab__switch legend {
+      float: inline-start;
+      margin-inline-end: var(--space-2);
+    }
+
+    .card-lab__switch label {
+      display: inline-flex;
+      gap: var(--space-2);
+      align-items: center;
+    }
+
+    .card-lab__switch input {
+      accent-color: var(--color-text);
+    }
+
+    .card-lab__jump {
+      display: flex;
+      flex-basis: 100%;
+      flex-wrap: wrap;
+      gap: var(--space-2) var(--space-6);
+      padding-block-start: var(--space-4);
+      border-block-start: var(--border-width) solid var(--color-border-subtle);
+      font-size: var(--text-small);
+    }
+
+    /* ---------- Options ---------- */
+    .card-lab__option {
+      display: grid;
+      gap: var(--space-section-sm);
+      scroll-margin-block-start: var(--space-24);
+    }
+
+    .card-lab__head {
+      display: grid;
+      gap: var(--space-3);
+      padding-block-start: var(--space-8);
+      border-block-start: var(--border-width) solid var(--color-border);
+    }
+
+    .card-lab__note {
+      max-inline-size: var(--measure);
+    }
+
+    .card-lab__list {
+      display: grid;
+      gap: var(--space-section-md);
+      padding: 0;
+    }
+
+    .card-lab__list--index,
+    .card-lab__list--list {
+      gap: 0;
+    }
+
+    .card-lab__list--feature {
+      gap: var(--space-6);
+    }
+
+    .card-lab__list--feature > li:first-child {
+      margin-block-end: var(--space-section-sm);
+    }
+
+    .card-lab__list--panel {
+      gap: var(--space-6);
+    }
+
+    @media (width >= 48em) {
+      .card-lab__list--grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: var(--space-section-md) var(--space-8);
+      }
+    }
+
+    /* List: the sticky preview column (desktop only) */
+    .card-lab__preview {
+      display: none;
+    }
+
+    @media (width >= 62em) {
+      .card-lab__preview-wrap {
+        display: grid;
+        grid-template-columns: minmax(0, 7fr) minmax(0, 5fr);
+        gap: var(--space-12);
+        align-items: start;
+      }
+
+      .card-lab__preview {
+        position: sticky;
+        inset-block-start: var(--space-24);
+        display: grid;
+        overflow: hidden;
+        border-radius: var(--radius-md);
+        background-color: var(--color-bg-subtle);
+      }
+
+      .card-lab__preview-cover {
+        grid-area: 1 / 1;
+        inline-size: 100%;
+        block-size: auto;
+        aspect-ratio: 4 / 3;
+        object-fit: cover;
+        opacity: 0;
+        transition: opacity var(--duration-link) var(--ease-standard);
+      }
+
+      .card-lab__preview-cover[data-active] {
+        opacity: 1;
+      }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      .card-lab__preview-cover {
+        transition: none;
+      }
+    }
+
+    /* ---------- The switches at work ---------- */
+    .card-lab:has(input[value="home"]:checked) .card-lab__list > li:nth-child(n + 5),
+    .card-lab:has(input[value="home"]:checked)
+      .card-lab__ref
+      :global(.work-grid__item:nth-child(n + 5)),
+    .card-lab:has(input[value="home"]:checked) .card-lab__preview > :nth-child(n + 5) {
+      display: none;
+    }
+
+    .card-lab:has(input[value="lead"]:checked) :global(.lab-card__summary),
+    .card-lab:has(input[value="summary"]:checked) :global(.lab-card__lead) {
+      display: none;
+    }
+  }
+</style>
