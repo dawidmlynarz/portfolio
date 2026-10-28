@@ -495,7 +495,8 @@ const menu = [{ href: "/", label: "Home" }, ...NAV_LINKS];
       inline-size: 100%;
       min-block-size: 0;
       overflow-y: auto;
-      padding: var(--space-4);
+      /* Same inset as the bar: links, divider and button line up with the mark and the icons. */
+      padding: var(--space-4) var(--space-1) var(--space-1);
       contain: inline-size; /* takes the box's width, never widens it */
     }
 
