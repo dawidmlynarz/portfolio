@@ -10,6 +10,11 @@ Non-obvious choices, newest first. One entry per decision: what, why, and what i
 - **The Anthony Marin quote is a placeholder** written for the draft, at Dawid's request, until Dawid sends the real one.
 - **`Figure` grid track is `minmax(0, 1fr)`** so a long placeholder label can't push the figure 1px past a 375px viewport.
 
+## 2026-10-28 · Client logos move into the About statement on Home
+
+- **The marquee now sits inside the About statement**, under the text, instead of in its own section above the footer. `StoryIntro` gained a default slot that renders after the statement at full width (the statement keeps the container width), so the marquee still runs edge to edge. "Trusted by teams at" stays as its caption.
+- **More room around About.** It now has `--space-section-lg` above (was `--space-section-sm`) and `--space-section-md` below (was none), with `--space-section-md` between the statement and the logos. The work section's own `--space-section-lg` stacks on top of the bottom space, so About reads as its own band between the hero and the work.
+
 ## 2026-10-28 · Case study pages: cover, client logo, Next up, contents mini map
 
 - **The cover runs edge to edge** at every size, with no radius. Phones get a 3:2 crop. From 48em the frame is 2:1 and holds the cover at 16:9, centred; with the motion layer the image drifts from its top edge to its bottom edge while the frame scrolls past (`[data-parallax]`, GSAP ScrollTrigger in `motion.ts`, so it stays in step with Lenis). The drift is exactly the overhang, so no edge ever shows; without motion it stays centred. `sizes="100vw"`, up to the 3200px rendition.
