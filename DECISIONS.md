@@ -10,7 +10,7 @@ Non-obvious choices, newest first. One entry per decision: what, why, and what i
 - **Without JS, or with reduced motion**, the native controls stay and nothing autoplays.
 - **Clips are 2x, for Retina.** A wide video shows up to 1280 CSS px (80rem), so it needs 2560 real pixels: record at 2x and export 2560×1440 for 16:9; any other width is also 2x its displayed width. Never upscale a 1x recording; it stays soft. UI loops compress so well that 2x costs little (the stand-in is 360 KB AV1, 480 KB H.264 for 12 s).
 - **Encoding for new clips**: 30fps, no audio. `ffmpeg -c:v libsvtav1 -crf 30 -preset 5` for AV1 and `-c:v libx264 -preset slow -crf 20 -tune animation` for H.264, both with `-movflags +faststart -an`. Files sit next to the MDX (Cloudflare Pages caps a file at 25 MB).
-- **The Zazmic Showroom clip is a stand-in** recorded from the public Storybook (2560×1440, 12 s, frame-stepped with a fake clock so it is a smooth 30fps) until Dawid sends his recordings. The styleguide uses a 5 s cut of it in `src/assets/placeholders/`.
+- **The Zazmic Showroom clip is a stand-in** recorded from the public Storybook (2560×1440, 12 s, frame-stepped with a fake clock so it is a smooth 30fps) until Dawid sends the real recordings. The styleguide uses a 5 s cut of it in `src/assets/placeholders/`.
 
 ## 2026-10-28 · Zazmic Anvil UI case study
 
