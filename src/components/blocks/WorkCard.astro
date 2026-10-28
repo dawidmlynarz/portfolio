@@ -9,10 +9,7 @@
  * target; the visible link is the title (one tab stop). Entries without a page (page: false)
  * render without a link.
  *
- * Hover glitch (from the hero's glitch reveal): two copies of the cover sit over it, hidden. On
- * hover or focus they flash in as torn rows that jump sideways and split for a few frames, then
- * the cover snaps back clean and zooms. CSS only; the copies reuse the cover's file, so nothing
- * extra downloads. Reduced motion keeps only a still cover.
+ * Hover: the cover zooms in slowly. Reduced motion keeps a still cover.
  */
 import { Image } from "astro:assets";
 import Tag from "@/components/ui/Tag.astro";
@@ -56,17 +53,6 @@ const sizes =
         sizes={sizes}
         loading={eager ? "eager" : "lazy"}
       />
-      {["a", "b"].map((slice) => (
-        <Image
-          class={`work-card__slice work-card__slice--${slice}`}
-          src={data.cover}
-          alt=""
-          aria-hidden="true"
-          widths={widths}
-          sizes={sizes}
-          loading={eager ? "eager" : "lazy"}
-        />
-      ))}
     </div>
   </div>
   <div class="work-card__body">
@@ -112,126 +98,11 @@ const sizes =
       transition: scale var(--duration-zoom) var(--ease-out-expo);
     }
 
-    .work-card__cover,
-    .work-card__slice {
+    .work-card__cover {
       inline-size: 100%;
       block-size: auto;
       aspect-ratio: 4 / 3;
       object-fit: cover;
-    }
-
-    /* ---------- Hover glitch: torn rows for a few frames, then clean ---------- */
-    .work-card__slice {
-      position: absolute;
-      inset: 0;
-      opacity: 0;
-      pointer-events: none;
-    }
-
-    .work-card--linked:hover .work-card__cover,
-    .work-card--linked:focus-within .work-card__cover {
-      animation: work-card-jolt var(--duration-glitch) steps(1, end);
-    }
-
-    .work-card--linked:hover .work-card__slice--a,
-    .work-card--linked:focus-within .work-card__slice--a {
-      animation: work-card-tear-a var(--duration-glitch) steps(1, end);
-    }
-
-    .work-card--linked:hover .work-card__slice--b,
-    .work-card--linked:focus-within .work-card__slice--b {
-      animation: work-card-tear-b var(--duration-glitch) steps(1, end);
-    }
-
-    /* The whole picture skips a frame sideways, like a lost sync. */
-    @keyframes work-card-jolt {
-      0%,
-      100% {
-        translate: 0;
-      }
-
-      30% {
-        translate: -1.5% 0;
-      }
-
-      45% {
-        translate: 0.8% 0;
-      }
-
-      60% {
-        translate: 0;
-      }
-    }
-
-    /* Two copies cut into rows that move each frame: tear right, tear left, then gone. */
-    @keyframes work-card-tear-a {
-      0% {
-        opacity: 1;
-        clip-path: inset(12% 0 74% 0);
-        translate: 6% 0;
-      }
-
-      15% {
-        clip-path: inset(48% 0 38% 0);
-        translate: -4% 0;
-      }
-
-      30% {
-        clip-path: inset(70% 0 18% 0);
-        translate: 9% 0;
-        filter: invert(1);
-      }
-
-      45% {
-        clip-path: inset(30% 0 62% 0);
-        translate: -7% 0;
-        filter: none;
-      }
-
-      60% {
-        clip-path: inset(84% 0 6% 0);
-        translate: 3% 0;
-      }
-
-      75%,
-      100% {
-        opacity: 0;
-      }
-    }
-
-    @keyframes work-card-tear-b {
-      0% {
-        opacity: 0.85;
-        clip-path: inset(58% 0 30% 0);
-        translate: -8% 0;
-      }
-
-      15% {
-        clip-path: inset(22% 0 70% 0);
-        translate: 5% 0;
-        filter: grayscale(1) contrast(1.6);
-      }
-
-      30% {
-        clip-path: inset(40% 0 44% 0);
-        translate: -3% 0;
-      }
-
-      45% {
-        clip-path: inset(6% 0 86% 0);
-        translate: 10% 0;
-        filter: none;
-      }
-
-      60% {
-        clip-path: inset(64% 0 26% 0);
-        translate: -5% 0;
-      }
-
-      75%,
-      100% {
-        opacity: 0;
-      }
     }
 
     .work-card__body {
@@ -270,7 +141,8 @@ const sizes =
       --underline-size: 100%;
     }
 
-    .work-card--linked:hover .work-card__frame {
+    .work-card--linked:hover .work-card__frame,
+    .work-card--linked:focus-within .work-card__frame {
       scale: 1.03;
     }
 
@@ -339,17 +211,9 @@ const sizes =
         transition: none;
       }
 
-      .work-card--linked:hover .work-card__frame {
+      .work-card--linked:hover .work-card__frame,
+      .work-card--linked:focus-within .work-card__frame {
         scale: none;
-      }
-
-      .work-card__slice {
-        display: none;
-      }
-
-      .work-card--linked:hover .work-card__cover,
-      .work-card--linked:focus-within .work-card__cover {
-        animation: none;
       }
     }
   }

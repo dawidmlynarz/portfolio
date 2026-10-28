@@ -6,6 +6,8 @@
  * - [data-reveal="lines"]: headings rise line by line from behind a mask (SplitText).
  * - [data-reveal="fade"]: blocks fade and rise in once they enter the viewport.
  * - [data-story]: the About statement after the home hero lights up word by word as it scrolls.
+ * - [data-cover-follow]: in a list of links ("Next up"), the hovered link's cover follows the
+ *   pointer, beside it.
  * - Links: the "row tear" hover (styles in base.css). Links marked [data-no-tear] keep their own
  *   hover: buttons, pills and quiet links (menu, case-study cards, Next project).
  *
@@ -93,6 +95,36 @@ function story() {
       scrollTrigger: { trigger: text, start: "top 85%", end: "bottom 55%", scrub: 0.6 },
     },
   );
+}
+
+/**
+ * "Next up": the hovered row's cover floats beside the pointer, on whichever side has room.
+ * Links carry [data-cover-index], the frame [data-cover-frame], its images [data-cover-img].
+ */
+function coverFollow() {
+  const GAP = 32;
+  for (const list of document.querySelectorAll<HTMLElement>("[data-cover-follow]")) {
+    const frame = list.querySelector<HTMLElement>("[data-cover-frame]");
+    if (!frame) continue;
+    const images = [...frame.querySelectorAll<HTMLElement>("[data-cover-img]")];
+    list.addEventListener("pointermove", (event) => {
+      const width = frame.offsetWidth;
+      const x =
+        event.clientX + GAP + width < innerWidth
+          ? event.clientX + GAP
+          : event.clientX - GAP - width;
+      frame.style.setProperty("--cover-x", `${x}px`);
+      frame.style.setProperty("--cover-y", `${event.clientY}px`);
+    });
+    list.addEventListener("pointerover", (event) => {
+      const link = (event.target as Element).closest<HTMLElement>("[data-cover-index]");
+      if (!link) return frame.removeAttribute("data-active");
+      const index = link.dataset.coverIndex;
+      for (const img of images) img.toggleAttribute("data-shown", img.dataset.coverImg === index);
+      frame.setAttribute("data-active", "");
+    });
+    list.addEventListener("pointerleave", () => frame.removeAttribute("data-active"));
+  }
 }
 
 const TEAR_MS = 300; // a little longer than --duration-tear
@@ -198,5 +230,6 @@ if (root.classList.contains("motion")) {
   revealFades();
   revealLines();
   story();
+  coverFollow();
   linkTear();
 }

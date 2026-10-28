@@ -2,11 +2,13 @@
 
 Non-obvious choices, newest first. One entry per decision: what, why, and what it rules out.
 
-## 2026-10-28 · Case study pages: full-bleed cover, client logo, navigation playground
+## 2026-10-28 · Case study pages: cover, client logo, Next up, contents mini map
 
-- **The cover runs edge to edge** at every size, with no radius. Phones (below 48em) crop it to 3:2, centred; from 48em it keeps its own proportions, so a 4:3 cover (CSS Peeper) is tall on wide screens. `sizes="100vw"`, up to the 3200px rendition.
+- **The cover runs edge to edge** at every size, with no radius, cropped (centred) to 3:2 on phones and 16:9 from 48em. `sizes="100vw"`, up to the 3200px rendition.
 - **The client logo is back above the title**, in place of the "Case study · Company" line. New optional `client` field in the schema (a key of `CLIENTS`), and a new `ClientLogo` (ui) that inlines one logo in the text colour; `ClientLogos` now renders through it. Its accessible name is "Case study for <company>". Case studies without a logo file (CSS Peeper, NerdWallet) keep the text line until a logo is added to `src/assets/clients/`.
-- **Navigation playground (previews only).** Six ways to move between case studies next to today's "Next case study", picked with a switcher at the top and bottom of every case study (`?nav=` or the last pick in the session): Split, Pull through, Index, Filmstrip, Remote, Stories. Isolated in `src/experiments/case-nav/`; `CaseStudyLayout` renders it only when the build is not production, so main still ships the current block. Every option uses the case studies in `order`, not the curated `next`, so "03 / 08" means the same thing everywhere. To be replaced by the picked option.
+- **"Next up" replaces "Next case study".** Dawid picked the ruled index from a six-option navigation playground (Split, Pull through, Index, Filmstrip, Remote, Stories; removed once chosen). `NextUp` lists up to three case studies: the curated `next` first when it has a page, then the ones after this case study in `order`, wrapping round. Rows dim the others on hover; with a fine pointer and the motion layer, the hovered row's cover floats beside the pointer (`coverFollow` in `motion.ts`). Without hover, each row carries a small cover thumbnail instead. `NextProject` is gone.
+- **Contents mini map** (`CaseStudyToc`), fixed at the right edge from 62em while the case-study body is on screen: one short line per h2. Hovering or focusing it opens a glass panel with the titles beside their lines; each row is an anchor (Lenis smooths the jump). Each line fills as its section is read and the current one is longer and in the text colour (`aria-current="location"`). A small component script measures the headings on scroll; without it the map stays hidden. h3s are left out to keep the map short. Also on `/styleguide`, over its own sections.
+- **No glitch on case-study card hovers.** On Dawid's call the torn-rows flash is gone from `WorkCard`; the cover keeps its slow zoom. `--duration-glitch` is removed (remove it from Figma too).
 
 ## 2026-10-28 · Scroll budget: idle loops yield to scrolling
 

@@ -1,0 +1,191 @@
+---
+/**
+ * "Next up" at the end of a case study: up to three more case studies as a ruled index (title
+ * and "Company · Year" per row). Picked from the case-study navigation playground.
+ *
+ * Rows dim the others on hover. With a fine pointer and the motion layer on, the hovered row's
+ * cover follows the pointer beside it (motion.ts, [data-cover-follow]). Without hover (phones and
+ * tablets) each row carries a small cover thumbnail instead, so the list is complete without JS.
+ */
+import { Image } from "astro:assets";
+import Container from "@/components/layout/Container.astro";
+import { workHref, type Work } from "@/lib/work";
+
+interface Props {
+  entries: Work[];
+}
+
+const { entries } = Astro.props;
+const meta = (work: Work) => [work.data.company, work.data.year].filter(Boolean).join(" · ");
+const widths = (work: Work) => [320, 480, 800].filter((w) => w <= work.data.cover.width);
+---
+
+{entries.length > 0 && (
+  <nav class="next-up" aria-labelledby="next-up-title" data-cover-follow>
+    <Container>
+      <h2 class="text-caption next-up__heading" id="next-up-title">
+        Next up
+      </h2>
+      <ol class="next-up__list" role="list">
+        {entries.map((work, n) => (
+          <li class="next-up__row">
+            <a class="next-up__link" href={workHref(work)} data-cover-index={n} data-no-tear>
+              <Image
+                class="next-up__thumb"
+                src={work.data.cover}
+                alt=""
+                widths={widths(work)}
+                sizes="6rem"
+                loading="lazy"
+              />
+              <span class="next-up__title">{work.data.title}</span>
+              <span class="text-small next-up__meta">{meta(work)}</span>
+            </a>
+          </li>
+        ))}
+      </ol>
+    </Container>
+    <div class="next-up__preview" aria-hidden="true" data-cover-frame>
+      {entries.map((work, n) => (
+        <Image
+          class="next-up__preview-img"
+          src={work.data.cover}
+          alt=""
+          widths={widths(work)}
+          sizes="22rem"
+          loading="lazy"
+          data-cover-img={n}
+        />
+      ))}
+    </div>
+  </nav>
+)}
+
+<style>
+  @layer components {
+    .next-up {
+      padding-block: var(--space-section-md);
+      border-block-start: var(--border-width) solid var(--color-border-subtle);
+    }
+
+    .next-up__heading {
+      margin-block-end: var(--space-6);
+      color: var(--color-text-muted);
+    }
+
+    .next-up__list {
+      padding: 0;
+    }
+
+    .next-up__row {
+      border-block-start: var(--border-width) solid var(--color-border-subtle);
+    }
+
+    .next-up__row:last-child {
+      border-block-end: var(--border-width) solid var(--color-border-subtle);
+    }
+
+    .next-up__link {
+      --underline-size: 0%;
+
+      display: grid;
+      grid-template-columns: var(--space-24) minmax(0, 1fr);
+      gap: var(--space-1) var(--space-4);
+      align-items: center;
+      padding-block: var(--space-4);
+      color: inherit;
+      transition: opacity var(--duration-fast) var(--ease-standard);
+    }
+
+    .next-up__thumb {
+      grid-row: span 2;
+      inline-size: 100%;
+      block-size: auto;
+      aspect-ratio: 4 / 3;
+      object-fit: cover;
+      border-radius: var(--radius-sm);
+      background-color: var(--color-bg-subtle);
+    }
+
+    .next-up__title {
+      align-self: end;
+      font: var(--weight-medium) var(--text-h4) / var(--leading-h4) var(--font-heading);
+      letter-spacing: var(--tracking-h4);
+      text-wrap: balance;
+    }
+
+    .next-up__meta {
+      align-self: start;
+      color: var(--color-text-muted);
+    }
+
+    /* Hovering one row quiets the others, like the menu. */
+    .next-up__list:has(.next-up__link:hover) .next-up__link:not(:hover) {
+      opacity: 0.35;
+    }
+
+    /* The floating cover (positioned by motion.ts); hidden until a row is hovered. */
+    .next-up__preview {
+      display: none;
+    }
+
+    @media (hover: hover) and (pointer: fine) {
+      .next-up__link {
+        grid-template-columns: minmax(0, 1fr) auto;
+        gap: var(--space-8);
+        align-items: baseline;
+        padding-block: var(--space-6);
+      }
+
+      .next-up__thumb {
+        display: none;
+      }
+
+      .next-up__title {
+        font-size: var(--text-h3);
+        line-height: var(--leading-h3);
+        letter-spacing: var(--tracking-h3);
+      }
+
+      .next-up__meta {
+        text-align: end;
+      }
+
+      .next-up__preview {
+        position: fixed;
+        inset-block-start: 0;
+        inset-inline-start: 0;
+        z-index: 1;
+        display: grid;
+        inline-size: 22rem;
+        overflow: hidden;
+        border-radius: var(--radius-md);
+        pointer-events: none;
+        opacity: 0;
+        scale: 0.9;
+        translate: var(--cover-x, 0) calc(var(--cover-y, 0px) - 50%);
+        transition:
+          opacity var(--duration-fast) var(--ease-standard),
+          scale var(--duration-link) var(--ease-out-expo);
+      }
+
+      .next-up__preview[data-active] {
+        opacity: 1;
+        scale: 1;
+      }
+
+      .next-up__preview-img {
+        grid-area: 1 / 1;
+        inline-size: 100%;
+        block-size: auto;
+        aspect-ratio: 4 / 3;
+        object-fit: cover;
+        visibility: hidden;
+      }
+
+      .next-up__preview-img[data-shown] {
+        visibility: visible;
+      }
+    }
+  }
+</style>

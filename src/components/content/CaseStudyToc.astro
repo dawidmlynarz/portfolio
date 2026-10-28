@@ -1,0 +1,191 @@
+---
+/**
+ * Case-study contents as a mini map, fixed at the right edge from 62em. One short line per h2;
+ * hovering or focusing the map opens it on a glass panel with the section titles beside their
+ * lines. Each row links to its section (Lenis smooths the jump when the motion layer runs).
+ *
+ * Progress: each line fills as you read its section, so the filled lines show where you are; the
+ * current section's title is in the text colour (aria-current). The map only shows while the
+ * case-study body is on screen. Both need the small script below; without it the map stays
+ * hidden (the page is complete without it).
+ */
+import type { MarkdownHeading } from "astro";
+
+interface Props {
+  headings: MarkdownHeading[];
+  /** Selector of the element that holds the sections (its end closes the last one). */
+  body: string;
+}
+
+const { headings, body } = Astro.props;
+const sections = headings.filter(({ depth }) => depth === 2);
+---
+
+{sections.length > 1 && (
+  <nav class="toc" aria-label="On this page" data-toc data-toc-body={body}>
+    <ol class="toc__list" role="list">
+      {sections.map(({ slug, text }) => (
+        <li>
+          <a class="toc__link" href={`#${slug}`} data-toc-link={slug} data-no-tear>
+            <span class="toc__label">{text}</span>
+            <span class="toc__bar" aria-hidden="true">
+              <span class="toc__fill" />
+            </span>
+          </a>
+        </li>
+      ))}
+    </ol>
+  </nav>
+)}
+
+<script>
+  // Fills each section's line as it is read, marks the current one, and shows the map only while
+  // the case-study body is on screen. The reading line sits a third of the way down the screen.
+  const toc = document.querySelector<HTMLElement>("[data-toc]");
+  const body = toc && document.querySelector<HTMLElement>(toc.dataset.tocBody ?? "");
+  if (toc && body) {
+    const rows = [...toc.querySelectorAll<HTMLAnchorElement>("[data-toc-link]")].flatMap((link) => {
+      const heading = document.getElementById(link.dataset.tocLink ?? "");
+      return heading ? [{ link, heading }] : [];
+    });
+
+    let frame = 0;
+    const update = () => {
+      frame = 0;
+      const line = innerHeight / 3;
+      const end = body.getBoundingClientRect().bottom;
+      toc.toggleAttribute(
+        "data-visible",
+        body.getBoundingClientRect().top < innerHeight / 2 && end > line,
+      );
+      rows.forEach(({ link, heading }, i) => {
+        const top = heading.getBoundingClientRect().top;
+        const next = rows[i + 1]?.heading.getBoundingClientRect().top ?? end;
+        const fill = Math.min(1, Math.max(0, (line - top) / Math.max(1, next - top)));
+        link.style.setProperty("--toc-fill", String(fill));
+        if (top <= line && next > line) link.setAttribute("aria-current", "location");
+        else link.removeAttribute("aria-current");
+      });
+    };
+    const schedule = () => (frame ||= requestAnimationFrame(update));
+
+    addEventListener("scroll", schedule, { passive: true });
+    addEventListener("resize", schedule);
+    toc.setAttribute("data-ready", "");
+    update();
+  }
+</script>
+
+<style>
+  @layer components {
+    .toc {
+      display: none;
+    }
+
+    @media (width >= 62em) {
+      .toc[data-ready] {
+        position: fixed;
+        inset-block-start: 50%;
+        inset-inline-end: var(--space-4);
+        z-index: calc(var(--z-nav) - 1);
+        display: block;
+        opacity: 0;
+        visibility: hidden;
+        translate: 0 -50%;
+        transition:
+          opacity var(--duration-link) var(--ease-standard),
+          visibility var(--duration-link);
+      }
+
+      .toc[data-visible],
+      .toc:focus-within {
+        opacity: 1;
+        visibility: visible;
+      }
+    }
+
+    .toc__list {
+      display: grid;
+      padding: var(--space-3);
+      border: var(--border-width) solid transparent;
+      border-radius: var(--radius-md);
+      transition:
+        background-color var(--duration-fast) var(--ease-standard),
+        border-color var(--duration-fast) var(--ease-standard);
+    }
+
+    /* Open: a glass panel, like the nav menu, so the titles read over the page. */
+    .toc:is(:hover, :focus-within) .toc__list {
+      border-color: var(--color-border-subtle);
+      background-color: var(--color-glass);
+      backdrop-filter: blur(var(--blur-menu));
+      box-shadow: var(--shadow-bar);
+    }
+
+    .toc__link {
+      --underline-size: 0%;
+
+      display: flex;
+      gap: var(--space-4);
+      align-items: center;
+      justify-content: end;
+      padding-block: var(--space-1);
+      font-size: var(--text-small);
+      line-height: var(--leading-small);
+      color: var(--color-text-muted);
+    }
+
+    .toc__link:hover,
+    .toc__link[aria-current] {
+      color: var(--color-text);
+    }
+
+    /* Titles are folded away until the map opens. */
+    .toc__label {
+      overflow: hidden;
+      max-inline-size: 0;
+      white-space: nowrap;
+      text-overflow: ellipsis;
+      opacity: 0;
+      transition:
+        max-inline-size var(--duration-link) var(--ease-out-expo),
+        opacity var(--duration-fast) var(--ease-standard);
+    }
+
+    .toc:is(:hover, :focus-within) .toc__label {
+      max-inline-size: 18rem;
+      opacity: 1;
+    }
+
+    .toc__bar {
+      flex-shrink: 0;
+      overflow: hidden;
+      inline-size: var(--space-6);
+      block-size: calc(2 * var(--border-width));
+      border-radius: var(--radius-pill);
+      background-color: var(--color-border-muted);
+      transition: inline-size var(--duration-fast) var(--ease-standard);
+    }
+
+    .toc__link[aria-current] .toc__bar {
+      inline-size: var(--space-8);
+    }
+
+    .toc__fill {
+      display: block;
+      block-size: 100%;
+      background-color: var(--color-text);
+      transform-origin: left;
+      scale: var(--toc-fill, 0) 1;
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      .toc[data-ready],
+      .toc__list,
+      .toc__label,
+      .toc__bar {
+        transition: none;
+      }
+    }
+  }
+</style>
