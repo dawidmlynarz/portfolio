@@ -2,6 +2,11 @@
 
 Non-obvious choices, newest first. One entry per decision: what, why, and what it rules out.
 
+## 2026-10-28 · Client logos between the hero and About, no caption
+
+- **The marquee moves up**, out of the About statement, to sit right under the hero, and the "Trusted by teams at" caption is gone (Dawid's call: the logos speak for themselves). The list keeps its accessible name ("Companies I have worked with").
+- It has `--space-section-md` above it; About keeps its own `--space-section-lg` above and `--space-section-md` below, so it still stands apart from the logos and the work. `StoryIntro` loses the slot it gained for the marquee.
+
 ## 2026-10-28 · Client logos move into the About statement on Home
 
 - **The marquee now sits inside the About statement**, under the text, instead of in its own section above the footer. `StoryIntro` gained a default slot that renders after the statement at full width (the statement keeps the container width), so the marquee still runs edge to edge. "Trusted by teams at" stays as its caption.

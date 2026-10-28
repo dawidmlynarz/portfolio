@@ -3,8 +3,7 @@
  * The hand-off after the home hero: a large about-me statement on the same surface as the hero,
  * lighting up word by word as it scrolls through the screen (the motion layer, data-story).
  * Nothing is pinned. Without the motion layer (no JS, reduced motion) the full statement is
- * visible. Anything in the default slot follows the statement at full width (Home: the client
- * logo marquee), so it can run edge to edge.
+ * visible.
  */
 
 interface Props {
@@ -20,27 +19,20 @@ const words = text.split(/\s+/);
 ---
 
 <section class="story" aria-labelledby="story-label" data-story>
-  <div class="story__inner">
-    <h2 class="text-caption story__label" id="story-label">
-      {label}
-    </h2>
-    <p class="story__text" data-story-text>
-      {words.map((word) => (
-        <span class="story__word" data-story-word>
-          {word}{" "}
-        </span>
-      ))}
-    </p>
-    {href && (
-      <a class="story__link" href={href}>
-        {hrefLabel}
-      </a>
-    )}
-  </div>
-  {Astro.slots.has("default") && (
-    <div class="story__after">
-      <slot />
-    </div>
+  <h2 class="text-caption story__label" id="story-label">
+    {label}
+  </h2>
+  <p class="story__text" data-story-text>
+    {words.map((word) => (
+      <span class="story__word" data-story-word>
+        {word}{" "}
+      </span>
+    ))}
+  </p>
+  {href && (
+    <a class="story__link" href={href}>
+      {hrefLabel}
+    </a>
   )}
 </section>
 
@@ -50,22 +42,12 @@ const words = text.split(/\s+/);
        The next section adds its own space above it on top of this. */
     .story {
       display: grid;
-      gap: var(--space-section-md);
-      padding-block: var(--space-section-lg) var(--space-section-md);
-    }
-
-    .story__inner {
-      display: grid;
       justify-items: start;
       gap: var(--space-8);
       inline-size: 100%;
       max-inline-size: calc(var(--container-max) + 2 * var(--gutter));
       margin-inline: auto;
-      padding-inline: var(--gutter);
-    }
-
-    .story__after {
-      min-inline-size: 0;
+      padding: var(--space-section-lg) var(--gutter) var(--space-section-md);
     }
 
     .story__label {

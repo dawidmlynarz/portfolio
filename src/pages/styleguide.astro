@@ -416,12 +416,13 @@ const SECTIONS = [
       </Stack>
     </Container>
   </Section>
-  <StoryIntro
-    label="StoryIntro · statement with the client logo marquee in its slot"
-    text="The words light up as you scroll. Without the motion layer, or with reduced motion, the full statement simply shows. Anything in the slot follows it at full width."
-  >
+  <Section aria-label="Client logo marquee" space="sm">
     <ClientLogos marquee />
-  </StoryIntro>
+  </Section>
+  <StoryIntro
+    label="StoryIntro · statement"
+    text="The words light up as you scroll. Without the motion layer, or with reduced motion, the full statement simply shows."
+  />
   <NextUp entries={nextUpSample} />
   <CaseStudyToc headings={STYLEGUIDE_SECTIONS} body="main" />
 </SiteLayout>
