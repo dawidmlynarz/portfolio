@@ -43,6 +43,8 @@ type Layout = { dx: number; dy: number; dw: number; dh: number };
 
 const MAX_LAYERS = 4;
 const TEXTURE_BUDGET = 64e6; // bytes for the top and layer textures together
+const REST_FRAME = 32; // ms between drawn frames at rest (~30 fps)
+const SCROLL_IDLE = 160; // ms after the last scroll event the rest state starts moving again
 
 /** Resolves when the main thread is idle (or after a short timeout). */
 const idle = (timeout = 1500) =>
@@ -172,6 +174,7 @@ class PortraitReveal extends HTMLElement {
   #visible = false;
   #running = false;
   #last = 0;
+  #scrollingUntil = 0; // the page scrolled within the last moment
 
   connectedCallback() {
     this.#cfg = JSON.parse(this.dataset.config ?? "{}") as Config;
@@ -317,6 +320,7 @@ class PortraitReveal extends HTMLElement {
     window.addEventListener(
       "scroll",
       () => {
+        this.#scrollingUntil = performance.now() + SCROLL_IDLE;
         if (this.#lastClient.x >= 0)
           this.#over = this.#track(this.#lastClient.x, this.#lastClient.y);
       },
@@ -482,10 +486,20 @@ class PortraitReveal extends HTMLElement {
       this.#running = false;
       return;
     }
+    const resting = !this.#over && now > this.#touchUntil;
+    // At rest the bands roll slowly and jitter at 14 fps, so 30 fps draws look the same; while the
+    // page scrolls the rest state holds still. Both leave the frame budget to scrolling.
+    if (
+      resting &&
+      this.#wasResting &&
+      (now < this.#scrollingUntil || now - this.#last < REST_FRAME)
+    ) {
+      requestAnimationFrame((t) => this.#frame(t));
+      return;
+    }
     // Real elapsed time, capped for stalls and background tabs.
     const dt = Math.min(0.1, (now - this.#last) / 1000);
     this.#last = now;
-    const resting = !this.#over && now > this.#touchUntil;
     const arrived = this.#wasResting && !resting;
     this.#wasResting = resting;
 

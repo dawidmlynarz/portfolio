@@ -2,6 +2,15 @@
 
 Non-obvious choices, newest first. One entry per decision: what, why, and what it rules out.
 
+## 2026-10-28 · Scroll budget: idle loops yield to scrolling
+
+Profiled scrolling on every page (Chromium, 1440 desktop and 375 mobile with 4× CPU throttling). Only two pages spend frames on things the visitor isn't looking at, so those are the fixes; the motion itself is unchanged.
+
+- **Home portrait.** The glitch drew every frame while the hero was on screen, including while the page scrolled past it. At rest it now draws at about 30 fps (the bands roll slowly and jitter at 14 fps, so it looks the same) and holds still while the page is scrolling, picking up 160 ms after the last scroll event. Pointing and touch still run every frame.
+- **About hero (Mindblown).** Its idle loops (bobbing, floating cards, brows, the card tails' per-frame layout reads, the CSS boil, blink and belt) never stopped. They now pause while the hero is off screen and resume where they were. Tweens the script had paused itself stay paused.
+- **Lenis `lerp` 0.1 → 0.16.** The default trails the wheel by a long glide; 0.16 keeps the smoothing but settles in about half the time, which reads as snappier. Touch scrolling was and stays native.
+- **Fade reveals 1.2 s / 48 px → 0.8 s / 24 px.** On a quick scroll, cards were still drifting in after the reader had arrived. Heading line reveals are unchanged.
+
 ## 2026-10-28 · Portrait reveal: glitch only
 
 With glitch picked, the liquid and pixels styles are gone, and the component is renamed for what it is: `LiquidReveal` → `PortraitReveal` (`<portrait-reveal>`, `portrait-reveal.ts`, `.portrait-reveal` classes). It has no `reveal` prop or `data-style` any more, and the liquid's tuning props (size, soft, pull, wobble, fade, orbit) went with it. `portrait-reveal.ts` now only hosts the glitch: canvas, layer textures, loading, theme, pointer and the frame loop. The liquid's trail mask and composite shaders, its motion model and `reveal-pixels.ts` are deleted, so the hero script is about 12 KB instead of 26 KB. The glitch engine is unchanged; its row texture moved from unit 6 to the now free unit 5. Without WebGL, or if the glitch shader fails, the static photo stays (there is no liquid to fall back to). The "Liquid (current)" tile left the reveal playground.
