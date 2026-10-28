@@ -5,8 +5,7 @@
  * - Lenis smooth scrolling, driven by the GSAP ticker so ScrollTrigger stays in sync.
  * - [data-reveal="lines"]: headings rise line by line from behind a mask (SplitText).
  * - [data-reveal="fade"]: blocks fade and rise in once they enter the viewport.
- * - [data-hero] + [data-story]: the hero holds while the inverse story panel grows over it,
- *   then the statement lights up word by word.
+ * - [data-story]: the About statement after the home hero lights up word by word as it scrolls.
  * - Links: the "row tear" hover (styles in base.css). Links marked [data-no-tear] keep their own
  *   hover: buttons, pills and quiet links (menu, case-study cards, Next project).
  *
@@ -74,55 +73,23 @@ function revealFades() {
   }
 }
 
+/**
+ * The About statement after the home hero ([data-story]): words light up in reading order while
+ * it scrolls through the screen. Nothing is pinned.
+ */
 function story() {
-  const section = document.querySelector<HTMLElement>("[data-story]");
-  const panel = section?.querySelector<HTMLElement>("[data-story-panel]");
-  if (!section || !panel) return;
-  const words = section.querySelectorAll<HTMLElement>("[data-story-word]");
-  const radius = getComputedStyle(root).getPropertyValue("--radius-xl").trim() || "0px";
-
-  // The hero holds in place while the panel slides over it, easing back as it goes.
-  const hero = document.querySelector<HTMLElement>("[data-hero]");
-  if (hero) {
-    ScrollTrigger.create({
-      trigger: hero,
-      start: "bottom bottom",
-      end: () => `+=${window.innerHeight}`,
-      pin: true,
-      pinSpacing: false,
-    });
-    gsap.to(hero, {
-      scale: 0.92,
-      autoAlpha: 0.3,
-      transformOrigin: "50% 100%",
-      ease: "none",
-      scrollTrigger: { trigger: section, start: "top bottom", end: "top top", scrub: true },
-    });
-  }
-
-  const timeline = gsap.timeline({
-    defaults: { ease: "none" },
-    scrollTrigger: { trigger: section, start: "top bottom", end: "bottom bottom", scrub: 0.6 },
-  });
-  // Enter (one screen of scroll): the panel grows from an inset card to full bleed.
-  timeline.fromTo(
-    panel,
-    { clipPath: `inset(10% 6% 0% 6% round ${radius})` },
-    { clipPath: "inset(0% 0% 0% 0% round 0px)", duration: 1 },
-  );
-  // Pinned (the rest): words light up in reading order, with a short hold at the end.
-  const span = 1.3;
-  timeline.fromTo(
-    words,
+  const text = document.querySelector<HTMLElement>("[data-story-text]");
+  if (!text) return;
+  gsap.fromTo(
+    text.querySelectorAll<HTMLElement>("[data-story-word]"),
     { opacity: 0.16 },
     {
       opacity: 1,
-      duration: 0.12,
-      stagger: words.length > 1 ? (span - 0.12) / (words.length - 1) : 0,
+      ease: "none",
+      stagger: 0.1,
+      scrollTrigger: { trigger: text, start: "top 85%", end: "bottom 55%", scrub: 0.6 },
     },
-    1.05,
   );
-  timeline.to({}, { duration: 0.25 });
 }
 
 const TEAR_MS = 300; // a little longer than --duration-tear

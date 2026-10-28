@@ -3,14 +3,11 @@
  * Home hero: a two-tone headline at the bottom of the first screen, the liquid portrait filling
  * the right half to the viewport edges (the floating nav runs over it).
  * Tablet: 44/56 split. Mobile: copy under the nav, then a tall full-bleed portrait.
- * The motion layer reveals the headline line by line and eases the hero back as the story
- * section scrolls over it (data-hero).
+ * The motion layer reveals the headline line by line.
  */
 import LiquidReveal from "@/components/blocks/LiquidReveal.astro";
 import HeroBackdrop from "@/components/blocks/HeroBackdrop.astro";
-import RevealPicker from "@/components/blocks/RevealPicker.astro";
 import { PORTRAIT_LAYERS, portraitPhoto } from "@/lib/portrait";
-import { isProduction } from "@/lib/site";
 
 interface Props {
   /** Small mono line above the headline. */
@@ -32,7 +29,7 @@ const SIZES =
   "(min-width: 62em) max(50vw, 134vh, 54rem), (min-width: 48em) max(56vw, 134vh, 54rem), max(100vw, 83vh, 37rem)";
 ---
 
-<section class="home-hero hero-backdrop-host" aria-labelledby="home-hero-title" data-hero>
+<section class="home-hero hero-backdrop-host" aria-labelledby="home-hero-title">
   <HeroBackdrop flush />
   <div class="home-hero__copy">
     {label && <p class="text-caption home-hero__label">{label}</p>}
@@ -57,7 +54,6 @@ const SIZES =
       sizes={SIZES}
     />
   </div>
-  {!isProduction && <RevealPicker />}
 </section>
 
 <style>

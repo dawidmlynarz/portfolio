@@ -5,6 +5,14 @@ Non-obvious choices, newest first. One entry per decision: what, why, and what i
 ## 2026-10-28 · Portrait reveal: glitch only
 
 With glitch picked, the liquid and pixels styles are gone. `LiquidReveal` has no `reveal` prop or `data-style` any more, and the liquid's tuning props (size, soft, pull, wobble, fade, orbit) went with it. `liquid-reveal.ts` now only hosts the glitch: canvas, layer textures, loading, theme, pointer and the frame loop. The liquid's trail mask and composite shaders, its motion model and `reveal-pixels.ts` are deleted, so the hero script is about 12 KB instead of 26 KB. The glitch engine is unchanged; its row texture moved from unit 6 to the now free unit 5. Without WebGL, or if the glitch shader fails, the static photo stays (there is no liquid to fall back to). The "Liquid (current)" tile left the reveal playground. The component and element keep the `LiquidReveal` / `<liquid-reveal>` name for now, so this doesn't clash with the About work that touches the home hero; a rename can follow.
+## 2026-10-28 · About hand-off: Flow
+
+Dawid asked for alternatives to the inverse panel that grew over the held hero, so the About statement reads as a continuation of the hero rather than a separate block, with mobile first. Six were built on a preview with a switcher (Flow, Ink, Split, Sheet, Bridge, Avatar); Dawid shortlisted Flow and Split and picked **Flow**.
+
+- **Same surface as the hero, nothing pinned.** The statement sits on the page background right after the hero; its words light up in reading order as it scrolls through the screen (scrubbed, `motion.ts`). The hero no longer holds or eases back, so `data-hero` and the 260svh pinned track are gone, and on mobile the hero keeps the whole first screen.
+- **No separator.** A hairline that drew in above the label was tried and dropped (Dawid: redundant).
+- **No bottom padding** on the section: the Selected work section brings its own space above it.
+- **Complete without the motion layer**: all words fully lit.
 
 ## 2026-10-28 · Case study cards
 
@@ -66,7 +74,7 @@ From the playground Dawid kept the liquid, pixel dither and glitch slices, with 
 - **Glitch is a weak video signal** in 6 px rows. At rest two tracking bands roll slowly down (VHS mistracking), each showing another layer (by weight) with a light shimmer and picking a new one each time it wraps. A wrapped band comes back in after a random gap, so the distance between the two keeps changing; every 6–8 s a hiccup tears a few rows elsewhere for 150 ms. (Tried and dropped: a single band (Dawid asked for a second one) and two fast streaks at random heights, which read as too random.) The pointer is interference: the band snaps to its height, widens and opens a span around it with ragged row ends; speed drives the tearing and colour split, holding still settles into a clean view, and rows left behind hold for 0.1–0.7 s before closing one by one. Layer switches (arrival, tap, every 3.2–5 s) are bursts with a 1.4 s cooldown, so the reveal is readable most of the time. Row state lives in JS and is uploaded as a tiny texture each frame.
 - **Reduced motion:** no automaton, band roll, hiccups or tearing. Pixels show a still patch of cells under the pointer, glitch a clean band at the pointer.
 - **Cost:** pixels redraw only on ticks (one small grid pass plus the composite); glitch uploads a rows × 2 texture (~1 KB) per frame. Both keep running at rest, like the liquid, and pause off screen the same way.
-- **Preview switcher.** `RevealPicker` (bottom right, previews only, never on production) sets the style on the home hero; remembered in localStorage, `?reveal=pixels|glitch|liquid` also works. Without a stored choice it shows the hero's own style. Dawid chose **glitch**: the home hero sets `reveal="glitch"`, so production shows glitch; liquid and pixels stay available as options.
+- **Preview switcher.** `RevealPicker` (bottom right, previews only, never on production) sets the style on the home hero; remembered in localStorage, `?reveal=pixels|glitch|liquid` also works. Without a stored choice it shows the hero's own style. Dawid chose **glitch**: the home hero sets `reveal="glitch"`, so production shows glitch; liquid and pixels stay available as options. _Update 2026-10-28:_ the switcher was still on previews after the pick; removed from the home hero, so previews show glitch too.
 
 ## 2026-10-27 · Multi-layer liquid portrait and a reveal playground
 
