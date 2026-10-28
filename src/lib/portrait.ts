@@ -1,4 +1,4 @@
-// The home portrait: the photo on top, and the sculptures the liquid reveals under it. All share
+// The home portrait: the photo on top, and the sculptures the glitch reveals under it. All share
 // one 2400 × 1792 framing. Marble has a variant per theme; the iridescent one is rare.
 import portraitPhoto from "@/assets/portrait/portrait-photo.avif";
 import marbleLight from "@/assets/portrait/portrait-marble-light.avif";

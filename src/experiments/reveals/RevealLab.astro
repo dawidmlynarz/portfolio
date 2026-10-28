@@ -1,14 +1,13 @@
 ---
 /**
- * Reveal lab: the home portrait's layers run through alternative reveal techniques, side by side
- * with the real liquid, to compare them. A private playground (/playground), not linked anywhere.
+ * Reveal lab: the home portrait's layers run through alternative reveal techniques, side by side,
+ * to compare them. A private playground (/playground), not linked anywhere.
  * Behaviour: reveal-lab.ts (one small WebGL canvas per tile, paused off screen).
  *
  * Isolated experiment (CLAUDE.md rule 6): classes live under .lab and read only semantic site
  * tokens. Without JS or WebGL each tile shows the photo.
  */
 import { Image, getImage } from "astro:assets";
-import LiquidReveal from "@/components/blocks/LiquidReveal.astro";
 import { PORTRAIT_LAYERS, portraitPhoto } from "@/lib/portrait";
 
 const MODES = [
@@ -65,21 +64,6 @@ const images = {
 ---
 
 <div class="lab">
-  <article class="lab__tile">
-    <div class="lab__stage">
-      <LiquidReveal
-        top={portraitPhoto}
-        layers={PORTRAIT_LAYERS}
-        alt="Portrait of Dawid Młynarz"
-        loading="lazy"
-        sizes="(min-width: 62em) 50vw, 100vw"
-      />
-    </div>
-    <h2 class="lab__name">Liquid (current)</h2>
-    <p class="lab__note">
-      What the home page runs: a gooey blob with a healing trail; each blob carries its own layer.
-    </p>
-  </article>
   {MODES.map(({ mode, name, note }) => (
     <article class="lab__tile">
       <reveal-lab class="lab__stage" data-mode={mode} data-images={JSON.stringify(images)}>
@@ -133,11 +117,6 @@ const images = {
       border-radius: var(--radius-md);
       background: var(--texture-grain), var(--color-bg);
       touch-action: pan-y;
-    }
-
-    .lab__stage :global(.liquid) {
-      position: absolute;
-      inset: 0;
     }
 
     .lab__image,

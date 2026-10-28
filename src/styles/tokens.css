@@ -155,7 +155,7 @@
     --duration-glitch: 420ms; /* case-study cover hover: torn rows, then clean */
     --underline-offset-quiet: 0.14em; /* quiet links: the hover line sits nearer the baseline */
     --duration-fade: 1200ms; /* portrait fade-in on page load */
-    --duration-reveal: 600ms; /* media fading in once ready (liquid reveal canvas) */
+    --duration-reveal: 600ms; /* media fading in once ready (portrait reveal canvas) */
     --duration-zoom: 800ms; /* case-study cover zoom on hover */
     --duration-marquee: 40s; /* one full loop of the client logo marquee */
     --ease-out-expo: cubic-bezier(0.19, 1, 0.22, 1);

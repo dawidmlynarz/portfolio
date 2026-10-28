@@ -1,17 +1,16 @@
 ---
 /**
  * LiquidReveal: the portrait hero. The top image (the photo) is a real responsive <img>; once JS
- * runs, a canvas fades in over it and a liquid mask follows the pointer to reveal up to four layers
- * below it, picked at random (each layer can be weighted, so one can be rare). At rest the liquid
- * roams the face on its own.
+ * runs, a canvas fades in over it and a glitch reveals up to four layers below it, picked at
+ * random (each layer can be weighted, so one can be rare). At rest two tracking bands roll down
+ * the picture; the pointer is interference that tears the rows open around it.
  *
  * All images must be transparent cutouts with identical framing. They stay transparent, so
  * whatever is behind (the hero's grain) shows around the figure in light and dark. A
- * layer can have a dark-theme variant. Behaviour lives in src/scripts/liquid-reveal.ts.
+ * layer can have a dark-theme variant. Behaviour lives in src/scripts/liquid-reveal.ts and
+ * reveal-glitch.ts.
  *
- * Styles: liquid (default; roams the face at rest), pixels (growing cell colonies) and glitch
- * (a rolling tracking band); each has its own resting animation and hover physics.
- * Reduced motion: no orbit, lobes or wobble; the liquid appears only while pointing.
+ * Reduced motion: no rolling bands, hiccups or tearing; a clean band at the pointer only.
  * No JS or no WebGL: the top image alone.
  */
 import { Image, getImage } from "astro:assets";
@@ -31,20 +30,6 @@ interface Props {
   layers: Layer[];
   /** Describes the top image. */
   alt: string;
-  /** How the layers are revealed; can also be changed later through data-style. */
-  reveal?: "liquid" | "pixels" | "glitch";
-  /** Blob size, 6–60. */
-  size?: number;
-  /** Edge softness, 0–100. */
-  soft?: number;
-  /** Magnet pull towards the pointer, 0–100. */
-  pull?: number;
-  /** Edge wobble, 0–100. */
-  wobble?: number;
-  /** Trail heal time in seconds. */
-  fade?: number;
-  /** Resting orbit speed, 0–100. */
-  orbit?: number;
   /** Part of the image always kept in frame: [x0, x1, y0, y1], 0–1. */
   face?: [number, number, number, number];
   /** image: the box takes the image's aspect ratio · fill: fills its parent (full-bleed heroes). */
@@ -58,13 +43,6 @@ const {
   top,
   layers,
   alt,
-  reveal = "liquid",
-  size = 22,
-  soft = 30,
-  pull = 55,
-  wobble = 55,
-  fade = 1.8,
-  orbit = 40,
   face = [0.27, 0.71, 0.04, 0.86],
   fit = "image",
   loading = "eager",
@@ -78,8 +56,8 @@ const widthsFor = (img: ImageMetadata) => {
   return [...fits, img.width];
 };
 
-// The top is the LCP and stays sharp; the layers only show through moving liquid, so they take a
-// lower quality (about half the bytes, no visible difference at 100%).
+// The top is the LCP and stays sharp; the layers only show through the moving glitch, so they take
+// a lower quality (about half the bytes, no visible difference at 100%).
 const TOP_QUALITY = 65;
 const LAYER_QUALITY = 55;
 
@@ -102,7 +80,7 @@ const [topSources, layerSources] = await Promise.all([
     })),
   ),
 ]);
-const config = { size, soft, pull, wobble, fade, orbit, face };
+const config = { face };
 
 // Page-load fade: the image marks the portrait as shown as soon as it has loaded, without waiting
 // for the module scripts (which would push LCP back). liquid-reveal.ts does the same as a fallback.
@@ -115,7 +93,6 @@ const objectPosition = `${((face[0] + face[1]) / 2) * 100}% ${((face[2] + face[3
 <liquid-reveal
   class:list={["liquid", `liquid--${fit}`, className]}
   data-config={JSON.stringify(config)}
-  data-style={reveal}
   data-top={JSON.stringify(topSources)}
   data-layers={JSON.stringify(layerSources)}
   data-ratio={top.width / top.height}
