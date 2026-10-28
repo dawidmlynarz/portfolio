@@ -2,6 +2,17 @@
 
 Non-obvious choices, newest first. One entry per decision: what, why, and what it rules out.
 
+## 2026-10-28 · Password-protected case studies, locked on the server
+
+`protected: true` now locks a case study on every build, production included. NerdWallet is the first one (Dawid's pick). This replaces "protected drafts get no page on previews" and removes `SHOW_PROTECTED_DRAFTS`.
+
+- **The content never ships as a static file.** Astro builds the full page and a locked page (`/work/<slug>/locked`). After the build, `tooling/protected-work.mjs` moves the full page's HTML into a generated module (`.generated/protected-pages.js`, git-ignored) and puts the locked page at `/work/<slug>`. Cloudflare Pages bundles that module into the Pages Function `functions/work/_middleware.ts`, which is the only place the content exists. A client-side lock (blur, JS check, encrypted HTML) was ruled out: the text would still be in the download.
+- **The gate.** The form posts the password to `/work/<slug>`. The function compares it in constant time with `CASE_STUDY_PASSWORD` (a Pages secret, set per environment), then sets an HttpOnly, Secure, SameSite=Lax cookie for 30 days and redirects back. The cookie is the expiry signed (HMAC-SHA256) with the password, so there is no second secret, and changing the password locks everyone out. One password opens every protected case study. Unlocked responses are `private, no-store` and `noindex`. Without the secret nothing unlocks.
+- **Wrong password:** the function serves the locked page with a 401, the form switched to its error state (message shown, input invalid and focused) and one sideways jolt of the panel, so it works without JS.
+- **Locked state:** the public header (company, title, lead, tags, cover) and grey stand-in lines, blurred (`--blur-locked`) and inert, under a scrim, with `LockPanel` centred on the first screen: padlock, "This case study is password protected", password field with an Unlock button, and a line inviting people to email for access. Cards of protected work show a small padlock after the company.
+- **Not covered:** images used only inside a protected case study are still files in `/_astro/` under hashed names. Nothing public links to them, but they are not behind the password. Brute force is not rate limited by the function; a Cloudflare rate-limiting rule on `POST /work/*` covers that if needed.
+- **New tokens:** `--blur-locked`, `--shadow-panel` (add to Figma).
+
 ## 2026-10-28 · Scroll budget: idle loops yield to scrolling
 
 Profiled scrolling on every page (Chromium, 1440 desktop and 375 mobile with 4× CPU throttling). Only two pages spend frames on things the visitor isn't looking at, so those are the fixes; the motion itself is unchanged.

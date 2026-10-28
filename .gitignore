@@ -21,3 +21,11 @@ npm-debug.log*
 
 # Webflow export: local reference only, never committed
 reference/
+
+# Protected case studies, moved out of dist on build (tooling/protected-work.mjs)
+.generated/*
+!.generated/protected-pages.d.ts
+
+# Cloudflare Pages local dev
+.wrangler/
+.dev.vars

@@ -1,0 +1,182 @@
+---
+/**
+ * The locked state of a password-protected case study (protected: true). On build it replaces
+ * /work/<slug>, and the full page moves into the Pages Function (tooling/protected-work.mjs).
+ *
+ * Behind the password panel sits a blurred stand-in for the page: the public header (the same
+ * eyebrow, title, lead, tags and cover a card shows) over grey bars where the text would be. None of
+ * the case study's content is in this page. The stand-in is hidden from assistive tech and inert.
+ */
+import { Image, getImage } from "astro:assets";
+import SiteLayout from "@/layouts/SiteLayout.astro";
+import Container from "@/components/layout/Container.astro";
+import Tag from "@/components/ui/Tag.astro";
+import HeroBackdrop from "@/components/blocks/HeroBackdrop.astro";
+import LockPanel from "@/components/blocks/LockPanel.astro";
+import { getProtectedWork, workHref, type Work } from "@/lib/work";
+
+export async function getStaticPaths() {
+  return (await getProtectedWork()).map((entry) => ({
+    params: { slug: entry.id },
+    props: { entry },
+  }));
+}
+
+interface Props {
+  entry: Work;
+}
+
+const { entry } = Astro.props;
+const { data } = entry;
+const href = workHref(entry);
+
+// Share image: the cover, as on the full page, so a shared link still previews well.
+const og = await getImage({
+  src: data.cover,
+  width: 1200,
+  height: 630,
+  fit: "cover",
+  format: "jpeg",
+  quality: 82,
+});
+
+/** Widths of the grey "lines" standing in for paragraphs, in percent. */
+const PARAGRAPHS = [
+  [100, 96, 98, 72],
+  [97, 100, 88],
+  [100, 94, 99, 91, 46],
+];
+---
+
+<SiteLayout
+  title={data.seoTitle ?? data.title}
+  description={data.description}
+  type="article"
+  image={{ src: og.src, width: 1200, height: 630, alt: data.coverAlt }}
+  canonicalPath={href}
+  noindex
+>
+  <div class="locked">
+    <div class="locked__backdrop hero-backdrop-host" aria-hidden="true" inert>
+      <HeroBackdrop />
+      <Container class="locked__intro">
+        <p class="text-caption locked__muted">Case study · {data.company}</p>
+        <p class="locked__title">{data.title}</p>
+        <p class="text-lead locked__muted">{data.lead ?? data.description}</p>
+        <ul class="locked__tags" role="list">
+          {data.tags.map((tag) => (
+            <Tag as="li">{tag}</Tag>
+          ))}
+        </ul>
+      </Container>
+      <Container>
+        <Image
+          class="locked__cover"
+          src={data.cover}
+          alt=""
+          widths={[480, 800, 1200].filter((w) => w <= data.cover.width)}
+          sizes="(min-width: 84rem) 40rem, 50vw"
+          loading="eager"
+        />
+      </Container>
+      <Container class="locked__body">
+        {PARAGRAPHS.map((lines) => (
+          <div class="locked__paragraph">
+            {lines.map((width) => (
+              <span class="locked__line" style={`--line: ${width}%`} />
+            ))}
+          </div>
+        ))}
+      </Container>
+    </div>
+
+    <div class="locked__overlay">
+      <LockPanel action={href} company={data.company} />
+    </div>
+  </div>
+</SiteLayout>
+
+<style>
+  @layer components {
+    /* One screen: the panel sits in the middle of it over the blurred page, the footer follows. */
+    .locked {
+      position: relative;
+      display: grid;
+      min-block-size: calc(100svh - var(--nav-clearance));
+      overflow: clip;
+    }
+
+    .locked__backdrop {
+      position: absolute;
+      inset: 0;
+      display: grid;
+      align-content: start;
+      gap: var(--space-12);
+      padding-block: var(--space-section-sm);
+      filter: blur(var(--blur-locked));
+      user-select: none;
+      pointer-events: none;
+
+      /* Fades into the page towards the footer. */
+      mask-image: linear-gradient(to bottom, var(--color-text) 55%, transparent);
+    }
+
+    .locked__intro {
+      display: grid;
+      justify-items: start;
+      gap: var(--space-6);
+    }
+
+    .locked__muted {
+      color: var(--color-text-muted);
+    }
+
+    .locked__title {
+      max-inline-size: 22ch;
+      font: var(--weight-medium) var(--text-h1) / var(--leading-h1) var(--font-heading);
+      letter-spacing: var(--tracking-h1);
+    }
+
+    .locked__tags {
+      display: flex;
+      flex-wrap: wrap;
+      gap: var(--space-2);
+      padding: 0;
+    }
+
+    .locked__cover {
+      inline-size: 100%;
+      block-size: auto;
+      aspect-ratio: 16 / 9;
+      object-fit: cover;
+      border-radius: var(--radius-lg);
+      background-color: var(--color-bg-subtle);
+    }
+
+    .locked__body {
+      display: grid;
+      gap: var(--space-8);
+      max-inline-size: var(--measure);
+    }
+
+    .locked__paragraph {
+      display: grid;
+      gap: var(--space-3);
+    }
+
+    .locked__line {
+      inline-size: var(--line);
+      block-size: var(--space-3);
+      border-radius: var(--radius-pill);
+      background-color: var(--color-border-subtle);
+    }
+
+    .locked__overlay {
+      position: relative;
+      display: grid;
+      place-items: center;
+      padding: var(--space-section-sm) var(--space-4);
+      background-color: var(--color-scrim);
+    }
+  }
+</style>

@@ -1,4 +1,4 @@
-import { CF_PAGES_BRANCH, SHOW_PROTECTED_DRAFTS } from "astro:env/server";
+import { CF_PAGES_BRANCH } from "astro:env/server";
 
 export const SITE = {
   name: "Dawid Młynarz",
@@ -35,6 +35,3 @@ export const NAV_LINKS = [
 export const PRODUCTION_BRANCH = "main";
 
 export const isProduction = CF_PAGES_BRANCH === PRODUCTION_BRANCH;
-
-/** Previews are behind Cloudflare Access, so formerly password-protected drafts may be built. */
-export const showProtectedDrafts = !isProduction && SHOW_PROTECTED_DRAFTS;

@@ -1,0 +1,233 @@
+---
+/**
+ * The password panel of a locked case study (protected: true). A plain form that posts the
+ * password to the case study's own URL, where the Pages Function checks it
+ * (functions/work/_middleware.ts). Works without JS.
+ *
+ * Wrong password: the function serves the locked page again with the form's data-lock-state set
+ * to "error" and the input marked invalid and focused, so the message shows and the panel jolts
+ * once (the site's glitch, a lost sync). Reduced motion keeps it still.
+ */
+import Button from "@/components/ui/Button.astro";
+import Link from "@/components/ui/Link.astro";
+import { SITE } from "@/lib/site";
+
+interface Props {
+  /** Where the form posts: the case study's URL. */
+  action: string;
+  /** Who the case study is for, used in the eyebrow and the email subject. */
+  company: string;
+  /** Show the "wrong password" state (styleguide only; on the site the function sets it). */
+  error?: boolean;
+  /** Heading level: h1 on the locked page, h3 on the styleguide. */
+  headingLevel?: 1 | 3;
+  class?: string;
+}
+
+const { action, company, error = false, headingLevel = 1, class: className } = Astro.props;
+const Heading = `h${headingLevel}` as const;
+const id = (name: string) => (error ? `${name}-demo` : name);
+const mailto = `mailto:${SITE.email}?subject=${encodeURIComponent(`Access to the ${company} case study`)}`;
+---
+
+<section class:list={["lock-panel", className]} aria-labelledby={id("lock-title")}>
+  <span class="lock-panel__icon" aria-hidden="true">
+    <svg viewBox="0 0 24 24">
+      <rect x="5" y="10.5" width="14" height="10" rx="2.5"></rect>
+      <path d="M8.5 10.5V7.5a3.5 3.5 0 0 1 7 0v3"></path>
+    </svg>
+  </span>
+  <p class="text-caption lock-panel__eyebrow">Case study · {company}</p>
+  <Heading class="lock-panel__title" id={id("lock-title")}>
+    This case study is password protected
+  </Heading>
+
+  <form
+    class="lock-panel__form"
+    method="post"
+    action={action}
+    data-lock-state={error ? "error" : "locked"}
+  >
+    <label class="visually-hidden" for={id("lock-password")}>
+      Password
+    </label>
+    <div class="lock-panel__field">
+      <input
+        class="lock-panel__input"
+        id={id("lock-password")}
+        type="password"
+        name="password"
+        placeholder="Password"
+        autocomplete="current-password"
+        required
+        data-lock-input="password"
+        aria-invalid={error ? "true" : undefined}
+        aria-describedby={error ? id("lock-error") : undefined}
+      />
+      <Button type="submit" icon="arrow">
+        Unlock
+      </Button>
+    </div>
+    <p class="text-small lock-panel__error" id={id("lock-error")}>
+      That password didn’t work. Try again?
+    </p>
+  </form>
+
+  <p class="text-small lock-panel__caption">
+    Want to see this one? Email me at{" "}
+    <Link href={mailto} data-no-tear>
+      {SITE.email}
+    </Link>{" "}
+    and I’ll send you access.
+  </p>
+</section>
+
+<style>
+  @layer components {
+    .lock-panel {
+      display: grid;
+      justify-items: center;
+      gap: var(--space-4);
+      inline-size: min(100%, 30rem);
+      padding: var(--space-10) var(--space-6) var(--space-8);
+      border: var(--border-width) solid var(--color-border-subtle);
+      border-radius: var(--radius-lg);
+      text-align: center;
+      background-color: var(--color-bg);
+      box-shadow: var(--shadow-panel);
+    }
+
+    .lock-panel__icon {
+      display: grid;
+      place-items: center;
+      inline-size: var(--space-12);
+      block-size: var(--space-12);
+      margin-block-end: var(--space-2);
+      border-radius: var(--radius-pill);
+      color: var(--color-on-inverse);
+      background-color: var(--color-inverse-bg);
+    }
+
+    .lock-panel__icon svg {
+      inline-size: var(--space-6);
+      block-size: var(--space-6);
+      fill: none;
+      stroke: currentcolor;
+      stroke-width: 1.75;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+    }
+
+    .lock-panel__eyebrow,
+    .lock-panel__caption {
+      color: var(--color-text-muted);
+    }
+
+    .lock-panel__title {
+      max-inline-size: 18ch;
+      font: var(--weight-medium) var(--text-h3) / var(--leading-h3) var(--font-heading);
+      letter-spacing: var(--tracking-h3);
+      text-wrap: balance;
+    }
+
+    .lock-panel__form {
+      display: grid;
+      gap: var(--space-2);
+      inline-size: 100%;
+      margin-block-start: var(--space-2);
+    }
+
+    .lock-panel__field {
+      display: flex;
+      flex-wrap: wrap;
+      gap: var(--space-2);
+    }
+
+    .lock-panel__field > :global(.button) {
+      flex: 1 0 auto;
+    }
+
+    .lock-panel__input {
+      flex: 999 1 12rem;
+      min-inline-size: 0;
+      padding: var(--space-3) var(--space-6);
+      border: var(--border-width) solid var(--color-border-muted);
+      border-radius: var(--radius-pill);
+      line-height: 1.2;
+      background-color: var(--color-bg);
+      transition: border-color var(--duration-fast) var(--ease-standard);
+    }
+
+    .lock-panel__input::placeholder {
+      color: var(--color-text-muted);
+      opacity: 1;
+    }
+
+    .lock-panel__input:hover {
+      border-color: var(--color-border);
+    }
+
+    .lock-panel__input:focus-visible {
+      border-color: var(--color-text);
+      outline: var(--border-width) solid var(--color-focus);
+      outline-offset: 0;
+    }
+
+    .lock-panel__error {
+      display: none;
+    }
+
+    .lock-panel__form[data-lock-state="error"] .lock-panel__error {
+      display: block;
+    }
+
+    .lock-panel__form[data-lock-state="error"] .lock-panel__input {
+      border-color: var(--color-text);
+    }
+
+    /* Wrong password: the panel skips a frame sideways once, like a lost sync. */
+    .lock-panel:has([data-lock-state="error"]) {
+      animation: lock-panel-jolt var(--duration-tear) steps(1, end);
+    }
+
+    @keyframes lock-panel-jolt {
+      0% {
+        translate: calc(-1 * var(--space-2)) 0;
+      }
+
+      25% {
+        translate: var(--space-3) 0;
+      }
+
+      50% {
+        translate: calc(-1 * var(--space-1)) 0;
+      }
+
+      75% {
+        translate: var(--space-1) 0;
+      }
+
+      100% {
+        translate: 0;
+      }
+    }
+
+    .lock-panel__caption {
+      max-inline-size: 30ch;
+      margin-block-start: var(--space-2);
+      text-wrap: pretty;
+    }
+
+    @media (width >= 48em) {
+      .lock-panel {
+        padding: var(--space-12) var(--space-10) var(--space-10);
+      }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      .lock-panel:has([data-lock-state="error"]) {
+        animation: none;
+      }
+    }
+  }
+</style>
