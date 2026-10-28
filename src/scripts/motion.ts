@@ -28,6 +28,9 @@ function smoothScroll() {
   const lenis = new Lenis({
     autoRaf: false,
     anchors: true,
+    // Tighter than the 0.1 default: the page follows the wheel closely and settles quickly,
+    // smooth without feeling floaty. Touch scrolling stays native.
+    lerp: 0.16,
     // Let popovers and the open nav menu scroll natively.
     prevent: (node) => Boolean(node.closest("[popover], [data-nav-panel]")),
   });
@@ -64,8 +67,8 @@ function revealFades() {
   for (const el of document.querySelectorAll<HTMLElement>('[data-reveal="fade"]')) {
     gsap.from(el, {
       autoAlpha: 0,
-      y: 48,
-      duration: 1.2,
+      y: 24,
+      duration: 0.8,
       ease: EASE,
       scrollTrigger: { trigger: el, start: "top 98%", once: true },
     });

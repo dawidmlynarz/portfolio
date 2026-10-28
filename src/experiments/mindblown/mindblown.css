@@ -983,6 +983,12 @@
     }
   }
 
+  /* Off screen (mindblown.ts): the looping CSS animations hold still too. */
+  .mindblown[data-mindblown-offscreen]
+    :is(.mindblown__belt-track, .mindblown__note, .mindblown__note-close, .mindblown__eye) {
+    animation-play-state: paused;
+  }
+
   @media (prefers-reduced-motion: reduce) {
     .mindblown__belt-track,
     .mindblown__note,
