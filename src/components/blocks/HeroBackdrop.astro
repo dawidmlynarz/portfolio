@@ -1,0 +1,45 @@
+---
+/**
+ * The hero texture (--bg-hero) for page heads that aren't full-screen heroes: Services, Work and
+ * the case-study header. Put it first inside the section; the section gets `hero-backdrop-host`
+ * from here (position and stacking). It reaches up under the floating nav to the top of the page
+ * and fades into the page background, so it never ends in a hard edge.
+ */
+interface Props {
+  /** How far down the texture reaches before it has fully faded. */
+  size?: "screen" | "full";
+}
+
+const { size = "screen" } = Astro.props;
+---
+
+<div class:list={["hero-backdrop", `hero-backdrop--${size}`]} aria-hidden="true"></div>
+
+<style>
+  @layer components {
+    :global(.hero-backdrop-host) {
+      position: relative;
+      isolation: isolate;
+    }
+
+    .hero-backdrop {
+      position: absolute;
+      inset-inline: 0;
+      inset-block-start: calc(-1 * var(--nav-clearance));
+      z-index: -1;
+      background: var(--bg-hero);
+
+      /* Masks only read alpha: any opaque colour works. */
+      mask-image: linear-gradient(to bottom, var(--color-text) 55%, transparent);
+      pointer-events: none;
+    }
+
+    .hero-backdrop--screen {
+      block-size: calc(min(100%, 85svh) + var(--nav-clearance));
+    }
+
+    .hero-backdrop--full {
+      block-size: calc(100% + var(--nav-clearance));
+    }
+  }
+</style>

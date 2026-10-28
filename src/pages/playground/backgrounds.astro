@@ -1,0 +1,40 @@
+---
+// Backgrounds playground: six hero backdrops to replace the dot grid, next to it, in both themes.
+// Private: noindex, out of the sitemap, not linked anywhere.
+import SiteLayout from "@/layouts/SiteLayout.astro";
+import Container from "@/components/layout/Container.astro";
+import Section from "@/components/layout/Section.astro";
+import Stack from "@/components/layout/Stack.astro";
+import BackdropLab from "@/experiments/backdrops/BackdropLab.astro";
+---
+
+<SiteLayout
+  title="Backgrounds playground"
+  description="Six hero backgrounds to replace the dot grid."
+  noindex
+>
+  <Section space="lg">
+    <Container>
+      <Stack gap="12">
+        <Stack gap="4">
+          <h1>Backgrounds playground</h1>
+          <p class="text-lead playground__lead">
+            Six quiet backgrounds for the heroes, next to today's dots, in light and dark. Each one
+            costs a few hundred bytes to 2 KB and no JavaScript. Open any page from an option to see
+            it in place, or switch with the Background menu in the corner on any page.
+          </p>
+        </Stack>
+        <BackdropLab />
+      </Stack>
+    </Container>
+  </Section>
+</SiteLayout>
+
+<style>
+  @layer components {
+    .playground__lead {
+      max-inline-size: var(--measure);
+      color: var(--color-text-muted);
+    }
+  }
+</style>

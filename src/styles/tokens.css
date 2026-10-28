@@ -64,6 +64,9 @@
     --color-glass: color-mix(in srgb, var(--color-bg) 64%, transparent); /* the open menu */
     /* Hero backdrop: a faint dot grid on the page background (Home, About, every Hero) */
     --color-pattern: color-mix(in srgb, var(--color-border-subtle) 70%, var(--color-bg));
+    /* PREVIEW: hero backdrop options (see "Hero backdrop options" below) */
+    --color-hero-tint: color-mix(in srgb, var(--color-text) 5%, var(--color-bg));
+    --color-scanline: color-mix(in srgb, var(--color-text) 5%, var(--color-bg));
 
     /* ---------- Typography ----------
        Roles, not sizes. Fluid between 375px and 1440px viewports.
@@ -166,14 +169,88 @@
     --shift-page-in: 6vh; /* page transition: how far below the new page starts */
     --ease-in-out-quart: cubic-bezier(0.77, 0, 0.175, 1);
     --z-nav: 100;
+    /* Space above content on pages that don't run under the floating nav (SiteLayout) */
+    --nav-clearance: calc(var(--space-4) + var(--space-12) + var(--space-8));
+
+    /* Hero textures. SVG noise (a few hundred bytes, drawn once and tiled) and a 2 KB pixel tile.
+       Images can't use light-dark(), so the theme selectors below swap them. */
+    --texture-grain-light: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='200'%3E%3Cfilter id='g'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.8' numOctaves='3' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 .3 0 0 0 -.11'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23g)'/%3E%3C/svg%3E");
+    --texture-grain-dark: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='200'%3E%3Cfilter id='g'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.8' numOctaves='3' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 1 0 0 0 0 1 0 0 0 0 1 .22 0 0 0 -.08'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23g)'/%3E%3C/svg%3E");
+    --texture-pixel-light: url("/textures/pixel-grain-light.png");
+    --texture-pixel-dark: url("/textures/pixel-grain-dark.png");
+    --texture-grain: var(--texture-grain-light);
+    --texture-pixel: var(--texture-pixel-light);
   }
 
-  /* The visitor's choice from the theme toggle */
-  :root[data-theme="light"] {
+  /* The visitor's choice from the theme toggle. Not limited to :root, so a preview can pin one
+     element to a theme (the backgrounds playground shows both side by side). */
+  [data-theme="light"] {
     color-scheme: light;
+    --texture-grain: var(--texture-grain-light);
+    --texture-pixel: var(--texture-pixel-light);
   }
 
-  :root[data-theme="dark"] {
+  [data-theme="dark"] {
     color-scheme: dark;
+    --texture-grain: var(--texture-grain-dark);
+    --texture-pixel: var(--texture-pixel-dark);
+  }
+
+  /*
+   * PREVIEW: hero backdrop options. data-hero-bg on <html> (the preview picker) or on any element
+   * (the backgrounds playground) swaps --bg-hero. Once one is picked it becomes the --bg-hero
+   * default above and the rest go.
+   *   dots   the current dot grid
+   *   grain  even film grain
+   *   fade   grain that thins out towards the content
+   *   glow   a soft grey cloud of grain from the top right (grainy gradient)
+   *   scan   faint scanlines that fade out, after the glitch reveal
+   *   pixel  sparse square pixels that fade out, after the glitch reveal's blocks
+   *   bands  a stepped, posterised gradient under fine grain
+   */
+  [data-hero-bg="dots"] {
+    --bg-hero: var(--pattern-dots), var(--color-bg);
+  }
+
+  [data-hero-bg="grain"] {
+    --bg-hero: var(--texture-grain), var(--color-bg);
+  }
+
+  [data-hero-bg="fade"] {
+    --bg-hero:
+      linear-gradient(to bottom, transparent, var(--color-bg) 90%), var(--texture-grain),
+      var(--color-bg);
+  }
+
+  [data-hero-bg="glow"] {
+    --bg-hero:
+      radial-gradient(100% 90% at 85% 0%, transparent 10%, var(--color-bg)), var(--texture-grain),
+      var(--color-hero-tint);
+  }
+
+  [data-hero-bg="scan"] {
+    --bg-hero:
+      linear-gradient(to bottom, transparent 20%, var(--color-bg) 90%),
+      repeating-linear-gradient(to bottom, var(--color-scanline) 0 1px, transparent 1px 4px),
+      var(--color-bg);
+  }
+
+  [data-hero-bg="pixel"] {
+    --bg-hero:
+      linear-gradient(to bottom, transparent, var(--color-bg) 90%),
+      var(--texture-pixel) 0 0 / 192px, var(--color-bg);
+  }
+
+  [data-hero-bg="bands"] {
+    --bg-hero:
+      var(--texture-grain),
+      linear-gradient(
+        to bottom,
+        color-mix(in srgb, var(--color-text) 6%, var(--color-bg)) 0 15%,
+        color-mix(in srgb, var(--color-text) 4.5%, var(--color-bg)) 15% 30%,
+        color-mix(in srgb, var(--color-text) 3%, var(--color-bg)) 30% 45%,
+        color-mix(in srgb, var(--color-text) 1.5%, var(--color-bg)) 45% 60%,
+        var(--color-bg) 60%
+      );
   }
 }

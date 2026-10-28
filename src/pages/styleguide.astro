@@ -11,6 +11,7 @@ import Button from "@/components/ui/Button.astro";
 import Tag from "@/components/ui/Tag.astro";
 import Figure from "@/components/ui/Figure.astro";
 import Hero from "@/components/blocks/Hero.astro";
+import HeroBackdrop from "@/components/blocks/HeroBackdrop.astro";
 import LiquidReveal from "@/components/blocks/LiquidReveal.astro";
 import WorkGrid from "@/components/blocks/WorkGrid.astro";
 import Metrics from "@/components/content/Metrics.astro";
@@ -320,6 +321,20 @@ const SECTIONS = [
       loading="lazy"
     />
   </Hero>
+  <Section aria-label="Hero backdrop" class="hero-backdrop-host">
+    <HeroBackdrop />
+    <Container>
+      <Stack gap="4">
+        <h3 class="text-caption muted">
+          HeroBackdrop · the hero texture (--bg-hero) behind a page head, reaching up under the nav
+          and fading out · used on Services, Work and case studies
+        </h3>
+        <p class="measure">
+          A page head sits here, on the same texture as the Home and About heroes.
+        </p>
+      </Stack>
+    </Container>
+  </Section>
   <Section aria-label="Work grid">
     <Container>
       <Stack gap="6">
