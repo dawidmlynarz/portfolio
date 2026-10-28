@@ -416,13 +416,12 @@ const SECTIONS = [
       </Stack>
     </Container>
   </Section>
-  <Section aria-label="Client logo marquee" space="sm">
-    <ClientLogos marquee />
-  </Section>
   <StoryIntro
-    label="StoryIntro · inverse hand-off statement"
-    text="With the motion layer on, the panel grows from an inset card to full bleed and the words light up as you scroll. Without it, or with reduced motion, the full statement simply shows."
-  />
+    label="StoryIntro · statement with the client logo marquee in its slot"
+    text="The words light up as you scroll. Without the motion layer, or with reduced motion, the full statement simply shows. Anything in the slot follows it at full width."
+  >
+    <ClientLogos marquee />
+  </StoryIntro>
   <NextUp entries={nextUpSample} />
   <CaseStudyToc headings={STYLEGUIDE_SECTIONS} body="main" />
 </SiteLayout>
