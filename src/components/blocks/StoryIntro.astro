@@ -1,29 +1,60 @@
 ---
 /**
- * The hand-off after the home hero: an inverse (black) panel grows to fill the screen and a large
- * about-me statement lights up word by word as you scroll (the motion layer, data-story).
- * Without the motion layer (no JS, reduced motion) it is a plain inverse section with the full
- * statement visible.
+ * The hand-off after the home hero: a large about-me statement that lights up word by word as you
+ * scroll (the motion layer, data-story). Without the motion layer (no JS, reduced motion) the
+ * full statement is visible.
+ *
+ * PREVIEW: html[data-about] picks how it meets the hero (AboutPicker, src/lib/about-variants.ts):
+ *   current  an inverse panel grows over the held hero (no attribute = this)
+ *   flow     same surface as the hero, a rule draws in, words light up in place
+ *   ink      the page darkens out of the portrait's black shirt into an inverse section
+ *   split    desktop: the portrait stays put while the statement replaces the hero copy;
+ *            mobile: the statement rises over the portrait as it fades out
+ *   sheet    a soft sheet overlaps the portrait and slides over the receding hero
+ *   bridge   a band of keywords straddles the seam and drifts as you scroll
+ *   avatar   the portrait shrinks into a round avatar beside the statement
  */
+import { Image } from "astro:assets";
+
 interface Props {
   label: string;
   text: string;
   /** Optional link under the statement. */
   href?: string;
   hrefLabel?: string;
+  /** Portrait for the avatar variant (static, and where the hero portrait lands). */
+  avatar?: ImageMetadata;
+  /** Keywords for the bridge variant's band. */
+  band?: string[];
 }
 
-const { label, text, href, hrefLabel } = Astro.props;
+const { label, text, href, hrefLabel, avatar, band = [] } = Astro.props;
 const words = text.split(/\s+/);
+const bandText = band.map((word) => `${word} • `).join("");
 ---
 
 <section class="story" aria-labelledby="story-label" data-story>
+  {band.length > 0 && (
+    <div class="story__band" aria-hidden="true" data-story-band>
+      <span class="story__band-track" data-story-band-track>
+        {bandText.repeat(4)}
+      </span>
+    </div>
+  )}
   <div class="story__sticky">
     <div class="story__panel" data-story-panel>
       <div class="story__inner">
-        <h2 class="text-caption story__label" id="story-label">
-          {label}
-        </h2>
+        <span class="story__rule" aria-hidden="true" data-story-rule></span>
+        <div class="story__head">
+          {avatar && (
+            <span class="story__avatar" data-story-avatar>
+              <Image class="story__avatar-image" src={avatar} alt="" width={160} loading="lazy" />
+            </span>
+          )}
+          <h2 class="text-caption story__label" id="story-label">
+            {label}
+          </h2>
+        </div>
         <p class="story__text">
           {words.map((word) => (
             <span class="story__word" data-story-word>
@@ -66,6 +97,12 @@ const words = text.split(/\s+/);
       padding: var(--space-section-lg) var(--gutter);
     }
 
+    .story__head {
+      display: flex;
+      align-items: center;
+      gap: var(--space-4);
+    }
+
     .story__label {
       color: var(--color-on-inverse-muted);
     }
@@ -81,20 +118,283 @@ const words = text.split(/\s+/);
       color: var(--color-on-inverse);
     }
 
-    /* Motion on: a tall track with the panel pinned while the words light up. */
-    :global(.motion) .story {
+    /* Variant-only parts. */
+    .story__band,
+    .story__rule,
+    .story__avatar {
+      display: none;
+    }
+
+    /* Motion on: a tall track with the panel pinned while the words light up (current, ink). */
+    :global(.motion:is(:not([data-about]), [data-about="current"], [data-about="ink"])) .story {
       block-size: 260svh;
     }
 
-    :global(.motion) .story__sticky {
+    :global(.motion:is(:not([data-about]), [data-about="current"], [data-about="ink"]))
+      .story__sticky {
       position: sticky;
       inset-block-start: 0;
       block-size: 100svh;
       overflow: hidden;
     }
 
-    :global(.motion) .story__panel {
+    :global(.motion:is(:not([data-about]), [data-about="current"], [data-about="ink"]))
+      .story__panel {
       block-size: 100%;
+    }
+
+    /* ---------- PREVIEW variants ---------- */
+
+    /* Everything but current and ink: the statement sits on the page itself. */
+    :global(
+        :root:is(
+          [data-about="flow"],
+          [data-about="split"],
+          [data-about="sheet"],
+          [data-about="bridge"],
+          [data-about="avatar"]
+        )
+      )
+      .story__panel {
+      min-block-size: 0;
+      color: var(--color-text);
+      background-color: transparent;
+    }
+
+    /* The next section brings its own space above it. */
+    :global(
+        :root:is(
+          [data-about="flow"],
+          [data-about="split"],
+          [data-about="bridge"],
+          [data-about="avatar"]
+        )
+      )
+      .story__inner {
+      padding-block-end: 0;
+    }
+
+    :global(
+        :root:is(
+          [data-about="flow"],
+          [data-about="split"],
+          [data-about="sheet"],
+          [data-about="bridge"],
+          [data-about="avatar"]
+        )
+      )
+      .story__label {
+      color: var(--color-text-muted);
+    }
+
+    :global(
+        :root:is(
+          [data-about="flow"],
+          [data-about="split"],
+          [data-about="sheet"],
+          [data-about="bridge"],
+          [data-about="avatar"]
+        )
+      )
+      .story__link {
+      color: var(--color-text);
+    }
+
+    /* 1 · Flow: a hairline across the container opens the section, right under the hero. */
+    :global(:root[data-about="flow"]) .story__inner {
+      padding-block-start: var(--space-section-sm);
+    }
+
+    :global(:root[data-about="flow"]) .story__rule {
+      display: block;
+      inline-size: 100%;
+      block-size: var(--border-width);
+      background-color: var(--color-border-muted);
+      transform-origin: left center;
+    }
+
+    /* 2 · Ink: the section starts as a gradient over the bottom of the portrait. In light the
+       black shirt runs straight into the inverse ink; in dark the shirt already melts into the
+       page, so the ink is the subtle surface instead of a light panel. */
+    :global(:root[data-about="ink"]) .story {
+      --ink: light-dark(var(--color-inverse-bg), var(--color-bg-subtle));
+      --ink-overlap: 26svh;
+      --ink-seam: calc(var(--ink-overlap) + 14svh);
+
+      margin-block-start: calc(-1 * var(--ink-overlap));
+    }
+
+    :global(:root[data-about="ink"]) .story::before {
+      content: "";
+      display: block;
+      block-size: var(--ink-seam);
+      background: linear-gradient(to bottom, transparent, var(--ink) 92%);
+      pointer-events: none;
+    }
+
+    :global(:root[data-about="ink"]) .story__panel {
+      color: light-dark(var(--color-on-inverse), var(--color-text));
+      background-color: var(--ink);
+    }
+
+    :global(:root[data-about="ink"]) .story__label {
+      color: light-dark(var(--color-on-inverse-muted), var(--color-text-muted));
+    }
+
+    :global(:root[data-about="ink"]) .story__link {
+      color: inherit;
+    }
+
+    /* The seam is taller than the track's first screen: pin the panel under it. */
+    :global(.motion[data-about="ink"]) .story {
+      block-size: calc(240svh + var(--ink-seam));
+    }
+
+    @media (width >= 48em) {
+      /* Desktop: overlap only the hero's bottom padding (the buttons stay on the page), then a
+         longer fade below. */
+      :global(:root[data-about="ink"]) .story {
+        --ink-overlap: var(--space-12);
+        --ink-seam: calc(var(--ink-overlap) + 32svh);
+      }
+    }
+
+    /* 3 · Split, mobile: the statement rises over the portrait as it fades out (HomeHero masks
+       the portrait). */
+    :global(:root[data-about="split"]) .story {
+      margin-block-start: -16svh;
+    }
+
+    :global(:root[data-about="split"]) .story__inner {
+      padding-block-start: var(--space-4);
+    }
+
+    /* Split, wider: the statement takes the hero copy's column while the portrait stays put. */
+    @media (width >= 48em) {
+      :global(:root[data-about="split"]) .story {
+        margin-block-start: 0;
+      }
+
+      :global(:root[data-about="split"]) .story__panel {
+        min-block-size: 100svh;
+      }
+
+      :global(:root[data-about="split"]) .story__inner {
+        inline-size: 44%;
+        margin-inline: 0;
+        padding-block: var(--space-section-lg);
+      }
+
+      :global(:root[data-about="split"]) .story__text {
+        font-size: var(--text-h3);
+        line-height: var(--leading-h3);
+        letter-spacing: var(--tracking-h3);
+      }
+    }
+
+    @media (width >= 62em) {
+      :global(:root[data-about="split"]) .story__inner {
+        inline-size: 50%;
+        padding-inline: max(var(--gutter), calc((100vw - var(--container-max)) / 2)) var(--space-16);
+      }
+
+      :global(:root[data-about="split"]) .story__text {
+        font-size: var(--text-h2);
+        line-height: var(--leading-h2);
+        letter-spacing: var(--tracking-h2);
+      }
+    }
+
+    /* 4 · Sheet: a soft surface with rounded shoulders that overlaps the bottom of the portrait
+       on mobile and slides over the receding hero. */
+    :global(:root[data-about="sheet"]) .story {
+      margin-block-start: -12svh;
+    }
+
+    :global(:root[data-about="sheet"]) .story__panel {
+      border-block-start: var(--border-width) solid var(--color-border-subtle);
+      border-start-start-radius: var(--radius-lg);
+      border-start-end-radius: var(--radius-lg);
+      min-block-size: 115svh; /* covers the held hero, overlap included */
+      background-color: var(--color-bg-subtle);
+      box-shadow: var(--shadow-bar);
+    }
+
+    :global(:root[data-about="sheet"]) .story__inner {
+      padding-block-start: var(--space-section-sm);
+    }
+
+    @media (width >= 48em) {
+      :global(:root[data-about="sheet"]) .story {
+        margin-block-start: 0;
+      }
+
+      :global(:root[data-about="sheet"]) .story__panel {
+        min-block-size: 100svh;
+      }
+    }
+
+    /* 5 · Bridge: a band of keywords half over the portrait, half over the statement. It
+       inverts whatever is under it, so it reads on the photo and on the page in both themes. */
+    :global(:root[data-about="bridge"]) .story {
+      z-index: auto; /* no stacking context, so the band blends with the hero under it */
+    }
+
+    :global(:root[data-about="bridge"]) .story__band {
+      display: block;
+      position: relative;
+      z-index: 2;
+      margin-block-start: calc(var(--text-h1) * -0.55);
+      overflow: clip;
+      font: var(--weight-medium) var(--text-h1) / 1.1 var(--font-heading);
+      letter-spacing: var(--tracking-h1);
+      white-space: nowrap;
+      color: light-dark(var(--color-bg), var(--color-text));
+      mix-blend-mode: difference;
+      pointer-events: none;
+    }
+
+    :global(:root[data-about="bridge"]) .story__band-track {
+      display: inline-block;
+      padding-inline-start: var(--gutter);
+    }
+
+    :global(:root[data-about="bridge"]) .story__inner {
+      padding-block-start: var(--space-section-sm);
+    }
+
+    /* 6 · Avatar: the portrait lands in a circle beside the label. Without the motion layer the
+       circle shows a still of the portrait; with it, the hero portrait itself shrinks into it. */
+    :global(:root[data-about="avatar"]) .story__avatar {
+      display: block;
+      flex: none;
+      inline-size: var(--space-16);
+      block-size: var(--space-16);
+      overflow: hidden;
+      border-radius: var(--radius-pill);
+      background-color: var(--color-bg-subtle);
+    }
+
+    .story__avatar-image {
+      inline-size: 100%;
+      block-size: 100%;
+      object-fit: cover;
+      object-position: 49% 30%;
+    }
+
+    :global(.motion[data-about="avatar"]) .story__avatar {
+      background-color: transparent;
+    }
+
+    :global(.motion[data-about="avatar"]) .story__avatar-image {
+      visibility: hidden;
+    }
+
+    @media (width >= 48em) {
+      :global(:root[data-about="avatar"]) .story__avatar {
+        inline-size: var(--space-24);
+        block-size: var(--space-24);
+      }
     }
   }
 </style>

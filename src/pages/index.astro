@@ -8,8 +8,10 @@ import SectionIntro from "@/components/blocks/SectionIntro.astro";
 import Services from "@/components/blocks/Services.astro";
 import ClientLogos from "@/components/blocks/ClientLogos.astro";
 import WorkGrid from "@/components/blocks/WorkGrid.astro";
+import AboutPicker from "@/components/blocks/AboutPicker.astro";
 import Button from "@/components/ui/Button.astro";
-import { SITE, SOCIAL_LINKS } from "@/lib/site";
+import { SITE, SOCIAL_LINKS, isProduction } from "@/lib/site";
+import { portraitPhoto } from "@/lib/portrait";
 import { SERVICES } from "@/lib/services";
 import { getListedWork } from "@/lib/work";
 
@@ -40,6 +42,7 @@ const jsonLd = {
 ---
 
 <SiteLayout navOverlap jsonLd={jsonLd}>
+  {!isProduction && <AboutPicker />}
   <HomeHero
     label="Agentic UX • AI-ready design systems • Product strategy"
     title="Transforming AI capability"
@@ -59,6 +62,8 @@ const jsonLd = {
   <StoryIntro
     label="About"
     text="I'm Dawid Młynarz, a senior product designer with 15 years of turning complex problems into clear, useful products. I've shaped newsrooms, fintech and creator platforms, and built the design systems behind them. Today I help teams bring AI into their products in ways people understand, trust and actually use."
+    avatar={portraitPhoto}
+    band={["Product design", "Design systems", "Agentic UX", "15 years"]}
   />
 
   <Section id="work" space="lg" aria-labelledby="work-title">

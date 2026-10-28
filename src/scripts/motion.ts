@@ -74,43 +74,45 @@ function revealFades() {
   }
 }
 
-function story() {
-  const section = document.querySelector<HTMLElement>("[data-story]");
-  const panel = section?.querySelector<HTMLElement>("[data-story-panel]");
-  if (!section || !panel) return;
-  const words = section.querySelectorAll<HTMLElement>("[data-story-word]");
-  const radius = getComputedStyle(root).getPropertyValue("--radius-xl").trim() || "0px";
-
-  // The hero holds in place while the panel slides over it, easing back as it goes.
-  const hero = document.querySelector<HTMLElement>("[data-hero]");
-  if (hero) {
-    ScrollTrigger.create({
-      trigger: hero,
-      start: "bottom bottom",
-      end: () => `+=${window.innerHeight}`,
-      pin: true,
-      pinSpacing: false,
-    });
-    gsap.to(hero, {
-      scale: 0.92,
-      autoAlpha: 0.3,
-      transformOrigin: "50% 100%",
-      ease: "none",
-      scrollTrigger: { trigger: section, start: "top bottom", end: "top top", scrub: true },
-    });
-  }
-
-  const timeline = gsap.timeline({
-    defaults: { ease: "none" },
-    scrollTrigger: { trigger: section, start: "top bottom", end: "bottom bottom", scrub: 0.6 },
+/** The hero holds in place while the next section slides over it, easing back as it goes. */
+function holdHero(hero: HTMLElement, section: HTMLElement, scale: number, alpha: number) {
+  ScrollTrigger.create({
+    trigger: hero,
+    start: "bottom bottom",
+    end: () => `+=${window.innerHeight}`,
+    pin: true,
+    pinSpacing: false,
   });
-  // Enter (one screen of scroll): the panel grows from an inset card to full bleed.
-  timeline.fromTo(
-    panel,
-    { clipPath: `inset(10% 6% 0% 6% round ${radius})` },
-    { clipPath: "inset(0% 0% 0% 0% round 0px)", duration: 1 },
+  gsap.to(hero, {
+    scale,
+    autoAlpha: alpha,
+    transformOrigin: "50% 100%",
+    ease: "none",
+    scrollTrigger: { trigger: section, start: "top bottom", end: "top top", scrub: true },
+  });
+}
+
+/** Words light up in reading order while the statement scrolls through the screen (no pin). */
+function lightWordsInPlace(section: HTMLElement, words: NodeListOf<HTMLElement>) {
+  const text = section.querySelector<HTMLElement>(".story__text") ?? section;
+  gsap.fromTo(
+    words,
+    { opacity: 0.16 },
+    {
+      opacity: 1,
+      ease: "none",
+      stagger: 0.1,
+      scrollTrigger: { trigger: text, start: "top 85%", end: "bottom 55%", scrub: 0.6 },
+    },
   );
-  // Pinned (the rest): words light up in reading order, with a short hold at the end.
+}
+
+/** Words light up while the panel is pinned; the tall track comes from StoryIntro's CSS. */
+function lightWordsPinned(
+  words: NodeListOf<HTMLElement>,
+  timeline: gsap.core.Timeline,
+  at: number,
+) {
   const span = 1.3;
   timeline.fromTo(
     words,
@@ -120,9 +122,165 @@ function story() {
       duration: 0.12,
       stagger: words.length > 1 ? (span - 0.12) / (words.length - 1) : 0,
     },
-    1.05,
+    at,
   );
   timeline.to({}, { duration: 0.25 });
+}
+
+/**
+ * Avatar variant: the hero portrait shrinks into the round avatar beside the About label. The
+ * portrait is scaled from its top-left corner and clipped to a circle around the face, so the
+ * circle lands exactly on the avatar's box.
+ */
+function avatarMorph(hero: HTMLElement, section: HTMLElement) {
+  const media = hero.querySelector<HTMLElement>(".home-hero__media");
+  const target = section.querySelector<HTMLElement>("[data-story-avatar]");
+  if (!media || !target) return;
+  const IMAGE_RATIO = 2400 / 1792; // the portrait files (src/lib/portrait.ts)
+  const geo = { x: 0, y: 0, k: 1, cx: 0, cy: 0, r: 0, R: 0 };
+  const measure = () => {
+    gsap.set(media, { clearProps: "transform,clipPath" });
+    const m = media.getBoundingClientRect();
+    const t = target.getBoundingClientRect();
+    // Where the face sits under object-fit: cover with LiquidReveal's face-centred position.
+    const dw = Math.max(m.width, m.height * IMAGE_RATIO);
+    const dh = dw / IMAGE_RATIO;
+    const ox = (m.width - dw) * 0.49;
+    const oy = (m.height - dh) * 0.45;
+    geo.cx = ox + 0.46 * dw;
+    geo.cy = oy + 0.4 * dh;
+    geo.r = 0.3 * dh;
+    geo.R = Math.hypot(Math.max(geo.cx, m.width - geo.cx), Math.max(geo.cy, m.height - geo.cy));
+    geo.k = t.width / 2 / geo.r;
+    geo.x = t.left + t.width / 2 - m.left - geo.cx * geo.k;
+    geo.y = t.top + t.height / 2 - m.top - geo.cy * geo.k;
+  };
+  ScrollTrigger.addEventListener("refreshInit", measure);
+  measure();
+  gsap.fromTo(
+    media,
+    {
+      x: 0,
+      y: 0,
+      scale: 1,
+      transformOrigin: "0 0",
+      clipPath: () => `circle(${geo.R}px at ${geo.cx}px ${geo.cy}px)`,
+    },
+    {
+      x: () => geo.x,
+      y: () => geo.y,
+      scale: () => geo.k,
+      clipPath: () => `circle(${geo.r}px at ${geo.cx}px ${geo.cy}px)`,
+      ease: "power1.inOut",
+      immediateRender: false,
+      scrollTrigger: {
+        trigger: media,
+        start: "center center",
+        endTrigger: target,
+        end: "center 40%",
+        scrub: 0.6,
+        invalidateOnRefresh: true,
+      },
+    },
+  );
+}
+
+/**
+ * The hand-off from the hero to the About statement ([data-story]). html[data-about] picks the
+ * PREVIEW variant (see StoryIntro); no attribute is the inverse panel growing over the held hero.
+ */
+function story() {
+  const section = document.querySelector<HTMLElement>("[data-story]");
+  const panel = section?.querySelector<HTMLElement>("[data-story-panel]");
+  if (!section || !panel) return;
+  const words = section.querySelectorAll<HTMLElement>("[data-story-word]");
+  const hero = document.querySelector<HTMLElement>("[data-hero]");
+  const variant = root.dataset.about ?? "current";
+
+  if (variant === "current") {
+    const radius = getComputedStyle(root).getPropertyValue("--radius-xl").trim() || "0px";
+    if (hero) holdHero(hero, section, 0.92, 0.3);
+    const timeline = gsap.timeline({
+      defaults: { ease: "none" },
+      scrollTrigger: { trigger: section, start: "top bottom", end: "bottom bottom", scrub: 0.6 },
+    });
+    // Enter (one screen of scroll): the panel grows from an inset card to full bleed.
+    timeline.fromTo(
+      panel,
+      { clipPath: `inset(10% 6% 0% 6% round ${radius})` },
+      { clipPath: "inset(0% 0% 0% 0% round 0px)", duration: 1 },
+    );
+    // Pinned (the rest): words light up in reading order, with a short hold at the end.
+    lightWordsPinned(words, timeline, 1.05);
+    return;
+  }
+
+  if (variant === "ink") {
+    // The gradient seam scrolls in with the page; the words light up once the ink holds.
+    const sticky = section.querySelector<HTMLElement>(".story__sticky") ?? panel;
+    const timeline = gsap.timeline({
+      defaults: { ease: "none" },
+      scrollTrigger: {
+        trigger: sticky,
+        start: "top 30%",
+        endTrigger: section,
+        end: "bottom bottom",
+        scrub: 0.6,
+      },
+    });
+    lightWordsPinned(words, timeline, 0);
+    return;
+  }
+
+  lightWordsInPlace(section, words);
+
+  if (variant === "flow") {
+    const rule = section.querySelector<HTMLElement>("[data-story-rule]");
+    if (rule)
+      gsap.fromTo(
+        rule,
+        { scaleX: 0 },
+        {
+          scaleX: 1,
+          ease: "none",
+          scrollTrigger: { trigger: rule, start: "top 95%", end: "top 50%", scrub: 0.6 },
+        },
+      );
+  }
+
+  if (variant === "split" && hero) {
+    // Wider screens: the portrait column stays on screen until the statement has passed.
+    const media = hero.querySelector<HTMLElement>(".home-hero__media");
+    gsap.matchMedia().add("(width >= 48em)", () => {
+      if (!media) return;
+      ScrollTrigger.create({
+        trigger: hero,
+        start: "bottom bottom",
+        endTrigger: section,
+        end: "bottom bottom",
+        pin: media,
+        pinSpacing: false,
+      });
+    });
+  }
+
+  if (variant === "sheet" && hero) holdHero(hero, section, 0.94, 0.5);
+
+  if (variant === "bridge") {
+    const track = section.querySelector<HTMLElement>("[data-story-band-track]");
+    if (track)
+      gsap.fromTo(
+        track,
+        { xPercent: 0 },
+        {
+          xPercent: -25, // one of the four repeats
+          ease: "none",
+          scrollTrigger: { trigger: track, start: "top bottom", end: "bottom top", scrub: 0.6 },
+        },
+      );
+  }
+
+  if (variant === "avatar" && hero) avatarMorph(hero, section);
 }
 
 const TEAR_MS = 300; // a little longer than --duration-tear

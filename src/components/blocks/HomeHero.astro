@@ -133,5 +133,18 @@ const SIZES =
         z-index: 1;
       }
     }
+
+    /* PREVIEW (StoryIntro, html[data-about]): split and avatar move the portrait over the
+       statement, so the hero stacks above it. */
+    :global(:root:is([data-about="split"], [data-about="avatar"])) .home-hero {
+      z-index: 2;
+    }
+
+    /* Split, mobile: the portrait fades out at the bottom for the statement to rise over. */
+    @media (width < 48em) {
+      :global(:root[data-about="split"]) .home-hero__media {
+        mask-image: linear-gradient(to bottom, var(--color-text) 45%, transparent 82%);
+      }
+    }
   }
 </style>

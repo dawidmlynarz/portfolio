@@ -2,6 +2,18 @@
 
 Non-obvious choices, newest first. One entry per decision: what, why, and what it rules out.
 
+## 2026-10-28 · About hand-off: six options on preview (not picked yet)
+
+Dawid asked for alternatives to the inverse panel that grows over the held hero, so the About statement feels like a continuation of the hero rather than a separate block, with mobile first. Six options plus the current one are switchable on preview builds with a floating "About" select (`AboutPicker`, `?about=<variant>`, remembered in localStorage). Production has no attribute and keeps the current panel.
+
+- **One component, variants keyed on `html[data-about]`.** The attribute is set by an inline script before first paint, so the page never flashes the wrong layout; `StoryIntro` and `HomeHero` style off it and `motion.ts` branches on it. Switching reloads the page at the top so the hand-off can be scrolled again (the scroll triggers differ per variant).
+- **Every option is complete without the motion layer.** No JS or reduced motion: words are fully lit, Split stacks normally, Avatar shows a still of the portrait in the circle, Bridge's band sits still.
+- **Bridge inverts what is under it** (`mix-blend-mode: difference`), so one band reads on the photo and on the page in both themes. The story section drops its `z-index` in that variant, otherwise the band would only blend inside the section.
+- **Ink uses the subtle surface in dark**, not the light inverse panel: in dark the portrait's shirt already melts into the page, and a light panel under it would read as a glow.
+- **Avatar moves the live portrait**, not a copy: the hero media is scaled from its corner and clipped to a circle around the face, so it lands on the avatar's box and keeps its reveal running. The face position is worked out from the cover crop, so it holds at any viewport.
+
+Once Dawid picks, the other variants, the picker and `src/lib/about-variants.ts` go.
+
 ## 2026-10-28 · Buttons: one family, the row tear
 
 Dawid picked **row tear** from the button playground (`/playground/buttons`), with icon buttons excluded. `Button` is now the only button on the site.
