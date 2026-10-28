@@ -360,9 +360,9 @@ const SECTIONS = [
           page transitions; also on Home, About, Services, Work and case studies, one per page). At
           rest two tracking bands roll down the portrait like a mistracked tape; point at it (tap on
           touch) and the rows tear open around the cursor, harder the faster it moves. Each band
-          reveals one of the layers under the photo (marble, and a rare iridescent one), picked at
-          random; marble switches variants with the theme. With reduced motion there is no rolling
-          or tearing, only a clean band at the pointer.
+          reveals one of the layers under the photo (marble or iridescent; the two bands always show
+          one of each), picked at random; marble switches variants with the theme. With reduced
+          motion there is no rolling or tearing, only a clean band at the pointer.
         </p>
       </Stack>
     </Container>
@@ -439,12 +439,13 @@ const SECTIONS = [
       </Stack>
     </Container>
   </Section>
-  <StoryIntro
-    label="StoryIntro · statement with the client logo marquee in its slot"
-    text="The words light up as you scroll. Without the motion layer, or with reduced motion, the full statement simply shows. Anything in the slot follows it at full width."
-  >
+  <Section aria-label="Client logo marquee" space="sm">
     <ClientLogos marquee />
-  </StoryIntro>
+  </Section>
+  <StoryIntro
+    label="StoryIntro · statement"
+    text="The words light up as you scroll. Without the motion layer, or with reduced motion, the full statement simply shows."
+  />
   <NextUp entries={nextUpSample} />
   <CaseStudyToc headings={STYLEGUIDE_SECTIONS} body="main" />
 </SiteLayout>

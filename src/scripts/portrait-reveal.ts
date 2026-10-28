@@ -449,11 +449,12 @@ class PortraitReveal extends HTMLElement {
 
   /**
    * A random loaded layer, by weight. It can be the current one (then nothing switches): excluding
-   * it would make a rare layer come up every other time when there are only two.
+   * it would make a rare layer come up every other time when there are only two. With `exclude`,
+   * never that layer (falls back to it when nothing else is loaded).
    */
-  #pickLayer(current: number) {
+  #pickLayer(current: number, exclude = -1) {
     const ready = this.#slots
-      .map((slot, i) => ({ i, w: slot.img ? slot.data.weight : 0 }))
+      .map((slot, i) => ({ i, w: slot.img && i !== exclude ? slot.data.weight : 0 }))
       .filter((c) => c.w > 0);
     let roll = Math.random() * ready.reduce((sum, c) => sum + c.w, 0);
     for (const c of ready) if ((roll -= c.w) <= 0) return c.i;
@@ -514,6 +515,7 @@ class PortraitReveal extends HTMLElement {
       tapped: this.#tapped,
       reduceMotion: this.#reduceMotion,
       pick: (current) => this.#pickLayer(current),
+      pair: (layer) => this.#pickLayer(layer, layer),
     });
     this.#tapped = false;
     requestAnimationFrame((t) => this.#frame(t));

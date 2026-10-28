@@ -20,6 +20,7 @@ export type StyleFrame = {
   tapped: boolean;
   reduceMotion: boolean;
   pick: (current: number) => number; // a loaded layer by weight (may return `current`)
+  pair: (layer: number) => number; // a loaded layer other than `layer`, by weight (`layer` if none)
 };
 
 export const STATE_UNIT = 5;

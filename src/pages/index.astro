@@ -56,17 +56,14 @@ const jsonLd = {
     </Fragment>
   </HomeHero>
 
+  <div class="home__clients">
+    <ClientLogos marquee />
+  </div>
+
   <StoryIntro
     label="About"
     text="I'm Dawid Młynarz, a senior product designer with 15 years of turning complex problems into clear, useful products. I've shaped newsrooms, fintech and creator platforms, and built the design systems behind them. Today I help teams bring AI into their products in ways people understand, trust and actually use."
-  >
-    <div class="home__clients">
-      <Container>
-        <p class="text-caption home__muted">Trusted by teams at</p>
-      </Container>
-      <ClientLogos marquee />
-    </div>
-  </StoryIntro>
+  />
 
   <Section id="work" space="lg" aria-labelledby="work-title">
     <Container class="home__stack">
@@ -105,13 +102,9 @@ const jsonLd = {
       gap: var(--space-section-sm);
     }
 
-    .home__muted {
-      color: var(--color-text-muted);
-    }
-
+    /* About brings its own space below the logos. */
     .home__clients {
-      display: grid;
-      gap: var(--space-8);
+      padding-block-start: var(--space-section-md);
     }
 
     .home__cta {
