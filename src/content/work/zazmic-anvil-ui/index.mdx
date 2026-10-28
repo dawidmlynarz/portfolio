@@ -11,8 +11,8 @@ business: IT Consultancy
 businessLabel: Model
 date: "2026"
 tags: [AI Experiences, Conversational UX, Design Systems, Storybook, Design Engineering]
-cover: ./cover.jpg
-coverAlt: The Anvil UI Showroom, a scripted assistant in a side panel suggesting three shows for the weekend, with tool calls and a carousel of offers.
+cover: ./cover.avif
+coverAlt: Anvil UI agent components, a budget and limits panel, a tool-call log, a connect Drive approval card, a research progress plan and a list of nearby locations.
 order: 0.5
 next: newsweek-design-system
 draft: false
@@ -20,9 +20,12 @@ draft: false
 
 import showroomBooking from "./showroom-booking.mp4";
 import showroomBookingAv1 from "./showroom-booking.av1.mp4";
-import showroomBookingPoster from "./showroom-booking-poster.jpg";
-
-{/* Placeholder cover: a screenshot of the live Showroom (booking flow), until Dawid sends the final one. */}
+import showroomBookingPoster from "./showroom-booking-poster.avif";
+import levels from "./anvil-levels.avif";
+import agentComponents from "./anvil-agent-components.avif";
+import agentComponents2 from "./anvil-agent-components-2.avif";
+import desktopResearch from "./anvil-desktop-research.avif";
+import mobileBooking from "./anvil-mobile-booking.avif";
 
 {/* Estimates requested by Dawid on 2026-10-28, not measured: about 6 weeks down to 1.5 weeks to a first working agent UI (~75%) and ~350 hours saved per project, for a designer and a front-end engineer. Every other number comes from the repository. */}
 
@@ -86,6 +89,11 @@ Engineers can spend that time on what is specific for the client, like the model
 
 Anvil has four levels. Atoms are single elements, like a button or a badge. Molecules put few atoms together for one job. Organisms are full sections, a dialog or a table. On top of them sits the Agent Builder, with ready-to-use agent experiences in 16 groups, built only from the levels below.
 
+<Figure
+  src={levels}
+  alt="The four levels of Anvil UI as icons: atoms, molecules, organisms and templates, with the Agent Builder on top."
+/>
+
 Most of my design time went into the agent layer. Here are some of problems it solves.
 
 - Showing work that is normally invisible. A thinking panel and a tool-call log tell you what the agent is doing, without burying the answer.
@@ -97,7 +105,15 @@ Most of my design time went into the agent layer. Here are some of problems it s
 
 The same components work in full screen, in a side panel, in a popover and on mobile.
 
-<Figure alt="Agent Builder components: a thinking panel, a tool-call log, citation chips, an approval card and a task plan, in light and dark." />
+<Figure
+  src={agentComponents}
+  alt="Agent Builder components: budget and limits sliders, a tool-call log, a connect Drive approval card, a research progress plan and a list of nearby locations."
+/>
+
+<Figure
+  src={agentComponents2}
+  alt="More Agent Builder components: a live activity log with filters, a knowledge gaps card asking for a decision, and a research plan waiting for approval."
+/>
 
 ## Figma first, then a contract, then code
 
@@ -120,6 +136,16 @@ From molecules up, stories don't use lorem ipsum. They all share one made-up com
 ## The Showroom
 
 A list of components doesn't tell you much how an agent feels to use. That's why Storybook opens with the Showroom, the features demo. It's a scripted assistant made only from real Anvil components. You can switch between desktop and mobile, light and dark, full screen, side panel or popover, and go through four flows. You can research a task, order a product, book a show or talk to a person.
+
+<Figure
+  src={desktopResearch}
+  alt="The Showroom on desktop: an assistant explains Q3 churn drivers with metrics, next to a sources panel listing the articles it read."
+/>
+
+<Figure
+  src={mobileBooking}
+  alt="The Showroom on mobile in three steps: the assistant checks availability for Saturday, offers two performances, and a price drop alert for Paper Kingdoms at Lyric Hall."
+/>
 
 It's scripted on purpose, so it can't go off script while someone is clicking through it. It still shows loading, error and queued states, the same as real agent goes through. I also hid around 50 small talk replies and easter eggs inside, like a coin flip or a round of rock, paper, scissors. Without them the demo felt a bit dead, and the jokes are what keeps people clicking.
 

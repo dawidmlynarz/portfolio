@@ -2,6 +2,10 @@
 
 Non-obvious choices, newest first. One entry per decision: what, why, and what it rules out.
 
+## 2026-10-28 · Case study images are AVIF
+
+Every image in `src/content/work/` is stored as AVIF (sharp, quality 80, 4:4:4 chroma so UI text and thin lines stay crisp), and `Figure`, `WorkCard`, `NextUp`, the case-study cover and the `Video` poster render AVIF instead of Astro's default WebP. Sources went from 22.5 MB to 12.4 MB, including the new Pantheon and Anvil images. The share image stays JPEG because social previews don't read AVIF. Add new case-study images as AVIF too.
+
 ## 2026-10-28 · Zazmic Anvil UI case study goes live
 
 `draft: false` on Dawid's go-ahead. The image slots are still `Figure` placeholders, so production shows the text, the stand-in cover and the stand-in Showroom clip without them until the real images arrive. The invented Anthony Marin quote is taken out before going live, because a made-up quote under a real name shouldn't be public. An MDX comment marks where the real one goes.
