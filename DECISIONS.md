@@ -11,6 +11,18 @@ Dawid asked for alternatives to the inverse panel that grew over the held hero, 
 - **No bottom padding** on the section: the Selected work section brings its own space above it.
 - **Complete without the motion layer**: all words fully lit.
 
+## 2026-10-28 · Case study cards
+
+**Home keeps the staggered grid; Work becomes a ruled index.** Picked from seven layouts in a card playground (PR #20, removed once chosen). `WorkCard` has two layouts, `tile` (Home) and `row` (Work: cover left, text right, hairlines between rows); `WorkGrid` picks one with `layout="grid" | "index"`.
+
+**Titles go from h4 to h3 size** on both, so the quiet links read as the main thing on the card.
+
+**Cards show the first three tags as pills, then "+N more".** The case study page still lists every tag. Which three show is the order in the frontmatter, so put the main ones first.
+
+**Cover hover is a short glitch, CSS only.** Two hidden copies of the cover flash in as torn rows that jump sideways for about 400 ms (`--duration-glitch`, new token: mirror it in Figma), then the cover snaps back clean and zooms as before. Same language as the hero's glitch reveal and the link row tear, without WebGL or JS on a list of eight images. The copies use the cover's own srcset, so the browser reuses the file. Reduced motion: no glitch, no zoom.
+
+**Work rows carry the card summary (`description`), cut to four lines** with a CSS line clamp (the browser adds the ellipsis). The page intro (`lead`) often describes the company rather than Dawid's part, so cards use the summary. Home tiles have no summary.
+
 ## 2026-10-28 · Buttons: one family, the row tear
 
 Dawid picked **row tear** from the button playground (`/playground/buttons`), with icon buttons excluded. `Button` is now the only button on the site.

@@ -1,38 +1,73 @@
 ---
 /**
- * Case-study tile: the cover, then a mono "Company · Year" line and the outcome title.
- * No tags or summary; the case study tells the rest. Every cover is cropped to 4:3 (centred) so
- * the grid reads as one set; WorkGrid only sets the tile width. The whole tile is the link target; the visible link
- * is the title (one tab stop). Entries without a page (page: false) render without a link.
+ * Case-study card in two layouts:
+ * - tile (Home): the cover, a mono "Company · Year" line, the outcome title and the tags.
+ * - row (Work): the same pieces side by side, cover on the left, plus the card summary
+ *   (`description`) cut to four lines.
+ * Both show the first three tags as pills and "+N more" for the rest; the case study lists them all.
+ * Every cover is cropped to 4:3 (centred) so the set reads as one. The whole card is the link
+ * target; the visible link is the title (one tab stop). Entries without a page (page: false)
+ * render without a link.
+ *
+ * Hover glitch (from the hero's glitch reveal): two copies of the cover sit over it, hidden. On
+ * hover or focus they flash in as torn rows that jump sideways and split for a few frames, then
+ * the cover snaps back clean and zooms. CSS only; the copies reuse the cover's file, so nothing
+ * extra downloads. Reduced motion keeps only a still cover.
  */
 import { Image } from "astro:assets";
+import Tag from "@/components/ui/Tag.astro";
 import { hasPage, workHref, type Work } from "@/lib/work";
+
+/** Tags shown on a card; the rest are counted. */
+const MAX_TAGS = 3;
 
 interface Props {
   entry: Work;
+  /** tile: cover on top (Home grid) · row: cover on the left with the summary (Work index) */
+  layout?: "tile" | "row";
   /** Heading level inside the list it sits in. */
   headingLevel?: 2 | 3;
-  /** Load the cover eagerly (first tiles above the fold). */
+  /** Load the cover eagerly (first cards above the fold). */
   eager?: boolean;
 }
 
-const { entry, headingLevel = 3, eager = false } = Astro.props;
+const { entry, layout = "tile", headingLevel = 3, eager = false } = Astro.props;
 const { data } = entry;
 const Heading = `h${headingLevel}` as const;
 const href = hasPage(entry) ? workHref(entry) : undefined;
 const meta = [data.company, data.year, data.draft && "Draft"].filter(Boolean).join(" · ");
+const tags = data.tags.slice(0, MAX_TAGS);
+const moreTags = data.tags.length - tags.length;
+const widths = [480, 800, 1200, 1600].filter((w) => w <= data.cover.width);
+const sizes =
+  layout === "row"
+    ? "(min-width: 62em) 40vw, (min-width: 48em) 40vw, 100vw"
+    : "(min-width: 62em) 55vw, (min-width: 48em) 50vw, 100vw";
 ---
 
-<article class:list={["work-card", { "work-card--linked": href }]}>
+<article class:list={["work-card", `work-card--${layout}`, { "work-card--linked": href }]}>
   <div class="work-card__media" data-reveal="fade">
-    <Image
-      class="work-card__cover"
-      src={data.cover}
-      alt={data.coverAlt}
-      widths={[480, 800, 1200, 1600].filter((w) => w <= data.cover.width)}
-      sizes="(min-width: 62em) 55vw, (min-width: 48em) 50vw, 100vw"
-      loading={eager ? "eager" : "lazy"}
-    />
+    <div class="work-card__frame">
+      <Image
+        class="work-card__cover"
+        src={data.cover}
+        alt={data.coverAlt}
+        widths={widths}
+        sizes={sizes}
+        loading={eager ? "eager" : "lazy"}
+      />
+      {["a", "b"].map((slice) => (
+        <Image
+          class={`work-card__slice work-card__slice--${slice}`}
+          src={data.cover}
+          alt=""
+          aria-hidden="true"
+          widths={widths}
+          sizes={sizes}
+          loading={eager ? "eager" : "lazy"}
+        />
+      ))}
+    </div>
   </div>
   <div class="work-card__body">
     <p class="text-caption work-card__meta">{meta}</p>
@@ -45,6 +80,15 @@ const meta = [data.company, data.year, data.draft && "Draft"].filter(Boolean).jo
         data.title
       )}
     </Heading>
+    {layout === "row" && <p class="work-card__summary">{data.description}</p>}
+    {tags.length > 0 && (
+      <ul class="work-card__tags" role="list">
+        {tags.map((tag) => (
+          <Tag as="li">{tag}</Tag>
+        ))}
+        {moreTags > 0 && <li class="text-small work-card__more">+{moreTags} more</li>}
+      </ul>
+    )}
   </div>
 </article>
 
@@ -63,31 +107,153 @@ const meta = [data.company, data.year, data.draft && "Draft"].filter(Boolean).jo
       background-color: var(--color-bg-subtle);
     }
 
-    .work-card__cover {
+    .work-card__frame {
+      position: relative;
+      transition: scale var(--duration-zoom) var(--ease-out-expo);
+    }
+
+    .work-card__cover,
+    .work-card__slice {
       inline-size: 100%;
       block-size: auto;
       aspect-ratio: 4 / 3;
       object-fit: cover;
-      transition: scale var(--duration-zoom) var(--ease-out-expo);
+    }
+
+    /* ---------- Hover glitch: torn rows for a few frames, then clean ---------- */
+    .work-card__slice {
+      position: absolute;
+      inset: 0;
+      opacity: 0;
+      pointer-events: none;
+    }
+
+    .work-card--linked:hover .work-card__cover,
+    .work-card--linked:focus-within .work-card__cover {
+      animation: work-card-jolt var(--duration-glitch) steps(1, end);
+    }
+
+    .work-card--linked:hover .work-card__slice--a,
+    .work-card--linked:focus-within .work-card__slice--a {
+      animation: work-card-tear-a var(--duration-glitch) steps(1, end);
+    }
+
+    .work-card--linked:hover .work-card__slice--b,
+    .work-card--linked:focus-within .work-card__slice--b {
+      animation: work-card-tear-b var(--duration-glitch) steps(1, end);
+    }
+
+    /* The whole picture skips a frame sideways, like a lost sync. */
+    @keyframes work-card-jolt {
+      0%,
+      100% {
+        translate: 0;
+      }
+
+      30% {
+        translate: -1.5% 0;
+      }
+
+      45% {
+        translate: 0.8% 0;
+      }
+
+      60% {
+        translate: 0;
+      }
+    }
+
+    /* Two copies cut into rows that move each frame: tear right, tear left, then gone. */
+    @keyframes work-card-tear-a {
+      0% {
+        opacity: 1;
+        clip-path: inset(12% 0 74% 0);
+        translate: 6% 0;
+      }
+
+      15% {
+        clip-path: inset(48% 0 38% 0);
+        translate: -4% 0;
+      }
+
+      30% {
+        clip-path: inset(70% 0 18% 0);
+        translate: 9% 0;
+        filter: invert(1);
+      }
+
+      45% {
+        clip-path: inset(30% 0 62% 0);
+        translate: -7% 0;
+        filter: none;
+      }
+
+      60% {
+        clip-path: inset(84% 0 6% 0);
+        translate: 3% 0;
+      }
+
+      75%,
+      100% {
+        opacity: 0;
+      }
+    }
+
+    @keyframes work-card-tear-b {
+      0% {
+        opacity: 0.85;
+        clip-path: inset(58% 0 30% 0);
+        translate: -8% 0;
+      }
+
+      15% {
+        clip-path: inset(22% 0 70% 0);
+        translate: 5% 0;
+        filter: grayscale(1) contrast(1.6);
+      }
+
+      30% {
+        clip-path: inset(40% 0 44% 0);
+        translate: -3% 0;
+      }
+
+      45% {
+        clip-path: inset(6% 0 86% 0);
+        translate: 10% 0;
+        filter: none;
+      }
+
+      60% {
+        clip-path: inset(64% 0 26% 0);
+        translate: -5% 0;
+      }
+
+      75%,
+      100% {
+        opacity: 0;
+      }
     }
 
     .work-card__body {
       display: grid;
+      align-content: start;
       gap: var(--space-2);
       max-inline-size: 36rem;
     }
 
-    .work-card__meta {
+    .work-card__meta,
+    .work-card__summary,
+    .work-card__more {
       color: var(--color-text-muted);
     }
 
     .work-card__title {
-      font: var(--weight-medium) var(--text-h4) / var(--leading-h4) var(--font-heading);
-      letter-spacing: var(--tracking-h4);
+      font: var(--weight-medium) var(--text-h3) / var(--leading-h3) var(--font-heading);
+      letter-spacing: var(--tracking-h3);
       text-wrap: balance;
     }
 
-    /* Quiet at rest; the underline draws in when the tile is hovered or the link focused. */
+    /* Quiet at rest; the underline draws in when the card is hovered or the link focused. */
     .work-card__title a {
       --underline-size: 0%;
       --underline-offset: var(--underline-offset-quiet);
@@ -104,8 +270,87 @@ const meta = [data.company, data.year, data.draft && "Draft"].filter(Boolean).jo
       --underline-size: 100%;
     }
 
-    .work-card--linked:hover .work-card__cover {
+    .work-card--linked:hover .work-card__frame {
       scale: 1.03;
+    }
+
+    /* Four lines at most; the browser adds the ellipsis. */
+    .work-card__summary {
+      display: -webkit-box;
+      overflow: hidden;
+      -webkit-box-orient: vertical;
+      -webkit-line-clamp: 4;
+      line-clamp: 4;
+      margin-block-start: var(--space-2);
+    }
+
+    .work-card__tags {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: var(--space-2);
+      margin-block-start: var(--space-2);
+      padding: 0;
+    }
+
+    .work-card__more {
+      padding-inline-start: var(--space-1);
+    }
+
+    /* Row: cover on the left, rows divided by a hairline (WorkGrid's index layout). Same vertical
+       rhythm as the Services page rows (Services, detailed). */
+    .work-card--row {
+      gap: var(--space-6);
+      padding-block: var(--space-section-sm);
+      border-block-start: var(--border-width) solid var(--color-border-subtle);
+    }
+
+    .work-card--row .work-card__media {
+      align-self: start;
+    }
+
+    .work-card--row .work-card__body {
+      max-inline-size: none;
+    }
+
+    @media (width >= 48em) {
+      .work-card--row {
+        grid-template-columns: minmax(0, 5fr) minmax(0, 7fr);
+        gap: var(--space-8);
+      }
+    }
+
+    @media (width >= 62em) {
+      .work-card--row {
+        grid-template-columns: repeat(12, minmax(0, 1fr));
+      }
+
+      .work-card--row .work-card__media {
+        grid-column: 1 / span 5;
+      }
+
+      .work-card--row .work-card__body {
+        grid-column: 7 / span 6;
+      }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      .work-card__frame {
+        transition: none;
+      }
+
+      .work-card--linked:hover .work-card__frame {
+        scale: none;
+      }
+
+      .work-card__slice {
+        display: none;
+      }
+
+      .work-card--linked:hover .work-card__cover,
+      .work-card--linked:focus-within .work-card__cover {
+        animation: none;
+      }
     }
   }
 </style>

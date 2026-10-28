@@ -152,6 +152,7 @@
     --duration-fast: 150ms;
     --duration-link: 350ms; /* animated link underline */
     --duration-tear: 260ms; /* link hover: the row tear */
+    --duration-glitch: 420ms; /* case-study cover hover: torn rows, then clean */
     --underline-offset-quiet: 0.14em; /* quiet links: the hover line sits nearer the baseline */
     --duration-fade: 1200ms; /* portrait fade-in on page load */
     --duration-reveal: 600ms; /* media fading in once ready (liquid reveal canvas) */
