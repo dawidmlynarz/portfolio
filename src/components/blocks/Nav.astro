@@ -559,11 +559,11 @@ const menu = [{ href: "/", label: "Home" }, ...NAV_LINKS];
       letter-spacing: var(--tracking-h2);
     }
 
-    /* Quiet links: no row tear here (too much motion in a list); the line draws in instead. */
+    /* Quiet links: no row tear here (too much motion in a list); the line draws in instead.
+       The offset clears the padding; this box is taller than the text, so half is enough. */
     .nav__menu-link {
       --underline-size: 0%;
       --underline-origin: right;
-      /* Past the padding; this box is taller than the text, so half the offset is enough. */
       --underline-offset: calc(var(--space-1) + var(--underline-offset-quiet) / 2);
 
       display: inline-flex;
