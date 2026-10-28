@@ -144,19 +144,13 @@ const words = text.split(/\s+/);
     }
 
     /* Split, mobile: the statement rises over the portrait as it fades out (HomeHero masks
-       the portrait). One type step below Flow throughout. */
+       the portrait). */
     :global(:root[data-about="split"]) .story {
       margin-block-start: -16svh;
     }
 
     :global(:root[data-about="split"]) .story__inner {
       padding-block-start: var(--space-4);
-    }
-
-    :global(:root[data-about="split"]) .story__text {
-      font-size: var(--text-h3);
-      line-height: var(--leading-h3);
-      letter-spacing: var(--tracking-h3);
     }
 
     /* Split, wider: the statement takes the hero copy's column while the portrait stays put. */
@@ -176,9 +170,9 @@ const words = text.split(/\s+/);
       }
 
       :global(:root[data-about="split"]) .story__text {
-        font-size: var(--text-h4);
-        line-height: var(--leading-h4);
-        letter-spacing: var(--tracking-h4);
+        font-size: var(--text-h3);
+        line-height: var(--leading-h3);
+        letter-spacing: var(--tracking-h3);
       }
     }
 
@@ -189,9 +183,9 @@ const words = text.split(/\s+/);
       }
 
       :global(:root[data-about="split"]) .story__text {
-        font-size: var(--text-h3);
-        line-height: var(--leading-h3);
-        letter-spacing: var(--tracking-h3);
+        font-size: var(--text-h2);
+        line-height: var(--leading-h2);
+        letter-spacing: var(--tracking-h2);
       }
     }
   }

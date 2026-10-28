@@ -8,7 +8,7 @@ Dawid asked for alternatives to the inverse panel that grows over the held hero,
 
 - **One component, variants keyed on `html[data-about]`.** The attribute is set by an inline script before first paint, so the page never flashes the wrong layout; `StoryIntro` and `HomeHero` style off it and `motion.ts` branches on it. Switching reloads the page at the top so the hand-off can be scrolled again.
 - **Both are complete without the motion layer.** No JS or reduced motion: words are fully lit, the rule is drawn, Split stacks normally.
-- **Split's statement is one type step below Flow's** (Dawid): h3 on phones and desktop, h4 in the narrow tablet column.
+- **Split keeps the full statement size** (h2), except h3 in the narrow tablet column. A step smaller was tried and rolled back (Dawid).
 
 Once Dawid picks, the other variant, the picker, the current panel and `src/lib/about-variants.ts` go.
 
@@ -60,7 +60,7 @@ From the playground Dawid kept the liquid, pixel dither and glitch slices, with 
 - **Glitch is a weak video signal** in 6 px rows. At rest two tracking bands roll slowly down (VHS mistracking), each showing another layer (by weight) with a light shimmer and picking a new one each time it wraps. A wrapped band comes back in after a random gap, so the distance between the two keeps changing; every 6–8 s a hiccup tears a few rows elsewhere for 150 ms. (Tried and dropped: a single band (Dawid asked for a second one) and two fast streaks at random heights, which read as too random.) The pointer is interference: the band snaps to its height, widens and opens a span around it with ragged row ends; speed drives the tearing and colour split, holding still settles into a clean view, and rows left behind hold for 0.1–0.7 s before closing one by one. Layer switches (arrival, tap, every 3.2–5 s) are bursts with a 1.4 s cooldown, so the reveal is readable most of the time. Row state lives in JS and is uploaded as a tiny texture each frame.
 - **Reduced motion:** no automaton, band roll, hiccups or tearing. Pixels show a still patch of cells under the pointer, glitch a clean band at the pointer.
 - **Cost:** pixels redraw only on ticks (one small grid pass plus the composite); glitch uploads a rows × 2 texture (~1 KB) per frame. Both keep running at rest, like the liquid, and pause off screen the same way.
-- **Preview switcher.** `RevealPicker` (bottom right, previews only, never on production) sets the style on the home hero; remembered in localStorage, `?reveal=pixels|glitch|liquid` also works. Without a stored choice it shows the hero's own style. Dawid chose **glitch**: the home hero sets `reveal="glitch"`, so production shows glitch; liquid and pixels stay available as options.
+- **Preview switcher.** `RevealPicker` (bottom right, previews only, never on production) sets the style on the home hero; remembered in localStorage, `?reveal=pixels|glitch|liquid` also works. Without a stored choice it shows the hero's own style. Dawid chose **glitch**: the home hero sets `reveal="glitch"`, so production shows glitch; liquid and pixels stay available as options. _Update 2026-10-28:_ the switcher was still on previews after the pick; removed from the home hero, so previews show glitch too.
 
 ## 2026-10-27 · Multi-layer liquid portrait and a reveal playground
 

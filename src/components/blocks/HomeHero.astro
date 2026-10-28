@@ -8,9 +8,7 @@
  */
 import LiquidReveal from "@/components/blocks/LiquidReveal.astro";
 import HeroBackdrop from "@/components/blocks/HeroBackdrop.astro";
-import RevealPicker from "@/components/blocks/RevealPicker.astro";
 import { PORTRAIT_LAYERS, portraitPhoto } from "@/lib/portrait";
-import { isProduction } from "@/lib/site";
 
 interface Props {
   /** Small mono line above the headline. */
@@ -58,7 +56,6 @@ const SIZES =
       sizes={SIZES}
     />
   </div>
-  {!isProduction && <RevealPicker />}
 </section>
 
 <style>
