@@ -21,7 +21,10 @@ import { NAV_LINKS, SITE } from "@/lib/site";
 
 const path = Astro.url.pathname.replace(/\.html$/, "");
 const isHome = path === "/" || path === "/index";
-const isCurrent = (href: string) => path === href || path.startsWith(`${href}/`);
+/** "page" on the page itself, "true" inside its section (a case study under Work), so the menu
+ * still marks Work but its link leads back to the list instead of only closing the menu. */
+const current = (href: string) =>
+  path === href ? "page" : path.startsWith(`${href}/`) ? "true" : undefined;
 const menu = [{ href: "/", label: "Home" }, ...NAV_LINKS];
 ---
 
@@ -45,7 +48,7 @@ const menu = [{ href: "/", label: "Home" }, ...NAV_LINKS];
         <ul class="nav__links" role="list">
           {NAV_LINKS.map(({ href, label }) => (
             <li>
-              <a class="nav__link" href={href} aria-current={isCurrent(href) ? "page" : undefined}>
+              <a class="nav__link" href={href} aria-current={current(href)}>
                 {label}
               </a>
             </li>
@@ -78,7 +81,7 @@ const menu = [{ href: "/", label: "Home" }, ...NAV_LINKS];
                 class="nav__menu-link"
                 data-no-tear
                 href={href}
-                aria-current={(href === "/" ? isHome : isCurrent(href)) ? "page" : undefined}
+                aria-current={href === "/" ? (isHome ? "page" : undefined) : current(href)}
               >
                 {label}
               </a>
@@ -204,7 +207,7 @@ const menu = [{ href: "/", label: "Home" }, ...NAV_LINKS];
       if (event.defaultPrevented || event.button !== 0) return;
       if (event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return;
       if (link.target || link.hasAttribute("download") || link.origin !== location.origin) return;
-      if (link.hasAttribute("aria-current")) {
+      if (link.getAttribute("aria-current") === "page") {
         event.preventDefault();
         setOpen(false);
         return;
@@ -452,7 +455,7 @@ const menu = [{ href: "/", label: "Home" }, ...NAV_LINKS];
     }
 
     .nav__link:hover,
-    .nav__link[aria-current="page"] {
+    .nav__link[aria-current] {
       --underline-size: 0%;
 
       color: var(--color-text);
