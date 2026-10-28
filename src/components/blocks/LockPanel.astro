@@ -5,10 +5,10 @@
  * (functions/work/_middleware.ts). Works without JS.
  *
  * Wrong password: the function serves the locked page again with the form's data-lock-state set
- * to "error" and the input marked invalid and focused. The field takes a heavier ink ring and a
- * warning sign, the message shows under it, and the field skips sideways once (the site's glitch,
- * a lost sync; still with reduced motion). Typing again clears the error (small script; without
- * it the error simply stays until the next try).
+ * to "error" and the input marked invalid and focused. The field takes a heavier red ring, a red
+ * tint and a warning sign, the message shows under it in red, and the field skips sideways once
+ * (the site's glitch, a lost sync; still with reduced motion). Typing again clears the error
+ * (small script; without it the error simply stays until the next try).
  */
 import Button from "@/components/ui/Button.astro";
 import Link from "@/components/ui/Link.astro";
@@ -52,30 +52,30 @@ const mailto = `mailto:${SITE.email}?subject=${encodeURIComponent(`Access to the
     <label class="visually-hidden" for={id("lock-password")}>
       Password
     </label>
-    <div class="lock-panel__field">
-      <span class="lock-panel__control">
-        <input
-          class="lock-panel__input"
-          id={id("lock-password")}
-          type="password"
-          name="password"
-          placeholder="Password"
-          autocomplete="current-password"
-          required
-          data-lock-input="password"
-          aria-invalid={error ? "true" : undefined}
-          aria-describedby={error ? id("lock-error") : undefined}
-        />
-        <svg class="lock-panel__alert" viewBox="0 0 24 24" aria-hidden="true">
-          <circle cx="12" cy="12" r="9"></circle>
-          <path d="M12 7.5v5.5M12 16.5v.01"></path>
-        </svg>
-      </span>
-      <Button type="submit">Unlock</Button>
-    </div>
+    <span class="lock-panel__control">
+      <input
+        class="lock-panel__input"
+        id={id("lock-password")}
+        type="password"
+        name="password"
+        placeholder="Password"
+        autocomplete="current-password"
+        required
+        data-lock-input="password"
+        aria-invalid={error ? "true" : undefined}
+        aria-describedby={error ? id("lock-error") : undefined}
+      />
+      <svg class="lock-panel__alert" viewBox="0 0 24 24" aria-hidden="true">
+        <circle cx="12" cy="12" r="9"></circle>
+        <path d="M12 7.5v5.5M12 16.5v.01"></path>
+      </svg>
+    </span>
     <p class="text-small lock-panel__error" id={id("lock-error")}>
       Wrong password. Check it and try again.
     </p>
+    <Button class="lock-panel__submit" type="submit">
+      Unlock
+    </Button>
   </form>
 
   <p class="text-small lock-panel__caption">
@@ -102,6 +102,7 @@ const mailto = `mailto:${SITE.email}?subject=${encodeURIComponent(`Access to the
 <style>
   @layer components {
     .lock-panel {
+      container-type: inline-size;
       display: grid;
       justify-items: center;
       gap: var(--space-4);
@@ -146,27 +147,31 @@ const mailto = `mailto:${SITE.email}?subject=${encodeURIComponent(`Access to the
       text-wrap: balance;
     }
 
+    /* Narrow: field, its error, then the button, stacked. Wide enough: field and button in a row,
+       the error under the field. The error always sits right under the field it belongs to. */
     .lock-panel__form {
       display: grid;
+      grid-template-areas: "control" "error" "submit";
       gap: var(--space-2);
       inline-size: 100%;
       margin-block-start: var(--space-2);
     }
 
-    .lock-panel__field {
-      display: flex;
-      flex-wrap: wrap;
-      gap: var(--space-2);
+    .lock-panel__form > :global(.lock-panel__submit) {
+      grid-area: submit;
     }
 
-    .lock-panel__field > :global(.button) {
-      flex: 1 0 auto;
+    @container (width >= 24rem) {
+      .lock-panel__form {
+        grid-template-areas: "control submit" "error error";
+        grid-template-columns: minmax(0, 1fr) auto;
+      }
     }
 
     /* The input and its warning sign share one cell, the sign at the end. */
     .lock-panel__control {
       display: grid;
-      flex: 999 1 12rem;
+      grid-area: control;
       align-items: center;
       min-inline-size: 0;
     }
@@ -214,17 +219,22 @@ const mailto = `mailto:${SITE.email}?subject=${encodeURIComponent(`Access to the
 
     .lock-panel__error {
       display: none;
-      padding-inline-start: var(--space-6);
+      grid-area: error;
+      color: var(--color-danger);
       text-align: start;
     }
 
     /* ---------- Wrong password ----------
-       A heavier ink ring, a tint, the warning sign and the message. The field skips sideways once
-       when the page comes back with the error. */
+       A heavier red ring, a red tint, the warning sign and the message, in --color-danger. The
+       field skips sideways once when the page comes back with the error. */
     [data-lock-state="error"] .lock-panel__input {
       padding-inline-end: calc(var(--space-4) + var(--space-8));
-      background-color: var(--color-bg-subtle);
-      box-shadow: inset 0 0 0 calc(2 * var(--border-width)) var(--color-text);
+      background-color: var(--color-danger-bg);
+      box-shadow: inset 0 0 0 calc(2 * var(--border-width)) var(--color-danger);
+    }
+
+    [data-lock-state="error"] .lock-panel__alert {
+      color: var(--color-danger);
     }
 
     [data-lock-state="error"] .lock-panel__alert,
