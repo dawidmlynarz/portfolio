@@ -2,6 +2,14 @@
 
 Non-obvious choices, newest first. One entry per decision: what, why, and what it rules out.
 
+## 2026-10-28 · Zazmic Anvil UI case study
+
+- **New draft case study, `zazmic-anvil-ui`**, first in `order` (0.5) as the most recent and most AI-focused work. It stays `draft: true` until Dawid has reviewed it and sent the images; every image is a `Figure` placeholder for now.
+- **The cover is a stand-in**: a screenshot of the live Showroom booking flow from the public Storybook, until Dawid sends the final one.
+- **The time savings are estimates Dawid asked for**, not measurements (about six weeks down to a week and a half of interface work, about 350 hours per project), labelled "(estimate)" in the highlights. Every other number comes from the Anvil repository.
+- **The Anthony Marin quote is a placeholder** written for the draft, at Dawid's request, until Dawid sends the real one.
+- **`Figure` grid track is `minmax(0, 1fr)`** so a long placeholder label can't push the figure 1px past a 375px viewport.
+
 ## 2026-10-28 · Case study pages: cover, client logo, Next up, contents mini map
 
 - **The cover runs edge to edge** at every size, with no radius. Phones get a 3:2 crop. From 48em the frame is 2:1 and holds the cover at 16:9, centred; with the motion layer the image drifts from its top edge to its bottom edge while the frame scrolls past (`[data-parallax]`, GSAP ScrollTrigger in `motion.ts`, so it stays in step with Lenis). The drift is exactly the overhang, so no edge ever shows; without motion it stays centred. `sizes="100vw"`, up to the 3200px rendition.
