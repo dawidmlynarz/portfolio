@@ -2,6 +2,16 @@
 
 Non-obvious choices, newest first. One entry per decision: what, why, and what it rules out.
 
+## 2026-10-28 · Case study cards
+
+**Home keeps the staggered grid; Work becomes a ruled index.** Picked from seven layouts in a card playground (PR #20, removed once chosen). `WorkCard` has two layouts, `tile` (Home) and `row` (Work: cover left, text right, hairlines between rows); `WorkGrid` picks one with `layout="grid" | "index"`.
+
+**Titles go from h4 to h3 size** on both, so the quiet links read as the main thing on the card.
+
+**Cards show the first four tags as pills, then "+N more".** The case study page still lists every tag. Which four show is the order in the frontmatter, so put the main ones first.
+
+**Work rows carry the card summary (`description`), cut to four lines** with a CSS line clamp (the browser adds the ellipsis). The page intro (`lead`) often describes the company rather than Dawid's part, so cards use the summary. Home tiles have no summary.
+
 ## 2026-10-28 · Buttons: one family, the row tear
 
 Dawid picked **row tear** from the button playground (`/playground/buttons`), with icon buttons excluded. `Button` is now the only button on the site.
