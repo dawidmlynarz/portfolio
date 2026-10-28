@@ -2,8 +2,8 @@
 /**
  * Case-study contents as a mini map, fixed at the right edge from 62em. One short line per h2.
  * Hovering the map opens the rows up a little; the hovered (or focused) row swaps its line for its
- * section title, one at a time, with no panel behind it. The title arrives with the row tear (CSS
- * only: two aria-hidden copies and the link-tear keyframes from base.css). Each row links to its
+ * section title, one at a time, with no panel behind it. The title arrives with the "signal
+ * settle" from the link playground: letters come in as noise and lock in from the left. Each row links to its
  * section (Lenis smooths the jump when the motion layer runs).
  *
  * Progress: each line fills as you read its section, so the filled lines show where you are; the
@@ -31,11 +31,7 @@ const sections = headings.filter(({ depth }) => depth === 2);
           <a class="toc__link" href={`#${slug}`} data-toc-link={slug} data-no-tear>
             <span class="toc__label">
               <span class="toc__text">{text}</span>
-              {["outer", "middle"].map((part) => (
-                <span class:list={["toc__tear", `toc__tear--${part}`]} aria-hidden="true">
-                  {text}
-                </span>
-              ))}
+              <span class="toc__noise" aria-hidden="true" />
             </span>
             <span class="toc__bar" aria-hidden="true">
               <span class="toc__fill" />
@@ -49,7 +45,7 @@ const sections = headings.filter(({ depth }) => depth === 2);
 
 <script>
   // Fills each section's line as it is read, marks the current one, and shows the map only while
-  // the case-study body is on screen. The reading line sits a third of the way down the screen.
+  // the case-study body is on screen. Titles arrive with the signal settle. The reading line sits a third of the way down the screen.
   const toc = document.querySelector<HTMLElement>("[data-toc]");
   const body = toc && document.querySelector<HTMLElement>(toc.dataset.tocBody ?? "");
   if (toc && body) {
@@ -77,6 +73,37 @@ const sections = headings.filter(({ depth }) => depth === 2);
       });
     };
     const schedule = () => (frame ||= requestAnimationFrame(update));
+
+    // Signal settle: the hovered or focused title arrives as noise and locks in from the left, at
+    // a coarse frame rate so it reads as a signal, not a tween. Skipped with reduced motion.
+    const NOISE = "ABCDEFGHJKLMNPRSTUVWXYZ#%&*+=/<>_";
+    const SETTLE_MS = 420;
+    const FRAME_MS = 40;
+    const reduced = matchMedia("(prefers-reduced-motion: reduce)");
+    const settle = (link: HTMLElement) => {
+      const label = link.querySelector<HTMLElement>(".toc__label");
+      const noise = label?.querySelector<HTMLElement>(".toc__noise");
+      const text = label?.querySelector(".toc__text")?.textContent ?? "";
+      if (!label || !noise || reduced.matches || label.hasAttribute("data-settling")) return;
+      label.setAttribute("data-settling", "");
+      const start = performance.now();
+      const tick = () => {
+        const t = Math.min(1, (performance.now() - start) / SETTLE_MS);
+        const locked = Math.floor(t * text.length);
+        noise.textContent = [...text]
+          .map((char, i) =>
+            i < locked || char === " " ? char : NOISE[Math.floor(Math.random() * NOISE.length)],
+          )
+          .join("");
+        if (t < 1) setTimeout(tick, FRAME_MS);
+        else label.removeAttribute("data-settling");
+      };
+      tick();
+    };
+    for (const { link } of rows) {
+      link.addEventListener("pointerenter", () => settle(link));
+      link.addEventListener("focus", () => settle(link));
+    }
 
     addEventListener("scroll", schedule, { passive: true });
     addEventListener("resize", schedule);
@@ -159,43 +186,26 @@ const sections = headings.filter(({ depth }) => depth === 2);
       translate: 0 -50%;
     }
 
-    /* The title arrives with the site's row tear: two copies cut into rows jolt sideways for
-       --duration-tear while the real text waits, then the clean title stays. */
+    /* "Signal settle": the title arrives as noise and locks in letter by letter from the left
+       (script above). The real text keeps the box and the accessible name; it only hides while
+       the noise stands in. */
     .toc__link:is(:hover, :focus-visible) .toc__label {
       visibility: visible;
     }
 
-    .toc__tear {
+    .toc__noise {
       position: absolute;
       inset: 0;
+      overflow: clip;
       opacity: 0;
     }
 
-    .toc__tear--outer {
-      clip-path: polygon(0 0, 100% 0, 100% 34%, 0 34%, 0 67%, 100% 67%, 100% 100%, 0 100%);
+    .toc__label[data-settling] .toc__text {
+      opacity: 0;
     }
 
-    .toc__tear--middle {
-      clip-path: inset(34% 0 33% 0);
-    }
-
-    .toc__link:is(:hover, :focus-visible) .toc__text {
-      animation: toc-tear-hide var(--duration-tear) steps(1, end);
-    }
-
-    .toc__link:is(:hover, :focus-visible) .toc__tear--outer {
-      animation: link-tear-outer var(--duration-tear) steps(1, end);
-    }
-
-    .toc__link:is(:hover, :focus-visible) .toc__tear--middle {
-      animation: link-tear-middle var(--duration-tear) steps(1, end);
-    }
-
-    @keyframes toc-tear-hide {
-      0%,
-      100% {
-        opacity: 0;
-      }
+    .toc__label[data-settling] .toc__noise {
+      opacity: 1;
     }
 
     .toc__bar {
@@ -233,10 +243,6 @@ const sections = headings.filter(({ depth }) => depth === 2);
       .toc__link,
       .toc__bar {
         transition: none;
-      }
-
-      .toc__link:is(:hover, :focus-visible) :is(.toc__text, .toc__tear) {
-        animation: none;
       }
     }
   }
