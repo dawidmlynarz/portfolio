@@ -2,6 +2,15 @@
 
 Non-obvious choices, newest first. One entry per decision: what, why, and what it rules out.
 
+## 2026-10-28 · Video: looping clips that play in view
+
+- **New `Video` (ui), available in MDX without an import** like `Figure`. Muted, looping, inline, `preload="none"` with a poster (first frame, served as WebP up to 1920px) that also sets the size, so nothing downloads until the clip is needed and there's no layout shift. Two sources: AV1 MP4 first (smallest and sharpest), H.264 MP4 as the fallback every browser plays. No `src` gives a "Video to come" placeholder on previews, like `Figure`.
+- **Plays only while half of it is on screen** (IntersectionObserver in the component script, not `motion.ts`: it isn't an animation and needs no GSAP). Off screen it pauses.
+- **A pause/play button sits in the corner** (WCAG 2.2.2 needs a way to stop moving content). A pause by hand sticks when the clip scrolls back in. If the browser refuses autoplay (data saver, low power mode), the native controls come back.
+- **Without JS, or with reduced motion**, the native controls stay and nothing autoplays.
+- **Encoding for new clips**: 1600 to 1920px wide, 30fps, no audio. `ffmpeg -c:v libsvtav1 -crf 32 -preset 5` for AV1 and `-c:v libx264 -preset slow -crf 20 -tune animation` for H.264, both with `-movflags +faststart -an`. Files sit next to the MDX (Cloudflare Pages caps a file at 25 MB).
+- **The Zazmic Showroom clip is a stand-in** recorded from the public Storybook (720p, 12 s, 210 KB AV1 / 280 KB H.264) until Dawid sends his recordings. The styleguide uses a 5 s cut of it in `src/assets/placeholders/`.
+
 ## 2026-10-28 · Zazmic Anvil UI case study
 
 - **New draft case study, `zazmic-anvil-ui`**, first in `order` (0.5) as the most recent and most AI-focused work. It stays `draft: true` until Dawid has reviewed it and sent the images; every image is a `Figure` placeholder for now.

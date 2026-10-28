@@ -10,6 +10,7 @@ import Link from "@/components/ui/Link.astro";
 import Button from "@/components/ui/Button.astro";
 import Tag from "@/components/ui/Tag.astro";
 import Figure from "@/components/ui/Figure.astro";
+import Video from "@/components/ui/Video.astro";
 import Hero from "@/components/blocks/Hero.astro";
 import PortraitReveal from "@/components/blocks/PortraitReveal.astro";
 import WorkGrid from "@/components/blocks/WorkGrid.astro";
@@ -28,6 +29,8 @@ import { COLOR_ROLES, SPACE } from "@/lib/tokens";
 import { SERVICES } from "@/lib/services";
 import { PORTRAIT_LAYERS, portraitPhoto } from "@/lib/portrait";
 import figureSample from "@/assets/placeholders/figure-sample.jpg";
+import videoSample from "@/assets/placeholders/video-sample.mp4";
+import videoSamplePoster from "@/assets/placeholders/video-sample-poster.jpg";
 
 // Contents mini map (right edge, from 62em) over this page's own sections, as on case studies.
 const STYLEGUIDE_SECTIONS = [
@@ -308,6 +311,26 @@ const SECTIONS = [
           <Figure
             alt="Figma library structure: foundations feeding the marketing and product libraries."
             caption="Placeholder variant: leave out src while the image is being made. Previews only; production skips it."
+          />
+        </Stack>
+
+        <Stack gap="4">
+          <h3>Video</h3>
+          <p class="muted measure">
+            Muted looping clips for case studies. They load nothing until needed and play only while
+            half of the video is on screen. The button in the corner pauses and plays. With reduced
+            motion, or without JS, the native controls show and nothing autoplays. Pass an AV1 MP4
+            as <code>av1</code> and an H.264 MP4 as <code>src</code>, plus a poster.
+          </p>
+          <Video
+            src={videoSample}
+            poster={videoSamplePoster}
+            label="Sample clip: the Anvil UI Showroom assistant answering in a side panel."
+            caption="Video with a poster and a caption."
+          />
+          <Video
+            label="A screen recording of the booking flow."
+            caption="Placeholder variant: leave out src while the recording is being made. Previews only; production skips it."
           />
         </Stack>
 

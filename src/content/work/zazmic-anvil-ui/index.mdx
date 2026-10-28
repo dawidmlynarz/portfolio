@@ -18,6 +18,10 @@ next: newsweek-design-system
 draft: true
 ---
 
+import showroomBooking from "./showroom-booking.mp4";
+import showroomBookingAv1 from "./showroom-booking.av1.mp4";
+import showroomBookingPoster from "./showroom-booking-poster.jpg";
+
 {/* Placeholder cover: a screenshot of the live Showroom (booking flow), until Dawid sends the final one. */}
 
 {/* Estimates requested by Dawid on 2026-10-28, not measured: about 6 weeks down to 1.5 weeks to a first working agent UI (~75%) and ~350 hours saved per project, for a designer and a front-end engineer. Every other number comes from the repository. */}
@@ -115,7 +119,14 @@ A list of components doesn't tell you much how an agent feels to use. That's why
 
 It's scripted on purpose, so it can't go off script while someone is clicking through it. It still shows loading, error and queued states, the same as real agent goes through. I also hid around 50 small talk replies and easter eggs inside, like a coin flip or a round of rock, paper, scissors. Without them the demo felt a bit dead, and the jokes are what keeps people clicking.
 
-<Figure alt="The Showroom booking flow, from an offer carousel to a calendar, time slots, an approval and a ticket." />
+{/* Stand-in clip recorded from the live Showroom (720p, about 12 s) until Dawid sends his own recordings. */}
+
+<Video
+  src={showroomBooking}
+  av1={showroomBookingAv1}
+  poster={showroomBookingPoster}
+  label="The Showroom booking flow, where the assistant searches for shows, offers three in a carousel and opens an availability calendar."
+/>
 
 {/* Placeholder quote written for the draft; Dawid will replace it with a real one from Anthony Marin. */}
 

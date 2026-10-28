@@ -1,0 +1,239 @@
+---
+import { getImage } from "astro:assets";
+import { isProduction } from "@/lib/site";
+
+interface Props {
+  /**
+   * H.264 MP4, imported in the MDX (`import clip from "./clip.mp4"`). Every browser plays it.
+   * Leave out for a placeholder while the recording is being made: previews only, like Figure.
+   */
+  src?: string;
+  /** AV1 MP4 of the same clip. Listed first, so browsers that decode AV1 get the sharper, smaller file. */
+  av1?: string;
+  /** First frame as an image. Sets the size (no layout shift) and shows until the video plays. */
+  poster?: ImageMetadata;
+  /** Required. Describe what the clip shows; it becomes the video's accessible name. */
+  label: string;
+  caption?: string;
+  /** Inside Prose: content (reading measure), wide (page width) or full (edge to edge). */
+  width?: "content" | "wide" | "full";
+  class?: string;
+}
+
+const { src, av1, poster, label, caption, width = "wide", class: className } = Astro.props;
+
+const hidden = !src && isProduction;
+const posterImage = poster
+  ? await getImage({ src: poster, format: "webp", width: Math.min(poster.width, 1920) })
+  : undefined;
+---
+
+{!hidden && (
+  <figure
+    class:list={["video", `video--${width}`, { "video--placeholder": !src }, className]}
+    data-width={width}
+  >
+    {src ? (
+      <div class="video__frame">
+        {/* Plain controls without JS or with reduced motion; the script swaps them for the toggle. */}
+        <video
+          class="video__media"
+          data-video
+          aria-label={label}
+          poster={posterImage?.src}
+          width={poster?.width}
+          height={poster?.height}
+          preload="none"
+          controls
+          muted
+          loop
+          playsinline
+        >
+          {av1 && <source src={av1} type='video/mp4; codecs="av01.0.08M.08"' />}
+          <source src={src} type="video/mp4" />
+        </video>
+        <button
+          class="video__toggle"
+          type="button"
+          data-video-toggle
+          aria-label="Pause video"
+          hidden
+        >
+          <svg class="video__icon video__icon--pause" viewBox="0 0 24 24" aria-hidden="true">
+            <path d="M8 5v14M16 5v14" />
+          </svg>
+          <svg class="video__icon video__icon--play" viewBox="0 0 24 24" aria-hidden="true">
+            <path d="M7 4.5v15L19 12z" />
+          </svg>
+        </button>
+      </div>
+    ) : (
+      <div
+        class="video__media video__placeholder"
+        role="img"
+        aria-label={`Video to come: ${label}`}
+      >
+        <span class="text-caption">Video to come</span>
+        <span class="video__placeholder-label">{label}</span>
+      </div>
+    )}
+    {caption && <figcaption class="video__caption">{caption}</figcaption>}
+  </figure>
+)}
+
+<script>
+  // Loops play only while at least half of the video is on screen, so nothing downloads or runs
+  // off screen. With reduced motion (or no JS) the native controls stay and nothing autoplays.
+  // The toggle is the pause control for moving content (WCAG 2.2.2); a pause by hand sticks.
+  const reduceMotion = matchMedia("(prefers-reduced-motion: reduce)").matches;
+  const videos = [...document.querySelectorAll<HTMLVideoElement>("[data-video]")];
+
+  if (!reduceMotion && videos.length && "IntersectionObserver" in window) {
+    const pausedByHand = new WeakSet<HTMLVideoElement>();
+
+    const setToggle = (video: HTMLVideoElement) => {
+      const toggle = video.parentElement?.querySelector<HTMLButtonElement>("[data-video-toggle]");
+      if (!toggle) return;
+      toggle.dataset.state = video.paused ? "paused" : "playing";
+      toggle.setAttribute("aria-label", video.paused ? "Play video" : "Pause video");
+    };
+
+    const play = (video: HTMLVideoElement) =>
+      video.play().catch(() => {
+        // Autoplay refused (data saver, low power mode): hand control back to the viewer.
+        video.controls = true;
+        video.parentElement?.querySelector("[data-video-toggle]")?.setAttribute("hidden", "");
+      });
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        for (const { target, isIntersecting } of entries) {
+          const video = target as HTMLVideoElement;
+          if (isIntersecting && !pausedByHand.has(video)) play(video);
+          else if (!isIntersecting) video.pause();
+        }
+      },
+      { threshold: 0.5 },
+    );
+
+    for (const video of videos) {
+      const toggle = video.parentElement?.querySelector<HTMLButtonElement>("[data-video-toggle]");
+      video.controls = false;
+      if (toggle) {
+        toggle.hidden = false;
+        toggle.addEventListener("click", () => {
+          if (video.paused) {
+            pausedByHand.delete(video);
+            play(video);
+          } else {
+            pausedByHand.add(video);
+            video.pause();
+          }
+        });
+      }
+      video.addEventListener("play", () => setToggle(video));
+      video.addEventListener("pause", () => setToggle(video));
+      setToggle(video);
+      observer.observe(video);
+    }
+  }
+</script>
+
+<style>
+  @layer components {
+    .video {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr);
+      gap: var(--space-3);
+    }
+
+    .video__frame {
+      position: relative;
+    }
+
+    .video__media {
+      display: block;
+      inline-size: 100%;
+      block-size: auto;
+      border-radius: var(--radius-md);
+      background-color: var(--color-bg-subtle);
+    }
+
+    .video__placeholder {
+      display: grid;
+      place-content: center;
+      justify-items: center;
+      gap: var(--space-2);
+      aspect-ratio: 16 / 9;
+      padding: var(--space-6);
+      border: var(--border-width) dashed var(--color-border-muted);
+      color: var(--color-text-muted);
+      text-align: center;
+    }
+
+    .video__placeholder-label {
+      max-inline-size: var(--measure);
+      text-wrap: balance;
+    }
+
+    .video__toggle {
+      position: absolute;
+      inset-block-end: var(--space-3);
+      inset-inline-end: var(--space-3);
+      display: grid;
+      place-items: center;
+      padding: var(--space-2);
+      border: 0;
+      border-radius: var(--radius-pill);
+      background-color: var(--color-inverse-bg);
+      color: var(--color-on-inverse);
+      cursor: pointer;
+      opacity: 0.7;
+      transition: opacity var(--duration-fast) var(--ease-standard);
+    }
+
+    .video__toggle[hidden] {
+      display: none;
+    }
+
+    .video__toggle:hover,
+    .video__toggle:focus-visible,
+    .video__frame:hover .video__toggle {
+      opacity: 1;
+    }
+
+    .video__icon {
+      inline-size: 1.25em;
+      block-size: 1.25em;
+      fill: none;
+      stroke: currentcolor;
+      stroke-width: 2;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+    }
+
+    .video__icon--play {
+      fill: currentcolor;
+    }
+
+    .video__toggle:not([data-state="paused"]) .video__icon--play,
+    .video__toggle[data-state="paused"] .video__icon--pause {
+      display: none;
+    }
+
+    .video--full .video__media {
+      border-radius: 0;
+    }
+
+    .video--full .video__caption {
+      padding-inline: var(--gutter);
+    }
+
+    .video__caption {
+      max-inline-size: var(--measure);
+      font-size: var(--text-small);
+      line-height: var(--leading-small);
+      color: var(--color-text-muted);
+    }
+  }
+</style>
