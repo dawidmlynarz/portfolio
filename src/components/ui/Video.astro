@@ -24,7 +24,7 @@ const { src, av1, poster, label, caption, width = "wide", class: className } = A
 
 const hidden = !src && isProduction;
 const posterImage = poster
-  ? await getImage({ src: poster, format: "webp", width: Math.min(poster.width, 1920) })
+  ? await getImage({ src: poster, format: "webp", width: Math.min(poster.width, 2560) })
   : undefined;
 ---
 
