@@ -66,18 +66,21 @@
   /*
    * Default link: a hairline underline drawn as a background, so it can animate. It stays a
    * hairline on hover; the hover is the row tear below. Components tune it with --underline-size
-   * (0% hides it at rest, e.g. card titles) and --underline-origin (where it grows from).
+   * (0% hides it at rest, e.g. card titles), --underline-origin (where it grows from) and
+   * --underline-offset (how far up from the bottom of the text box; quiet links sit nearer the
+   * baseline).
    * Reduced motion: reset.css removes the transition; the line still changes state.
    */
   a {
     --underline-size: 100%;
     --underline-origin: left;
     --underline-thickness: var(--border-width);
+    --underline-offset: 0;
 
     color: inherit;
     text-decoration: none;
-    background: linear-gradient(currentcolor, currentcolor) no-repeat var(--underline-origin)
-      bottom / var(--underline-size) var(--underline-thickness);
+    background: linear-gradient(currentcolor, currentcolor) no-repeat var(--underline-origin) 0
+      bottom var(--underline-offset) / var(--underline-size) var(--underline-thickness);
     transition: background-size var(--duration-link) var(--ease-out-expo);
   }
 

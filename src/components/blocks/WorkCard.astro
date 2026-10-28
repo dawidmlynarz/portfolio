@@ -90,6 +90,7 @@ const meta = [data.company, data.year, data.draft && "Draft"].filter(Boolean).jo
     /* Quiet at rest; the underline draws in when the tile is hovered or the link focused. */
     .work-card__title a {
       --underline-size: 0%;
+      --underline-offset: var(--underline-offset-quiet);
     }
 
     .work-card__title a::after {
