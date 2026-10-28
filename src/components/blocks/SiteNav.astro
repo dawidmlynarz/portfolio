@@ -192,10 +192,21 @@ const menu = [{ href: "/", label: "Home" }, ...NAV_LINKS];
       const next = event.relatedTarget;
       if (isOpen() && next instanceof Node && !box.contains(next)) setOpen(false);
     });
-    // A link to the page you are on just closes the menu.
-    panel.addEventListener("click", (event) => {
-      const link = event.target instanceof Element && event.target.closest("a[aria-current]");
-      if (link) setOpen(false);
+    // Leaving through a link in the open menu: the menu closes all the way first (the same motion
+    // as the close button), then the page changes with its own transition. A link to the page you
+    // are on only closes the menu. New-tab clicks, downloads and mailto links are left alone.
+    box.addEventListener("click", (event) => {
+      const link = event.target instanceof Element && event.target.closest("a[href]");
+      if (!isOpen() || !(link instanceof HTMLAnchorElement)) return;
+      if (event.defaultPrevented || event.button !== 0) return;
+      if (event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return;
+      if (link.target || link.hasAttribute("download") || link.origin !== location.origin) return;
+      event.preventDefault();
+      setOpen(false);
+      if (link.hasAttribute("aria-current")) return;
+      // Wait for everything the close set moving (box, surface, scrim, icon), then go.
+      const moving = nav.getAnimations({ subtree: true }).map(({ finished }) => finished);
+      Promise.allSettled(moving).then(() => location.assign(link.href));
     });
     // Coming back through the history cache: start closed.
     addEventListener("pageshow", (event) => {
