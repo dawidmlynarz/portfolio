@@ -56,12 +56,13 @@ const imageType = /\.jpe?g$/i.test(image.src) ? "image/jpeg" : "image/png";
         }
       }
     </style>
-    <!-- Before first paint: apply a saved dark theme (light is the default) and flag the motion layer. -->
+    <!-- Before first paint: apply a saved dark theme (light is the default), flag JS and the motion layer. -->
     <script is:inline>
       try {
         if (localStorage.getItem("theme") === "dark")
           document.documentElement.dataset.theme = "dark";
       } catch {}
+      document.documentElement.classList.add("js");
       // Opt in to the motion layer (src/scripts/motion.ts) unless the visitor prefers less motion.
       if (!matchMedia("(prefers-reduced-motion: reduce)").matches) {
         document.documentElement.classList.add("motion");

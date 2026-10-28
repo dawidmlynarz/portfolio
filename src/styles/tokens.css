@@ -55,7 +55,7 @@
     --color-border-muted: light-dark(var(--neutral-300), var(--neutral-800));
     --color-border-subtle: light-dark(var(--neutral-200), var(--neutral-850));
     --color-focus: var(--color-text);
-    /* Inverse surface (story panel, mobile menu, primary buttons) and the text on it */
+    /* Inverse surface (story panel, primary buttons, menu contact) and the text on it */
     --color-inverse-bg: light-dark(var(--neutral-950), var(--neutral-50));
     --color-on-inverse: light-dark(var(--neutral-0), var(--neutral-950));
     --color-on-inverse-muted: light-dark(var(--neutral-500), var(--neutral-700));
@@ -155,7 +155,7 @@
     --duration-zoom: 800ms; /* case-study cover zoom on hover */
     --duration-marquee: 40s; /* one full loop of the client logo marquee */
     --ease-out-expo: cubic-bezier(0.19, 1, 0.22, 1);
-    --duration-page: 700ms; /* ink spread (theme switch, mobile menu); the nav during page changes */
+    --duration-page: 700ms; /* ink spread (theme switch); the nav during page changes */
     --duration-menu: 900ms; /* nav menu: makes room, then drops open */
     --duration-page-out: 320ms; /* page transition: the old page fades out */
     --duration-page-in: 1000ms; /* page transition: the new page settles in */

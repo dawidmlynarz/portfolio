@@ -1,7 +1,7 @@
 /**
  * "Ink spread": a same-document View Transition where the new state grows as a circle from an
  * element (direction "in"), or the old state shrinks back into it ("out"). Used by the theme
- * switch and the mobile menu. Styles: [data-spread] in base.css.
+ * switch. Styles: [data-spread] in base.css.
  * Reduced motion or no View Transitions: the update runs instantly.
  */
 export function spread(

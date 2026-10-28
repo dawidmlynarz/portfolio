@@ -146,7 +146,7 @@
   }
 
   /*
-   * Leaving through a link in the open menu (SiteNav): the new page starts with the menu open and
+   * Leaving through a link in the open menu (Nav): the new page starts with the menu open and
    * collapses it live, so the nav shows only the new page's live image and follows its size.
    */
   :root[data-nav-collapse]::view-transition-group(nav),
@@ -192,7 +192,7 @@
   }
 
   /*
-   * "Ink spread" (src/scripts/spread.ts), for the theme switch and the mobile menu: the new state
+   * "Ink spread" (src/scripts/spread.ts), for the theme switch: the new state
    * grows as a circle from the control ("in"), or the old state shrinks back into it ("out").
    * Named elements are flattened into the page for it so everything changes together.
    */
