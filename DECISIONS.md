@@ -2,6 +2,10 @@
 
 Non-obvious choices, newest first. One entry per decision: what, why, and what it rules out.
 
+## 2026-10-28 · Zazmic Anvil UI case study goes live
+
+`draft: false` on Dawid's go-ahead. The image slots are still `Figure` placeholders, so production shows the text, the stand-in cover and the stand-in Showroom clip without them until the real images arrive. The invented Anthony Marin quote is taken out before going live, because a made-up quote under a real name shouldn't be public. An MDX comment marks where the real one goes.
+
 ## 2026-10-28 · Video: looping clips that play in view
 
 - **New `Video` (ui), available in MDX without an import** like `Figure`. Muted, looping, inline, `preload="none"` with a poster (first frame, served as WebP up to 2560px) that also sets the size, so nothing downloads until the clip is needed and there's no layout shift. Two sources: AV1 MP4 first (smallest and sharpest), H.264 MP4 as the fallback every browser plays. No `src` gives a "Video to come" placeholder on previews, like `Figure`.
