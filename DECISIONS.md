@@ -2,6 +2,16 @@
 
 Non-obvious choices, newest first. One entry per decision: what, why, and what it rules out.
 
+## 2026-10-28 · Buttons: one family, the row tear
+
+Dawid picked **row tear** from the button playground (`/playground/buttons`), with icon buttons excluded. `Button` is now the only button on the site.
+
+- **Text buttons tear into their hover colours.** The button stacks its face and two aria-hidden copies in the hover colours in one grid cell. On hover or keyboard focus the copies arrive as three rows that jolt sideways for `--duration-tear`, then lock together. Primary (inverse fill) lands as an outline; secondary and ghost land filled. CSS only, unlike the links: a button never wraps, so fixed rows work, and no JS has to run first. After the tear the middle copy hides and the top copy shows whole, so no seams are left at the row edges.
+- **Icon buttons don't tear.** They share the colours and the swap, and the icon moves where it points: it leaves through that edge and comes back in from the opposite one (Back to top goes up, an arrow goes right). Icon-only is `icon` + `label` (the accessible name).
+- **New `size="lg"` and `icon` prop.** The footer email is `lg` with an arrow, the menu contact is `sm`, Back to top is a secondary icon button that keeps its glass background and scroll-driven fade from `SiteLayout`. The hand-made pills and their CSS are gone.
+- **Home hero calls to action are buttons**: About me (primary) and Contact (secondary), both with the arrow. Primary follows the original order.
+- **The theme switch and the menu button stay nav chrome** with their grey hover; they are not `Button`.
+
 ## 2026-10-28 · Links: one hover, the row tear
 
 Dawid picked **row tear** from the link playground, with one change: the underline never thickens. Every text, action and quiet link now keeps its hairline and, on hover or keyboard focus, tears into three rows that jolt sideways for 260 ms (`--duration-tear`, needs mirroring in Figma), then snaps back.

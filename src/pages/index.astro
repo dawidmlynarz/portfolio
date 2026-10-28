@@ -9,7 +9,6 @@ import Services from "@/components/blocks/Services.astro";
 import ClientLogos from "@/components/blocks/ClientLogos.astro";
 import WorkGrid from "@/components/blocks/WorkGrid.astro";
 import Button from "@/components/ui/Button.astro";
-import Link from "@/components/ui/Link.astro";
 import { SITE, SOCIAL_LINKS } from "@/lib/site";
 import { SERVICES } from "@/lib/services";
 import { getListedWork } from "@/lib/work";
@@ -48,12 +47,12 @@ const jsonLd = {
     lead="I bring 15 years of product experience to the AI era, helping you architect AI-ready design systems, safe agentic workflows, and impactful product strategies."
   >
     <Fragment slot="actions">
-      <Link href="/about" icon="arrow">
+      <Button href="/about" icon="arrow">
         About me
-      </Link>
-      <Link href={`mailto:${SITE.email}`} icon="arrow">
+      </Button>
+      <Button href={`mailto:${SITE.email}`} variant="secondary" icon="arrow">
         Contact
-      </Link>
+      </Button>
     </Fragment>
   </HomeHero>
 
