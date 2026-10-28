@@ -21,6 +21,7 @@ Replacing a Webflow site with a clean, Webflow-agnostic build. Keep the `/work/<
 - Numbers: never invent one silently. If Dawid asks for an estimate, label it "(estimate)" on the page and note it in a one-line MDX comment.
 - Make it read as written by a person: varied sentence length, plain verbs, specific details, a little unevenness. Avoid AI tells: "not X, it's Y" contrasts, tidy triplets everywhere, "the turning point", "the biggest lever", "game-changer", "seamless", "leverage", "delve", "robust", em dashes, rhetorical questions, bold on every paragraph, and takeaways that restate the page.
 - `<Metrics>` takes at most three numbers.
+- A `<Quote>` sits between two paragraphs of text, never right before or after a `Figure`, `Video` or `ImageGrid`.
 
 ## Commands
 
