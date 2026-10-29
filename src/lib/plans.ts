@@ -36,7 +36,7 @@ export const PLANS: Plan[] = [
     // Two days a week, averaged over a year: 16 hours × 52 weeks ÷ 12 months.
     price: price((2 * HOURS_PER_DAY * 52) / 12),
     billing: "month",
-    terms: "Per month · 2–3 days a week · three months to start",
+    terms: "Per month · 2–3 days a week · 3 months to start",
     includes: [
       "Product direction and design reviews on the work that matters",
       "Hands-on design, from first sketch to shipped",

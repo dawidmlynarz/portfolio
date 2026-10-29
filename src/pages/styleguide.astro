@@ -64,6 +64,7 @@ const TYPE_ROLES = [
   { role: "h2", tag: "h2", sample: "Research that changes the roadmap" },
   { role: "h3", tag: "h3", sample: "From insight to interface" },
   { role: "h4", tag: "h4", sample: "Measured outcomes" },
+  { role: "nav", className: "type-row__nav", sample: "Services" },
   {
     role: "lead",
     className: "text-lead",
@@ -612,6 +613,12 @@ const SECTIONS = [
     .type-row {
       display: grid;
       gap: var(--space-2);
+    }
+
+    /* Links in the open menu (Nav.astro). */
+    .type-row__nav {
+      font: var(--weight-medium) var(--text-nav) / var(--leading-nav) var(--font-heading);
+      letter-spacing: var(--tracking-nav);
     }
 
     .type-row__name {
