@@ -1,10 +1,11 @@
 ---
 /**
- * Plans as wide rows stacked one under another, never a row of pricing cards. Each row puts what
- * the plan is and its price on the left, what's included and the button on the right (stacked on
- * small screens). The featured plan (the retainer) leads on a tinted panel with the bigger type;
- * the others follow as open rows under a rule. Every plan ends in "Book a call"; the featured one gets the primary
- * button. Data: src/lib/plans.ts.
+ * Plans, never a row of pricing cards. The featured plan (the retainer) leads as a wide tinted
+ * panel: what it is and its price on the left, the list of what's included and the button on the
+ * right (stacked on small screens). The others follow side by side from 48em, as open blocks
+ * under a rule, each said in one paragraph. Prices are always one step smaller than the plan's
+ * name. Every plan ends in "Book a call"; the featured one gets the primary button.
+ * Data: src/lib/plans.ts.
  */
 import Button from "@/components/ui/Button.astro";
 import { formatPrice, type Plan } from "@/lib/plans";
@@ -45,11 +46,13 @@ const ordered = [...plans].sort(
           </p>
         </div>
         <div class="plans__body">
-          <ul class="plans__includes" role="list">
-            {includes.map((item) => (
-              <li>{item}</li>
-            ))}
-          </ul>
+          {includes && includes.length > 0 && (
+            <ul class="plans__includes" role="list">
+              {includes.map((item) => (
+                <li>{item}</li>
+              ))}
+            </ul>
+          )}
           <Button
             class="plans__cta"
             href={BOOKING_HREF}
@@ -82,6 +85,7 @@ const ordered = [...plans].sort(
     }
 
     .plans__plan--featured {
+      grid-column: 1 / -1;
       padding: var(--space-8) var(--space-6);
       border: 0;
       border-radius: var(--radius-lg);
@@ -106,13 +110,7 @@ const ordered = [...plans].sort(
     }
 
     .plans__title {
-      font: var(--weight-medium) var(--text-h3) / var(--leading-h3) var(--font-heading);
-      letter-spacing: var(--tracking-h3);
-    }
-
-    .plans__plan--featured .plans__title {
-      font-size: var(--text-h2);
-      line-height: var(--leading-h2);
+      font: var(--weight-medium) var(--text-h2) / var(--leading-h2) var(--font-heading);
       letter-spacing: var(--tracking-h2);
     }
 
@@ -126,15 +124,10 @@ const ordered = [...plans].sort(
       padding-block-start: var(--space-2);
     }
 
+    /* One step under the title. */
     .plans__amount {
       font: var(--weight-medium) var(--text-h3) / var(--leading-h3) var(--font-heading);
       letter-spacing: var(--tracking-h3);
-    }
-
-    .plans__plan--featured .plans__amount {
-      font-size: var(--text-h2);
-      line-height: var(--leading-h2);
-      letter-spacing: var(--tracking-h2);
     }
 
     .plans__includes {
@@ -147,19 +140,30 @@ const ordered = [...plans].sort(
       border-block-start: var(--border-width) solid var(--color-border-subtle);
     }
 
+    /* The list starts level with the label opposite, so no rule above the first item. */
+    .plans__includes li:first-child {
+      padding-block-start: 0;
+      border-block-start: 0;
+    }
+
     .plans__cta {
       justify-self: start;
     }
 
     @media (width >= 48em) {
+      .plans {
+        grid-template-columns: repeat(2, 1fr);
+        column-gap: var(--space-10);
+      }
+
       .plans__plan--featured {
         padding: var(--space-12) var(--space-10);
       }
     }
 
-    /* Wide: every plan is one row, head on the left and body on the right. */
+    /* Wide: the featured plan is one row, head on the left and the list on the right. */
     @media (width >= 62em) {
-      .plans__plan {
+      .plans__plan--featured {
         grid-template-columns: 5fr 6fr;
         column-gap: var(--space-12);
       }

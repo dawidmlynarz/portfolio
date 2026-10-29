@@ -20,7 +20,8 @@ export interface Plan {
   billing?: "once" | "month";
   /** The line under the price, e.g. "Fixed price · 2 weeks". */
   terms: string;
-  includes: string[];
+  /** What's included, as a list. Only the featured plan has one; the others say it in `promise`. */
+  includes?: string[];
   /** The plan the page leads with: shown wide, above the others. */
   featured?: boolean;
 }
@@ -48,28 +49,20 @@ export const PLANS: Plan[] = [
     id: "design-audit",
     title: "Design audit",
     label: "Fixed price",
-    promise: "Two weeks, one clear answer: what’s holding the product back, and what to fix first.",
+    promise:
+      "Two weeks, one clear answer: what’s holding the product back, and what to fix first. I go through your design system, or one AI or agent flow, rank what I find by impact and turn it into a roadmap you can act on. We finish with a walkthrough for your team.",
     // Six working days over two weeks.
     price: price(6 * HOURS_PER_DAY),
     billing: "once",
     terms: "Fixed price · 2 weeks",
-    includes: [
-      "Your design system, or one AI or agent flow",
-      "Findings ranked by impact, and a roadmap to act on",
-      "A walkthrough with your team",
-    ],
   },
   {
     id: "custom",
     title: "Custom project",
     label: "Project",
     promise:
-      "A piece of work with a start and an end: a design system build, an AI feature, a redesign.",
+      "A piece of work with a start and an end, like a design system build, an AI feature or a redesign. We agree the scope, timeline and price before anything starts, and you’ll have a one-page proposal within two business days of our call.",
     terms: "Quoted per project",
-    includes: [
-      "Scope, timeline and price agreed upfront",
-      "A one-page proposal within two business days",
-    ],
   },
 ];
 
