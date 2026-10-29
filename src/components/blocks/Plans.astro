@@ -1,0 +1,137 @@
+---
+/**
+ * Plans as cards side by side (one column on small screens): the plan, a one-line promise, the
+ * price and its terms, what's included and a "Book a call" button. A plan without a price is
+ * quoted per project and gets the secondary button. Data: src/lib/plans.ts.
+ */
+import Button from "@/components/ui/Button.astro";
+import { formatPrice, type Plan } from "@/lib/plans";
+import { BOOKING_HREF } from "@/lib/site";
+
+interface Props {
+  plans: Plan[];
+  headingLevel?: 2 | 3 | 4;
+  /** Anchor for the list; plans also get their own ids (data: plan.id) unless `anchors` is false. */
+  id?: string;
+  anchors?: boolean;
+}
+
+const { plans, headingLevel = 3, id, anchors = true } = Astro.props;
+const Heading = `h${headingLevel}` as const;
+---
+
+<ul class="plans" role="list" id={id}>
+  {plans.map((plan) => {
+    const { title, promise, price, terms, includes } = plan;
+    return (
+      <li class="plans__plan" id={anchors ? plan.id : undefined} data-reveal="fade">
+        <Heading class="plans__title">{title}</Heading>
+        <p class="plans__promise">{promise}</p>
+        <p class="plans__price">
+          <span class="plans__amount">{price ? formatPrice(price) : "Let’s talk"}</span>
+          <span class="text-small plans__terms">{terms}</span>
+        </p>
+        <ul class="plans__includes" role="list">
+          {includes.map((item) => (
+            <li>{item}</li>
+          ))}
+        </ul>
+        <Button
+          class="plans__cta"
+          href={BOOKING_HREF}
+          variant={price ? "primary" : "secondary"}
+          icon="arrow"
+          aria-label={`Book a call about the ${title.toLowerCase()} plan`}
+        >
+          Book a call
+        </Button>
+      </li>
+    );
+  })}
+</ul>
+
+<style>
+  @layer components {
+    .plans {
+      display: grid;
+      gap: var(--space-6);
+      padding: 0;
+    }
+
+    .plans__plan {
+      display: grid;
+      grid-template-rows: auto auto auto 1fr auto;
+      gap: var(--space-4);
+      padding: var(--space-8) var(--space-6);
+      border: var(--border-width) solid var(--color-border-subtle);
+      border-radius: var(--radius-lg);
+      background-color: var(--color-bg);
+    }
+
+    .plans__title {
+      font: var(--weight-medium) var(--text-h3) / var(--leading-h3) var(--font-heading);
+      letter-spacing: var(--tracking-h3);
+    }
+
+    .plans__promise,
+    .plans__terms {
+      color: var(--color-text-muted);
+    }
+
+    .plans__price {
+      display: grid;
+      gap: var(--space-1);
+      padding-block: var(--space-4);
+      border-block: var(--border-width) solid var(--color-border-subtle);
+    }
+
+    .plans__amount {
+      font: var(--weight-medium) var(--text-h2) / var(--leading-h2) var(--font-heading);
+      letter-spacing: var(--tracking-h2);
+    }
+
+    .plans__includes {
+      display: grid;
+      align-content: start;
+      gap: var(--space-2);
+      padding: 0;
+    }
+
+    .plans__includes li {
+      display: grid;
+      grid-template-columns: var(--space-4) 1fr;
+      gap: var(--space-2);
+    }
+
+    .plans__includes li::before {
+      color: var(--color-text-muted);
+      content: "–" / "";
+    }
+
+    .plans__cta {
+      justify-self: start;
+      margin-block-start: var(--space-4);
+    }
+
+    /* Two columns on tablets, with an odd last plan across both (no orphan card), then three. */
+    @media (width >= 48em) {
+      .plans {
+        grid-template-columns: repeat(2, 1fr);
+      }
+
+      .plans__plan:last-child:nth-child(odd) {
+        grid-column: 1 / -1;
+      }
+    }
+
+    @media (width >= 62em) {
+      .plans {
+        grid-template-columns: repeat(3, 1fr);
+      }
+
+      .plans__plan:last-child:nth-child(odd) {
+        grid-column: auto;
+      }
+    }
+  }
+</style>

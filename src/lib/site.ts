@@ -4,10 +4,10 @@ export const SITE = {
   name: "Dawid Młynarz",
   /** Spelling without the Polish ł, as people often type it. */
   alternateName: "Dawid Mlynarz",
-  title: "Dawid Młynarz — Freelance Product Designer & Design Systems",
+  title: "Dawid Młynarz — Senior Product Designer & Design Systems",
   /** Default meta description (pages override it). */
   description:
-    "Freelance product designer with 15 years of experience. I design AI-ready design systems and agentic UX for teams like Newsweek, NerdWallet and Google.",
+    "Senior product designer with 15 years of experience. I design AI-ready design systems and agentic UX for teams like Newsweek, NerdWallet and Google.",
   jobTitle: "Senior Product Designer",
   locale: "en",
   ogLocale: "en_GB",
@@ -22,6 +22,9 @@ export const SITE = {
     "Product design",
   ],
   email: "hello@mlynarz.com",
+  /** Scheduling page (Calendly or similar) for "Book a call". Empty until it exists: calls to
+   * action then lead to /contact. */
+  bookingUrl: "",
   /** Social share image in public/ (1200×630), used by every page. */
   ogImage: {
     src: "/og.jpg",
@@ -41,7 +44,11 @@ export const SOCIAL_LINKS = [
 /** The social links in the open menu (the footer lists them all). */
 export const MENU_SOCIAL_LINKS = SOCIAL_LINKS.filter(({ label }) => label !== "Behance");
 
-/** Primary navigation. Every call to action leads to /contact, which carries the email. */
+/** Where "Book a call" leads: the scheduling page once it is set, /contact until then. */
+export const BOOKING_HREF: string = SITE.bookingUrl || "/contact";
+
+/** Primary navigation. Calls to action lead to /contact, which carries the email; "Book a call" on
+ * /services leads to BOOKING_HREF. */
 export const NAV_LINKS = [
   { href: "/work", label: "Work" },
   { href: "/services", label: "Services" },
