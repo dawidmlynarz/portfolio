@@ -1,9 +1,10 @@
 ---
 /**
  * Case-study card in two layouts:
- * - tile (Home): the cover, a mono "Company · Year" line, the outcome title and the tags.
- * - row (Work): the same pieces side by side, cover on the left, plus the card summary
- *   (`description`) cut to four lines.
+ * - tile (Home): the cover, the outcome title and the tags. No role or company line; the title
+ *   carries the card.
+ * - row (Work): cover on the left, a mono "Role · Company" line, the title, the tags and the
+ *   card summary (`description`) cut to four lines.
  * Both show the first three tags as pills and "+N more" for the rest; the case study lists them all.
  * Every cover is cropped to 4:3 (centred) so the set reads as one. The whole card is the link
  * target; the visible link is the title (one tab stop). Entries without a page (page: false)
@@ -32,7 +33,15 @@ const { entry, layout = "tile", headingLevel = 3, eager = false } = Astro.props;
 const { data } = entry;
 const Heading = `h${headingLevel}` as const;
 const href = hasPage(entry) ? workHref(entry) : undefined;
-const meta = [data.role, data.company, data.draft && "Draft"].filter(Boolean).join(" · ");
+const meta = [
+  layout === "row" && data.role,
+  layout === "row" && data.company,
+  data.draft && "Draft",
+]
+  .filter(Boolean)
+  .join(" · ");
+/** Tiles drop the line entirely unless it still has something to say (Draft, padlock). */
+const showMeta = Boolean(meta) || data.protected;
 const tags = data.tags.slice(0, MAX_TAGS);
 const moreTags = data.tags.length - tags.length;
 const widths = [480, 800, 1200, 1600].filter((w) => w <= data.cover.width);
@@ -56,18 +65,20 @@ const sizes =
     </div>
   </div>
   <div class="work-card__body">
-    <p class="text-caption work-card__meta">
-      {meta}
-      {data.protected && (
-        <span class="work-card__lock" title="Password protected">
-          <svg viewBox="0 0 24 24" aria-hidden="true">
-            <rect x="5" y="10.5" width="14" height="10" rx="2.5" />
-            <path d="M8.5 10.5V7.5a3.5 3.5 0 0 1 7 0v3" />
-          </svg>
-          <span class="visually-hidden">Password protected</span>
-        </span>
-      )}
-    </p>
+    {showMeta && (
+      <p class="text-caption work-card__meta">
+        {meta}
+        {data.protected && (
+          <span class="work-card__lock" title="Password protected">
+            <svg viewBox="0 0 24 24" aria-hidden="true">
+              <rect x="5" y="10.5" width="14" height="10" rx="2.5" />
+              <path d="M8.5 10.5V7.5a3.5 3.5 0 0 1 7 0v3" />
+            </svg>
+            <span class="visually-hidden">Password protected</span>
+          </span>
+        )}
+      </p>
+    )}
     <Heading class="work-card__title">
       {href ? (
         <a href={href} data-no-tear>

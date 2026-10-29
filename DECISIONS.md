@@ -470,3 +470,7 @@ What changed versus the embed, and why:
 ## 2026-10-29 · BeforeAfter comparison
 
 **Pointer drag on the frame, a hidden range input for keyboards.** Dragging anywhere on the image moves the handle (pointer capture, so it keeps tracking outside the frame), and `touch-action: pan-y` lets vertical swipes on a phone still scroll the page. A native range input sits under it, invisible and out of pointer reach, so arrow keys and screen readers get a real slider; focus shows on the grip. Without JS the handle stays at `start`, so both images are still half visible. It's a plain inline script, not a framework island.
+
+## 2026-10-29 · Home Work cards
+
+**Home tiles drop the role and company line.** Dawid asked for it: on Home the outcome title and tags carry the card. The Work index keeps "Role · Company" in its rows. A tile still shows the caption line when it has something else to say: "Draft" on previews, or the padlock on a protected case study. Home and Work already share one order (`order` in the frontmatter, via `getListedWork`), so Home shows the first four of the Work list.
