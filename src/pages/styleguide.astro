@@ -11,6 +11,7 @@ import Button from "@/components/ui/Button.astro";
 import Tag from "@/components/ui/Tag.astro";
 import Figure from "@/components/ui/Figure.astro";
 import Video from "@/components/ui/Video.astro";
+import VideoTabs from "@/components/content/VideoTabs.astro";
 import Hero from "@/components/blocks/Hero.astro";
 import PortraitReveal from "@/components/blocks/PortraitReveal.astro";
 import WorkGrid from "@/components/blocks/WorkGrid.astro";
@@ -331,6 +332,34 @@ const SECTIONS = [
           <Video
             label="A screen recording of the booking flow."
             caption="Placeholder variant: leave out src while the recording is being made. Previews only; production skips it."
+          />
+        </Stack>
+
+        <Stack gap="4">
+          <h3>VideoTabs</h3>
+          <p class="muted measure">
+            Several clips in one frame with a tab for each, so a case study can show a lot without
+            getting longer. Only the chosen clip shows and loads; switching starts it from the
+            beginning. Arrow keys move between tabs. Without JS every clip shows in turn, captioned
+            with its tab name.
+          </p>
+          <VideoTabs
+            label="Sample flows"
+            items={[
+              {
+                tab: "First flow",
+                src: videoSample,
+                poster: videoSamplePoster,
+                label: "Sample clip: the Anvil UI Showroom assistant answering in a side panel.",
+                caption: "Each tab can have its own one-line caption.",
+              },
+              {
+                tab: "Second flow",
+                src: videoSample,
+                poster: videoSamplePoster,
+                label: "The same sample clip, as a second tab.",
+              },
+            ]}
           />
         </Stack>
 

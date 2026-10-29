@@ -18,9 +18,15 @@ next: newsweek-design-system
 draft: false
 ---
 
+import showroomResearch from "./showroom-research.mp4";
+import showroomResearchAv1 from "./showroom-research.av1.mp4";
+import showroomResearchPoster from "./showroom-research-poster.avif";
 import showroomBooking from "./showroom-booking.mp4";
 import showroomBookingAv1 from "./showroom-booking.av1.mp4";
 import showroomBookingPoster from "./showroom-booking-poster.avif";
+import showroomSmallTalk from "./showroom-input.mp4";
+import showroomSmallTalkAv1 from "./showroom-input.av1.mp4";
+import showroomSmallTalkPoster from "./showroom-input-poster.avif";
 import levels from "./anvil-levels.avif";
 import agentComponents from "./anvil-agent-components.avif";
 import agentComponents2 from "./anvil-agent-components-2.avif";
@@ -149,6 +155,39 @@ A list of components doesn't tell you much how an agent feels to use. That's why
 
 It's scripted on purpose, so it can't go off script while someone is clicking through it. It still shows loading, error and queued states, the same as real agent goes through. I also hid around 50 small talk replies and easter eggs inside, like a coin flip or a round of rock, paper, scissors. Without them the demo felt a bit dead, and the jokes are what keeps people clicking.
 
+<VideoTabs
+  label="Showroom flows"
+  items={[
+    {
+      tab: "Research a task",
+      src: showroomResearch,
+      av1: showroomResearchAv1,
+      poster: showroomResearchPoster,
+      label:
+        "The Showroom research flow: the assistant asks a few scoping questions, writes a research brief and plan for approval, shows live progress, and ends with key takeaways and a report.",
+      caption: "Research a task: questions first, a plan to approve, live progress and a report.",
+    },
+    {
+      tab: "Book a show",
+      src: showroomBooking,
+      av1: showroomBookingAv1,
+      poster: showroomBookingPoster,
+      label:
+        "The Showroom booking flow: the assistant finds shows, offers times and tickets, asks for approval before booking, and returns the tickets as a PDF.",
+      caption: "Book a show: offers, a date and time, tickets, an approval and the booking.",
+    },
+    {
+      tab: "Small talk",
+      src: showroomSmallTalk,
+      av1: showroomSmallTalkAv1,
+      poster: showroomSmallTalkPoster,
+      label:
+        "Small talk in the Showroom: asked for a joke, the assistant tells one, then another, and answers the feedback with a pun.",
+      caption: "Small talk: one of the hidden replies, a few jokes on request.",
+    },
+  ]}
+/>
+
 ## Working with an AI agent, on my terms
 
 I built Anvil together with an AI coding agent, and it did a lot of the typing. What got built, how good it had to be, in which order and what went live was my decision. To make that more than a promise, I put a system around it.
@@ -159,15 +198,6 @@ I built Anvil together with an AI coding agent, and it did a lot of the typing. 
 4. It opens a pull request and waits. It never merges by itself.
 5. Required checks run for types, lint, tokens being up to date, Storybook tests in light and dark, and a Storybook build. When any of them fails, work goes back to the agent.
 6. I look at the real result and approve every merge. Then the live Storybook updates.
-
-{/* Stand-in clip recorded from the live Showroom (2560×1440, about 12 s) until Dawid sends his own recordings. */}
-
-<Video
-  src={showroomBooking}
-  av1={showroomBookingAv1}
-  poster={showroomBookingPoster}
-  label="The Showroom booking flow, where the assistant searches for shows, offers three in a carousel and opens an availability calendar."
-/>
 
 Many of the rules fail loudly, so nobody has to remember them. Lint checks component levels (an atom can't import an organism), motion, right-to-left-safe CSS and accessibility. Axe runs on every story in both themes, and screenshot tests catch changes nobody meant to make.
 
