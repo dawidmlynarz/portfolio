@@ -1,6 +1,7 @@
 import { getImage } from "astro:assets";
 import portrait from "@/assets/portrait/portrait-photo.avif";
 import { SITE, SOCIAL_LINKS } from "@/lib/site";
+import type { Service } from "@/lib/services";
 
 /**
  * Structured data (JSON-LD) shared across pages. The Person and WebSite nodes have stable `@id`s,
@@ -46,4 +47,16 @@ export const breadcrumbs = (site: URL, trail: [name: string, path: string][]) =>
     name,
     item: new URL(path, site).href,
   })),
+});
+
+/** One of the services on /services, offered by Dawid. Each has an anchor on that page. */
+export const service = (site: URL, { id, title, description }: Service) => ({
+  "@type": "Service",
+  "@id": new URL(`/services#${id}`, site).href,
+  name: title,
+  serviceType: title,
+  description,
+  url: new URL(`/services#${id}`, site).href,
+  // Named as well as referenced: the full Person node lives on Home and About, not on /services.
+  provider: { "@type": "Person", "@id": personId(site), name: SITE.name },
 });

@@ -8,7 +8,7 @@ export const SITE = {
   /** Default meta description (pages override it). */
   description:
     "Freelance product designer with 15 years of experience. I design AI-ready design systems and agentic UX for teams like Newsweek, NerdWallet and Google.",
-  jobTitle: "Senior Product Designer",
+  jobTitle: "Freelance Product Designer",
   locale: "en",
   ogLocale: "en_GB",
   /** ISO 3166 country code, for structured data. */

@@ -5,9 +5,25 @@ import Container from "@/components/layout/Container.astro";
 import HeroBackdrop from "@/components/blocks/HeroBackdrop.astro";
 import WorkMarquee from "@/components/blocks/WorkMarquee.astro";
 import { SITE } from "@/lib/site";
+import { breadcrumbs, personId, websiteId } from "@/lib/schema";
+
+const site = Astro.site!;
+const jsonLd = {
+  "@context": "https://schema.org",
+  "@graph": [
+    {
+      "@type": "ContactPage",
+      url: new URL("/contact", site).href,
+      isPartOf: { "@id": websiteId(site) },
+      about: { "@id": personId(site) },
+    },
+    breadcrumbs(site, [["Contact", "/contact"]]),
+  ],
+};
 ---
 
 <SiteLayout
+  jsonLd={jsonLd}
   title="Contact"
   description="Got a project in mind? Email Dawid Młynarz about AI-ready design systems, agentic UX or product strategy."
   fit

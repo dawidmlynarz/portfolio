@@ -7,6 +7,7 @@ import Services from "@/components/blocks/Services.astro";
 import HeroBackdrop from "@/components/blocks/HeroBackdrop.astro";
 import Button from "@/components/ui/Button.astro";
 import { SERVICES } from "@/lib/services";
+import { breadcrumbs, service } from "@/lib/schema";
 
 /** Ways of working, for both audiences: teams hiring help and companies hiring a designer. */
 const engagements = [
@@ -23,9 +24,19 @@ const engagements = [
     text: "Open to a senior or lead product design role with a team building AI-first products.",
   },
 ];
+
+const site = Astro.site!;
+const jsonLd = {
+  "@context": "https://schema.org",
+  "@graph": [
+    ...SERVICES.map((entry) => service(site, entry)),
+    breadcrumbs(site, [["Services", "/services"]]),
+  ],
+};
 ---
 
 <SiteLayout
+  jsonLd={jsonLd}
   title="AI-ready design systems and agentic UX"
   description="Hire me as a freelance product designer for AI-ready design systems, agentic UX or product strategy: what each service includes and how we can work together."
 >

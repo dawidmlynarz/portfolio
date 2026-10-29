@@ -2,6 +2,13 @@
 
 Non-obvious choices, newest first. One entry per decision: what, why, and what it rules out.
 
+## 2026-10-29 · Structured data on Services, Work and Contact
+
+- **/services** lists the three services as schema.org `Service` nodes (from `src/lib/services.ts`), each with its on-page anchor and Dawid as provider, plus breadcrumbs.
+- **/work** is a `CollectionPage` whose `ItemList` holds only public case studies; locked ones are noindex, so listing them would point Google at pages it can't index.
+- **/contact** is a `ContactPage` about the Person node, plus breadcrumbs.
+- **`jobTitle` is "Freelance Product Designer"**, matching the home title and the phrase the site targets. It was "Senior Product Designer".
+
 ## 2026-10-29 · Contact page; every call to action leads to it
 
 - **New `/contact` page** at Dawid's request: "Got a project in mind? Let's talk." and the email as a link at a new display size (`--text-display`, 56 → 128, with `--leading-display` and `--tracking-display`; add them to the Figma Foundations file too), then the case-study carousel. It breaks after the @ on narrow screens rather than shrinking the email below h1. Round 2 (Dawid's mock-up): the services list, the Write/Copy buttons and the carousel caption were removed; the title and lead are narrower.
