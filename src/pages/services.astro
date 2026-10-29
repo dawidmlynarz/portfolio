@@ -9,7 +9,6 @@ import Process from "@/components/blocks/Process.astro";
 import Beliefs from "@/components/blocks/Beliefs.astro";
 import Plans from "@/components/blocks/Plans.astro";
 import Testimonials from "@/components/blocks/Testimonials.astro";
-import Button from "@/components/ui/Button.astro";
 import { SERVICES } from "@/lib/services";
 import { PLANS } from "@/lib/plans";
 import { STEPS, BELIEFS } from "@/lib/process";
@@ -32,36 +31,21 @@ const jsonLd = {
   title="AI-ready design systems and agentic UX"
   description="Hire a senior product designer for AI-ready design systems, agentic UX and product strategy: a fixed-price audit, an embedded lead, or a custom project."
 >
-  <Section space="md" class="hero-backdrop-host services-hero" aria-labelledby="services-title">
+  <Section space="md" class="hero-backdrop-host" aria-labelledby="services-title">
     <HeroBackdrop />
-    <Container class="services-page__head">
-      <p class="text-caption services-page__muted">Services</p>
-      <h1 id="services-title" data-reveal="lines">
-        Your team got fast with AI.{" "}
-        <span class="services-page__muted">Let’s make sure it stays good.</span>
-      </h1>
-      <p class="text-lead services-page__lead services-page__muted" data-reveal="fade">
-        I’m a senior product designer for teams shipping with AI. I build the design systems, agent
-        patterns and review habits that keep the product worth trusting as you speed up.
-      </p>
-      <div data-reveal="fade">
-        <Button href="#what-i-do" variant="secondary" icon="arrow-down">
-          See how I can help
-        </Button>
+    <Container class="services-page services-page--hero">
+      <div class="services-page__head">
+        <p class="text-caption services-page__muted">Services</p>
+        <h1 id="services-title" data-reveal="lines">
+          Your team got fast with AI.{" "}
+          <span class="services-page__muted">Let’s make sure it stays good.</span>
+        </h1>
+        <p class="text-lead services-page__muted" data-reveal="fade">
+          I’m a senior product designer for teams shipping with AI. I build the design systems,
+          agent patterns and review habits that keep the product worth trusting as you speed up.
+        </p>
       </div>
-    </Container>
-  </Section>
-
-  <Section space="lg" id="what-i-do" aria-labelledby="what-i-do-title">
-    <Container class="services-page">
-      <SectionIntro
-        id="what-i-do-title"
-        label="What I do"
-        title="Three services,"
-        titleMuted="one way of working."
-        lead="Close to the problem, close to engineering, and measured by what changes for the people using the product."
-      />
-      <Services services={SERVICES} headingLevel={3} variant="detailed" />
+      <Services services={SERVICES} headingLevel={2} variant="detailed" />
     </Container>
   </Section>
 
@@ -100,7 +84,7 @@ const jsonLd = {
       />
       <div class="services-page__plans">
         <Plans plans={PLANS} headingLevel={3} id="plans" />
-        <p class="text-lead services-page__lead" data-reveal="fade">
+        <p class="text-lead" data-reveal="fade">
           Looking for a full-time senior or lead product designer?{" "}
           <span class="services-page__muted">
             I’m open to that too, with a team building AI-first products.
@@ -111,13 +95,10 @@ const jsonLd = {
   </Section>
 
   <Section space="lg" aria-labelledby="testimonials-title">
-    <Container class="services-page">
-      <SectionIntro
-        id="testimonials-title"
-        label="Kind words"
-        title="What people say"
-        titleMuted="about working with me."
-      />
+    <Container class="services-page services-page--quotes">
+      <h2 id="testimonials-title" class="text-caption services-page__muted">
+        Kind words
+      </h2>
       <Testimonials testimonials={TESTIMONIALS} />
     </Container>
   </Section>
@@ -130,14 +111,19 @@ const jsonLd = {
       gap: var(--space-section-sm);
     }
 
-    .services-page__head {
-      display: grid;
-      gap: var(--space-6);
-      justify-items: start;
+    /* As on Work: the page head, then its content. */
+    .services-page--hero {
+      gap: var(--space-section-md);
     }
 
-    .services-page__lead {
-      max-inline-size: var(--measure);
+    .services-page--quotes {
+      gap: var(--space-8);
+    }
+
+    /* Same as the Work head, so the headline starts at the same height on both pages. */
+    .services-page__head {
+      display: grid;
+      gap: var(--space-4);
     }
 
     .services-page__muted {
@@ -147,13 +133,6 @@ const jsonLd = {
     .services-page__plans {
       display: grid;
       gap: var(--space-10);
-    }
-
-    /* The hero fills most of the first screen, so the scroll prompt has somewhere to lead. */
-    .services-hero {
-      display: grid;
-      align-items: end;
-      min-block-size: 72svh;
     }
   }
 </style>

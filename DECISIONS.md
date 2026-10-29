@@ -557,3 +557,7 @@ What changed versus the embed, and why:
 **Approach as two-tone statements.** Each belief is one sentence, claim in ink and reason muted, the same two-tone voice as the site's headings, numbered in two columns from 62em. A list of cards or icons would have made them read like features.
 
 **Quotes, one at a time.** The carousel shows one large quote (`Quote size="lg"`) on a `--color-bg-subtle` panel under an oversized quote mark, with a bar per quote (click to jump, current one filled), a counter and ghost arrows. It is still a native scroll-snap row, so swipe, trackpad and arrow keys work, and without JS it stays a swipeable row.
+
+**Round 4: calmer page, one measure for headlines.** The services hero now matches Work exactly (same section spacing and head gap, so the headline starts at the same height) and goes straight into the service rows; the scroll prompt and the `arrow-down` button icon are gone. The quotes lost the panel, quote mark and progress bars: a "Kind words" caption, one large quote, two ghost arrows aligned to the text edge.
+
+**Line-length tokens.** `--measure-h1` (12em, about 24 characters), `--measure-h2` (16em, about 32), `--measure-lead` (50ch) and the existing `--measure` (65ch, body). They are in units of the text's own size, so one value holds at every breakpoint. base.css applies them to every h1, h2 and `.text-lead`, replacing the one-off widths on Contact (10em), case-study titles (22ch), SectionIntro (18em) and the hero leads. Add the three new tokens to the Figma Foundations file under the same names.
