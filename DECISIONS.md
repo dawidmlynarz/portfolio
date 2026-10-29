@@ -2,6 +2,18 @@
 
 Non-obvious choices, newest first. One entry per decision: what, why, and what it rules out.
 
+## 2026-10-29 · Figure `diagram` variant for line drawings
+
+`<Figure variant="diagram" width="content">` shows a transparent line drawing at the text width with no card, corners or background, so it reads as part of the text. Diagrams are drawn in dark ink and inverted in the dark theme (`invert(1) hue-rotate(180deg)`), so one file works in both. Trim transparent padding from the source so the spacing comes from the page. First used for the Anvil UI levels.
+
+## 2026-10-29 · Several demo clips share one frame (VideoTabs)
+
+To show more of a product without making the page longer, `VideoTabs` (content, available in MDX) puts several clips in one frame with a tab per clip. Each clip is a regular `Video`, so loading, autoplay and reduced motion behave the same; only the chosen clip shows, and switching starts it from the beginning. Without JS every clip shows in turn, captioned with its tab name, so nothing is lost. Used for the three Anvil Showroom flows, which replace the stand-in clip.
+
+## 2026-10-28 · Case study images are AVIF
+
+Every image in `src/content/work/` is stored as AVIF (sharp, quality 80, 4:4:4 chroma so UI text and thin lines stay crisp), and `Figure`, `WorkCard`, `NextUp`, the case-study cover and the `Video` poster render AVIF instead of Astro's default WebP. Sources went from 22.5 MB to 12.4 MB, including the new Pantheon and Anvil images. The share image stays JPEG because social previews don't read AVIF. Add new case-study images as AVIF too.
+
 ## 2026-10-28 · Zazmic Anvil UI case study goes live
 
 `draft: false` on Dawid's go-ahead. The image slots are still `Figure` placeholders, so production shows the text, the stand-in cover and the stand-in Showroom clip without them until the real images arrive. The invented Anthony Marin quote is taken out before going live, because a made-up quote under a real name shouldn't be public. An MDX comment marks where the real one goes.
