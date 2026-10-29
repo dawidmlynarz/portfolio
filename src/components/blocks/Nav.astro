@@ -542,7 +542,7 @@ const menu = [{ href: "/", label: "Home" }, ...NAV_LINKS];
     /* ---------- Panel ---------- */
     .nav__panel {
       display: none;
-      gap: var(--space-8);
+      gap: var(--space-4);
       justify-self: unsafe center; /* stays centred while the box is narrower than it */
       inline-size: 100%;
       min-block-size: 0;
@@ -559,8 +559,8 @@ const menu = [{ href: "/", label: "Home" }, ...NAV_LINKS];
     .nav__menu {
       display: grid;
       padding: 0;
-      font: var(--weight-medium) var(--text-nav) / var(--leading-nav) var(--font-heading);
-      letter-spacing: var(--tracking-nav);
+      font: var(--weight-medium) var(--text-h2) / var(--leading-h2) var(--font-heading);
+      letter-spacing: var(--tracking-h2);
     }
 
     /* Quiet links: no row tear here (too much motion in a list); the line draws in instead.

@@ -578,4 +578,4 @@ What changed versus the embed, and why:
 
 **Lead Product Designer everywhere but the case studies.** The site title, descriptions, structured data (`jobTitle`) and page copy now say Lead Product Designer; case studies keep the job titles Dawid held. The retainer keeps the name Embedded Design Lead and now says "2–3 days a week" in its terms, so $8,300 does not read as full time. The price is still worked out from two days a week.
 
-**A type token for the menu links.** The open menu's links use `--text-nav` (with `--leading-nav` and `--tracking-nav`) instead of h2, which was too big on desktop. It is h3 size on wide screens and h2 size on phones; those are the same 30px, so the token is a fixed 1.875rem. It is on /styleguide under Typography and needs adding to the Figma Foundations file.
+**Menu links stay at h2.** A separate menu-link size was tried and dropped; the open panel's gap between the links and the social row is now `--space-4`.
