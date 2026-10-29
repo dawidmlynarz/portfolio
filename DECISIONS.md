@@ -466,3 +466,7 @@ What changed versus the embed, and why:
 ## 2026-10-28 · Work link on case studies
 
 **Section links say `aria-current="true"`, not `"page"`.** The nav marked Work as the current page on every `/work/<slug>`, and the menu's click handler turns a link to the current page into "just close the menu", so Work did nothing on case studies. Now the nav uses `"page"` only on the page itself and `"true"` inside its section: Work still looks current on a case study, and the handler only swallows clicks on `"page"`.
+
+## 2026-10-29 · BeforeAfter comparison
+
+**Pointer drag on the frame, a hidden range input for keyboards.** Dragging anywhere on the image moves the handle (pointer capture, so it keeps tracking outside the frame), and `touch-action: pan-y` lets vertical swipes on a phone still scroll the page. A native range input sits under it, invisible and out of pointer reach, so arrow keys and screen readers get a real slider; focus shows on the grip. Without JS the handle stays at `start`, so both images are still half visible. It's a plain inline script, not a framework island.

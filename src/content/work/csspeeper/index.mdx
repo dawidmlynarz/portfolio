@@ -1,13 +1,13 @@
 ---
-title: Launched Chrome extension for designers that acquired 500,000+ users
-description: I came up with CSS Peeper, designed it from the first sketch to the 2025 relaunch, and grew it to 500,000+ users. After eight years as a free tool, we turned it into a freemium product that pays for itself.
-lead: "CSS Peeper is a smart Chrome extension with point-and-click CSS viewer tailored for designers that do not code. Trusted by 500,000+ designers from all over the world."
+title: Launched Chrome extension for designers used by 500,000+ people every week
+description: I came up with CSS Peeper, designed it from the first sketch to the 2025 relaunch, and grew it to 500,000+ weekly users and around 4 million installs without spending anything on ads. After eight years as a free tool, we turned it into a freemium product that pays for itself.
+lead: "CSS Peeper is a smart Chrome extension with point-and-click CSS viewer tailored for designers that do not code. Used by 500,000+ designers from all over the world every week."
 company: CSS Peeper
 client: csspeeper
 role: Co-Founder / Founding Designer
-industry: Design Tools
-business: Freemium Chrome Extension
-date: "2025"
+industry: Chrome Extension
+business: SaaS
+date: "2016–2026"
 businessLabel: Model
 tags: [Product Design, 0 to 1, Branding, Monetization, Chrome Extension]
 cover: ./cover.jpg
@@ -17,22 +17,30 @@ next: nerdwallet
 draft: false
 ---
 
+import before from "./csspeeper-before.jpg";
+import after from "./csspeeper-after.jpg";
+import colorsExport from "./csspeeper-colors-export.jpg";
+import typography from "./csspeeper-typography.jpg";
+import contrast from "./csspeeper-contrast.jpg";
+import assets from "./csspeeper-assets.jpg";
+
 ## My role
 
-In 2016 I came up with CSS Peeper, a Chrome extension that shows designers a website’s styles without opening the code inspector. I brought the idea, designed the product and did all the branding: the name, the logo, the colors, the website. My friend Jędrzej Sadowski built the first version. Years later, Kamil took over development and the two of us relaunched it as a paid product.
+In 2016 I came up with CSS Peeper, a Chrome extension that shows designers a website’s styles without opening the code inspector. I brought the idea, designed the product and did all the branding: the name, the logo, the colors, the website. My friend Jędrzej Sadowski built the first version. Years later, [Kamil Wiśniewski](https://www.linkedin.com/in/kamil-wisniewski-54867470/) took over development and the two of us relaunched it as a paid product.
 
 ### Key achievements
 
 - Took the product from an idea to a launched extension, and designed every version since.
-- Grew it to 500,000+ users with no paid marketing. It has been in the top 10 of Chrome’s Developer Tools for years.
+- Grew it to 500,000–600,000 weekly active users and around 4 million installs, without spending anything on ads.
+- Kept that weekly number steady for more than six years. It sits in roughly the top 1% of the Chrome Web Store and has been in the top 10 of Developer Tools for years.
 - Got featured by the Chrome Web Store team and recommended by design educators like Zander Whitehurst.
 - Redesigned and relaunched it in 2025 with a freemium model, after eight years of being free.
 - Made it self-sustaining: subscriptions cover our running costs and pay for maintenance and bug fixing.
 
 <Metrics
   items={[
-    { value: "500K+", label: "Users since 2016" },
-    { value: "4.6", label: "Rating on the Chrome Web Store, from 350+ reviews" },
+    { value: "500K+", label: "Weekly active users, steady for more than six years" },
+    { value: "~4M", label: "Installs since 2016, with nothing spent on ads" },
     { value: "~35%", label: "Of free trials turn into paid plans" },
   ]}
 />
@@ -57,7 +65,14 @@ I wrote a wish list for the MVP, based on what I was missing in my own work:
 
 Designing for designers is hard. We notice things other people don’t, so the first impression had to be right. I’ve always believed that how an interface looks matters as much as how it works, and I wanted CSS Peeper to stand out from the tools it was replacing. It was made with designers who don’t code in mind, but in the end developers and people who just want to grab a color use it too.
 
-<Figure alt="The first version of CSS Peeper from 2016, with the overview, colors and assets panels." />
+<BeforeAfter
+  before={before}
+  after={after}
+  beforeAlt="The first version of CSS Peeper from 2016, with the Colors, Inspector and Assets panels."
+  afterAlt="The relaunched CSS Peeper from 2025, with the same three panels redesigned."
+  beforeLabel="2016"
+  afterLabel="2025"
+/>
 
 ## Launch and the first users
 
@@ -65,18 +80,23 @@ We launched in December 2016. Three days later a popular design blog featured it
 
 We read every piece of feedback. People loved how colors were presented but couldn’t copy them, which was the most common complaint. So the next version, at around 30,000 users, made the interface cleaner, let you copy color values straight into design tools, showed assets as bigger thumbnails, and turned the inspector’s plain text into a visual view of padding and margins.
 
-## Eight quiet years
+## Steady growth
 
-Between 2017 and 2024 CSS Peeper kept growing on its own. Word of mouth did most of the work and it stayed in the top 10 of Developer Tools. But we hardly maintained it. It was a free tool, sitting there, used by hundreds of thousands of people and earning nothing.
+Between 2017 and 2024 CSS Peeper kept growing on its own. We never paid for a single ad. People found it by searching the Chrome Web Store, or because a colleague showed it to them, and it stayed in the top 10 of Developer Tools.
 
-<Quote author="Zander Whitehurst" role="Founder of Memorisely">
-  You need to install these chrome extensions as a designer! CSSPeeper is my fave for viewing color
-  palettes.
-</Quote>
+Only recently did I sit down with the Chrome Web Store stats properly, and they surprised me. Between 500,000 and 600,000 people use CSS Peeper every week, and that number has barely moved in more than six years. **Over the same time it has been installed around 4 million times, which puts it in roughly the top 1% of all extensions in the store.**
+
+The gap between those two numbers is the part I find most interesting. People leave extensions all the time. They get a new laptop, reset their browser, change jobs or simply stop needing it. For the weekly number to stay flat for six years, new designers had to keep arriving as fast as others left, month after month, with nobody promoting it.
+
+I think it held because CSS Peeper solves something designers run into several times a week, and it stays out of the way until they need it. You click the icon and the page’s styles are there. That’s the whole onboarding.
+
+It was still a free tool, though. Half a million people used it every week and it earned nothing, so every update and bug fix came out of our spare time.
+
+We wanted to give those people more than spare time allowed, and that’s what led to the relaunch.
 
 ## The relaunch
 
-In 2024 I teamed up with Kamil, who took over development, to bring CSS Peeper back properly. We both had full-time work, so **it was evenings and weekends, for about six months**, with countless hours spent getting it right for people who had relied on it for years.
+In 2024 I teamed up with Kamil, who took over development, to rebuild CSS Peeper and give it a way to fund itself. We both had full-time work, so **it was evenings and weekends, for about six months**, with countless hours spent getting it right for people who had relied on it for years.
 
 I redesigned the extension and the website. The main changes:
 
@@ -87,7 +107,24 @@ I redesigned the extension and the website. The main changes:
 
 The new version launched in March 2025.
 
-<Figure alt="The relaunched CSS Peeper with the Colors, Typography, Contrast and Assets panels." />
+<ImageGrid>
+  <Figure
+    src={colorsExport}
+    alt="The Colors panel with an Export all button, next to palette exports for Figma, Adobe Suite and Sketch."
+  />
+  <Figure
+    src={typography}
+    alt="The Colors palette next to a Heading 1 text style card with its font, size, line height and contrast."
+  />
+  <Figure
+    src={contrast}
+    alt="Inspecting a button: its text and background colors, size and padding, and a contrast check against AA and AAA."
+  />
+  <Figure
+    src={assets}
+    alt="The Assets panel in a grid view, exporting every image on the page as a zip of SVG, JPG, PNG and WebP files."
+  />
+</ImageGrid>
 
 ## Making it pay for itself
 
@@ -97,10 +134,10 @@ Not everyone liked it. Some reviews from that time are angry, which we expected 
 
 It’s side-project income, not a startup. But it covers our Vercel and Firebase costs and lets us put money back into making the tool stable, fixing bugs and keeping it maintained, which we couldn’t really do while it was free.
 
-<Figure alt="CSS Peeper pricing with the Free, Professional and Ultra plans." />
-
 ## Key Takeaways
 
-CSS Peeper is the product where I’ve done every part myself, from the idea and the first sketches to the brand, the pricing and answering users. Half a million people use something I designed because I needed it.
+CSS Peeper is the product where I’ve done every part myself, from the idea and the first sketches to the brand, the pricing and answering users. Half a million people open something every week that I designed because I needed it myself.
 
 The relaunch taught me what clients go through when they ask users to pay for the first time: you redesign, you decide what goes behind the paywall, and then you read the reviews. Doing it on evenings and weekends made every decision count.
+
+It also changed how I think about growth. Launch week brought us 16,000 users, which felt huge at the time. Looking back, what kept CSS Peeper going for years was being useful on an ordinary Tuesday, quick to open and out of the way the rest of the time. I’d much rather design something people keep.
