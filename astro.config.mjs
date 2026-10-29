@@ -2,9 +2,12 @@
 import { defineConfig, envField } from "astro/config";
 import mdx from "@astrojs/mdx";
 import sitemap from "@astrojs/sitemap";
+import protectedWork, { protectedSlugs } from "./tooling/protected-work.mjs";
 
 // Pages that must never be indexed or listed in the sitemap.
-const PRIVATE_PATHS = ["/styleguide", "/404"];
+const PRIVATE_PATHS = ["/styleguide", "/404", "/playground"];
+// Password-protected case studies: only their locked state is public, and it stays unindexed.
+const PROTECTED_PATHS = protectedSlugs().map((slug) => `/work/${slug}`);
 
 export default defineConfig({
   // www is the host Google already indexes (Webflow redirected the apex to it).
@@ -18,8 +21,15 @@ export default defineConfig({
   integrations: [
     mdx(),
     sitemap({
-      filter: (page) => !PRIVATE_PATHS.some((path) => new URL(page).pathname.startsWith(path)),
+      filter: (page) => {
+        const { pathname } = new URL(page);
+        return (
+          !PRIVATE_PATHS.some((path) => pathname.startsWith(path)) &&
+          !PROTECTED_PATHS.some((path) => pathname === path || pathname.startsWith(`${path}/`))
+        );
+      },
     }),
+    protectedWork(),
   ],
   env: {
     schema: {
@@ -30,12 +40,6 @@ export default defineConfig({
         context: "server",
         access: "public",
         optional: true,
-      }),
-      // Set to "true" only where previews sit behind Cloudflare Access.
-      SHOW_PROTECTED_DRAFTS: envField.boolean({
-        context: "server",
-        access: "public",
-        default: false,
       }),
     },
   },

@@ -1,15 +1,13 @@
 ---
 /**
- * Home hero: a two-tone headline at the bottom of the first screen, the liquid portrait filling
+ * Home hero: a two-tone headline at the bottom of the first screen, the portrait reveal filling
  * the right half to the viewport edges (the floating nav runs over it).
  * Tablet: 44/56 split. Mobile: copy under the nav, then a tall full-bleed portrait.
- * The motion layer reveals the headline line by line and eases the hero back as the story
- * section scrolls over it (data-hero).
+ * The motion layer reveals the headline line by line.
  */
-import LiquidReveal from "@/components/blocks/LiquidReveal.astro";
-import portraitPhoto from "@/assets/portrait/portrait-photo.avif";
-import portraitClay from "@/assets/portrait/portrait-clay.avif";
-import portraitClayDark from "@/assets/portrait/portrait-clay-dark.avif";
+import PortraitReveal from "@/components/blocks/PortraitReveal.astro";
+import HeroBackdrop from "@/components/blocks/HeroBackdrop.astro";
+import { PORTRAIT_LAYERS, portraitPhoto } from "@/lib/portrait";
 
 interface Props {
   /** Small mono line above the headline. */
@@ -31,7 +29,8 @@ const SIZES =
   "(min-width: 62em) max(50vw, 134vh, 54rem), (min-width: 48em) max(56vw, 134vh, 54rem), max(100vw, 83vh, 37rem)";
 ---
 
-<section class="home-hero" aria-labelledby="home-hero-title" data-hero>
+<section class="home-hero hero-backdrop-host" aria-labelledby="home-hero-title">
+  <HeroBackdrop flush />
   <div class="home-hero__copy">
     {label && <p class="text-caption home-hero__label">{label}</p>}
     <h1 id="home-hero-title" data-reveal="lines">
@@ -47,11 +46,10 @@ const SIZES =
     </div>
   </div>
   <div class="home-hero__media">
-    <LiquidReveal
-      photo={portraitPhoto}
-      clay={portraitClay}
-      clayDark={portraitClayDark}
-      alt="Portrait of Dawid Młynarz as a white clay sculpture"
+    <PortraitReveal
+      top={portraitPhoto}
+      layers={PORTRAIT_LAYERS}
+      alt="Portrait of Dawid Młynarz"
       fit="fill"
       sizes={SIZES}
     />
@@ -62,7 +60,6 @@ const SIZES =
   @layer components {
     .home-hero {
       display: grid;
-      background: var(--bg-hero);
     }
 
     .home-hero__copy {
@@ -91,7 +88,7 @@ const SIZES =
       display: flex;
       flex-wrap: wrap;
       align-items: center;
-      gap: var(--space-3) var(--space-6);
+      gap: var(--space-3);
     }
 
     /* Mobile: a tall, full-bleed portrait under the copy. */

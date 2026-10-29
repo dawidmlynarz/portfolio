@@ -1,4 +1,4 @@
-import { CF_PAGES_BRANCH, CF_WEB_ANALYTICS_TOKEN, SHOW_PROTECTED_DRAFTS } from "astro:env/server";
+import { CF_PAGES_BRANCH, CF_WEB_ANALYTICS_TOKEN } from "astro:env/server";
 
 export const SITE = {
   name: "Dawid Młynarz",
@@ -36,7 +36,7 @@ export const SOCIAL_LINKS = [
   { href: "https://dribbble.com/dawidmlynarz/", label: "Dribbble" },
 ] as const;
 
-/** Primary navigation. Contact is not in it: the hero, the footer and the mobile menu carry the email. */
+/** Primary navigation. Contact is not in it: the hero, the footer and the open menu carry the email. */
 export const NAV_LINKS = [
   { href: "/work", label: "Work" },
   { href: "/services", label: "Services" },
@@ -48,11 +48,8 @@ export const PRODUCTION_BRANCH = "main";
 
 export const isProduction = CF_PAGES_BRANCH === PRODUCTION_BRANCH;
 
-/** Previews are behind Cloudflare Access, so formerly password-protected drafts may be built. */
 /** Cloudflare Web Analytics runs on production only, and only when a token is set. */
 export const webAnalyticsToken = isProduction ? CF_WEB_ANALYTICS_TOKEN : undefined;
 
 /** Search results cut titles at about 60 characters and descriptions at about 160. */
 export const SEO_LIMITS = { title: 60, description: 160 } as const;
-
-export const showProtectedDrafts = !isProduction && SHOW_PROTECTED_DRAFTS;

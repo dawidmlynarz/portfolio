@@ -2,6 +2,7 @@
 import BaseLayout from "@/layouts/BaseLayout.astro";
 import Nav from "@/components/blocks/Nav.astro";
 import Footer from "@/components/blocks/Footer.astro";
+import Button from "@/components/ui/Button.astro";
 import type { ComponentProps } from "astro/types";
 
 type Props = ComponentProps<typeof BaseLayout> & {
@@ -14,7 +15,7 @@ const { navOverlap = false, ...base } = Astro.props;
 
 <BaseLayout {...base}>
   <div class:list={["site", { "site--nav-overlap": navOverlap }]} id="top">
-    <a class="skip-link" href="#main">
+    <a class="skip-link" href="#main" data-no-tear>
       Skip to content
     </a>
     <Nav />
@@ -22,12 +23,7 @@ const { navOverlap = false, ...base } = Astro.props;
       <slot />
     </main>
     <Footer />
-    <a class="to-top" href="#top">
-      <svg class="to-top__icon" viewBox="0 0 24 24" aria-hidden="true">
-        <path d="M12 19V5M5 12l7-7 7 7" />
-      </svg>
-      <span class="visually-hidden">Back to top</span>
-    </a>
+    <Button class="to-top" href="#top" variant="secondary" icon="arrow-up" label="Back to top" />
   </div>
 </BaseLayout>
 
@@ -60,36 +56,14 @@ const { navOverlap = false, ...base } = Astro.props;
       translate: 0;
     }
 
+    /* Back to top floats over the page on the nav's glass; Button draws it and its hover. */
     .to-top {
-      --underline-size: 0%;
-
       position: fixed;
       inset-block-end: var(--space-8);
       inset-inline-end: var(--space-8);
       z-index: var(--z-nav);
-      display: grid;
-      place-items: center;
-      padding: var(--space-3);
-      border: var(--border-width) solid var(--color-border-subtle);
-      border-radius: var(--radius-pill);
-      color: var(--color-text);
       background-color: var(--color-overlay);
       backdrop-filter: blur(var(--blur-nav));
-      transition: background-color var(--duration-fast) var(--ease-standard);
-    }
-
-    .to-top:hover {
-      background-color: var(--color-bg-subtle);
-    }
-
-    .to-top__icon {
-      inline-size: 1.25em;
-      block-size: 1.25em;
-      fill: none;
-      stroke: currentcolor;
-      stroke-width: 1.75;
-      stroke-linecap: round;
-      stroke-linejoin: round;
     }
 
     /* Hidden at the top of the page, fades in after the first screen of scrolling. */
@@ -127,7 +101,7 @@ const { navOverlap = false, ...base } = Astro.props;
 
     /* Keep content clear of the floating nav pill unless the page opts in to run under it. */
     main {
-      padding-block-start: calc(var(--space-4) + var(--space-12) + var(--space-8));
+      padding-block-start: var(--nav-clearance);
     }
 
     .site--nav-overlap main {

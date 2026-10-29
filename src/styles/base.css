@@ -64,25 +64,117 @@
   }
 
   /*
-   * Default link: a hairline underline drawn as a background, so it can animate.
-   * Hover: the line thickens with an ease-out. Components tune it with --underline-size
-   * (0% hides it at rest, e.g. the nav) and --underline-origin (where it grows from).
+   * Default link: a hairline underline drawn as a background, so it can animate. It stays a
+   * hairline on hover; the hover is the row tear below. Components tune it with --underline-size
+   * (0% hides it at rest, e.g. card titles), --underline-origin (where it grows from) and
+   * --underline-offset (how far up from the bottom of the text box; quiet links sit nearer the
+   * baseline).
    * Reduced motion: reset.css removes the transition; the line still changes state.
    */
   a {
     --underline-size: 100%;
     --underline-origin: left;
     --underline-thickness: var(--border-width);
+    --underline-offset: 0;
 
     color: inherit;
     text-decoration: none;
-    background: linear-gradient(currentcolor, currentcolor) no-repeat var(--underline-origin)
-      bottom / var(--underline-size) var(--underline-thickness);
+    background: linear-gradient(currentcolor, currentcolor) no-repeat var(--underline-origin) 0
+      bottom var(--underline-offset) / var(--underline-size) var(--underline-thickness);
     transition: background-size var(--duration-link) var(--ease-out-expo);
   }
 
-  a:hover {
-    --underline-thickness: calc(var(--border-width) * 3);
+  /*
+   * Link hover, "row tear" (from the glitch reveal): for a few frames the label splits into three
+   * rows that jolt sideways, then it snaps back clean. motion.ts wraps the label in .link-tear and,
+   * for one run ([data-tearing]), lays two copies over each rendered line (top and bottom rows,
+   * middle row), so wrapped links tear line by line. The real text is only hidden while the copies
+   * stand in; the copies are aria-hidden and removed afterwards. Not run with reduced motion.
+   */
+  .link-tear {
+    position: relative;
+  }
+
+  .link-tear__row {
+    position: absolute;
+    inset: 0;
+    white-space: nowrap;
+    pointer-events: none;
+    opacity: 0;
+    -webkit-text-fill-color: currentcolor;
+  }
+
+  .link-tear__row--outer {
+    clip-path: polygon(0 0, 100% 0, 100% 34%, 0 34%, 0 67%, 100% 67%, 100% 100%, 0 100%);
+  }
+
+  .link-tear__row--middle {
+    clip-path: inset(34% 0 33% 0);
+  }
+
+  [data-tearing] > .link-tear {
+    animation: link-tear-hide var(--duration-tear) steps(1, end);
+  }
+
+  [data-tearing] .link-tear__row--outer {
+    animation: link-tear-outer var(--duration-tear) steps(1, end);
+  }
+
+  [data-tearing] .link-tear__row--middle {
+    animation: link-tear-middle var(--duration-tear) steps(1, end);
+  }
+
+  @keyframes link-tear-hide {
+    0%,
+    100% {
+      -webkit-text-fill-color: transparent;
+    }
+  }
+
+  @keyframes link-tear-outer {
+    0% {
+      opacity: 1;
+      translate: -0.14em 0;
+    }
+
+    25% {
+      opacity: 1;
+      translate: 0.2em 0;
+    }
+
+    50% {
+      opacity: 1;
+      translate: -0.05em 0;
+    }
+
+    75%,
+    100% {
+      opacity: 1;
+      translate: 0.08em 0;
+    }
+  }
+
+  @keyframes link-tear-middle {
+    0% {
+      opacity: 1;
+      translate: 0.22em 0;
+    }
+
+    25% {
+      opacity: 1;
+      translate: -0.1em 0;
+    }
+
+    50% {
+      opacity: 1;
+      translate: 0.14em 0;
+    }
+
+    75%,
+    100% {
+      opacity: 1;
+      translate: -0.04em 0;
+    }
   }
 
   :focus-visible {
@@ -140,9 +232,38 @@
     animation-name: page-in-back;
   }
 
+  /*
+   * The hero grain (HeroBackdrop) is left out of the moving page images and holds still at the
+   * top: no move, no fade, the new page's grain from the first frame. It sits above the page images
+   * while they settle, which doesn't show: it is a few percent of ink with no fill.
+   */
+  ::view-transition-group(hero-backdrop),
+  ::view-transition-new(hero-backdrop) {
+    animation: none;
+  }
+
+  ::view-transition-old(hero-backdrop) {
+    animation: none;
+    opacity: 0;
+  }
+
   ::view-transition-group(nav) {
     animation-duration: var(--duration-page);
     animation-timing-function: var(--ease-in-out-quart);
+  }
+
+  /*
+   * Leaving through a link in the open menu (Nav): the new page starts with the menu open and
+   * collapses it live, so the nav shows only the new page's live image and follows its size.
+   */
+  :root[data-nav-collapse]::view-transition-group(nav),
+  :root[data-nav-collapse]::view-transition-new(nav) {
+    animation: none;
+  }
+
+  :root[data-nav-collapse]::view-transition-old(nav) {
+    animation: none;
+    opacity: 0;
   }
 
   @keyframes page-out {
@@ -178,7 +299,7 @@
   }
 
   /*
-   * "Ink spread" (src/scripts/spread.ts), for the theme switch and the mobile menu: the new state
+   * "Ink spread" (src/scripts/spread.ts), for the theme switch: the new state
    * grows as a circle from the control ("in"), or the old state shrinks back into it ("out").
    * Named elements are flattened into the page for it so everything changes together.
    */

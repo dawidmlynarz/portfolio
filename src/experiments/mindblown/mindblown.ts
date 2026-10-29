@@ -1083,6 +1083,7 @@ export function init(root: HTMLElement): () => void {
   /* ---------- thought-bubble tails ---------- */
   /* two dots per card on the line from the card's edge to the hole; they follow drags, floats and resizes */
   const tails = () => {
+    if (offscreen) return;
     if (state === "closed") {
       for (const c of cards) c._tails[0]!.style.opacity = c._tails[1]!.style.opacity = "0";
       return;
@@ -1133,8 +1134,25 @@ export function init(root: HTMLElement): () => void {
     on,
   );
 
+  /* ---------- off screen: hold the idle loops (bobbing, floats, brows, CSS boil and belt) ---------- */
+  let offscreen = false;
+  let held: gsap.core.Animation[] = [];
+  const io = new IntersectionObserver(([entry]) => {
+    offscreen = !entry!.isIntersecting;
+    root.toggleAttribute("data-mindblown-offscreen", offscreen);
+    if (offscreen) {
+      held = (ctx.getTweens() as gsap.core.Animation[]).filter((t) => !t.paused() && t.isActive());
+      for (const t of held) t.pause();
+    } else {
+      for (const t of held) t.resume();
+      held = [];
+    }
+  });
+  io.observe(root);
+
   return function destroy() {
     abort.abort();
+    io.disconnect();
     gsap.ticker.remove(tails);
     cancelAnimationFrame(raf);
     cancelAnimationFrame(lookRaf);

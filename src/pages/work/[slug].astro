@@ -2,6 +2,7 @@
 import { getEntry, render } from "astro:content";
 import CaseStudyLayout from "@/layouts/CaseStudyLayout.astro";
 import Figure from "@/components/ui/Figure.astro";
+import Video from "@/components/ui/Video.astro";
 import ImageGrid from "@/components/content/ImageGrid.astro";
 import Metrics from "@/components/content/Metrics.astro";
 import Callout from "@/components/content/Callout.astro";
@@ -12,27 +13,32 @@ export async function getStaticPaths() {
   const visible = await getPagedWork();
   return visible.map((entry, index) => ({
     params: { slug: entry.id },
-    props: { entry, fallbackNext: visible[(index + 1) % visible.length] },
+    // The case studies after this one, in order (wrapping round), for "Next up".
+    props: { entry, following: [...visible.slice(index + 1), ...visible.slice(0, index)] },
   }));
 }
 
+/** Case studies in "Next up". */
+const NEXT_UP = 3;
+
 interface Props {
   entry: Work;
-  fallbackNext?: Work;
+  following: Work[];
 }
 
-const { entry, fallbackNext } = Astro.props;
-const { Content } = await render(entry);
+const { entry, following } = Astro.props;
+const { Content, headings } = await render(entry);
 
-// Prefer the curated "next" link; fall back to the next published case study.
+// The curated "next" leads when it has a page; the rest follow in order.
 const curated = entry.data.next ? await getEntry(entry.data.next) : undefined;
-const nextCandidate = curated && hasPage(curated) ? curated : fallbackNext;
-const next = nextCandidate && nextCandidate.id !== entry.id ? nextCandidate : undefined;
+const nextUp = [...(curated && hasPage(curated) ? [curated] : []), ...following]
+  .filter((work, i, list) => work.id !== entry.id && list.findIndex((w) => w.id === work.id) === i)
+  .slice(0, NEXT_UP);
 
 // MDX files use these without importing them.
-const components = { Figure, ImageGrid, Metrics, Callout, Quote };
+const components = { Figure, Video, ImageGrid, Metrics, Callout, Quote };
 ---
 
-<CaseStudyLayout entry={entry} next={next}>
+<CaseStudyLayout entry={entry} nextUp={nextUp} headings={headings}>
   <Content components={components} />
 </CaseStudyLayout>

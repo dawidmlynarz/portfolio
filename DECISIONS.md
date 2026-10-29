@@ -2,6 +2,159 @@
 
 Non-obvious choices, newest first. One entry per decision: what, why, and what it rules out.
 
+## 2026-10-28 · Zazmic Anvil UI case study goes live
+
+`draft: false` on Dawid's go-ahead. The image slots are still `Figure` placeholders, so production shows the text, the stand-in cover and the stand-in Showroom clip without them until the real images arrive. The invented Anthony Marin quote is taken out before going live, because a made-up quote under a real name shouldn't be public. An MDX comment marks where the real one goes.
+
+## 2026-10-28 · Video: looping clips that play in view
+
+- **New `Video` (ui), available in MDX without an import** like `Figure`. Muted, looping, inline, `preload="none"` with a poster (first frame, served as WebP up to 2560px) that also sets the size, so nothing downloads until the clip is needed and there's no layout shift. Two sources: AV1 MP4 first (smallest and sharpest), H.264 MP4 as the fallback every browser plays. No `src` gives a "Video to come" placeholder on previews, like `Figure`.
+- **Plays only while half of it is on screen** (IntersectionObserver in the component script, not `motion.ts`: it isn't an animation and needs no GSAP). Off screen it pauses.
+- **A pause/play button sits in the corner** (WCAG 2.2.2 needs a way to stop moving content). A pause by hand sticks when the clip scrolls back in. If the browser refuses autoplay (data saver, low power mode), the native controls come back.
+- **Without JS, or with reduced motion**, the native controls stay and nothing autoplays.
+- **Clips are 2x, for Retina.** A wide video shows up to 1280 CSS px (80rem), so it needs 2560 real pixels: record at 2x and export 2560×1440 for 16:9; any other width is also 2x its displayed width. Never upscale a 1x recording; it stays soft. UI loops compress so well that 2x costs little (the stand-in is 360 KB AV1, 480 KB H.264 for 12 s).
+- **Encoding for new clips**: 30fps, no audio. `ffmpeg -c:v libsvtav1 -crf 30 -preset 5` for AV1 and `-c:v libx264 -preset slow -crf 20 -tune animation` for H.264, both with `-movflags +faststart -an`. Files sit next to the MDX (Cloudflare Pages caps a file at 25 MB).
+- **The Zazmic Showroom clip is a stand-in** recorded from the public Storybook (2560×1440, 12 s, frame-stepped with a fake clock so it is a smooth 30fps) until Dawid sends the real recordings. The styleguide uses a 5 s cut of it in `src/assets/placeholders/`.
+
+## 2026-10-28 · Zazmic Anvil UI case study
+
+- **New draft case study, `zazmic-anvil-ui`**, first in `order` (0.5) as the most recent and most AI-focused work. It stays `draft: true` until Dawid has reviewed it and sent the images; every image is a `Figure` placeholder for now.
+- **The cover is a stand-in**: a screenshot of the live Showroom booking flow from the public Storybook, until Dawid sends the final one.
+- **The time savings are estimates Dawid asked for**, not measurements (about six weeks down to a week and a half of interface work, about 350 hours per project), labelled "(estimate)" in the highlights. Every other number comes from the Anvil repository.
+- **The Anthony Marin quote is a placeholder** written for the draft, at Dawid's request, until Dawid sends the real one.
+- **Small grammar slips on purpose.** At Dawid's request the body carries about 25 minor non-native slips (missing articles, prepositions, tense), roughly 2% of its words, so it reads like Dawid's own writing. Title, description, lead, headings, highlights, alt text and the quote stay clean. An MDX comment warns against proofreading them away.
+- **`Figure` grid track is `minmax(0, 1fr)`** so a long placeholder label can't push the figure 1px past a 375px viewport.
+
+## 2026-10-28 · Client logos between the hero and About, no caption
+
+- **The marquee moves up**, out of the About statement, to sit right under the hero, and the "Trusted by teams at" caption is gone (Dawid's call: the logos speak for themselves). The list keeps its accessible name ("Companies I have worked with").
+- It has `--space-section-md` above it; About keeps its own `--space-section-lg` above and `--space-section-md` below, so it still stands apart from the logos and the work. `StoryIntro` loses the slot it gained for the marquee.
+
+## 2026-10-28 · Client logos move into the About statement on Home
+
+- **The marquee now sits inside the About statement**, under the text, instead of in its own section above the footer. `StoryIntro` gained a default slot that renders after the statement at full width (the statement keeps the container width), so the marquee still runs edge to edge. "Trusted by teams at" stays as its caption.
+- **More room around About.** It now has `--space-section-lg` above (was `--space-section-sm`) and `--space-section-md` below (was none), with `--space-section-md` between the statement and the logos. The work section's own `--space-section-lg` stacks on top of the bottom space, so About reads as its own band between the hero and the work.
+
+## 2026-10-28 · Case study pages: cover, client logo, Next up, contents mini map
+
+- **The cover runs edge to edge** at every size, with no radius. Phones get a 3:2 crop. From 48em the frame is 2:1 and holds the cover at 16:9, centred; with the motion layer the image drifts from its top edge to its bottom edge while the frame scrolls past (`[data-parallax]`, GSAP ScrollTrigger in `motion.ts`, so it stays in step with Lenis). The drift is exactly the overhang, so no edge ever shows; without motion it stays centred. `sizes="100vw"`, up to the 3200px rendition.
+- **The facts are My role, Industry, Business and Date**, in two columns at the text width (a narrow Container). Date is a new optional `date` string, written as Dawid gives it ("2021", "2016–2025"), falling back to `year`; it only shows when set, so a case study without one has three facts. Company is gone (the logo carries it), and so is the project link ("See it live"): the `link` field is removed from the schema and from every case study.
+- **The client logo is back above the title**, in place of the "Case study · Company" line. New optional `client` field in the schema (a key of `CLIENTS`), and a new `ClientLogo` (ui) that inlines one logo in the text colour; `ClientLogos` now renders through it. Its accessible name is "Case study for <company>". Every case study now has one (NerdWallet and CSS Peeper added from Dawid's files; CSS Peeper's gradient mark runs from the text colour to 60% of it, so it works in both themes). The text line is the fallback for a case study without one. Logo lists (`ClientLogos`, the Home marquee) use `WORKED_WITH`, which is every client but CSS Peeper, Dawid's own product; NerdWallet joins the marquee.
+- **"Next up" replaces "Next case study".** Dawid picked the ruled index from a six-option navigation playground (Split, Pull through, Index, Filmstrip, Remote, Stories; removed once chosen). `NextUp` lists up to three case studies: the curated `next` first when it has a page, then the ones after this case study in `order`, wrapping round. Rows dim the others on hover; with a fine pointer and the motion layer, the hovered row's cover floats beside the pointer (`coverFollow` in `motion.ts`). Without hover, each row carries a small cover thumbnail instead. `NextProject` is gone.
+- **Contents mini map** (`CaseStudyToc`), fixed at the right edge from 62em while the case-study body is on screen: one short line per h2. Compact at rest, its right edge in line with Back to top (`--space-8`). Lines are `--space-4` (the current one `--space-6`). Hovering it opens the rows up a little, and only the hovered or focused row shows its title, one at a time: its line shrinks to half and the title sits to the left of where the full line was, so the pointer never covers it, arriving with the "signal settle" from the link playground: letters come in as noise and lock in from the left over 420 ms (the row tear was tried first and didn't read on such small text), with no panel behind (Dawid's feedback on a first version that opened every title on a glass panel). Each row is an anchor (Lenis smooths the jump). Each line fills as its section is read and the current one is longer and in the text colour (`aria-current="location"`). A small component script measures the headings on scroll; without it the map stays hidden. h3s are left out to keep the map short. Also on `/styleguide`, over its own sections.
+- **No glitch on case-study card hovers.** On Dawid's call the torn-rows flash is gone from `WorkCard`; the cover keeps its slow zoom. `--duration-glitch` is removed (remove it from Figma too).
+- **Dates from Dawid**, as `date`: Newsweek 2025–2026, NerdWallet 2022–2023, Pantheon 2021–2022, BeatStars 2020–2021 (both), Google 2021–2022, XWP 2021–2024, CSS Peeper 2025.
+- **Card eyebrows read "Role · Company"** (Work and Home), as on Webflow, from the `role` and `company` fields ("Draft" still added on previews). The year is no longer on the card.
+- **The name in the nav no longer tears** on hover; the M mark still does (`data-tear-self` on the home link: motion.ts only flags `[data-tearing]` and Nav's CSS tears the mark).
+
+## 2026-10-28 · Password-protected case studies, locked on the server
+
+`protected: true` now locks a case study on every build, production included. NerdWallet is the first one (Dawid's pick). This replaces "protected drafts get no page on previews" and removes `SHOW_PROTECTED_DRAFTS`.
+
+- **The content never ships as a static file.** Astro builds the full page and a locked page (`/work/<slug>/locked`). After the build, `tooling/protected-work.mjs` moves the full page's HTML into a generated module (`.generated/protected-pages.js`, git-ignored) and puts the locked page at `/work/<slug>`. Cloudflare Pages bundles that module into the Pages Function `functions/work/_middleware.ts`, which is the only place the content exists. A client-side lock (blur, JS check, encrypted HTML) was ruled out: the text would still be in the download.
+- **The gate.** The form posts the password to `/work/<slug>`. The function compares it in constant time with `CASE_STUDY_PASSWORD` (a Pages secret, set per environment), then sets an HttpOnly, Secure, SameSite=Lax cookie for 30 days and redirects back. The cookie is the expiry signed (HMAC-SHA256) with the password, so there is no second secret, and changing the password locks everyone out. One password opens every protected case study. Unlocked responses are `private, no-store` and `noindex`. Without the secret nothing unlocks.
+- **Wrong password:** the function serves the locked page with a 401 and the form switched to its error state, so it works without JS. The field takes a heavier red ring, a faint red tint and a red warning sign, the message shows under it in red, left-aligned with the field, and the field skips sideways once. Typing again clears it.
+- **Locked state:** `LockPanel` centred on the first screen over the hero grain (`HeroBackdrop`), as on other heroes: padlock, "This case study is password protected", password field with a plain Unlock button, and a full-width line inviting people to email for access. A blurred stand-in of the page behind it was tried first; Dawid preferred the plain grain. Cards of protected work show a small padlock after the company.
+- **Not covered:** images used only inside a protected case study are still files in `/_astro/` under hashed names. Nothing public links to them, but they are not behind the password. Brute force is not rate limited by the function; a Cloudflare rate-limiting rule on `POST /work/*` covers that if needed.
+- **New tokens:** `--shadow-panel`, and the site's only colour, for errors: `--red-600` / `--red-400` primitives, `--color-danger` (5.9:1 on white, 7.1:1 on the dark background, AA) and `--color-danger-bg` (add to Figma).
+
+## 2026-10-28 · Scroll budget: idle loops yield to scrolling
+
+Profiled scrolling on every page (Chromium, 1440 desktop and 375 mobile with 4× CPU throttling). Only two pages spend frames on things the visitor isn't looking at, so those are the fixes; the motion itself is unchanged.
+
+- **Home portrait.** The glitch drew every frame while the hero was on screen, including while the page scrolled past it. At rest it now draws at about 30 fps (the bands roll slowly and jitter at 14 fps, so it looks the same) and holds still while the page is scrolling, picking up 160 ms after the last scroll event. Pointing and touch still run every frame.
+- **About hero (Mindblown).** Its idle loops (bobbing, floating cards, brows, the card tails' per-frame layout reads, the CSS boil, blink and belt) never stopped. They now pause while the hero is off screen and resume where they were. Tweens the script had paused itself stay paused.
+- **Lenis `lerp` 0.1 → 0.16.** The default trails the wheel by a long glide; 0.16 keeps the smoothing but settles in about half the time, which reads as snappier. Touch scrolling was and stays native.
+- **Fade reveals 1.2 s / 48 px → 0.8 s / 24 px.** On a quick scroll, cards were still drifting in after the reader had arrived. Heading line reveals are unchanged.
+
+## 2026-10-28 · Portrait reveal: glitch only
+
+With glitch picked, the liquid and pixels styles are gone, and the component is renamed for what it is: `LiquidReveal` → `PortraitReveal` (`<portrait-reveal>`, `portrait-reveal.ts`, `.portrait-reveal` classes). It has no `reveal` prop or `data-style` any more, and the liquid's tuning props (size, soft, pull, wobble, fade, orbit) went with it. `portrait-reveal.ts` now only hosts the glitch: canvas, layer textures, loading, theme, pointer and the frame loop. The liquid's trail mask and composite shaders, its motion model and `reveal-pixels.ts` are deleted, so the hero script is about 12 KB instead of 26 KB. The glitch engine is unchanged; its row texture moved from unit 6 to the now free unit 5. Without WebGL, or if the glitch shader fails, the static photo stays (there is no liquid to fall back to). The "Liquid (current)" tile left the reveal playground.
+
+## 2026-10-28 · About hand-off: Flow
+
+Dawid asked for alternatives to the inverse panel that grew over the held hero, so the About statement reads as a continuation of the hero rather than a separate block, with mobile first. Six were built on a preview with a switcher (Flow, Ink, Split, Sheet, Bridge, Avatar); Dawid shortlisted Flow and Split and picked **Flow**.
+
+- **Same surface as the hero, nothing pinned.** The statement sits on the page background right after the hero; its words light up in reading order as it scrolls through the screen (scrubbed, `motion.ts`). The hero no longer holds or eases back, so `data-hero` and the 260svh pinned track are gone, and on mobile the hero keeps the whole first screen.
+- **No separator.** A hairline that drew in above the label was tried and dropped (Dawid: redundant).
+- **No bottom padding** on the section: the Selected work section brings its own space above it.
+- **Complete without the motion layer**: all words fully lit.
+
+## 2026-10-28 · Case study cards
+
+**Home keeps the staggered grid; Work becomes a ruled index.** Picked from seven layouts in a card playground (PR #20, removed once chosen). `WorkCard` has two layouts, `tile` (Home) and `row` (Work: cover left, text right, hairlines between rows); `WorkGrid` picks one with `layout="grid" | "index"`.
+
+**Titles go from h4 to h3 size** on both, so the quiet links read as the main thing on the card.
+
+**Cards show the first three tags as pills, then "+N more".** The case study page still lists every tag. Which three show is the order in the frontmatter, so put the main ones first.
+
+**Cover hover is a short glitch, CSS only.** Two hidden copies of the cover flash in as torn rows that jump sideways for about 400 ms (`--duration-glitch`, new token: mirror it in Figma), then the cover snaps back clean and zooms as before. Same language as the hero's glitch reveal and the link row tear, without WebGL or JS on a list of eight images. The copies use the cover's own srcset, so the browser reuses the file. Reduced motion: no glitch, no zoom.
+
+**Work rows carry the card summary (`description`), cut to four lines** with a CSS line clamp (the browser adds the ellipsis). The page intro (`lead`) often describes the company rather than Dawid's part, so cards use the summary. Home tiles have no summary.
+
+## 2026-10-28 · Buttons: one family, the row tear
+
+Dawid picked **row tear** from the button playground (`/playground/buttons`), with icon buttons excluded. `Button` is now the only button on the site.
+
+- **Text buttons tear into their hover colours.** The button stacks its face and two aria-hidden copies in the hover colours in one grid cell. On hover or keyboard focus the copies arrive as three rows that jolt sideways for `--duration-tear`, then lock together. Primary (inverse fill) lands as an outline. Secondary keeps its outline style (Dawid: it shouldn't turn into a primary): a subtle `--color-border-muted` ring at rest, a black ring after the tear, never filled. The face hides while hovered so the transparent copies don't double the label. CSS only, unlike the links: a button never wraps, so fixed rows work, and no JS has to run first. After the tear the middle copy hides and the top copy shows whole, so no seams are left at the row edges.
+- **Icon buttons don't tear.** They share the colours and the swap (a secondary icon button only darkens its ring), and the icon moves where it points: it leaves through that edge and comes back in from the opposite one (Back to top goes up, an arrow goes right). Icon-only is `icon` + `label` (the accessible name).
+- **New `size="lg"` and `icon` prop.** The footer email is `lg` with an arrow, the menu contact is `sm`, Back to top is a secondary icon button that keeps its glass background and scroll-driven fade from `SiteLayout`. The hand-made pills and their CSS are gone.
+- **Home hero calls to action are buttons**: About me (primary) and Contact (secondary), both with the arrow. Primary follows the original order.
+- **The theme switch and the menu button stay nav chrome** with their grey hover; they are not `Button`.
+
+## 2026-10-28 · Links: one hover, the row tear
+
+Dawid picked **row tear** from the link playground, with one change: the underline never thickens. Every text, action and quiet link now keeps its hairline and, on hover or keyboard focus, tears into three rows that jolt sideways for 260 ms (`--duration-tear`, needs mirroring in Figma), then snaps back.
+
+- **Built in `motion.ts`, styled in `base.css`.** On first hover the label (everything before the link's icon) is wrapped in `.link-tear`; each run lays two aria-hidden copies over every rendered line, so wrapped links (card titles, long links in case studies) tear line by line, and removes them afterwards. The real text stays in the DOM, so the accessible name never changes. Pseudo-elements were ruled out because card titles, Next project and the menu's current-page dot already use `::after`.
+- **Opt-out with `[data-no-tear]`:** buttons, the footer email and menu contact pills, Back to top and the skip link keep their own hovers.
+- **Quiet links don't tear** (Dawid: too much motion). Menu links, work card titles and Next project only draw the hairline in on hover. The menu's current-page dot is gone.
+- **Quiet links sit their line nearer the baseline** (`--underline-offset`, token `--underline-offset-quiet` 0.14em, needs mirroring in Figma). Text links keep the line at the bottom of the text box.
+- **The logo tears instead of rolling.** The M tears with two copies of its SVG (styled in `Nav`, same keyframes); the name is named as the label with `[data-tear-label]`. No underline on the logo.
+- **Reduced motion and no JS:** no tear, just the hairline. That is the complete state; the tear is decoration.
+- Not done yet from the audit: turning the pills into Buttons and the other role clean-ups (footer social quiet, consistent card-title motion, ↗ on external links in MDX).
+
+## 2026-10-28 · Link playground (audit + six hovers)
+
+- **Audit first.** The site has twelve hover behaviours across links, pills and buttons (listed on the page). Proposal: three link roles (text, action with arrow, quiet) sharing one hover; pills become Buttons; the logo roll stays as the one exception.
+- **Six options from the glitch reveal**, each shown in every role on light, dark and the inverse surface: tracking band, row tear, colour split, signal settle, rows open, torn underline. Black and white only, so the glitch's colour split becomes grey ghosts (no new tokens).
+- **`backdrop-filter: invert(1)` for the band and the rows.** Inverting what is underneath gives the inverse surface in both themes and on the inverse panel without knowing the colours.
+- **Rows use whole-pixel scan lines (3px)** with complementary masks, so odd and even rows meet without hairline seams when closed.
+- **Isolated** under `src/experiments/links/`, page `/playground/links` (private: noindex, out of the sitemap via the existing `/playground` prefix). Not production code; the picked option gets rebuilt in `base.css` / `Link`.
+
+## 2026-10-28 · One navigation for every screen size
+
+- **One bar that grows into the menu, at every size.** Studied on thedesignsociety.fr and anthracitestudio.be: a compact floating bar (mark, name, theme, menu) that is the same on desktop and mobile and opens in place instead of covering the screen. Round 2, after Dawid's feedback: the drop-down content (big links, email) with the two-step motion. First the bar makes room (on desktop it widens from 22 to 28rem and its surface grows a few pixels past the content; on phones the surface grows out to the screen edges and the top), then it drops open. Social links left out. Tried on a preview switcher against the old nav; Dawid approved it, so it replaced the desktop pill and the full-screen mobile sheet in `Nav` (the switcher is gone).
+- **Frosted glass, not a solid panel.** Like Anthracite, the open menu is translucent (`--color-glass`) with a backdrop blur (`--blur-menu`), so the page shows through softly. The page behind gets only a light dim (`--color-scrim`).
+- **The nav is named for page transitions only while one runs.** An element with a `view-transition-name` is a backdrop root, so nothing inside it could blur the page behind (this also affected the current pill's blur). BaseLayout sets `html[data-vt]` on `pageswap`/`pagereveal` when a transition runs, and only then does the nav take `view-transition-name: nav`, so it still stays put between pages.
+- **A link in the open menu collapses it during the page transition.** The page changes right away, with no wait. The new page starts with the menu open, exactly as the last one left it (a sessionStorage note read by an inline script before first paint), and closes it there with the usual motion while the page rises in. During that transition the nav shows only the new page's live image (`html[data-nav-collapse]` in base.css), so the collapse plays through the transition. A link to the current page only closes the menu; new-tab clicks and mailto links are untouched. With reduced motion there is no transition and the new page starts closed.
+- **Menu and theme icons share one grid.** The menu icon is an SVG on the same 24-unit grid, box (1.125em) and stroke (1.75) as the theme icon, so the two read as a pair; its lines meet and turn into the cross.
+- **New tokens** `--color-scrim`, `--color-glass`, `--blur-menu`, `--duration-menu`. Need mirroring in Figma.
+
+## 2026-10-27 · Portrait reveal styles: liquid, pixels, glitch
+
+From the playground Dawid kept the liquid, pixel dither and glitch slices, with two notes: the resting animation suits only the liquid, pixels switched layers too abruptly, and glitch needs calm moments to show what it revealed. A first pass made pixels and glitch hover-only readings of the liquid; Dawid then asked for resting animations and hover behaviour that follow each style's own physics. All three live in `LiquidReveal` (`reveal` prop / `data-style`) on one canvas with the same layers; pixels and glitch are separate engines (`src/scripts/reveal-pixels.ts`, `reveal-glitch.ts`, shared GL helpers in `reveal-gl.ts`), not the liquid's trail.
+
+- **Liquid** is unchanged: orbiting head, roaming drops, pours. The composite favours the head's current layer where layers overlap, so a new pick shows straight away.
+- **Pixels are a living colony.** 8 px cells run a Game-of-Life style automaton on the GPU, 10 ticks a second (survive with 2–3 neighbours, born with 3, die of age after ~4.5 s, only on the figure). A newborn takes the layer most of its neighbours carry, so where colonies of different layers meet they compete cell by cell and the layers weave instead of switching. At rest a small seed lands on the face every 0.3–0.7 s and grows or dies by the rules; about 1.5 single cells a second twinkle to a layer for one tick. The pointer feeds the colonies: births need only 2 neighbours near it, cells age slower and new cells appear outright, so holding still blooms a dense patch and moving leaves a dotted trail that breaks up by the same rules. Age keeps the density bounded without any global clean-up.
+- **Glitch is a weak video signal** in 6 px rows. At rest two tracking bands roll slowly down (VHS mistracking), each showing another layer (by weight) with a light shimmer and picking a new one each time it wraps. A wrapped band comes back in after a random gap, so the distance between the two keeps changing; every 6–8 s a hiccup tears a few rows elsewhere for 150 ms. (Tried and dropped: a single band (Dawid asked for a second one) and two fast streaks at random heights, which read as too random.) The pointer is interference: the band snaps to its height, widens and opens a span around it with ragged row ends; speed drives the tearing and colour split, holding still settles into a clean view, and rows left behind hold for 0.1–0.7 s before closing one by one. Layer switches (arrival, tap, every 3.2–5 s) are bursts with a 1.4 s cooldown, so the reveal is readable most of the time. Row state lives in JS and is uploaded as a tiny texture each frame.
+- **Bands pair up, layers weigh the same.** Dawid found the iridescent layer too rare (weight 0.3) and asked that two bands running together are always one marble and one iridescent. Both layers now weigh 1. A wrapping band still picks at random; when that matches the other band, the other one switches with a small tear, so neither band is stuck on one layer. On hover, taps and timed switches always change the layer (the arrival pick stays random).
+- **Reduced motion:** no automaton, band roll, hiccups or tearing. Pixels show a still patch of cells under the pointer, glitch a clean band at the pointer.
+- **Cost:** pixels redraw only on ticks (one small grid pass plus the composite); glitch uploads a rows × 2 texture (~1 KB) per frame. Both keep running at rest, like the liquid, and pause off screen the same way.
+- **Preview switcher.** `RevealPicker` (bottom right, previews only, never on production) sets the style on the home hero; remembered in localStorage, `?reveal=pixels|glitch|liquid` also works. Without a stored choice it shows the hero's own style. Dawid chose **glitch**: the home hero sets `reveal="glitch"`, so production shows glitch; liquid and pixels stay available as options. _Update 2026-10-28:_ the switcher was still on previews after the pick; removed from the home hero, so previews show glitch too.
+
+## 2026-10-27 · Multi-layer liquid portrait and a reveal playground
+
+Dawid wanted the hero liquid to reveal 3–4 layers at random, with the real photo as the default, the iridescent sculpture as the rarest, and themed versions of the clay and marble. After trying it, Dawid dropped the clay, so two layers remain.
+
+- **Photo on top, layers below.** `LiquidReveal` now takes `top` and `layers` (1–4, each `{ light, dark?, weight? }`) instead of photo/clay/clayDark. Home: marble (white in light, black and gold in dark) and iridescent (both themes, weight 0.3, later 1, see the glitch notes). The set lives in `src/lib/portrait.ts`. The clay pair (black in light, white in dark) was tried and removed.
+- **One mask channel per layer.** The trail mask was RGBA but used only red; each layer now has its own channel, so four layers cost the same mask pass as one. Every blob carries a layer; the composite merges each layer's blobs with its trail, masks the photo with the union and fills each pixel with the deepest (freshest) layer. Hard cap of 4 layers (channels), which also fits WebGL 1's 8 guaranteed texture units (we use 6).
+- **Picking.** Weighted random over all loaded layers, the current one included (a pick of the current layer changes nothing). Excluding it would make a rare layer come up every other time with only two layers. The head picks a new layer when the pointer arrives, on a tap and every 1.6–3.2 s on hover (3.5–6 s at rest). The old head is left behind as trail in its own layer and the new one wells up inside it over 0.5 s, so a switch reads as a pour, not a cut. Each roaming drop picks a new layer whenever it has dried up. Reduced motion: a new layer per hover only.
+- **Memory.** Images used to be painted into 2D canvases that stayed allocated next to their textures. Now each is painted into one scratch canvas, uploaded, and the scratch is released. At 1440 (2x) the photo plus three layers use about 52 MB including the drawing buffer, the same as the old two-layer version; at 375 about 16 MB. Layer textures are capped at 64 MB in total, so huge retina screens draw them slightly below device resolution.
+- **Lazy layers.** The canvas starts with the photo and the first layer (marble); the rest follow one at a time at low fetch priority, each uploaded in its own idle slot, and join the picks once ready. Skipped on Save-Data or 2G/3G. A theme switch reloads only the variants already in use.
+- **AVIF.** Dawid's 2400 × 1792 PNGs (12 MB) are committed as AVIF masters at quality 80 with 4:4:4 chroma (770 KB without the clay). Astro serves the photo at quality 65 (161 KB at 2400, 89 KB at 1600) and the layers at 55, which is visually identical at 100% on the hair and marble veins and about half the bytes. Extras at 1440 (marble and iridescent): about 100 KB (light) to 125 KB (dark); at 375 about 45 KB. No WebP fallback: browsers without AVIF keep the static photo (`<img>` is AVIF-only, as before).
+- **Reveal playground** (`/playground`, noindex, not linked): the same layers through seven alternatives next to the real liquid: glass lens, ink burn, pixel dither, halftone, Voronoi shards, glitch slices and a full-portrait shockwave. Isolated under `src/experiments/reveals/`; one small WebGL canvas per tile (capped at 1.5x), paused off screen. It is for choosing a direction, not production code.
+
 ## 2026-10-27 · SEO groundwork before the domain moves
 
 - **www.mlynarz.com is the canonical host.** Webflow redirected the apex to `www`, so that is the host Google has indexed. `site` in `astro.config.mjs` now uses it; at cutover the apex 301s to `www` in Cloudflare (a redirect rule, not `_redirects`, which can't match on hostname).
@@ -11,6 +164,7 @@ Non-obvious choices, newest first. One entry per decision: what, why, and what i
 - **Analytics: Cloudflare Web Analytics**, cookieless, so no consent banner. The beacon is added only on production builds with `CF_WEB_ANALYTICS_TOKEN` set. Turning on Pages' automatic injection instead would also count preview traffic.
 - **Search phrases: AI-ready design systems, agentic UX and freelance product designer** (Dawid's pick; product strategy stays a service but isn't a search target). Every indexable page now has a title of 60 characters or fewer and a description of 160 or fewer, written around those phrases. Case studies keep their long headline and summary on the page and use `seoTitle`/`seoDescription` for search. Revisit with real Search Console queries 4 to 6 weeks after launch.
 - **The share image (`public/og.png`) still shows the old tagline.** Dawid is redrawing it. Its alt text (`SITE.ogImage.alt`) describes the current image, so update both together.
+- **Refreshed on 2026-10-29** onto the current site: `SHOW_PROTECTED_DRAFTS` stays removed (server-side protection replaced it), and Zazmic Anvil UI gets its own `seoTitle`/`seoDescription`. Locked case studies stay `noindex` and out of the sitemap.
 
 ## 2026-10-27 · Soft rise page transition
 
@@ -309,3 +463,17 @@ What changed versus the embed, and why:
 **Case study voice.** Dawid wants every case study to read as written by a person and pass AI checkers. No tool can guarantee that, so the rules in `CLAUDE.md` ("Writing case studies") list the tells to avoid. XWP and Pantheon were rewritten to them, same facts.
 
 **CSS Peeper as a 0 to 1 product design story.** Dawid chose a product design case study with a light monetisation chapter over a founder story, and no revenue figures. The page keeps his original Background wording, adds the 2016 launch (16,000 users in two weeks, the redesign at 30,000, from the Medium posts), the quiet years, the 2025 relaunch with Kamil (evenings and weekends, six months, from the csspeeper.com blog) and the freemium switch. Numbers shown: 500K+ users, 4.6 from 350+ reviews (landing page), ~35% trial to paid (Dawid). Churn (~10%) and MRR stay off the page. The quote is Zander Whitehurst’s public LinkedIn post, used on the CSS Peeper site. Card model is now "Freemium Chrome Extension". Image slots are placeholders until Dawid sends screenshots.
+
+## 2026-10-28 · Hero grain
+
+**Grain fade replaces the dot grid.** Dawid compared six options on a preview (grain, grain fade, grainy glow, scanlines, pixel grain, bands) and picked grain fade: fine noise at the top of the page that fades out over the first screen. It is on every hero: Home, About, Services, Work, case studies and the 404. `--bg-hero`, `--pattern-dots` and `--color-pattern` are gone.
+
+**One component, grain only.** `HeroBackdrop` is an absolutely positioned layer at the top of each hero, with the SVG noise (`--texture-grain`, a few hundred bytes, drawn once and tiled) and a mask that fades it out. It has no fill, so the page background shows through. On pages under the floating nav it reaches up under it (`--nav-clearance`, new token, also used by SiteLayout); Home and About use `flush`. Images can't use `light-dark()`, so the dark theme swaps the texture token.
+
+**The grain holds still during page transitions.** While a transition runs it gets `view-transition-name: hero-backdrop`, which takes it out of the page images that fade, blur and rise, and base.css turns its animation off, so the new page's grain is in place from the first frame. It sits above the page images for that second, which doesn't show since it is only grain. A transition name must be unique, so there is one HeroBackdrop per page (the styleguide shows it inside the Hero).
+
+**`will-change: transform` on the grain.** Without its own layer, the Home hero's scroll scale made the browser re-raster the masked grain every frame (about a third more raster work on Home). With it, the grain costs next to nothing: no change to FCP, LCP or main-thread paint, raster within a few percent.
+
+## 2026-10-28 · Work link on case studies
+
+**Section links say `aria-current="true"`, not `"page"`.** The nav marked Work as the current page on every `/work/<slug>`, and the menu's click handler turns a link to the current page into "just close the menu", so Work did nothing on case studies. Now the nav uses `"page"` only on the page itself and `"true"` inside its section: Work still looks current on a case study, and the handler only swallows clicks on `"page"`.

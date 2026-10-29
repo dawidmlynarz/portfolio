@@ -15,6 +15,8 @@ interface Props {
   jsonLd?: Record<string, unknown>;
   /** Force noindex for this page (styleguide, 404, drafts). Previews are always noindex. */
   noindex?: boolean;
+  /** Canonical path when the page is served at another URL than it is built at (locked pages). */
+  canonicalPath?: string;
 }
 
 const {
@@ -24,11 +26,13 @@ const {
   type = "website",
   image = SITE.ogImage,
   jsonLd,
+  canonicalPath: canonicalOverride,
 } = Astro.props;
 
 const pageTitle = title ? `${title} — ${SITE.name}` : SITE.title;
 // build.format "file" exposes "/about.html" and "/index.html"; canonical URLs are extensionless.
-const canonicalPath = Astro.url.pathname.replace(/(index)?\.html$/, "").replace(/(.)\/$/, "$1");
+const canonicalPath =
+  canonicalOverride ?? Astro.url.pathname.replace(/(index)?\.html$/, "").replace(/(.)\/$/, "$1");
 const canonical = new URL(canonicalPath || "/", Astro.site);
 const robots = noindex || !isProduction ? "noindex, nofollow" : undefined;
 const imageUrl = new URL(image.src, Astro.site);
@@ -70,20 +74,35 @@ const imageType = /\.jpe?g$/i.test(image.src) ? "image/jpeg" : "image/png";
         }
       }
     </style>
-    <!-- Before first paint: apply a saved dark theme (light is the default) and flag the motion layer. -->
+    <!-- Before first paint: apply a saved dark theme (light is the default), flag JS and the motion layer. -->
     <script is:inline>
       try {
         if (localStorage.getItem("theme") === "dark")
           document.documentElement.dataset.theme = "dark";
       } catch {}
+      document.documentElement.classList.add("js");
       // Opt in to the motion layer (src/scripts/motion.ts) unless the visitor prefers less motion.
       if (!matchMedia("(prefers-reduced-motion: reduce)").matches) {
         document.documentElement.classList.add("motion");
       }
     </script>
-    <!-- Going back through history gets the "back" transition type, so the page motion reverses. -->
+    <!--
+      Going back through history gets the "back" transition type, so the page motion reverses.
+      html[data-vt] marks a running page transition: the nav takes its view-transition-name only
+      then (see Nav), because a named element blocks backdrop blur inside it the rest of the time.
+    -->
     <script is:inline>
+      addEventListener("pageswap", (event) => {
+        if (event.viewTransition) document.documentElement.dataset.vt = "";
+      });
+      addEventListener("pageshow", (event) => {
+        if (event.persisted) delete document.documentElement.dataset.vt;
+      });
       addEventListener("pagereveal", (event) => {
+        if (!event.viewTransition) return;
+        const root = document.documentElement;
+        root.dataset.vt = "";
+        event.viewTransition.finished.finally(() => delete root.dataset.vt);
         const activation = window.navigation?.activation;
         if (
           event.viewTransition &&

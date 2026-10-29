@@ -4,6 +4,7 @@ import Section from "@/components/layout/Section.astro";
 import Container from "@/components/layout/Container.astro";
 import SectionIntro from "@/components/blocks/SectionIntro.astro";
 import Services from "@/components/blocks/Services.astro";
+import HeroBackdrop from "@/components/blocks/HeroBackdrop.astro";
 import Button from "@/components/ui/Button.astro";
 import { SITE } from "@/lib/site";
 import { SERVICES } from "@/lib/services";
@@ -29,7 +30,8 @@ const engagements = [
   title="AI-ready design systems and agentic UX"
   description="Hire me as a freelance product designer for AI-ready design systems, agentic UX or product strategy: what each service includes and how we can work together."
 >
-  <Section space="md" aria-labelledby="services-title">
+  <Section space="md" class="hero-backdrop-host" aria-labelledby="services-title">
+    <HeroBackdrop />
     <Container class="services-page">
       <div class="services-page__head">
         <p class="text-caption services-page__muted">Services</p>

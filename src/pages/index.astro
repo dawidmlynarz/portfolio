@@ -9,8 +9,7 @@ import Services from "@/components/blocks/Services.astro";
 import ClientLogos from "@/components/blocks/ClientLogos.astro";
 import WorkGrid from "@/components/blocks/WorkGrid.astro";
 import Button from "@/components/ui/Button.astro";
-import Link from "@/components/ui/Link.astro";
-import { SITE } from "@/lib/site";
+import { SITE, SOCIAL_LINKS } from "@/lib/site";
 import { SERVICES } from "@/lib/services";
 import { getListedWork } from "@/lib/work";
 import { person, website } from "@/lib/schema";
@@ -33,14 +32,18 @@ const jsonLd = {
     lead="I bring 15 years of product experience to the AI era, helping you architect AI-ready design systems, safe agentic workflows, and impactful product strategies."
   >
     <Fragment slot="actions">
-      <Link href="/about" icon="arrow">
+      <Button href="/about" icon="arrow">
         About me
-      </Link>
-      <Link href={`mailto:${SITE.email}`} icon="arrow">
+      </Button>
+      <Button href={`mailto:${SITE.email}`} variant="secondary" icon="arrow">
         Contact
-      </Link>
+      </Button>
     </Fragment>
   </HomeHero>
+
+  <div class="home__clients">
+    <ClientLogos marquee />
+  </div>
 
   <StoryIntro
     label="About"
@@ -75,15 +78,6 @@ const jsonLd = {
       <Services services={SERVICES} />
     </Container>
   </Section>
-
-  <Section space="md" aria-labelledby="clients-title" class="home__clients">
-    <Container>
-      <p class="text-caption home__muted" id="clients-title">
-        Trusted by teams at
-      </p>
-    </Container>
-    <ClientLogos marquee />
-  </Section>
 </SiteLayout>
 
 <style>
@@ -93,13 +87,9 @@ const jsonLd = {
       gap: var(--space-section-sm);
     }
 
-    .home__muted {
-      color: var(--color-text-muted);
-    }
-
+    /* About brings its own space below the logos. */
     .home__clients {
-      display: grid;
-      gap: var(--space-section-sm);
+      padding-block-start: var(--space-section-md);
     }
 
     .home__cta {

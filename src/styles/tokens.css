@@ -19,9 +19,10 @@
  *   Put this inline in <head> BEFORE the CSS to avoid a flash:
  *     <script>try{if(localStorage.getItem('theme')==='dark')document.documentElement.dataset.theme='dark'}catch(e){}</script>
  *   Toggle: set dataset.theme + localStorage.theme (see ThemeToggle.astro).
- *   Gotchas: use currentColor in the logo SVG; the LiquidReveal canvas reads the current --color-bg
+ *   Gotchas: use currentColor in the logo SVG; the PortraitReveal canvas reads the current --color-bg
  *   (to pick the light or dark clay) and re-inits on theme change.
- *   v2 is black and white: no accent colour; emphasis comes from the inverse surface.
+ *   v2 is black and white: no accent colour; emphasis comes from the inverse surface. The only
+ *   colour is --color-danger, for errors.
  */
 @layer reset, tokens, base, components, utilities;
 
@@ -41,6 +42,9 @@
     --neutral-850: #242424;
     --neutral-900: #141414;
     --neutral-950: #0a0a0a;
+    /* The one colour: errors only (AA: 5.9:1 on white, 7.1:1 on neutral-950) */
+    --red-400: #ff6b6b;
+    --red-600: #c8102e;
 
     /* ---------- 2. Semantic color: light-dark(light, dark) ---------- */
     --color-bg: light-dark(var(--neutral-0), var(--neutral-950));
@@ -55,13 +59,21 @@
     --color-border-muted: light-dark(var(--neutral-300), var(--neutral-800));
     --color-border-subtle: light-dark(var(--neutral-200), var(--neutral-850));
     --color-focus: var(--color-text);
-    /* Inverse surface (story panel, mobile menu, primary buttons) and the text on it */
+    /* Errors (wrong password): text, ring and icon, plus a faint tint behind the field */
+    --color-danger: light-dark(var(--red-600), var(--red-400));
+    --color-danger-bg: color-mix(in srgb, var(--color-danger) 6%, var(--color-bg));
+    /* Inverse surface (story panel, primary buttons, menu contact) and the text on it */
     --color-inverse-bg: light-dark(var(--neutral-950), var(--neutral-50));
     --color-on-inverse: light-dark(var(--neutral-0), var(--neutral-950));
     --color-on-inverse-muted: light-dark(var(--neutral-500), var(--neutral-700));
     --color-overlay: color-mix(in srgb, var(--color-bg) 88%, transparent); /* sticky nav */
+    --color-scrim: color-mix(in srgb, var(--color-bg) 35%, transparent); /* behind the open menu */
+    --color-glass: color-mix(in srgb, var(--color-bg) 64%, transparent); /* the open menu */
     /* Hero backdrop: a faint dot grid on the page background (Home, About, every Hero) */
     --color-pattern: color-mix(in srgb, var(--color-border-subtle) 70%, var(--color-bg));
+    /* PREVIEW: hero backdrop options (see "Hero backdrop options" below) */
+    --color-hero-tint: color-mix(in srgb, var(--color-text) 5%, var(--color-bg));
+    --color-scanline: color-mix(in srgb, var(--color-text) 5%, var(--color-bg));
 
     /* ---------- Typography ----------
        Roles, not sizes. Fluid between 375px and 1440px viewports.
@@ -139,20 +151,22 @@
     --radius-xl: 48px; /* verify it is used, else drop from both CSS and Figma */
     --radius-pill: 9999px;
     --border-width: 1px;
-    --pattern-dots: radial-gradient(var(--color-pattern) 1.3px, transparent 1.6px) 0 0 / 18px 18px;
-    --bg-hero: var(--pattern-dots), var(--color-bg);
     --shadow-bar: 0 12px 30px -20px light-dark(rgb(0 0 0 / 30%), rgb(0 0 0 / 70%));
     --blur-nav: 12px; /* backdrop blur behind the sticky nav */
+    --blur-menu: 16px; /* backdrop blur behind the open menu */
     --blur-page: 12px; /* page transition: pages blur out and in */
     --ease-standard: cubic-bezier(0.4, 0, 0.2, 1);
     --duration-fast: 150ms;
     --duration-link: 350ms; /* animated link underline */
+    --duration-tear: 260ms; /* link hover: the row tear */
+    --underline-offset-quiet: 0.14em; /* quiet links: the hover line sits nearer the baseline */
     --duration-fade: 1200ms; /* portrait fade-in on page load */
-    --duration-reveal: 600ms; /* media fading in once ready (liquid reveal canvas) */
+    --duration-reveal: 600ms; /* media fading in once ready (portrait reveal canvas) */
     --duration-zoom: 800ms; /* case-study cover zoom on hover */
     --duration-marquee: 40s; /* one full loop of the client logo marquee */
     --ease-out-expo: cubic-bezier(0.19, 1, 0.22, 1);
-    --duration-page: 700ms; /* ink spread (theme switch, mobile menu); the nav during page changes */
+    --duration-page: 700ms; /* ink spread (theme switch); the nav during page changes */
+    --duration-menu: 900ms; /* nav menu: makes room, then drops open */
     --duration-page-out: 320ms; /* page transition: the old page fades out */
     --duration-page-in: 1000ms; /* page transition: the new page settles in */
     --delay-page-in: 200ms; /* page transition: the new page starts as the old one is nearly gone */
@@ -160,6 +174,16 @@
     --shift-page-in: 6vh; /* page transition: how far below the new page starts */
     --ease-in-out-quart: cubic-bezier(0.77, 0, 0.175, 1);
     --z-nav: 100;
+    --shadow-panel: 0 24px 64px -24px light-dark(rgb(0 0 0 / 28%), rgb(0 0 0 / 80%));
+    /* Space above content on pages that don't run under the floating nav (SiteLayout) */
+    --nav-clearance: calc(var(--space-4) + var(--space-12) + var(--space-8));
+
+    /* Hero grain (HeroBackdrop): SVG noise, a few hundred bytes, drawn once and tiled. Ink at a
+       few percent alpha: dark on light, light on dark. Images can't use light-dark(), so the dark
+       theme swaps it below. */
+    --texture-grain-light: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='200'%3E%3Cfilter id='g'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.8' numOctaves='3' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 .3 0 0 0 -.11'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23g)'/%3E%3C/svg%3E");
+    --texture-grain-dark: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='200'%3E%3Cfilter id='g'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.8' numOctaves='3' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 1 0 0 0 0 1 0 0 0 0 1 .22 0 0 0 -.08'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23g)'/%3E%3C/svg%3E");
+    --texture-grain: var(--texture-grain-light);
   }
 
   /* The visitor's choice from the theme toggle */
@@ -169,5 +193,6 @@
 
   :root[data-theme="dark"] {
     color-scheme: dark;
+    --texture-grain: var(--texture-grain-dark);
   }
 }

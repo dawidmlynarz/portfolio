@@ -1,10 +1,11 @@
 ---
 /**
- * The hand-off after the home hero: an inverse (black) panel grows to fill the screen and a large
- * about-me statement lights up word by word as you scroll (the motion layer, data-story).
- * Without the motion layer (no JS, reduced motion) it is a plain inverse section with the full
- * statement visible.
+ * The hand-off after the home hero: a large about-me statement on the same surface as the hero,
+ * lighting up word by word as it scrolls through the screen (the motion layer, data-story).
+ * Nothing is pinned. Without the motion layer (no JS, reduced motion) the full statement is
+ * visible.
  */
+
 interface Props {
   label: string;
   text: string;
@@ -18,56 +19,39 @@ const words = text.split(/\s+/);
 ---
 
 <section class="story" aria-labelledby="story-label" data-story>
-  <div class="story__sticky">
-    <div class="story__panel" data-story-panel>
-      <div class="story__inner">
-        <h2 class="text-caption story__label" id="story-label">
-          {label}
-        </h2>
-        <p class="story__text">
-          {words.map((word) => (
-            <span class="story__word" data-story-word>
-              {word}{" "}
-            </span>
-          ))}
-        </p>
-        {href && (
-          <a class="story__link" href={href}>
-            {hrefLabel}
-          </a>
-        )}
-      </div>
-    </div>
-  </div>
+  <h2 class="text-caption story__label" id="story-label">
+    {label}
+  </h2>
+  <p class="story__text" data-story-text>
+    {words.map((word) => (
+      <span class="story__word" data-story-word>
+        {word}{" "}
+      </span>
+    ))}
+  </p>
+  {href && (
+    <a class="story__link" href={href}>
+      {hrefLabel}
+    </a>
+  )}
 </section>
 
 <style>
   @layer components {
+    /* Generous room above and below, so the statement stands apart from the hero and the work.
+       The next section adds its own space above it on top of this. */
     .story {
-      position: relative;
-      z-index: 1; /* slides over the held hero */
-    }
-
-    .story__panel {
-      display: grid;
-      align-items: center;
-      min-block-size: 100svh;
-      color: var(--color-on-inverse);
-      background-color: var(--color-inverse-bg);
-    }
-
-    .story__inner {
       display: grid;
       justify-items: start;
       gap: var(--space-8);
       inline-size: 100%;
       max-inline-size: calc(var(--container-max) + 2 * var(--gutter));
       margin-inline: auto;
-      padding: var(--space-section-lg) var(--gutter);
+      padding: var(--space-section-lg) var(--gutter) var(--space-section-md);
     }
 
     .story__label {
-      color: var(--color-on-inverse-muted);
+      color: var(--color-text-muted);
     }
 
     .story__text {
@@ -75,26 +59,6 @@ const words = text.split(/\s+/);
       font: var(--weight-medium) var(--text-h2) / var(--leading-h2) var(--font-heading);
       letter-spacing: var(--tracking-h2);
       text-wrap: pretty;
-    }
-
-    .story__link {
-      color: var(--color-on-inverse);
-    }
-
-    /* Motion on: a tall track with the panel pinned while the words light up. */
-    :global(.motion) .story {
-      block-size: 260svh;
-    }
-
-    :global(.motion) .story__sticky {
-      position: sticky;
-      inset-block-start: 0;
-      block-size: 100svh;
-      overflow: hidden;
-    }
-
-    :global(.motion) .story__panel {
-      block-size: 100%;
     }
   }
 </style>

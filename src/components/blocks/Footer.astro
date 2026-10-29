@@ -5,6 +5,7 @@
  * social links and the copyright line.
  */
 import Container from "@/components/layout/Container.astro";
+import Button from "@/components/ui/Button.astro";
 import Link from "@/components/ui/Link.astro";
 import { SITE, SOCIAL_LINKS } from "@/lib/site";
 
@@ -30,12 +31,9 @@ const endings = ["AI product", "design system", "product team"];
         </span>
       </span>
     </h2>
-    <a class="footer__email" href={`mailto:${SITE.email}`}>
+    <Button href={`mailto:${SITE.email}`} size="lg" icon="arrow">
       {SITE.email}
-      <svg class="footer__arrow" viewBox="0 0 24 24" aria-hidden="true">
-        <path d="M5 12h14M13 6l6 6-6 6"></path>
-      </svg>
-    </a>
+    </Button>
     <div class="footer__meta text-small">
       <ul class="footer__social" role="list">
         {SOCIAL_LINKS.map(({ href, label }) => (
@@ -119,40 +117,6 @@ const endings = ["AI product", "design system", "product team"];
       100% {
         translate: 0 calc(-3 * var(--ticker-line));
       }
-    }
-
-    .footer__email {
-      --underline-size: 0%;
-
-      display: inline-flex;
-      align-items: center;
-      gap: var(--space-3);
-      padding: var(--space-4) var(--space-6);
-      border-radius: var(--radius-pill);
-      font-size: var(--text-lead);
-      overflow-wrap: anywhere;
-      color: var(--color-on-inverse);
-      background-color: var(--color-inverse-bg);
-    }
-
-    .footer__email:hover {
-      --underline-size: 0%;
-    }
-
-    .footer__arrow {
-      flex-shrink: 0;
-      inline-size: 1.25em;
-      block-size: 1.25em;
-      fill: none;
-      stroke: currentcolor;
-      stroke-width: 1.75;
-      stroke-linecap: round;
-      stroke-linejoin: round;
-      transition: translate var(--duration-link) var(--ease-out-expo);
-    }
-
-    .footer__email:hover .footer__arrow {
-      translate: var(--space-1) 0;
     }
 
     .footer__meta {

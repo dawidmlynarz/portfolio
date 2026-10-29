@@ -1,0 +1,40 @@
+---
+// Reveal playground: the home portrait's layers through alternative reveal techniques.
+// Private: noindex, out of the sitemap, not linked anywhere.
+import SiteLayout from "@/layouts/SiteLayout.astro";
+import Container from "@/components/layout/Container.astro";
+import Section from "@/components/layout/Section.astro";
+import Stack from "@/components/layout/Stack.astro";
+import RevealLab from "@/experiments/reveals/RevealLab.astro";
+---
+
+<SiteLayout
+  title="Reveal playground"
+  description="Alternative reveals for the home portrait."
+  noindex
+>
+  <Section space="lg">
+    <Container>
+      <Stack gap="12">
+        <Stack gap="4">
+          <h1>Reveal playground</h1>
+          <p class="text-lead playground__lead">
+            The same photo and layers through seven reveals. Hover or tap a portrait; at rest each
+            one runs on its own. Every reveal picks marble or, rarely, iridescent, and switches the
+            theme with the toggle.
+          </p>
+        </Stack>
+        <RevealLab />
+      </Stack>
+    </Container>
+  </Section>
+</SiteLayout>
+
+<style>
+  @layer components {
+    .playground__lead {
+      max-inline-size: var(--measure);
+      color: var(--color-text-muted);
+    }
+  }
+</style>

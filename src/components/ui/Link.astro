@@ -38,6 +38,7 @@ const external = /^https?:\/\//.test(href) && !href.startsWith(Astro.site?.origi
     .link--quiet {
       --underline-size: 0%;
       --underline-origin: right;
+      --underline-offset: var(--underline-offset-quiet);
     }
 
     .link--quiet:hover {

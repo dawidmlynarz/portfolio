@@ -1,0 +1,39 @@
+---
+// Button playground: an audit of today's buttons and pills and six directions for one button
+// family. Private: noindex, out of the sitemap, not linked anywhere.
+import SiteLayout from "@/layouts/SiteLayout.astro";
+import Container from "@/components/layout/Container.astro";
+import Section from "@/components/layout/Section.astro";
+import Stack from "@/components/layout/Stack.astro";
+import ButtonLab from "@/experiments/buttons/ButtonLab.astro";
+---
+
+<SiteLayout
+  title="Button playground"
+  description="An audit of the site's buttons and six directions for them."
+  noindex
+>
+  <Section space="lg">
+    <Container>
+      <Stack gap="12">
+        <Stack gap="4">
+          <h1>Button playground</h1>
+          <p class="text-lead playground__lead">
+            One button family with a hover of its own. First what the site has today, then six
+            directions in the same black and white, glitch-led language as the links.
+          </p>
+        </Stack>
+        <ButtonLab />
+      </Stack>
+    </Container>
+  </Section>
+</SiteLayout>
+
+<style>
+  @layer components {
+    .playground__lead {
+      max-inline-size: var(--measure);
+      color: var(--color-text-muted);
+    }
+  }
+</style>

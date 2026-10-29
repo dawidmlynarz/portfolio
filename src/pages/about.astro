@@ -5,6 +5,7 @@ import Section from "@/components/layout/Section.astro";
 import Container from "@/components/layout/Container.astro";
 import Stack from "@/components/layout/Stack.astro";
 import Mindblown from "@/experiments/mindblown/Mindblown.astro";
+import HeroBackdrop from "@/components/blocks/HeroBackdrop.astro";
 import Tag from "@/components/ui/Tag.astro";
 import Link from "@/components/ui/Link.astro";
 import { breadcrumbs, person, websiteId } from "@/lib/schema";
@@ -73,10 +74,13 @@ const interests = [
   jsonLd={jsonLd}
   description="I'm Dawid, a freelance product designer in Poland. For 15 years I've worked on products used by millions, from newsrooms to fintech and creator platforms."
 >
-  <Mindblown>
-    <p class="text-caption muted">Get to know me</p>
-    <h1 id="about-title">Hey! Thanks for stopping by.</h1>
-  </Mindblown>
+  <div class="hero-backdrop-host">
+    <HeroBackdrop flush />
+    <Mindblown>
+      <p class="text-caption muted">Get to know me</p>
+      <h1 id="about-title">Hey! Thanks for stopping by.</h1>
+    </Mindblown>
+  </div>
 
   <Section space="sm" aria-label="Photos">
     <Container>
