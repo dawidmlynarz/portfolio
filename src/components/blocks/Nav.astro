@@ -16,8 +16,8 @@
  * Without JS the menu button is hidden and the links sit in the bar. Reduced motion: no morph.
  */
 import ThemeToggle from "@/components/blocks/ThemeToggle.astro";
-import Button from "@/components/ui/Button.astro";
-import { NAV_LINKS, SITE } from "@/lib/site";
+import Link from "@/components/ui/Link.astro";
+import { MENU_SOCIAL_LINKS, NAV_LINKS, SITE } from "@/lib/site";
 
 const path = Astro.url.pathname.replace(/\.html$/, "");
 const isHome = path === "/" || path === "/index";
@@ -88,11 +88,15 @@ const menu = [{ href: "/", label: "Home" }, ...NAV_LINKS];
             </li>
           ))}
         </ul>
-        <div class="nav__meta nav__reveal" style={`--i: ${menu.length}`}>
-          <Button href={`mailto:${SITE.email}`} size="sm">
-            {SITE.email}
-          </Button>
-        </div>
+        <ul class="nav__meta nav__reveal text-small" role="list" style={`--i: ${menu.length}`}>
+          {MENU_SOCIAL_LINKS.map(({ href, label }) => (
+            <li>
+              <Link href={href} variant="quiet">
+                {label}
+              </Link>
+            </li>
+          ))}
+        </ul>
       </div>
     </div>
   </nav>
@@ -590,7 +594,9 @@ const menu = [{ href: "/", label: "Home" }, ...NAV_LINKS];
 
     .nav__meta {
       display: flex;
-      padding-block-start: var(--space-4);
+      flex-wrap: wrap;
+      gap: var(--space-2) var(--space-6);
+      padding: var(--space-4) 0 0;
       border-block-start: var(--border-width) solid var(--color-border-subtle);
     }
 

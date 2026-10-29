@@ -34,13 +34,19 @@ export const SITE = {
 export const SOCIAL_LINKS = [
   { href: "https://www.linkedin.com/in/dawid-mlynarz/", label: "LinkedIn" },
   { href: "https://dribbble.com/dawidmlynarz/", label: "Dribbble" },
+  { href: "https://www.behance.net/dawidmlynarz", label: "Behance" },
+  { href: "https://www.instagram.com/dawidmlynarz/", label: "Instagram" },
 ] as const;
 
-/** Primary navigation. Contact is not in it: the hero, the footer and the open menu carry the email. */
+/** The social links in the open menu (the footer lists them all). */
+export const MENU_SOCIAL_LINKS = SOCIAL_LINKS.filter(({ label }) => label !== "Behance");
+
+/** Primary navigation. Every call to action leads to /contact, which carries the email. */
 export const NAV_LINKS = [
   { href: "/work", label: "Work" },
   { href: "/services", label: "Services" },
   { href: "/about", label: "About" },
+  { href: "/contact", label: "Contact" },
 ] as const;
 
 /** Cloudflare Pages production branch. Every other branch is a noindex preview. */

@@ -6,7 +6,6 @@ import SectionIntro from "@/components/blocks/SectionIntro.astro";
 import Services from "@/components/blocks/Services.astro";
 import HeroBackdrop from "@/components/blocks/HeroBackdrop.astro";
 import Button from "@/components/ui/Button.astro";
-import { SITE } from "@/lib/site";
 import { SERVICES } from "@/lib/services";
 
 /** Ways of working, for both audiences: teams hiring help and companies hiring a designer. */
@@ -67,7 +66,7 @@ const engagements = [
         ))}
       </ol>
       <div class="services-page__cta">
-        <Button href={`mailto:${SITE.email}`}>Start a conversation</Button>
+        <Button href="/contact">Start a conversation</Button>
       </div>
     </Container>
   </Section>

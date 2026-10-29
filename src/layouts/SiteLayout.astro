@@ -8,9 +8,11 @@ import type { ComponentProps } from "astro/types";
 type Props = ComponentProps<typeof BaseLayout> & {
   /** Let the first section run under the floating nav (full-bleed heroes). */
   navOverlap?: boolean;
+  /** The footer's closing line and button (off on /contact, which is the call to action). */
+  footerCta?: boolean;
 };
 
-const { navOverlap = false, ...base } = Astro.props;
+const { navOverlap = false, footerCta = true, ...base } = Astro.props;
 ---
 
 <BaseLayout {...base}>
@@ -22,7 +24,7 @@ const { navOverlap = false, ...base } = Astro.props;
     <main id="main" tabindex="-1">
       <slot />
     </main>
-    <Footer />
+    <Footer cta={footerCta} />
     <Button class="to-top" href="#top" variant="secondary" icon="arrow-up" label="Back to top" />
   </div>
 </BaseLayout>

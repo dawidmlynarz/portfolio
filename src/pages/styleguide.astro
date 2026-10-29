@@ -21,6 +21,7 @@ import SectionIntro from "@/components/blocks/SectionIntro.astro";
 import Services from "@/components/blocks/Services.astro";
 import StoryIntro from "@/components/blocks/StoryIntro.astro";
 import ClientLogos from "@/components/blocks/ClientLogos.astro";
+import WorkMarquee from "@/components/blocks/WorkMarquee.astro";
 import ClientLogo from "@/components/ui/ClientLogo.astro";
 import NextUp from "@/components/content/NextUp.astro";
 import CaseStudyToc from "@/components/content/CaseStudyToc.astro";
@@ -50,6 +51,7 @@ const STYLEGUIDE_SECTIONS = [
 const nextUpSample = (await getPagedWork()).slice(0, 3);
 
 const TYPE_ROLES = [
+  { role: "display", className: "text-display", sample: "hello@mlynarz.com" },
   { role: "h1", tag: "h1", sample: "Designing calm products" },
   { role: "h2", tag: "h2", sample: "Research that changes the roadmap" },
   { role: "h3", tag: "h3", sample: "From insight to interface" },
@@ -497,6 +499,9 @@ const SECTIONS = [
   </Section>
   <Section aria-label="Client logo marquee" space="sm">
     <ClientLogos marquee />
+  </Section>
+  <Section aria-label="Case-study cover marquee (Contact)" space="sm">
+    <WorkMarquee />
   </Section>
   <StoryIntro
     label="StoryIntro · statement"
