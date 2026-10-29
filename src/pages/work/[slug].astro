@@ -3,6 +3,7 @@ import { getEntry, render } from "astro:content";
 import CaseStudyLayout from "@/layouts/CaseStudyLayout.astro";
 import Figure from "@/components/ui/Figure.astro";
 import Video from "@/components/ui/Video.astro";
+import BeforeAfter from "@/components/ui/BeforeAfter.astro";
 import ImageGrid from "@/components/content/ImageGrid.astro";
 import Metrics from "@/components/content/Metrics.astro";
 import Callout from "@/components/content/Callout.astro";
@@ -36,7 +37,7 @@ const nextUp = [...(curated && hasPage(curated) ? [curated] : []), ...following]
   .slice(0, NEXT_UP);
 
 // MDX files use these without importing them.
-const components = { Figure, Video, ImageGrid, Metrics, Callout, Quote };
+const components = { Figure, Video, BeforeAfter, ImageGrid, Metrics, Callout, Quote };
 ---
 
 <CaseStudyLayout entry={entry} nextUp={nextUp} headings={headings}>
