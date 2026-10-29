@@ -91,9 +91,7 @@ const menu = [{ href: "/", label: "Home" }, ...NAV_LINKS];
         <ul class="nav__meta nav__reveal text-small" role="list" style={`--i: ${menu.length}`}>
           {MENU_SOCIAL_LINKS.map(({ href, label }) => (
             <li>
-              <Link href={href} variant="quiet">
-                {label}
-              </Link>
+              <Link href={href}>{label}</Link>
             </li>
           ))}
         </ul>
@@ -549,7 +547,7 @@ const menu = [{ href: "/", label: "Home" }, ...NAV_LINKS];
       inline-size: 100%;
       min-block-size: 0;
       overflow-y: auto;
-      padding: var(--space-4) var(--space-1) var(--space-1); /* the bar's inset: lines up with its mark and icons */
+      padding: var(--space-4) var(--space-2) var(--space-2);
       contain: inline-size; /* takes the box's width, never widens it */
     }
 
@@ -596,7 +594,8 @@ const menu = [{ href: "/", label: "Home" }, ...NAV_LINKS];
       display: flex;
       flex-wrap: wrap;
       gap: var(--space-2) var(--space-6);
-      padding: var(--space-4) 0 0;
+      padding: var(--space-4) 0 var(--space-2);
+      color: var(--color-text-muted); /* the footer's link style */
       border-block-start: var(--border-width) solid var(--color-border-subtle);
     }
 

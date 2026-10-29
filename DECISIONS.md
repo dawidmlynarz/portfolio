@@ -4,11 +4,10 @@ Non-obvious choices, newest first. One entry per decision: what, why, and what i
 
 ## 2026-10-29 · Contact page; every call to action leads to it
 
-- **New `/contact` page** at Dawid's request: "Got a project in mind? Let's talk.", the email at a new display size (`--text-display`, 56 → 128, with `--leading-display` and `--tracking-display`; add them to the Figma Foundations file too), a "Write to me" mailto button and a "Copy email" button (JS only, hidden without it). It breaks after the @ on narrow screens rather than shrinking the email below h1.
-- **Services from Contact:** "Not sure what you need yet?" lists the three services (name, promise) linking to their anchors on `/services`, plus a line to the ways of working.
-- **`WorkMarquee` (new block):** case-study covers drifting sideways, alternating 4:5 and 4:3 crops, bottom-aligned, after alexandre-araujo.com/contact. Built like the ClientLogos marquee; pauses on hover and focus; reduced motion gives a still row that scrolls sideways.
+- **New `/contact` page** at Dawid's request: "Got a project in mind? Let's talk." and the email as a link at a new display size (`--text-display`, 56 → 128, with `--leading-display` and `--tracking-display`; add them to the Figma Foundations file too), then the case-study carousel. It breaks after the @ on narrow screens rather than shrinking the email below h1. Round 2 (Dawid's mock-up): the services list, the Write/Copy buttons and the carousel caption were removed; the title and lead are narrower.
+- **`WorkMarquee` (new block):** case-study covers drifting sideways, all cropped 4:3 like the work cards, no captions (round 2), after alexandre-araujo.com/contact. Built like the ClientLogos marquee; pauses on hover and focus; reduced motion gives a still row that scrolls sideways.
 - **Every email CTA goes to `/contact`:** the Home hero, the footer ("Get in touch"), Services' "Start a conversation". The footer's closing line and button are hidden on `/contact` itself (`footerCta={false}`). Mailto links stay where the email is information rather than a CTA: the privacy page and the locked case-study panel (which pre-fills a subject).
-- **Social links:** Behance and Instagram added (footer, structured data). The open menu shows LinkedIn, Dribbble and Instagram in place of the email button, and Contact is the last menu link.
+- **Social links:** Behance and Instagram added (footer, structured data). The open menu shows LinkedIn, Dribbble and Instagram in place of the email button, in the footer's link style, and Contact is the last menu link. The open panel's inset went from 4 to 8px. The footer's Privacy link reads "Privacy policy" in the same style as the social links.
 
 ## 2026-10-29 · One share image for every page
 

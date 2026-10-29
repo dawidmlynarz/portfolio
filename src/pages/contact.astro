@@ -4,10 +4,7 @@ import Section from "@/components/layout/Section.astro";
 import Container from "@/components/layout/Container.astro";
 import HeroBackdrop from "@/components/blocks/HeroBackdrop.astro";
 import WorkMarquee from "@/components/blocks/WorkMarquee.astro";
-import Button from "@/components/ui/Button.astro";
-import Link from "@/components/ui/Link.astro";
 import { SITE } from "@/lib/site";
-import { SERVICES } from "@/lib/services";
 
 /** The email split after the @, so it can break there on narrow screens. */
 const [user, domain] = SITE.email.split("@");
@@ -32,81 +29,19 @@ const [user, domain] = SITE.email.split("@");
         </p>
       </div>
 
-      <div class="contact__email" data-reveal="fade">
+      <p class="contact__email" data-reveal="fade">
         <a class="contact__email-link text-display" href={`mailto:${SITE.email}`}>
           {user}@<wbr />
           {domain}
         </a>
-        <div class="contact__email-actions">
-          <Button href={`mailto:${SITE.email}`} icon="arrow">
-            Write to me
-          </Button>
-          <Button variant="secondary" data-copy-email={SITE.email} hidden>
-            Copy email
-          </Button>
-          <span class="visually-hidden" role="status" data-copy-status></span>
-        </div>
-      </div>
-
-      <div class="contact__services" data-reveal="fade">
-        <p class="text-caption contact__muted">Not sure what you need yet?</p>
-        <ul class="contact__service-list" role="list">
-          {SERVICES.map(({ id, title, promise }) => (
-            <li>
-              <a class="contact__service" href={`/services#${id}`} data-no-tear>
-                <span class="contact__service-title">{title}</span>
-                <span class="contact__service-promise">{promise}</span>
-                <svg class="contact__service-icon" viewBox="0 0 24 24" aria-hidden="true">
-                  <path d="M5 12h14M13 6l6 6-6 6" />
-                </svg>
-              </a>
-            </li>
-          ))}
-        </ul>
-        <p class="text-small contact__muted">
-          Or read <Link href="/services">how I work with teams</Link>, from one-off projects to a
-          full-time role.
-        </p>
-      </div>
+      </p>
     </Container>
   </Section>
 
-  <section class="contact__work" aria-labelledby="contact-work-title">
-    <Container>
-      <h2 id="contact-work-title" class="text-caption contact__muted">
-        Some of my work
-      </h2>
-    </Container>
+  <section class="contact__work" aria-label="Some of my work">
     <WorkMarquee />
   </section>
 </SiteLayout>
-
-<script>
-  // Copy the email: shown only with JS and a clipboard. The label changes on every layer of the
-  // button (the face and its tear copies), and the status line tells screen readers.
-  const button = document.querySelector<HTMLButtonElement>("[data-copy-email]");
-  const status = document.querySelector<HTMLElement>("[data-copy-status]");
-  if (button && status && navigator.clipboard) {
-    const labels = button.querySelectorAll<HTMLElement>(":scope > span > span:first-child");
-    const setLabel = (text: string) => labels.forEach((label) => (label.textContent = text));
-    let reset: number | undefined;
-    button.hidden = false;
-    button.addEventListener("click", async () => {
-      try {
-        await navigator.clipboard.writeText(button.dataset.copyEmail!);
-        setLabel("Copied");
-        status.textContent = "Email copied";
-      } catch {
-        setLabel("Couldn’t copy");
-      }
-      clearTimeout(reset);
-      reset = window.setTimeout(() => {
-        setLabel("Copy email");
-        status.textContent = "";
-      }, 2000);
-    });
-  }
-</script>
 
 <style>
   @layer components {
@@ -120,113 +55,25 @@ const [user, domain] = SITE.email.split("@");
       gap: var(--space-6);
     }
 
+    .contact__head h1 {
+      max-inline-size: 10em;
+    }
+
     .contact__muted {
       color: var(--color-text-muted);
     }
 
     .contact__lead {
-      max-inline-size: var(--measure);
-    }
-
-    .contact__email {
-      display: grid;
-      justify-items: start;
-      gap: var(--space-8);
+      max-inline-size: calc(var(--measure) * 0.75);
     }
 
     /* The email as the headline act: display size, a hairline under it and the row tear every
        link has. */
     .contact__email-link {
+      display: inline-block; /* one underline under the whole block, also when it wraps */
       max-inline-size: 100%;
       overflow-wrap: anywhere;
       padding-block-end: var(--space-2);
-    }
-
-    .contact__email-actions {
-      display: flex;
-      flex-wrap: wrap;
-      gap: var(--space-3);
-    }
-
-    .contact__email-actions [hidden] {
-      display: none;
-    }
-
-    /* The services, one row each: name, promise, arrow. The arrow nudges forward on hover. */
-    .contact__services {
-      display: grid;
-      gap: var(--space-4);
-    }
-
-    .contact__service-list {
-      display: grid;
-      padding: 0;
-      border-block-start: var(--border-width) solid var(--color-border-subtle);
-    }
-
-    .contact__service {
-      --underline-size: 0%;
-
-      display: grid;
-      grid-template-columns: minmax(0, 1fr) auto;
-      align-items: center;
-      gap: var(--space-1) var(--space-6);
-      padding-block: var(--space-6);
-      border-block-end: var(--border-width) solid var(--color-border-subtle);
-      color: var(--color-text);
-    }
-
-    .contact__service:hover {
-      --underline-size: 0%;
-    }
-
-    .contact__service-title {
-      font: var(--weight-medium) var(--text-h4) / var(--leading-h4) var(--font-heading);
-      letter-spacing: var(--tracking-h4);
-    }
-
-    .contact__service-promise {
-      grid-row: 2;
-      color: var(--color-text-muted);
-    }
-
-    .contact__service-icon {
-      grid-row: 1 / span 2;
-      grid-column: 2;
-      inline-size: 1.25em;
-      block-size: 1.25em;
-      fill: none;
-      stroke: currentcolor;
-      stroke-width: 1.75;
-      stroke-linecap: round;
-      stroke-linejoin: round;
-      transition: translate var(--duration-link) var(--ease-out-expo);
-    }
-
-    .contact__service:hover .contact__service-icon {
-      translate: var(--space-1) 0;
-    }
-
-    @media (width >= 62em) {
-      .contact__service {
-        grid-template-columns: 16rem minmax(0, 1fr) auto;
-      }
-
-      .contact__service-promise {
-        grid-row: 1;
-        grid-column: 2;
-      }
-
-      .contact__service-icon {
-        grid-row: 1;
-        grid-column: 3;
-      }
-    }
-
-    .contact__work {
-      display: grid;
-      gap: var(--space-6);
-      padding-block: var(--space-section-sm) 0;
     }
   }
 </style>

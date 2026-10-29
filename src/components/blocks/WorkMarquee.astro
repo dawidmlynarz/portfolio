@@ -3,8 +3,7 @@
  * Case-study covers drifting sideways in an endless loop (/contact, after the email): a reminder
  * of the work, one click from each case study. Inspired by alexandre-araujo.com/contact.
  *
- * Covers alternate between a taller and a shorter crop, bottom-aligned, so the row steps up and
- * down. Built like the ClientLogos marquee: the list twice (the copy hidden from assistive tech and
+ * Every cover is cropped to 4:3, as on the work cards, with no caption. Built like the ClientLogos marquee: the list twice (the copy hidden from assistive tech and
  * out of the tab order), slid by one copy in CSS. It pauses on hover and while a cover has focus.
  * Reduced motion: a still row you can scroll sideways.
  */
@@ -52,8 +51,9 @@ const {
                   format="avif"
                 />
               </span>
-              <span class="work-marquee__caption text-caption">{entry.data.company}</span>
-              <span class="visually-hidden">: {entry.data.title}</span>
+              <span class="visually-hidden">
+                {entry.data.company}: {entry.data.title}
+              </span>
             </a>
           </li>
         ))}
@@ -84,7 +84,6 @@ const {
 
     .work-marquee__list {
       display: flex;
-      align-items: end;
       gap: var(--work-marquee-gap);
       padding: 0 var(--work-marquee-gap) 0 0;
     }
@@ -97,29 +96,20 @@ const {
     .work-marquee__link {
       --underline-size: 0%;
 
-      display: grid;
-      gap: var(--space-2);
-      color: var(--color-text-muted);
-      transition: color var(--duration-fast) var(--ease-standard);
+      display: block;
     }
 
     .work-marquee__link:hover {
       --underline-size: 0%;
-
-      color: var(--color-text);
     }
 
-    /* Taller and shorter crops in turn; the row is bottom-aligned, so it steps. */
+    /* 4:3, centred, like the work cards. */
     .work-marquee__frame {
       display: block;
-      aspect-ratio: 4 / 5;
+      aspect-ratio: 4 / 3;
       overflow: clip;
       border-radius: var(--radius-md);
       background-color: var(--color-bg-subtle);
-    }
-
-    .work-marquee__item:nth-child(even) .work-marquee__frame {
-      aspect-ratio: 4 / 3;
     }
 
     /* Hover: the cover zooms in slowly, as on the work cards. */
