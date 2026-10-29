@@ -101,7 +101,7 @@ const layers = iconOnly ? ["face"] : ["face", "outer", "middle"];
       font-weight: var(--weight-medium);
       line-height: 1.2;
       text-align: center;
-      background-image: none; /* no link underline */
+      background: none; /* no link underline, no browser fill on <button> (the face paints it) */
       transition: scale var(--duration-fast) var(--ease-standard);
     }
 

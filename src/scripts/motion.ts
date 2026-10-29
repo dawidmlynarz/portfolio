@@ -8,6 +8,8 @@
  * - [data-story]: the About statement after the home hero lights up word by word as it scrolls.
  * - [data-process]: the /services timeline. Its line draws itself down the page as it scrolls;
  *   each step's node settles into place and its text fades up as the line reaches it.
+ * - "quoteswap" (the /services quotes): the old quote's lines slide up and out through their
+ *   masks, then the new quote's lines rise in, line by line, with its source fading in after.
  * - [data-parallax]: a frame whose image is taller than it (the case-study cover from 48em); the
  *   image drifts from its top edge to its bottom edge while the frame scrolls past.
  * - [data-cover-follow]: in a list of links ("Next up"), the hovered link's cover follows the
@@ -139,6 +141,61 @@ function processLine() {
       });
     }
   }
+}
+
+/**
+ * The /services quotes (Testimonials.astro) ask before changing quote. Lines are split only for
+ * the change and put back afterwards, so the text reflows normally in between.
+ */
+function quoteSwap() {
+  type Detail = {
+    from: HTMLElement;
+    to: HTMLElement;
+    direction: 1 | -1;
+    swap: () => void;
+    waitUntil: (promise: Promise<unknown>) => void;
+  };
+  const parts = (slide: HTMLElement) => ({
+    quote: slide.querySelector<HTMLElement>("[data-testimonials-quote] p"),
+    source: slide.querySelector<HTMLElement>("[data-testimonials-source]"),
+  });
+
+  document.addEventListener("quoteswap", (event) => {
+    const { from, to, direction, swap, waitUntil } = (event as CustomEvent<Detail>).detail;
+    const out = parts(from);
+    const into = parts(to);
+    if (!out.quote || !into.quote) return;
+
+    waitUntil(
+      (async () => {
+        const leaving = SplitText.create(out.quote!, { type: "lines", mask: "lines" });
+        await gsap
+          .timeline()
+          .to(out.source, { autoAlpha: 0, duration: 0.3, ease: "power2.in" }, 0)
+          .to(
+            leaving.lines,
+            { yPercent: -110 * direction, duration: 0.45, ease: "power2.in", stagger: 0.04 },
+            0,
+          );
+        swap();
+        leaving.revert();
+        gsap.set(out.source, { clearProps: "all" });
+
+        const arriving = SplitText.create(into.quote!, { type: "lines", mask: "lines" });
+        await gsap
+          .timeline()
+          .from(arriving.lines, {
+            yPercent: 110 * direction,
+            duration: 1,
+            ease: EASE,
+            stagger: 0.06,
+          })
+          .from(into.source, { autoAlpha: 0, y: 8, duration: 0.6, ease: EASE }, 0.3);
+        arriving.revert();
+        gsap.set(into.source, { clearProps: "all" });
+      })(),
+    );
+  });
 }
 
 /** Case-study cover from 48em: the 16:9 image drifts through its 2:1 frame as it scrolls past. */
@@ -303,6 +360,7 @@ if (root.classList.contains("motion")) {
   revealLines();
   story();
   processLine();
+  quoteSwap();
   parallax();
   coverFollow();
   linkTear();

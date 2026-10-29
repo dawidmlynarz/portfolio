@@ -177,6 +177,7 @@
     --duration-zoom: 800ms; /* case-study cover zoom on hover */
     --duration-marquee: 40s; /* one full loop of the client logo marquee */
     --duration-marquee-work: 60s; /* one full loop of the case-study covers on /contact */
+    --duration-quote: 9s; /* how long each /services quote stays before the next one */
     --ease-out-expo: cubic-bezier(0.19, 1, 0.22, 1);
     --duration-page: 700ms; /* ink spread (theme switch); the nav during page changes */
     --duration-menu: 900ms; /* nav menu: makes room, then drops open */

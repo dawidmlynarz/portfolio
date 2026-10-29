@@ -1,11 +1,18 @@
 ---
 /**
- * Quotes from people Dawid worked with, one at a time in large type. Slides sit in a row that
- * scrolls and snaps sideways (swipe, trackpad or arrow keys on the focused row), with ghost back
- * and next buttons below, aligned left. Without JS it is a swipeable row and the
- * controls stay hidden. Data: src/lib/testimonials.ts.
+ * Quotes from people Dawid worked with, one at a time: the quote in large type, who said it,
+ * then a thin line that fills while the quote is up and moves on to the next when it is full.
+ * Ghost back and next buttons below it loop round in both directions.
+ *
+ * - The line pauses while the pointer or focus is inside, while the block is off screen and
+ *   while the tab is hidden. With reduced motion nothing advances on its own; the arrows still work.
+ * - The change between quotes is the motion layer's (src/scripts/motion.ts): the "quoteswap"
+ *   event lets it wipe the old quote's lines out and the new one's in. Without it the quote just
+ *   changes.
+ * - Without JS every quote is listed, one under the other, and the line and buttons stay hidden.
+ *
+ * Data: src/lib/testimonials.ts.
  */
-import Quote from "@/components/content/Quote.astro";
 import Button from "@/components/ui/Button.astro";
 import type { Testimonial } from "@/lib/testimonials";
 
@@ -18,56 +25,124 @@ const { testimonials, label = "What people say" } = Astro.props;
 ---
 
 <div class="testimonials" role="region" aria-roledescription="carousel" aria-label={label}>
-  <ul class="testimonials__track" role="list" tabindex="0" data-testimonials-track>
+  <div class="testimonials__slides" aria-live="off" data-testimonials-slides>
     {testimonials.map(({ quote, name, role, company }, index) => (
-      <li
+      <figure
         class="testimonials__slide"
         role="group"
         aria-roledescription="slide"
         aria-label={`${index + 1} of ${testimonials.length}`}
+        data-testimonials-slide
       >
-        <Quote size="lg" author={name} role={company ? `${role}, ${company}` : role}>
-          {quote}
-        </Quote>
-      </li>
+        <blockquote class="testimonials__quote" data-testimonials-quote>
+          <p>{quote}</p>
+        </blockquote>
+        <figcaption class="text-small testimonials__source" data-testimonials-source>
+          <span class="testimonials__name">{name}</span>
+          <span class="testimonials__role">{company ? `${role}, ${company}` : role}</span>
+        </figcaption>
+      </figure>
     ))}
-  </ul>
+  </div>
   <div class="testimonials__controls" data-testimonials-controls hidden>
-    <Button variant="ghost" icon="arrow-left" label="Previous quote" data-testimonials-prev />
-    <Button variant="ghost" icon="arrow" label="Next quote" data-testimonials-next />
+    <span class="testimonials__progress" aria-hidden="true" data-testimonials-progress></span>
+    <div class="testimonials__arrows">
+      <Button variant="ghost" icon="arrow-left" label="Previous quote" data-testimonials-prev />
+      <Button variant="ghost" icon="arrow" label="Next quote" data-testimonials-next />
+    </div>
   </div>
 </div>
 
 <script>
+  type SwapDetail = {
+    from: HTMLElement;
+    to: HTMLElement;
+    direction: 1 | -1;
+    /** Shows the new quote and hides the old one. Called once, by whoever gets there first. */
+    swap: () => void;
+    waitUntil: (promise: Promise<unknown>) => void;
+  };
+
   document.querySelectorAll<HTMLElement>(".testimonials").forEach((root) => {
-    const track = root.querySelector<HTMLElement>("[data-testimonials-track]");
+    const list = root.querySelector<HTMLElement>("[data-testimonials-slides]");
+    const slides = [...root.querySelectorAll<HTMLElement>("[data-testimonials-slide]")];
     const controls = root.querySelector<HTMLElement>("[data-testimonials-controls]");
+    const progress = root.querySelector<HTMLElement>("[data-testimonials-progress]");
     const prev = root.querySelector<HTMLButtonElement>("[data-testimonials-prev]");
     const next = root.querySelector<HTMLButtonElement>("[data-testimonials-next]");
-    if (!track || !controls || !prev || !next) return;
-    const count = track.children.length;
+    if (!list || slides.length < 2 || !controls || !progress || !prev || !next) return;
 
     const reduced = window.matchMedia("(prefers-reduced-motion: reduce)");
-    const index = () => Math.round(track.scrollLeft / track.clientWidth);
-    const go = (to: number) => {
-      const target = Math.max(0, Math.min(count - 1, to));
-      track.scrollTo({
-        left: target * track.clientWidth,
-        behavior: reduced.matches ? "auto" : "smooth",
+    let at = 0;
+    let busy = false;
+
+    const show = (index: number) =>
+      slides.forEach((slide, i) => {
+        const active = i === index;
+        slide.toggleAttribute("data-active", active);
+        slide.inert = !active;
       });
-    };
-    const update = () => {
-      const at = index();
-      prev.disabled = at === 0;
-      next.disabled = at === count - 1;
+
+    /** Restarts the fill. Removing and re-adding the class replays the CSS animation. */
+    const restart = () => {
+      progress.classList.remove("testimonials__progress--running");
+      void progress.offsetWidth;
+      if (!reduced.matches) progress.classList.add("testimonials__progress--running");
     };
 
-    prev.addEventListener("click", () => go(index() - 1));
-    next.addEventListener("click", () => go(index() + 1));
-    track.addEventListener("scroll", update, { passive: true });
-    new ResizeObserver(update).observe(track);
-    controls.hidden = count < 2;
-    update();
+    /** `byHand`: the visitor asked for it, so screen readers announce the new quote. */
+    const go = async (direction: 1 | -1, byHand = false) => {
+      if (busy) return;
+      busy = true;
+      list.setAttribute("aria-live", byHand ? "polite" : "off");
+      const to = (at + direction + slides.length) % slides.length;
+      let swapped = false;
+      const swap = () => {
+        if (swapped) return;
+        swapped = true;
+        show(to);
+      };
+      const pending: Promise<unknown>[] = [];
+      const detail: SwapDetail = {
+        from: slides[at]!,
+        to: slides[to]!,
+        direction,
+        swap,
+        waitUntil: (promise) => pending.push(promise),
+      };
+      at = to;
+      restart();
+      root.dispatchEvent(new CustomEvent("quoteswap", { detail, bubbles: true }));
+      await Promise.allSettled(pending);
+      swap();
+      busy = false;
+    };
+
+    // Pause while someone is reading or using it, and while nobody can see it.
+    const pauses = new Set<string>();
+    const pause = (reason: string, on: boolean) => {
+      if (on) pauses.add(reason);
+      else pauses.delete(reason);
+      root.toggleAttribute("data-paused", pauses.size > 0);
+    };
+    root.addEventListener("pointerenter", () => pause("pointer", true));
+    root.addEventListener("pointerleave", () => pause("pointer", false));
+    root.addEventListener("focusin", () => pause("focus", true));
+    root.addEventListener("focusout", (event) => {
+      if (!root.contains(event.relatedTarget as Node | null)) pause("focus", false);
+    });
+    document.addEventListener("visibilitychange", () => pause("tab", document.hidden));
+    new IntersectionObserver(([entry]) => pause("offscreen", !entry?.isIntersecting)).observe(root);
+
+    progress.addEventListener("animationend", () => go(1));
+    prev.addEventListener("click", () => go(-1, true));
+    next.addEventListener("click", () => go(1, true));
+    reduced.addEventListener("change", restart);
+
+    root.dataset.enhanced = "";
+    controls.hidden = false;
+    show(0);
+    restart();
   });
 </script>
 
@@ -78,45 +153,94 @@ const { testimonials, label = "What people say" } = Astro.props;
       gap: var(--space-10);
     }
 
-    .testimonials__track {
-      position: relative;
-      display: flex;
-      padding: 0;
-      overflow-x: auto;
-      overscroll-behavior-x: contain;
-      scroll-snap-type: x mandatory;
-      scroll-behavior: smooth;
-      scrollbar-width: none;
-    }
-
-    .testimonials__track::-webkit-scrollbar {
-      display: none;
-    }
-
-    .testimonials__track:focus-visible {
-      outline-offset: var(--space-2);
+    /* Without JS: every quote, one under the other. */
+    .testimonials__slides {
+      display: grid;
+      gap: var(--space-section-sm);
     }
 
     .testimonials__slide {
-      flex: 0 0 100%;
-      scroll-snap-align: start;
-      padding-inline-end: var(--space-1);
+      display: grid;
+      align-content: start;
+      gap: var(--space-8);
     }
 
-    .testimonials__slide :global(.quote__text) {
-      max-inline-size: 22em;
+    /* With JS: all quotes share one cell, so the block is as tall as the longest and nothing
+       below it moves when the quote changes. */
+    .testimonials[data-enhanced] .testimonials__slide {
+      grid-area: 1 / 1;
+    }
+
+    .testimonials[data-enhanced] .testimonials__slide:not([data-active]) {
+      visibility: hidden;
+    }
+
+    .testimonials__quote {
+      max-inline-size: var(--measure-h2);
+      font: var(--weight-medium) var(--text-h2) / var(--leading-h2) var(--font-heading);
+      letter-spacing: var(--tracking-h2);
       text-wrap: pretty;
     }
 
-    /* Ghost buttons have no ring at rest, so pull the first arrow back to the text edge. */
+    .testimonials__source {
+      display: grid;
+      gap: var(--space-1);
+    }
+
+    .testimonials__name {
+      font-weight: var(--weight-semibold);
+    }
+
+    .testimonials__role {
+      color: var(--color-text-muted);
+    }
+
     .testimonials__controls {
-      display: flex;
-      gap: var(--space-2);
-      margin-inline-start: calc(-1 * var(--space-3));
+      display: grid;
+      gap: var(--space-4);
     }
 
     .testimonials__controls[hidden] {
       display: none;
+    }
+
+    /* The track, with the fill growing from the left while the quote is up. */
+    .testimonials__progress {
+      position: relative;
+      display: block;
+      block-size: var(--border-width);
+      overflow: clip;
+      background-color: var(--color-border-subtle);
+    }
+
+    .testimonials__progress::after {
+      position: absolute;
+      inset: 0;
+      background-color: var(--color-text);
+      content: "";
+      transform: scaleX(0);
+      transform-origin: left;
+    }
+
+    .testimonials__progress--running::after {
+      animation: testimonials-fill var(--duration-quote) linear forwards;
+    }
+
+    .testimonials[data-paused] .testimonials__progress::after {
+      animation-play-state: paused;
+    }
+
+    @keyframes testimonials-fill {
+      to {
+        transform: scaleX(1);
+      }
+    }
+
+    /* Ghost buttons have no ring at rest, so pull the first arrow back to the text edge. */
+    .testimonials__arrows {
+      display: flex;
+      gap: var(--space-2);
+      margin-inline-start: calc(-1 * var(--space-3));
     }
   }
 </style>
