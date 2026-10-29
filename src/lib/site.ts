@@ -7,7 +7,7 @@ export const SITE = {
   title: "Dawid Młynarz — Senior Product Designer & Design Systems",
   /** Default meta description (pages override it). */
   description:
-    "Senior product designer with 15 years of experience. I design AI-ready design systems and agentic UX for teams like Newsweek, NerdWallet and Google.",
+    "Senior Product Designer with 15 years of experience. I design AI-ready design systems and agentic UX for teams like Newsweek, NerdWallet and Google.",
   jobTitle: "Senior Product Designer",
   locale: "en",
   ogLocale: "en_GB",
@@ -22,9 +22,9 @@ export const SITE = {
     "Product design",
   ],
   email: "hello@mlynarz.com",
-  /** Scheduling page (Calendly or similar) for "Book a call". Empty until it exists: calls to
-   * action then lead to /contact. */
-  bookingUrl: "",
+  /** Scheduling page (a Google Calendar appointment schedule) for "Book a call". Empty means
+   * calls to action lead to /contact instead. */
+  bookingUrl: "https://calendar.app.google/xwy6zFUPrCpY1yFP9",
   /** Social share image in public/ (1200×630), used by every page. */
   ogImage: {
     src: "/og.jpg",

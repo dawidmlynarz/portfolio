@@ -29,7 +29,7 @@ export interface Plan {
 export const PLANS: Plan[] = [
   {
     id: "embedded-lead",
-    title: "Embedded design lead",
+    title: "Embedded Design Lead",
     label: "Retainer",
     promise:
       "Senior design leadership inside your team, month to month. I set the direction, keep the quality up and do the hands-on work with your people.",
