@@ -8,13 +8,16 @@ import type { ComponentProps } from "astro/types";
 type Props = ComponentProps<typeof BaseLayout> & {
   /** Let the first section run under the floating nav (full-bleed heroes). */
   navOverlap?: boolean;
+  /** One screen, no footer (/contact): the page is exactly the viewport tall when its content
+   * fits, so there is nothing to scroll; on very short screens it still scrolls. */
+  fit?: boolean;
 };
 
-const { navOverlap = false, ...base } = Astro.props;
+const { navOverlap = false, fit = false, ...base } = Astro.props;
 ---
 
 <BaseLayout {...base}>
-  <div class:list={["site", { "site--nav-overlap": navOverlap }]} id="top">
+  <div class:list={["site", { "site--nav-overlap": navOverlap, "site--fit": fit }]} id="top">
     <a class="skip-link" href="#main" data-no-tear>
       Skip to content
     </a>
@@ -22,8 +25,18 @@ const { navOverlap = false, ...base } = Astro.props;
     <main id="main" tabindex="-1">
       <slot />
     </main>
-    <Footer />
-    <Button class="to-top" href="#top" variant="secondary" icon="arrow-up" label="Back to top" />
+    {!fit && (
+      <>
+        <Footer />
+        <Button
+          class="to-top"
+          href="#top"
+          variant="secondary"
+          icon="arrow-up"
+          label="Back to top"
+        />
+      </>
+    )}
   </div>
 </BaseLayout>
 
@@ -93,6 +106,17 @@ const { navOverlap = false, ...base } = Astro.props;
         opacity: 1;
         visibility: visible;
       }
+    }
+
+    /* One screen: main fills the viewport and its last child takes the room that is left. */
+    .site--fit {
+      grid-template-rows: 1fr;
+    }
+
+    .site--fit main {
+      display: grid;
+      grid-template-rows: auto minmax(var(--space-24), 1fr);
+      grid-template-columns: minmax(0, 1fr);
     }
 
     main:focus {

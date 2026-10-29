@@ -9,7 +9,6 @@ import Services from "@/components/blocks/Services.astro";
 import ClientLogos from "@/components/blocks/ClientLogos.astro";
 import WorkGrid from "@/components/blocks/WorkGrid.astro";
 import Button from "@/components/ui/Button.astro";
-import { SITE } from "@/lib/site";
 import { SERVICES } from "@/lib/services";
 import { getListedWork } from "@/lib/work";
 import { person, website } from "@/lib/schema";
@@ -35,7 +34,7 @@ const jsonLd = {
       <Button href="/about" icon="arrow">
         About me
       </Button>
-      <Button href={`mailto:${SITE.email}`} variant="secondary" icon="arrow">
+      <Button href="/contact" variant="secondary" icon="arrow">
         Contact
       </Button>
     </Fragment>

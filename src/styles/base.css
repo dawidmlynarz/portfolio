@@ -188,6 +188,12 @@
     background: var(--color-inverse-bg);
   }
 
+  /* The one display line on the site: the email on /contact. */
+  .text-display {
+    font: var(--weight-medium) var(--text-display) / var(--leading-display) var(--font-heading);
+    letter-spacing: var(--tracking-display);
+  }
+
   .text-lead {
     font-size: var(--text-lead);
     line-height: var(--leading-lead);

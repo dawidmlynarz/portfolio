@@ -1,0 +1,96 @@
+---
+import SiteLayout from "@/layouts/SiteLayout.astro";
+import Section from "@/components/layout/Section.astro";
+import Container from "@/components/layout/Container.astro";
+import HeroBackdrop from "@/components/blocks/HeroBackdrop.astro";
+import WorkMarquee from "@/components/blocks/WorkMarquee.astro";
+import { SITE } from "@/lib/site";
+---
+
+<SiteLayout
+  title="Contact"
+  description="Got a project in mind? Email Dawid Młynarz about AI-ready design systems, agentic UX or product strategy."
+  fit
+>
+  <Section space="sm" class="hero-backdrop-host contact" aria-labelledby="contact-title">
+    <HeroBackdrop />
+    <Container class="contact__inner">
+      <div class="contact__head">
+        <p class="text-caption contact__muted">Contact</p>
+        <h1 id="contact-title" data-reveal="lines">
+          Got a project in mind? <span class="contact__muted">Let’s talk.</span>
+        </h1>
+        <p class="text-lead contact__lead contact__muted" data-reveal="fade">
+          Tell me what you’re building and where you’d like a hand. A few lines is plenty to start,
+          and I’ll take it from there.
+        </p>
+      </div>
+
+      <p class="contact__email" data-reveal="fade">
+        <a class="contact__email-link text-display" href={`mailto:${SITE.email}`}>
+          {SITE.email}
+        </a>
+      </p>
+    </Container>
+  </Section>
+
+  <section class="contact__work" aria-label="Some of my work">
+    <WorkMarquee />
+  </section>
+</SiteLayout>
+
+<style>
+  @layer components {
+    .contact__inner {
+      display: grid;
+      gap: var(--space-section-sm);
+    }
+
+    .contact__head {
+      display: grid;
+      gap: var(--space-6);
+    }
+
+    .contact__head h1 {
+      max-inline-size: 10em;
+    }
+
+    .contact__muted {
+      color: var(--color-text-muted);
+    }
+
+    .contact__lead {
+      max-inline-size: calc(var(--measure) * 0.75);
+    }
+
+    /* The covers peek up from the bottom of the screen: about two thirds of each shows and the
+       rest runs off the edge. They are sized so a hovered cover, lifted to show nine tenths,
+       still fits in the room left under the email. */
+    .contact__work {
+      --work-marquee-size: clamp(12rem, 100cqb / 0.9 * 4 / 3, min(40rem, 80cqi));
+
+      container-type: size;
+      display: flex;
+      align-items: flex-end;
+      overflow: clip;
+    }
+
+    /* A third of each cover (4:3, so its height is 3/4 of its width) hangs below the screen;
+       a hovered cover rises until nine tenths of it shows. */
+    .contact__work :global(.work-marquee) {
+      --work-marquee-lift: calc(var(--work-marquee-size) * 0.75 * 0.25);
+
+      flex-grow: 1;
+      margin-block-end: calc(var(--work-marquee-size) * -0.75 * 0.35);
+    }
+
+    /* The email as the headline act: display size, a hairline under it and the row tear every
+       link has. */
+    .contact__email-link {
+      display: inline-block; /* one underline under the whole block, also when it wraps */
+      max-inline-size: 100%;
+      white-space: nowrap;
+      padding-block-end: var(--space-2);
+    }
+  }
+</style>

@@ -79,6 +79,7 @@
        Roles, not sizes. Fluid between 375px and 1440px viewports.
        clamp(min, intercept + slope*vw, max)  ->  min/max are the Figma Mobile/Desktop values.
          role      min -> max    line-height  tracking   weight
+         display   fits      0.95         -0.05em    500   (the email on /contact, one line, <= 128)
          h1        40 -> 88      0.98         -0.04em    500
          h2        30 -> 56      1.05         -0.03em    500
          h3        22 -> 30      1.20         -0.015em   500
@@ -95,6 +96,9 @@
     --font-body: "Geist Variable", "Geist Fallback", system-ui, sans-serif;
     --font-mono: "Geist Mono Variable", "Geist Mono Fallback", ui-monospace, monospace;
 
+    /* The one exception to the scale: sized to the width so the email always fits on one line
+       (about 8.6em wide), at most 128px, and smaller on short screens. */
+    --text-display: min(8rem, 14svh, (100vw - 2 * var(--gutter)) / 8.6);
     --text-h1: clamp(2.5rem, 1.444rem + 4.507vw, 5.5rem);
     --text-h2: clamp(1.875rem, 1.303rem + 2.441vw, 3.5rem);
     --text-h3: clamp(1.375rem, 1.199rem + 0.751vw, 1.875rem);
@@ -104,6 +108,8 @@
     --text-small: clamp(0.875rem, 0.853rem + 0.094vw, 0.9375rem);
     --text-caption: clamp(0.75rem, 0.728rem + 0.094vw, 0.8125rem);
 
+    --leading-display: 0.95;
+    --tracking-display: -0.05em;
     --leading-h1: 0.98;
     --tracking-h1: -0.04em;
     --leading-h2: 1.05;
@@ -164,6 +170,7 @@
     --duration-reveal: 600ms; /* media fading in once ready (portrait reveal canvas) */
     --duration-zoom: 800ms; /* case-study cover zoom on hover */
     --duration-marquee: 40s; /* one full loop of the client logo marquee */
+    --duration-marquee-work: 60s; /* one full loop of the case-study covers on /contact */
     --ease-out-expo: cubic-bezier(0.19, 1, 0.22, 1);
     --duration-page: 700ms; /* ink spread (theme switch); the nav during page changes */
     --duration-menu: 900ms; /* nav menu: makes room, then drops open */
