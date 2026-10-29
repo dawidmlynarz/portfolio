@@ -4,11 +4,11 @@ export const SITE = {
   name: "Dawid Młynarz",
   /** Spelling without the Polish ł, as people often type it. */
   alternateName: "Dawid Mlynarz",
-  title: "Dawid Młynarz — Senior Product Designer & Design Systems",
+  title: "Dawid Młynarz — Lead Product Designer & Design Systems",
   /** Default meta description (pages override it). */
   description:
-    "Senior Product Designer with 15 years of experience. I design AI-ready design systems and agentic UX for teams like Newsweek, NerdWallet and Google.",
-  jobTitle: "Senior Product Designer",
+    "Lead Product Designer with 15 years of experience. I design AI-ready design systems and agentic UX for teams like Newsweek, NerdWallet and Google.",
+  jobTitle: "Lead Product Designer",
   locale: "en",
   ogLocale: "en_GB",
   /** ISO 3166 country code, for structured data. */

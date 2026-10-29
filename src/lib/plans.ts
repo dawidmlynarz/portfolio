@@ -32,16 +32,16 @@ export const PLANS: Plan[] = [
     title: "Embedded Design Lead",
     label: "Retainer",
     promise:
-      "Senior design leadership inside your team, month to month. I set the direction, keep the quality up and do the hands-on work with your people.",
+      "Design leadership inside your team, month to month. I set the direction, keep the quality up and do the hands-on work with your people.",
     // Two days a week, averaged over a year: 16 hours × 52 weeks ÷ 12 months.
     price: price((2 * HOURS_PER_DAY * 52) / 12),
     billing: "month",
-    terms: "Per month · three months to start",
+    terms: "Per month · 2–3 days a week · three months to start",
     includes: [
       "Product direction and design reviews on the work that matters",
       "Hands-on design, from first sketch to shipped",
       "A design system your team and your AI tools can build on",
-      "In your Slack, Figma and repo, around two days a week",
+      "In your Slack, Figma and repo, two to three days a week",
     ],
     featured: true,
   },
