@@ -242,8 +242,9 @@
     z-index: 3;
   }
 
-  /* the goo: over the brain and the rim, under the lid, so each strand comes out from under
-     the lid's edge and clings to the front of the rim. Drawn only while the hole is cut */
+  /* the goo: over the brain, under the lid, trimmed to the head's outline. Each strand comes
+     out from under the lid's edge and goes down into the hole behind its front edge (goo.ts
+     clips it there). Drawn only while the hole is cut */
   .mindblown__goo {
     position: absolute;
     inset: 0;
@@ -253,6 +254,7 @@
     overflow: visible;
     pointer-events: none;
     visibility: hidden;
+    mask: var(--mb-silhouette) 0 0 / 100% 100% no-repeat;
   }
 
   .mindblown__goo--on {

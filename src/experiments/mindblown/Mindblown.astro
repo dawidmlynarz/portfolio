@@ -373,8 +373,17 @@ const belt = [...BELT, ...BELT];
             </div>
           </div>
           {/* gooey strands between the lifted lid and the rim (goo.ts draws the beads) */}
-          <svg class="mindblown__goo" viewBox="0 0 963 896" aria-hidden="true">
+          <svg
+            class="mindblown__goo"
+            viewBox="0 0 963 896"
+            aria-hidden="true"
+            style={`--mb-silhouette: url(${silhouette.src})`}
+          >
             <defs>
+              <clipPath id="mindblown-goo-cut" class="mindblown__goo-cut">
+                <rect></rect>
+                <ellipse></ellipse>
+              </clipPath>
               <filter
                 id="mindblown-goo"
                 filterUnits="userSpaceOnUse"
@@ -388,8 +397,10 @@ const belt = [...BELT, ...BELT];
                 <feColorMatrix values="1 0 0 0 0  0 1 0 0 0  0 0 1 0 0  0 0 0 22 -10"></feColorMatrix>
               </filter>
             </defs>
-            <g class="mindblown__goo-body" filter="url(#mindblown-goo)"></g>
-            <g class="mindblown__goo-shine" filter="url(#mindblown-goo)"></g>
+            <g clip-path="url(#mindblown-goo-cut)">
+              <g class="mindblown__goo-body" filter="url(#mindblown-goo)"></g>
+              <g class="mindblown__goo-shine" filter="url(#mindblown-goo)"></g>
+            </g>
           </svg>
           <div class="mindblown__layer mindblown__layer--lid">
             <div class="mindblown__lid-front" aria-hidden="true">

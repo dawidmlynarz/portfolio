@@ -21,18 +21,18 @@ const CX = W * 0.455,
 /* the lid's transform-origin (mindblown.css .mindblown__layer--lid) */
 const OX = W * 0.26,
   OY = H * 0.345;
-const BEADS = 11;
+const BEADS = 17;
 const NS = "http://www.w3.org/2000/svg";
 
 /* where each strand sits across the cut (-1 left end .. 1 right end), how thick it is, and how
    far it stretches before it tears (head units; a hover peek lifts the lid about 50) */
 const STRANDS = [
-  { u: -0.9, r: 10, snap: 120 },
+  { u: -0.86, r: 10, snap: 120 },
   { u: -0.68, r: 8, snap: 100 },
   { u: -0.36, r: 5.5, snap: 85 },
   { u: 0.4, r: 6, snap: 90 },
   { u: 0.7, r: 8.5, snap: 110 },
-  { u: 0.92, r: 9.5, snap: 130 },
+  { u: 0.88, r: 9.5, snap: 130 },
 ];
 
 type Strand = (typeof STRANDS)[number] & {
@@ -42,6 +42,7 @@ type Strand = (typeof STRANDS)[number] & {
   body: SVGCircleElement[];
   shine: SVGCircleElement[];
   puddle: SVGEllipseElement;
+  cap: SVGEllipseElement;
 };
 
 export function createGoo(svg: SVGSVGElement, lid: HTMLElement, reduced: boolean) {
@@ -58,7 +59,16 @@ export function createGoo(svg: SVGSVGElement, lid: HTMLElement, reduced: boolean
     body: Array.from({ length: BEADS }, () => el("circle", bodyG)),
     shine: Array.from({ length: BEADS }, () => el("circle", shineG)),
     puddle: el("ellipse", bodyG),
+    cap: el("ellipse", bodyG),
   }));
+
+  /* the strands show only above the cut's centre line or inside the hole, so their lower ends
+     go down behind the face's front edge; the head's outline (CSS mask) trims the rest */
+  const [above, hole] = svg.querySelectorAll(".mindblown__goo-cut > *");
+  for (const [k, v] of Object.entries({ x: 0, y: -H, width: W, height: H + CY }))
+    above!.setAttribute(k, String(v));
+  for (const [k, v] of Object.entries({ cx: CX, cy: CY, rx: RX, ry: RY }))
+    hole!.setAttribute(k, v.toFixed(1));
 
   let running = false,
     time = 0;
@@ -86,8 +96,10 @@ export function createGoo(svg: SVGSVGElement, lid: HTMLElement, reduced: boolean
     for (const s of strands) {
       const x0 = CX + s.u * RX,
         y0 = CY + RY * Math.sqrt(1 - s.u * s.u);
-      const top = onLid(x0, y0 - 3, px),
-        bot = { x: x0, y: y0 + 1.5 };
+      // both ends start tucked in: under the lid's edge, and inside the hole behind its front edge
+      const edge = onLid(x0, y0, px),
+        top = onLid(x0, y0 - 9, px),
+        bot = { x: x0, y: y0 - 4 };
       const gap = Math.hypot(top.x - bot.x, top.y - bot.y);
       if (!s.torn && gap > s.snap) s.torn = 0.0001;
       if (s.torn && s.torn < 1) s.torn = Math.min(1, s.torn + dt * 2.6);
@@ -96,7 +108,7 @@ export function createGoo(svg: SVGSVGElement, lid: HTMLElement, reduced: boolean
       if (grow > 0) live = true;
       const pull = 1 - (1 - s.torn) ** 3,
         // the stretch thins the middle: thick at rest, a thread just before it tears
-        thin = gsap.utils.clamp(0.28, 0.7, 0.7 - gap / 200),
+        thin = gsap.utils.clamp(0.4, 0.7, 0.7 - gap / 260),
         wave = reduced ? 0 : Math.min(gap * 0.14, 7);
       const nx = -(top.y - bot.y) / (gap || 1),
         ny = (top.x - bot.x) / (gap || 1);
@@ -119,11 +131,18 @@ export function createGoo(svg: SVGSVGElement, lid: HTMLElement, reduced: boolean
         s.shine[i]!.setAttribute("cy", y.toFixed(1));
         s.shine[i]!.setAttribute("r", Math.max(0, r * 0.42).toFixed(2));
       }
-      // the blob where the strand clings to the rim
+      // the blobs where it clings to the front wall of the hole and to the underside of the lid
+      // (the lid stays on top, so only the part hanging below its edge shows); a torn strand's
+      // stub shrinks back into the lid with it
       s.puddle.setAttribute("cx", bot.x.toFixed(1));
-      s.puddle.setAttribute("cy", bot.y.toFixed(1));
+      s.puddle.setAttribute("cy", (y0 - 1).toFixed(1));
       s.puddle.setAttribute("rx", (s.r * 1.6 * grow).toFixed(2));
       s.puddle.setAttribute("ry", (s.r * 0.75 * grow).toFixed(2));
+      const cap = grow * (s.torn ? 1 - pull : 1);
+      s.cap.setAttribute("cx", edge.x.toFixed(1));
+      s.cap.setAttribute("cy", (edge.y - 1).toFixed(1));
+      s.cap.setAttribute("rx", (s.r * 1.4 * cap).toFixed(2));
+      s.cap.setAttribute("ry", (s.r * 0.6 * cap).toFixed(2));
     }
     return live;
   }
