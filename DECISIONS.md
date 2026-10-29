@@ -2,6 +2,12 @@
 
 Non-obvious choices, newest first. One entry per decision: what, why, and what it rules out.
 
+## 2026-10-29 · One share image for every page
+
+- **Every page shares `public/og.jpg`,** Dawid's new card ("Transforming AI capability into products people actually trust."). Case studies and locked case studies no longer use a crop of their cover, at Dawid's request, so every link from the site previews the same way. The cover crop stays as the `image` in case-study structured data.
+- **JPEG, not PNG.** The supplied PNG is 467 KB; the JPEG is 89 KB and looks the same. WhatsApp and some chat apps skip previews over about 300 KB.
+- `SITE.ogImage.alt` now describes the new card. Change both together.
+
 ## 2026-10-29 · Figure `diagram` variant for line drawings
 
 `<Figure variant="diagram" width="content">` shows a transparent line drawing at the text width with no card, corners or background, so it reads as part of the text. Diagrams are drawn in dark ink and inverted in the dark theme (`invert(1) hue-rotate(180deg)`), so one file works in both. Trim transparent padding from the source so the spacing comes from the page. First used for the Anvil UI levels.
@@ -175,7 +181,7 @@ Dawid wanted the hero liquid to reveal 3–4 layers at random, with the real pho
 - **Structured data shares one Person.** `src/lib/schema.ts` builds the Person (with `@id` `/#person`, the headshot, `alternateName` without the ł, country and `knowsAbout`) and WebSite (`/#website`). Home carries both; About is a `ProfilePage` with the Person as `mainEntity`; case studies point their `author` at the `@id` and add a `BreadcrumbList`.
 - **Analytics: Cloudflare Web Analytics**, cookieless, so no consent banner. The beacon is added only on production builds with `CF_WEB_ANALYTICS_TOKEN` set. Turning on Pages' automatic injection instead would also count preview traffic.
 - **Search phrases: AI-ready design systems, agentic UX and freelance product designer** (Dawid's pick; product strategy stays a service but isn't a search target). Every indexable page now has a title of 60 characters or fewer and a description of 160 or fewer, written around those phrases. Case studies keep their long headline and summary on the page and use `seoTitle`/`seoDescription` for search. Revisit with real Search Console queries 4 to 6 weeks after launch.
-- **The share image (`public/og.png`) still shows the old tagline.** Dawid is redrawing it. Its alt text (`SITE.ogImage.alt`) describes the current image, so update both together.
+- **The share image (`public/og.png`) still showed the old tagline** at the time; replaced on 2026-10-29 (see "One share image for every page").
 - **Refreshed on 2026-10-29** onto the current site: `SHOW_PROTECTED_DRAFTS` stays removed (server-side protection replaced it), and Zazmic Anvil UI gets its own `seoTitle`/`seoDescription`. Locked case studies stay `noindex` and out of the sitemap.
 
 ## 2026-10-27 · Soft rise page transition
