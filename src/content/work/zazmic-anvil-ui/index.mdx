@@ -1,7 +1,8 @@
 ---
 title: Building Anvil UI, a design system for conversational AI agents, in four weeks
-seoTitle: Anvil UI, a design system for AI agents – Case Study
+seoTitle: "Anvil UI: AI-ready design system for agents"
 description: At Zazmic I built Anvil UI from scratch, a Figma-to-code design system and Storybook made for AI agents. Teams now assemble an agent experience from tested parts instead of designing and coding it from zero on every project.
+seoDescription: "At Zazmic I built Anvil UI in four weeks: a Figma-to-code design system and Storybook for AI agents, about 160 components from buttons to approval cards."
 lead: "Zazmic helps companies bring AI into their products and their work. Anvil UI gives every agent we build the same starting point, whether it’s a client project, an internal tool or a pitch. It has about 160 components, from buttons to approval cards, drawn once in Figma and built once in code."
 company: Zazmic
 client: zazmic
@@ -11,18 +12,27 @@ business: IT Consultancy
 businessLabel: Model
 date: "2026"
 tags: [AI Experiences, Conversational UX, Design Systems, Storybook, Design Engineering]
-cover: ./cover.jpg
-coverAlt: The Anvil UI Showroom, a scripted assistant in a side panel suggesting three shows for the weekend, with tool calls and a carousel of offers.
+cover: ./cover.avif
+coverAlt: Anvil UI agent components, a budget and limits panel, a tool-call log, a connect Drive approval card, a research progress plan and a list of nearby locations.
 order: 0.5
 next: newsweek-design-system
 draft: false
 ---
 
+import showroomResearch from "./showroom-research.mp4";
+import showroomResearchAv1 from "./showroom-research.av1.mp4";
+import showroomResearchPoster from "./showroom-research-poster.avif";
 import showroomBooking from "./showroom-booking.mp4";
 import showroomBookingAv1 from "./showroom-booking.av1.mp4";
-import showroomBookingPoster from "./showroom-booking-poster.jpg";
-
-{/* Placeholder cover: a screenshot of the live Showroom (booking flow), until Dawid sends the final one. */}
+import showroomBookingPoster from "./showroom-booking-poster.avif";
+import showroomSmallTalk from "./showroom-input.mp4";
+import showroomSmallTalkAv1 from "./showroom-input.av1.mp4";
+import showroomSmallTalkPoster from "./showroom-input-poster.avif";
+import levels from "./anvil-levels.avif";
+import agentComponents2 from "./anvil-agent-components-2.avif";
+import desktopResearch from "./anvil-desktop-research.avif";
+import mobileBooking from "./anvil-mobile-booking.avif";
+import storybookDocs from "./anvil-storybook-foundations.avif";
 
 {/* Estimates requested by Dawid on 2026-10-28, not measured: about 6 weeks down to 1.5 weeks to a first working agent UI (~75%) and ~350 hours saved per project, for a designer and a front-end engineer. Every other number comes from the repository. */}
 
@@ -80,11 +90,21 @@ In total that's around six weeks down to a week and a half, so roughly 350 hours
 
 Engineers can spend that time on what is specific for the client, like the model, the data and the integrations. Rebuilding a chat bubble for the fifth time was never a good use of it.
 
-<Figure alt="Diagram comparing an agent project before Anvil, where every screen is designed and coded from scratch, with one assembled from Anvil building blocks." />
+<Figure
+  src={desktopResearch}
+  alt="The Showroom on desktop: an assistant explains Q3 churn drivers with metrics, next to a sources panel listing the articles it read."
+/>
 
 ## Designing for agents
 
 Anvil has four levels. Atoms are single elements, like a button or a badge. Molecules put few atoms together for one job. Organisms are full sections, a dialog or a table. On top of them sits the Agent Builder, with ready-to-use agent experiences in 16 groups, built only from the levels below.
+
+<Figure
+  src={levels}
+  alt="The building blocks of Anvil UI as line icons: atoms, molecules, organisms, templates and the Agent Builder."
+  width="content"
+  variant="diagram"
+/>
 
 Most of my design time went into the agent layer. Here are some of problems it solves.
 
@@ -97,7 +117,10 @@ Most of my design time went into the agent layer. Here are some of problems it s
 
 The same components work in full screen, in a side panel, in a popover and on mobile.
 
-<Figure alt="Agent Builder components: a thinking panel, a tool-call log, citation chips, an approval card and a task plan, in light and dark." />
+<Figure
+  src={agentComponents2}
+  alt="More Agent Builder components: a live activity log with filters, a knowledge gaps card asking for a decision, and a research plan waiting for approval."
+/>
 
 ## Figma first, then a contract, then code
 
@@ -107,29 +130,59 @@ For naming I wrote an API contract. There are four props, `variant`, `intent`, `
 
 Under the styling I used shadcn/ui and Radix. Keyboard support, focus and dismissing come from libraries which already do it well. Whenever I changed their behaviour on purpose, I wrote down the reason.
 
-<Figure alt="Anvil tokens in Figma next to the generated CSS variables, in light and dark, desktop and mobile." />
-
 ## Documentation people actually read
 
 I treated Storybook as product. Every component page has live controls, a link to the Figma frame, a usage guide (when to use it, when not, and what to use instead) and a table that maps every Figma property to what it becomes in code.
 
 From molecules up, stories don't use lorem ipsum. They all share one made-up company, one assistant and one project. Reviewers then look at it like at a real product, and less like a gallery of parts.
 
-<Figure alt="The Storybook page for Message Row with controls, a Figma link, the usage guide and the Figma-to-code property table." />
+<Figure
+  src={storybookDocs}
+  alt="Anvil UI Storybook pages: the welcome page explaining the four levels, colour contrast ratios in light and dark, typography with font families and text styles, and motion durations and easing curves."
+/>
 
 ## The Showroom
 
 A list of components doesn't tell you much how an agent feels to use. That's why Storybook opens with the Showroom, the features demo. It's a scripted assistant made only from real Anvil components. You can switch between desktop and mobile, light and dark, full screen, side panel or popover, and go through four flows. You can research a task, order a product, book a show or talk to a person.
 
+<Figure
+  src={mobileBooking}
+  alt="The Showroom on mobile in three steps: the assistant checks availability for Saturday, offers two performances, and a price drop alert for Paper Kingdoms at Lyric Hall."
+/>
+
 It's scripted on purpose, so it can't go off script while someone is clicking through it. It still shows loading, error and queued states, the same as real agent goes through. I also hid around 50 small talk replies and easter eggs inside, like a coin flip or a round of rock, paper, scissors. Without them the demo felt a bit dead, and the jokes are what keeps people clicking.
 
-{/* Stand-in clip recorded from the live Showroom (2560×1440, about 12 s) until Dawid sends his own recordings. */}
-
-<Video
-  src={showroomBooking}
-  av1={showroomBookingAv1}
-  poster={showroomBookingPoster}
-  label="The Showroom booking flow, where the assistant searches for shows, offers three in a carousel and opens an availability calendar."
+<VideoTabs
+  label="Showroom flows"
+  items={[
+    {
+      tab: "Research a task",
+      src: showroomResearch,
+      av1: showroomResearchAv1,
+      poster: showroomResearchPoster,
+      label:
+        "The Showroom research flow: the assistant asks a few scoping questions, writes a research brief and plan for approval, shows live progress, and ends with key takeaways and a report.",
+      caption: "Research a task: questions first, a plan to approve, live progress and a report.",
+    },
+    {
+      tab: "Book a show",
+      src: showroomBooking,
+      av1: showroomBookingAv1,
+      poster: showroomBookingPoster,
+      label:
+        "The Showroom booking flow: the assistant finds shows, offers times and tickets, asks for approval before booking, and returns the tickets as a PDF.",
+      caption: "Book a show: offers, a date and time, tickets, an approval and the booking.",
+    },
+    {
+      tab: "Small talk",
+      src: showroomSmallTalk,
+      av1: showroomSmallTalkAv1,
+      poster: showroomSmallTalkPoster,
+      label:
+        "Small talk in the Showroom: asked for a joke, the assistant tells one, then another, and answers the feedback with a pun.",
+      caption: "Small talk: one of the hidden replies, a few jokes on request.",
+    },
+  ]}
 />
 
 ## Working with an AI agent, on my terms
@@ -142,8 +195,6 @@ I built Anvil together with an AI coding agent, and it did a lot of the typing. 
 4. It opens a pull request and waits. It never merges by itself.
 5. Required checks run for types, lint, tokens being up to date, Storybook tests in light and dark, and a Storybook build. When any of them fails, work goes back to the agent.
 6. I look at the real result and approve every merge. Then the live Storybook updates.
-
-<Figure alt="How a change reaches main: I set the rules, the agent builds and opens a pull request, required checks gate it, and I review and approve every merge." />
 
 Many of the rules fail loudly, so nobody has to remember them. Lint checks component levels (an atom can't import an organism), motion, right-to-left-safe CSS and accessibility. Axe runs on every story in both themes, and screenshot tests catch changes nobody meant to make.
 

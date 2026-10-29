@@ -37,6 +37,7 @@ const widths = (work: Work) => [320, 480, 800].filter((w) => w <= work.data.cove
                 widths={widths(work)}
                 sizes="6rem"
                 loading="lazy"
+                format="avif"
               />
               <span class="next-up__title">{work.data.title}</span>
               <span class="text-small next-up__meta">{meta(work)}</span>
@@ -54,6 +55,7 @@ const widths = (work: Work) => [320, 480, 800].filter((w) => w <= work.data.cove
           widths={widths(work)}
           sizes="22rem"
           loading="lazy"
+          format="avif"
           data-cover-img={n}
         />
       ))}

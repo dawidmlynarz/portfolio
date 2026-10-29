@@ -2,7 +2,7 @@
 import "@/styles/global.css";
 // Preload the Latin subset of Geist so it is usually ready before first paint.
 import geistLatin from "@fontsource-variable/geist/files/geist-latin-wght-normal.woff2?url";
-import { SITE, isProduction } from "@/lib/site";
+import { SEO_LIMITS, SITE, isProduction, webAnalyticsToken } from "@/lib/site";
 
 interface Props {
   title?: string;
@@ -36,6 +36,20 @@ const canonicalPath =
 const canonical = new URL(canonicalPath || "/", Astro.site);
 const robots = noindex || !isProduction ? "noindex, nofollow" : undefined;
 const imageUrl = new URL(image.src, Astro.site);
+
+// Flag indexable pages whose title or description will be cut off in search results.
+if (!noindex) {
+  for (const [field, value] of [
+    ["title", pageTitle],
+    ["description", description],
+  ] as const) {
+    if (value.length > SEO_LIMITS[field]) {
+      console.warn(
+        `[seo] ${canonicalPath || "/"}: ${field} is ${value.length} characters (aim for ${SEO_LIMITS[field]} or fewer).`,
+      );
+    }
+  }
+}
 const imageType = /\.jpe?g$/i.test(image.src) ? "image/jpeg" : "image/png";
 ---
 
@@ -132,6 +146,14 @@ const imageType = /\.jpe?g$/i.test(image.src) ? "image/jpeg" : "image/png";
     <meta name="theme-color" content="#ffffff" />
     <link rel="sitemap" href="/sitemap-index.xml" />
     {jsonLd && <script type="application/ld+json" set:html={JSON.stringify(jsonLd)} />}
+    {webAnalyticsToken && (
+      <script
+        is:inline
+        defer
+        src="https://static.cloudflareinsights.com/beacon.min.js"
+        data-cf-beacon={JSON.stringify({ token: webAnalyticsToken })}
+      />
+    )}
     <meta name="generator" content={Astro.generator} />
     <slot name="head" />
   </head>

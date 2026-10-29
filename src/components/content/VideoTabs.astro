@@ -1,0 +1,164 @@
+---
+/**
+ * Several clips in one frame, with a tab per clip, so a case study can show a lot without
+ * getting longer. Each clip is a regular Video. Without JS every clip shows, one after another,
+ * with its tab name as the caption; with JS the tabs appear and only the chosen clip shows (and
+ * loads). Switching starts the clip from the beginning.
+ */
+import Video from "@/components/ui/Video.astro";
+
+interface Item {
+  /** Short tab name, e.g. "Research". */
+  tab: string;
+  /** H.264 MP4. */
+  src: string;
+  /** AV1 MP4 of the same clip. */
+  av1?: string;
+  poster?: ImageMetadata;
+  /** Describes what the clip shows; it becomes the video's accessible name. */
+  label: string;
+  /** One line under the clip. Falls back to the tab name. */
+  caption?: string;
+}
+
+interface Props {
+  items: Item[];
+  /** Accessible name of the tab list, e.g. "Showroom flows". */
+  label: string;
+  width?: "content" | "wide" | "full";
+}
+
+const { items, label, width = "wide" } = Astro.props;
+const id = `video-tabs-${Math.random().toString(36).slice(2, 8)}`;
+---
+
+<div class:list={["video-tabs", `video-tabs--${width}`]} data-width={width} data-video-tabs>
+  <div class="video-tabs__list" role="tablist" aria-label={label} hidden>
+    {items.map((item, n) => (
+      <button
+        class="video-tabs__tab"
+        type="button"
+        role="tab"
+        id={`${id}-tab-${n}`}
+        aria-controls={`${id}-panel-${n}`}
+        aria-selected={n === 0 ? "true" : "false"}
+        tabindex={n === 0 ? 0 : -1}
+      >
+        {item.tab}
+      </button>
+    ))}
+  </div>
+  {items.map((item, n) => (
+    <div
+      class="video-tabs__panel"
+      role="tabpanel"
+      id={`${id}-panel-${n}`}
+      aria-labelledby={`${id}-tab-${n}`}
+    >
+      <Video
+        src={item.src}
+        av1={item.av1}
+        poster={item.poster}
+        label={item.label}
+        caption={item.caption ?? item.tab}
+        width={width}
+      />
+    </div>
+  ))}
+</div>
+
+<script>
+  for (const root of document.querySelectorAll<HTMLElement>("[data-video-tabs]")) {
+    const list = root.querySelector<HTMLElement>("[role=tablist]");
+    const tabs = [...root.querySelectorAll<HTMLButtonElement>("[role=tab]")];
+    const panels = [...root.querySelectorAll<HTMLElement>("[role=tabpanel]")];
+    if (!list || tabs.length < 2) continue;
+
+    const select = (index: number, focus = false) => {
+      tabs.forEach((tab, n) => {
+        const active = n === index;
+        tab.setAttribute("aria-selected", String(active));
+        tab.tabIndex = active ? 0 : -1;
+        panels[n]!.hidden = !active;
+        const video = panels[n]!.querySelector("video");
+        if (video && !active) {
+          video.pause();
+          video.currentTime = 0;
+        }
+      });
+      if (focus) tabs[index]!.focus();
+    };
+
+    list.hidden = false;
+    root.classList.add("video-tabs--enhanced");
+    select(0);
+
+    tabs.forEach((tab, n) => {
+      tab.addEventListener("click", () => select(n));
+      tab.addEventListener("keydown", (event) => {
+        const last = tabs.length - 1;
+        const next = { ArrowRight: n + 1, ArrowLeft: n - 1, Home: 0, End: last }[event.key];
+        if (next === undefined) return;
+        event.preventDefault();
+        select((next + tabs.length) % tabs.length, true);
+      });
+    });
+  }
+</script>
+
+<style>
+  @layer components {
+    .video-tabs {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr);
+      gap: var(--space-section-sm);
+    }
+
+    .video-tabs--enhanced {
+      gap: var(--space-4);
+    }
+
+    .video-tabs__list {
+      display: flex;
+      flex-wrap: wrap;
+      gap: var(--space-2);
+    }
+
+    .video-tabs__list[hidden],
+    .video-tabs__panel[hidden] {
+      display: none;
+    }
+
+    .video-tabs__tab {
+      padding-block: var(--space-2);
+      padding-inline: var(--space-4);
+      border: var(--border-width) solid var(--color-border-muted);
+      border-radius: var(--radius-pill);
+      background-color: transparent;
+      color: var(--color-text-muted);
+      font: inherit;
+      font-size: var(--text-small);
+      line-height: var(--leading-small);
+      cursor: pointer;
+      transition:
+        color var(--duration-fast) var(--ease-standard),
+        border-color var(--duration-fast) var(--ease-standard),
+        background-color var(--duration-fast) var(--ease-standard);
+    }
+
+    .video-tabs__tab:hover {
+      border-color: var(--color-border);
+      color: var(--color-text);
+    }
+
+    .video-tabs__tab[aria-selected="true"] {
+      border-color: var(--color-inverse-bg);
+      background-color: var(--color-inverse-bg);
+      color: var(--color-on-inverse);
+    }
+
+    .video-tabs--full .video-tabs__list {
+      padding-inline: var(--gutter);
+    }
+  }
+</style>

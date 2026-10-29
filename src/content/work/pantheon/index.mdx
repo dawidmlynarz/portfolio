@@ -1,6 +1,8 @@
 ---
 title: Scalable design system for SaaS platform for software developers
+seoTitle: "Pantheon design system for a developer SaaS"
 description: I established a scalable design system for Pantheon, contributed to documentation, provided guidance to designers, and collaborated with the engineering team to integrate components into Storybook.
+seoDescription: "I set up a scalable design system for Pantheon, wrote documentation, guided other designers and worked with engineers to bring components into Storybook."
 lead: "Pantheon is the single SaaS platform provider that affordably brings together all facets of website operations: building, hosting, maintenance, performance, deployment and security."
 company: Pantheon
 client: pantheon
@@ -11,13 +13,17 @@ business: SaaS
 date: "2021–2022"
 businessLabel: Model
 tags: [Design Systems, Governance, Documentation, Mentoring, Storybook]
-cover: ./cover.jpg
+cover: ./cover.avif
 coverAlt: Pantheon design system documentation for the marketing type scale, form patterns and the unified color palette.
 order: 7
 next: xwp
 draft: false
 protected: true
 ---
+
+import typography from "./pantheon-typography.avif";
+import spacingGrid from "./pantheon-spacing-grid.avif";
+import linksButtons from "./pantheon-links-buttons.avif";
 
 ## My role
 
@@ -90,15 +96,26 @@ I set up the foundations so marketing and product could share one language and s
 - **Spacing.** A fluid scale with a 1.25 ratio, where 1rem goes from 16px on small screens to 24px on large ones. Marketing gets more room, the product is more compact.
 - **Color.** One palette with primary, accent, status, neutral and decorative colors for the whole brand.
 
-<Figure alt="Foundations: the fluid grid, the marketing and product type scales, and the spacing scale." />
+<Figure
+  src={typography}
+  alt="Typography foundations: Poppins Bold and Aleo Italic specimens, and the marketing heading scale for desktop (1.25) and mobile (1.2) with size, line height and weight for each level."
+/>
+
+<Figure
+  src={spacingGrid}
+  alt="Spacing and grid foundations: the fluid spacing formula from 3XS to 3XL, column spanning on 4, 6 and 12 column grids, and layout examples with a fixed sidebar and nested grids."
+/>
 
 ## Documentation
 
-We wrote the documentation for both systems ourselves instead of leaving notes in Figma. Each foundation, component and pattern explains when to use it, how to place it, and what to avoid. The forms page, for example, covers alignment and placement, stacked and horizontal layouts, and spacing.
+We wrote the documentation for both systems ourselves instead of leaving notes in Figma. Each foundation, component and pattern explains when to use it, how to place it, and what to avoid. The links and buttons pages, for example, cover when to use each one, when not to, and every style and state.
 
 Writing the docs first meant we had to agree on decisions before anything was built. It also gave developers a clear reference when they built the components in Storybook.
 
-<Figure alt="Documentation page for forms with placement rules, stacked and horizontal layouts, and spacing annotations." />
+<Figure
+  src={linksButtons}
+  alt="Documentation pages for links and buttons: usage guidelines, link styles in default and hover states, button types, and a pyramid of high, medium and low emphasis buttons."
+/>
 
 ## Training the team
 

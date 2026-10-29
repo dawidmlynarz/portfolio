@@ -11,6 +11,7 @@ import Button from "@/components/ui/Button.astro";
 import Tag from "@/components/ui/Tag.astro";
 import Figure from "@/components/ui/Figure.astro";
 import Video from "@/components/ui/Video.astro";
+import VideoTabs from "@/components/content/VideoTabs.astro";
 import BeforeAfter from "@/components/ui/BeforeAfter.astro";
 import Hero from "@/components/blocks/Hero.astro";
 import PortraitReveal from "@/components/blocks/PortraitReveal.astro";
@@ -30,10 +31,11 @@ import { COLOR_ROLES, SPACE } from "@/lib/tokens";
 import { SERVICES } from "@/lib/services";
 import { PORTRAIT_LAYERS, portraitPhoto } from "@/lib/portrait";
 import figureSample from "@/assets/placeholders/figure-sample.jpg";
+import diagramSample from "@/content/work/zazmic-anvil-ui/anvil-levels.avif";
 import videoSample from "@/assets/placeholders/video-sample.mp4";
 import videoSamplePoster from "@/assets/placeholders/video-sample-poster.jpg";
-import compareBefore from "@/content/work/csspeeper/csspeeper-before.jpg";
-import compareAfter from "@/content/work/csspeeper/csspeeper-after.jpg";
+import compareBefore from "@/content/work/csspeeper/csspeeper-before.avif";
+import compareAfter from "@/content/work/csspeeper/csspeeper-after.avif";
 
 // Contents mini map (right edge, from 62em) over this page's own sections, as on case studies.
 const STYLEGUIDE_SECTIONS = [
@@ -312,6 +314,13 @@ const SECTIONS = [
             caption="Figure with a caption. Images go through astro:assets and require alt text."
           />
           <Figure
+            src={diagramSample}
+            alt="The building blocks of Anvil UI as line icons: atoms, molecules, organisms, templates and the Agent Builder."
+            width="content"
+            variant="diagram"
+            caption="Diagram variant: a transparent line drawing at the text width, no card. Inverted in the dark theme."
+          />
+          <Figure
             alt="Figma library structure: foundations feeding the marketing and product libraries."
             caption="Placeholder variant: leave out src while the image is being made. Previews only; production skips it."
           />
@@ -334,6 +343,34 @@ const SECTIONS = [
           <Video
             label="A screen recording of the booking flow."
             caption="Placeholder variant: leave out src while the recording is being made. Previews only; production skips it."
+          />
+        </Stack>
+
+        <Stack gap="4">
+          <h3>VideoTabs</h3>
+          <p class="muted measure">
+            Several clips in one frame with a tab for each, so a case study can show a lot without
+            getting longer. Only the chosen clip shows and loads; switching starts it from the
+            beginning. Arrow keys move between tabs. Without JS every clip shows in turn, captioned
+            with its tab name.
+          </p>
+          <VideoTabs
+            label="Sample flows"
+            items={[
+              {
+                tab: "First flow",
+                src: videoSample,
+                poster: videoSamplePoster,
+                label: "Sample clip: the Anvil UI Showroom assistant answering in a side panel.",
+                caption: "Each tab can have its own one-line caption.",
+              },
+              {
+                tab: "Second flow",
+                src: videoSample,
+                poster: videoSamplePoster,
+                label: "The same sample clip, as a second tab.",
+              },
+            ]}
           />
         </Stack>
 

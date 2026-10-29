@@ -1,6 +1,6 @@
 ---
 import { Image, getImage } from "astro:assets";
-import { SITE, SOCIAL_LINKS } from "@/lib/site";
+import { breadcrumbs, personId, websiteId } from "@/lib/schema";
 import SiteLayout from "@/layouts/SiteLayout.astro";
 import Container from "@/components/layout/Container.astro";
 import Tag from "@/components/ui/Tag.astro";
@@ -34,22 +34,29 @@ const og = await getImage({
   quality: 82,
 });
 const ogImage = { src: og.src, width: 1200, height: 630, alt: data.coverAlt };
+const site = Astro.site!;
+const url = new URL(`/work/${entry.id}`, site).href;
 const jsonLd = {
   "@context": "https://schema.org",
-  "@type": "CreativeWork",
-  name: data.title,
-  headline: data.title,
-  description: data.description,
-  image: new URL(og.src, Astro.site).href,
-  url: new URL(`/work/${entry.id}`, Astro.site).href,
-  ...(data.year ? { dateCreated: String(data.year) } : {}),
-  keywords: [data.industry, ...data.tags].join(", "),
-  author: {
-    "@type": "Person",
-    name: SITE.name,
-    url: Astro.site?.href,
-    sameAs: SOCIAL_LINKS.map((l) => l.href),
-  },
+  "@graph": [
+    {
+      "@type": "CreativeWork",
+      "@id": `${url}#case-study`,
+      name: data.title,
+      headline: data.title,
+      description: data.seoDescription ?? data.description,
+      image: new URL(og.src, site).href,
+      url,
+      ...(data.year ? { dateCreated: String(data.year) } : {}),
+      keywords: [data.industry, ...data.tags].join(", "),
+      author: { "@id": personId(site) },
+      isPartOf: { "@id": websiteId(site) },
+    },
+    breadcrumbs(site, [
+      ["Work", "/work"],
+      [data.title, `/work/${entry.id}`],
+    ]),
+  ],
 };
 
 const facts = [
@@ -62,7 +69,7 @@ const facts = [
 
 <SiteLayout
   title={data.seoTitle ?? data.title}
-  description={data.description}
+  description={data.seoDescription ?? data.description}
   type="article"
   image={ogImage}
   jsonLd={jsonLd}
@@ -98,6 +105,7 @@ const facts = [
           sizes="100vw"
           loading="eager"
           fetchpriority="high"
+          format="avif"
         />
       </div>
 
