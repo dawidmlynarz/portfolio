@@ -24,7 +24,7 @@ interface Props {
 const { entry, nextUp = [], headings = [] } = Astro.props;
 const { data } = entry;
 
-// Share image: the cover cropped to 1200×630.
+// Structured data image: the cover cropped to 1200×630. The share image is the site-wide one.
 const og = await getImage({
   src: data.cover,
   width: 1200,
@@ -33,7 +33,6 @@ const og = await getImage({
   format: "jpeg",
   quality: 82,
 });
-const ogImage = { src: og.src, width: 1200, height: 630, alt: data.coverAlt };
 const site = Astro.site!;
 const url = new URL(`/work/${entry.id}`, site).href;
 const jsonLd = {
@@ -71,7 +70,6 @@ const facts = [
   title={data.seoTitle ?? data.title}
   description={data.seoDescription ?? data.description}
   type="article"
-  image={ogImage}
   jsonLd={jsonLd}
 >
   <article class="case-study">

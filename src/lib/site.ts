@@ -22,12 +22,12 @@ export const SITE = {
     "Product design",
   ],
   email: "hello@mlynarz.com",
-  /** Social share image in public/ (1200×630). */
+  /** Social share image in public/ (1200×630), used by every page. */
   ogImage: {
-    src: "/og.png",
+    src: "/og.jpg",
     width: 1200,
     height: 630,
-    alt: "Dawid Młynarz – Senior Product Designer. Designing digital products that meet business goals and delight people.",
+    alt: "Dawid Młynarz, in black and white, beside the line: Transforming AI capability into products people actually trust. Agentic UX, AI-ready design systems, product strategy.",
   },
 } as const;
 
