@@ -19,6 +19,10 @@ draft: false
 
 import before from "./csspeeper-before.jpg";
 import after from "./csspeeper-after.jpg";
+import colorsExport from "./csspeeper-colors-export.jpg";
+import typography from "./csspeeper-typography.jpg";
+import contrast from "./csspeeper-contrast.jpg";
+import assets from "./csspeeper-assets.jpg";
 
 ## My role
 
@@ -103,7 +107,24 @@ I redesigned the extension and the website. The main changes:
 
 The new version launched in March 2025.
 
-<Figure alt="The relaunched CSS Peeper with the Colors, Typography, Contrast and Assets panels." />
+<ImageGrid>
+  <Figure
+    src={colorsExport}
+    alt="The Colors panel with an Export all button, next to palette exports for Figma, Adobe Suite and Sketch."
+  />
+  <Figure
+    src={typography}
+    alt="The Colors palette next to a Heading 1 text style card with its font, size, line height and contrast."
+  />
+  <Figure
+    src={contrast}
+    alt="Inspecting a button: its text and background colors, size and padding, and a contrast check against AA and AAA."
+  />
+  <Figure
+    src={assets}
+    alt="The Assets panel in a grid view, exporting every image on the page as a zip of SVG, JPG, PNG and WebP files."
+  />
+</ImageGrid>
 
 ## Making it pay for itself
 
@@ -112,8 +133,6 @@ Monetizing a Chrome extension is hard. People expect extensions to be free, and 
 Not everyone liked it. Some reviews from that time are angry, which we expected when a free tool starts asking for money. We still think the split is fair, and the trial numbers back it up: **around 35% of people who try a paid plan keep it**.
 
 It’s side-project income, not a startup. But it covers our Vercel and Firebase costs and lets us put money back into making the tool stable, fixing bugs and keeping it maintained, which we couldn’t really do while it was free.
-
-<Figure alt="CSS Peeper pricing with the Free, Professional and Ultra plans." />
 
 ## Key Takeaways
 
