@@ -545,3 +545,7 @@ What changed versus the embed, and why:
 **One booking link.** Every "Book a call" uses `BOOKING_HREF` (`src/lib/site.ts`): `SITE.bookingUrl` once Dawid sets up a scheduling page, `/contact` until then.
 
 **No "freelance".** Home title, default description, About and Services descriptions now say senior product designer. Plans are also in structured data as an `OfferCatalog` with USD `UnitPriceSpecification`s (monthly for the embedded plan).
+
+**Round 2: services first, then plans, then quotes.** Dawid asked for the services to lead and the plans to follow, with the full-time line right under the plans (no button of its own). Copy speaks as one person: no "we".
+
+**Quotes carousel (`Testimonials`).** Five LinkedIn recommendations, trimmed to the lines about the services. Wording stays the recommender's own (cuts only), so nothing is put in anyone's mouth. Picked for recency and relevance: George Yoon, Chris Beaumont, Anthony A. Marin (Newsweek, 2026), Scott Batchelor (2024), Rohan Mohana (2023). Roles are current LinkedIn headlines. The carousel is a CSS scroll-snap row (one slide on phones, two from 48em) with a small script for the back and next buttons; without JS the buttons stay hidden and the row still swipes and scrolls. Button gained an `arrow-left` icon for it.

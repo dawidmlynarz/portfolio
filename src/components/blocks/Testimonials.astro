@@ -1,0 +1,121 @@
+---
+/**
+ * Quotes from people Dawid worked with, as a carousel: a row of slides that scrolls and snaps
+ * sideways, with back and next buttons. Without JS it is a plain swipeable, scrollable row (the
+ * buttons stay hidden). Data: src/lib/testimonials.ts.
+ */
+import Quote from "@/components/content/Quote.astro";
+import Button from "@/components/ui/Button.astro";
+import type { Testimonial } from "@/lib/testimonials";
+
+interface Props {
+  testimonials: Testimonial[];
+  label?: string;
+}
+
+const { testimonials, label = "What people say" } = Astro.props;
+---
+
+<div class="testimonials" role="region" aria-roledescription="carousel" aria-label={label}>
+  <ul class="testimonials__track" role="list" tabindex="0" data-testimonials-track>
+    {testimonials.map(({ quote, name, role, company }, index) => (
+      <li
+        class="testimonials__slide"
+        role="group"
+        aria-roledescription="slide"
+        aria-label={`${index + 1} of ${testimonials.length}`}
+      >
+        <Quote author={name} role={company ? `${role}, ${company}` : role}>
+          “{quote}”
+        </Quote>
+      </li>
+    ))}
+  </ul>
+  <div class="testimonials__controls" data-testimonials-controls hidden>
+    <Button variant="secondary" icon="arrow-left" label="Previous quote" data-testimonials-prev />
+    <Button variant="secondary" icon="arrow" label="Next quote" data-testimonials-next />
+  </div>
+</div>
+
+<script>
+  // One step is one slide plus the gap. Buttons turn off at either end of the row.
+  document.querySelectorAll<HTMLElement>(".testimonials").forEach((root) => {
+    const track = root.querySelector<HTMLElement>("[data-testimonials-track]");
+    const controls = root.querySelector<HTMLElement>("[data-testimonials-controls]");
+    const prev = root.querySelector<HTMLButtonElement>("[data-testimonials-prev]");
+    const next = root.querySelector<HTMLButtonElement>("[data-testimonials-next]");
+    if (!track || !controls || !prev || !next) return;
+
+    const reduced = window.matchMedia("(prefers-reduced-motion: reduce)");
+    const step = () => {
+      const slide = track.firstElementChild as HTMLElement | null;
+      const gap = parseFloat(getComputedStyle(track).columnGap) || 0;
+      return (slide?.offsetWidth ?? track.clientWidth) + gap;
+    };
+    const update = () => {
+      const end = track.scrollWidth - track.clientWidth - 1;
+      prev.disabled = track.scrollLeft <= 1;
+      next.disabled = track.scrollLeft >= end;
+      controls.hidden = end <= 0;
+    };
+    const go = (direction: 1 | -1) =>
+      track.scrollBy({ left: direction * step(), behavior: reduced.matches ? "auto" : "smooth" });
+
+    prev.addEventListener("click", () => go(-1));
+    next.addEventListener("click", () => go(1));
+    track.addEventListener("scroll", update, { passive: true });
+    new ResizeObserver(update).observe(track);
+    update();
+  });
+</script>
+
+<style>
+  @layer components {
+    .testimonials {
+      display: grid;
+      gap: var(--space-8);
+    }
+
+    .testimonials__track {
+      display: flex;
+      gap: var(--space-8);
+      padding: 0;
+      overflow-x: auto;
+      overscroll-behavior-x: contain;
+      scroll-snap-type: x mandatory;
+      scroll-behavior: smooth;
+      scrollbar-width: none;
+    }
+
+    .testimonials__track::-webkit-scrollbar {
+      display: none;
+    }
+
+    .testimonials__track:focus-visible {
+      outline-offset: var(--space-2);
+    }
+
+    .testimonials__slide {
+      flex: 0 0 100%;
+      padding-block-start: var(--space-6);
+      border-block-start: var(--border-width) solid var(--color-text);
+      scroll-snap-align: start;
+    }
+
+    .testimonials__controls {
+      display: flex;
+      gap: var(--space-3);
+    }
+
+    .testimonials__controls[hidden] {
+      display: none;
+    }
+
+    /* Two quotes in view from tablets up. */
+    @media (width >= 48em) {
+      .testimonials__slide {
+        flex-basis: calc((100% - var(--space-8)) / 2);
+      }
+    }
+  }
+</style>

@@ -61,8 +61,8 @@ export const PLANS: Plan[] = [
     terms: "Quoted per project",
     includes: [
       "A design system build, an AI feature or a redesign",
-      "Scope, timeline and price agreed before we start",
-      "A short proposal within a few days of our call",
+      "Scope, timeline and price agreed before any work starts",
+      "A short proposal from me within a few days of the call",
     ],
   },
 ];

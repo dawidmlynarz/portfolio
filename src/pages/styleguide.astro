@@ -20,6 +20,7 @@ import Metrics from "@/components/content/Metrics.astro";
 import SectionIntro from "@/components/blocks/SectionIntro.astro";
 import Services from "@/components/blocks/Services.astro";
 import Plans from "@/components/blocks/Plans.astro";
+import Testimonials from "@/components/blocks/Testimonials.astro";
 import StoryIntro from "@/components/blocks/StoryIntro.astro";
 import ClientLogos from "@/components/blocks/ClientLogos.astro";
 import WorkMarquee from "@/components/blocks/WorkMarquee.astro";
@@ -32,6 +33,7 @@ import { getEntry } from "astro:content";
 import { COLOR_ROLES, SPACE } from "@/lib/tokens";
 import { SERVICES } from "@/lib/services";
 import { PLANS } from "@/lib/plans";
+import { TESTIMONIALS } from "@/lib/testimonials";
 import { PORTRAIT_LAYERS, portraitPhoto } from "@/lib/portrait";
 import figureSample from "@/assets/placeholders/figure-sample.jpg";
 import diagramSample from "@/content/work/zazmic-anvil-ui/anvil-levels.avif";
@@ -292,6 +294,7 @@ const SECTIONS = [
               With arrow
             </Button>
             <Button href="#components" variant="secondary" icon="arrow-up" label="Back to top" />
+            <Button variant="secondary" icon="arrow-left" label="Previous" />
             <Button href="#components" icon="arrow" label="Next" />
           </div>
         </Stack>
@@ -481,6 +484,10 @@ const SECTIONS = [
           Plans · priced plans with a primary button, a quoted plan with a secondary one (/services)
         </h3>
         <Plans headingLevel={4} plans={PLANS} anchors={false} />
+        <h3 class="text-caption muted">
+          Testimonials · quote carousel, one slide on phones and two from tablets (/services)
+        </h3>
+        <Testimonials testimonials={TESTIMONIALS} label="Testimonials sample" />
         <h3 class="text-caption muted">ClientLogos · row (About) and spread; marquee below</h3>
         <ClientLogos />
         <ClientLogos spread />

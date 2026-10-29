@@ -6,10 +6,10 @@ import SectionIntro from "@/components/blocks/SectionIntro.astro";
 import Services from "@/components/blocks/Services.astro";
 import HeroBackdrop from "@/components/blocks/HeroBackdrop.astro";
 import Plans from "@/components/blocks/Plans.astro";
-import Button from "@/components/ui/Button.astro";
+import Testimonials from "@/components/blocks/Testimonials.astro";
 import { SERVICES } from "@/lib/services";
 import { PLANS } from "@/lib/plans";
-import { BOOKING_HREF } from "@/lib/site";
+import { TESTIMONIALS } from "@/lib/testimonials";
 import { breadcrumbs, offerCatalog, service } from "@/lib/schema";
 
 const site = Astro.site!;
@@ -37,34 +37,43 @@ const jsonLd = {
           Strategy, systems and agents, <span class="services-page__muted">designed to ship.</span>
         </h1>
         <p class="text-lead services-page__lead services-page__muted" data-reveal="fade">
-          Three ways to work together, each priced before we start. Pick one, book a call, and we’ll
-          check it fits.
+          Three services, one way of working: close to the problem, close to engineering, and
+          measured by what changes for the people using the product.
         </p>
       </div>
-      <Plans plans={PLANS} headingLevel={2} id="plans" />
+      <Services services={SERVICES} headingLevel={2} variant="detailed" />
     </Container>
   </Section>
 
-  <Section space="lg" aria-labelledby="expertise-title">
+  <Section space="lg" aria-labelledby="plans-title">
     <Container class="services-page">
       <SectionIntro
-        id="expertise-title"
-        label="What I work on"
-        title="Every plan covers"
-        titleMuted="the same three areas."
+        id="plans-title"
+        label="Plans"
+        title="Three ways to work with me,"
+        titleMuted="each priced upfront."
       />
-      <Services services={SERVICES} headingLevel={3} variant="detailed" />
-      <div class="services-page__cta" data-reveal="fade">
-        <p class="text-lead">
+      <div class="services-page__plans">
+        <Plans plans={PLANS} headingLevel={3} id="plans" />
+        <p class="text-lead services-page__lead" data-reveal="fade">
           Looking for a full-time senior or lead product designer?{" "}
           <span class="services-page__muted">
             I’m open to that too, with a team building AI-first products.
           </span>
         </p>
-        <Button href={BOOKING_HREF} icon="arrow">
-          Book a call
-        </Button>
       </div>
+    </Container>
+  </Section>
+
+  <Section space="lg" aria-labelledby="testimonials-title">
+    <Container class="services-page">
+      <SectionIntro
+        id="testimonials-title"
+        label="Kind words"
+        title="What people say"
+        titleMuted="about working with me."
+      />
+      <Testimonials testimonials={TESTIMONIALS} />
     </Container>
   </Section>
 </SiteLayout>
@@ -81,19 +90,17 @@ const jsonLd = {
       gap: var(--space-6);
     }
 
+    .services-page__plans {
+      display: grid;
+      gap: var(--space-10);
+    }
+
     .services-page__lead {
       max-inline-size: var(--measure);
     }
 
     .services-page__muted {
       color: var(--color-text-muted);
-    }
-
-    .services-page__cta {
-      display: grid;
-      gap: var(--space-6);
-      justify-items: start;
-      max-inline-size: var(--measure);
     }
   }
 </style>
