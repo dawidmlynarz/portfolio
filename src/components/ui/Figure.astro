@@ -16,6 +16,11 @@ interface Props {
   loading?: "lazy" | "eager";
   /** Inside Prose: content (reading measure), wide (page width) or full (edge to edge). */
   width?: "content" | "wide" | "full";
+  /**
+   * diagram: a transparent line drawing that sits on the page like text (no card, no corners).
+   * Draw it in dark ink; in the dark theme it is inverted so the lines stay readable.
+   */
+  variant?: "default" | "diagram";
   class?: string;
 }
 
@@ -26,6 +31,7 @@ const {
   sizes,
   loading = "lazy",
   width = "wide",
+  variant = "default",
   class: className,
 } = Astro.props;
 
@@ -40,7 +46,12 @@ const defaultSizes = {
 
 {!hidden && (
   <figure
-    class:list={["figure", `figure--${width}`, { "figure--placeholder": !src }, className]}
+    class:list={[
+      "figure",
+      `figure--${width}`,
+      { "figure--placeholder": !src, "figure--diagram": variant === "diagram" },
+      className,
+    ]}
     data-width={width}
   >
     {src ? (
@@ -100,6 +111,15 @@ const defaultSizes = {
 
     .figure--full .figure__image {
       border-radius: 0;
+    }
+
+    .figure--diagram .figure__image {
+      border-radius: 0;
+      background-color: transparent;
+    }
+
+    :global(:root[data-theme="dark"]) .figure--diagram .figure__image {
+      filter: invert(1) hue-rotate(180deg);
     }
 
     .figure--full .figure__caption {

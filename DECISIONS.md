@@ -2,6 +2,10 @@
 
 Non-obvious choices, newest first. One entry per decision: what, why, and what it rules out.
 
+## 2026-10-29 · Figure `diagram` variant for line drawings
+
+`<Figure variant="diagram" width="content">` shows a transparent line drawing at the text width with no card, corners or background, so it reads as part of the text. Diagrams are drawn in dark ink and inverted in the dark theme (`invert(1) hue-rotate(180deg)`), so one file works in both. Trim transparent padding from the source so the spacing comes from the page. First used for the Anvil UI levels.
+
 ## 2026-10-29 · Several demo clips share one frame (VideoTabs)
 
 To show more of a product without making the page longer, `VideoTabs` (content, available in MDX) puts several clips in one frame with a tab per clip. Each clip is a regular `Video`, so loading, autoplay and reduced motion behave the same; only the chosen clip shows, and switching starts it from the beginning. Without JS every clip shows in turn, captioned with its tab name, so nothing is lost. Used for the three Anvil Showroom flows, which replace the stand-in clip.

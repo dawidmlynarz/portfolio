@@ -30,6 +30,7 @@ import { COLOR_ROLES, SPACE } from "@/lib/tokens";
 import { SERVICES } from "@/lib/services";
 import { PORTRAIT_LAYERS, portraitPhoto } from "@/lib/portrait";
 import figureSample from "@/assets/placeholders/figure-sample.jpg";
+import diagramSample from "@/content/work/zazmic-anvil-ui/anvil-levels.avif";
 import videoSample from "@/assets/placeholders/video-sample.mp4";
 import videoSamplePoster from "@/assets/placeholders/video-sample-poster.jpg";
 
@@ -308,6 +309,13 @@ const SECTIONS = [
             src={figureSample}
             alt="Placeholder layout: a page with a heading, two text lines and three cards."
             caption="Figure with a caption. Images go through astro:assets and require alt text."
+          />
+          <Figure
+            src={diagramSample}
+            alt="The building blocks of Anvil UI as line icons: atoms, molecules, organisms, templates and the Agent Builder."
+            width="content"
+            variant="diagram"
+            caption="Diagram variant: a transparent line drawing at the text width, no card. Inverted in the dark theme."
           />
           <Figure
             alt="Figma library structure: foundations feeding the marketing and product libraries."
