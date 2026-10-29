@@ -261,12 +261,29 @@
     visibility: visible;
   }
 
+  .mindblown__goo--free {
+    mask: none;
+  }
+
+  /* the lifted lid can be grabbed and pulled around (mindblown.ts) */
+  .mindblown__head--grab {
+    cursor: grab;
+  }
+
+  .mindblown__head--dragging {
+    cursor: grabbing;
+  }
+
   .mindblown__goo-body {
     fill: var(--mb-rim);
   }
 
   .mindblown__goo-shine {
     fill: var(--mb-brain-cheek);
+  }
+
+  .mindblown__goo-line {
+    flood-color: var(--mb-brain-line);
   }
 
   .mindblown__hole {
