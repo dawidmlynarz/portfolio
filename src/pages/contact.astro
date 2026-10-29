@@ -13,9 +13,9 @@ const [user, domain] = SITE.email.split("@");
 <SiteLayout
   title="Contact"
   description="Got a project in mind? Email Dawid Młynarz about AI-ready design systems, agentic UX or product strategy."
-  footerCta={false}
+  fit
 >
-  <Section space="md" class="hero-backdrop-host contact" aria-labelledby="contact-title">
+  <Section space="sm" class="hero-backdrop-host contact" aria-labelledby="contact-title">
     <HeroBackdrop />
     <Container class="contact__inner">
       <div class="contact__head">
@@ -65,6 +65,23 @@ const [user, domain] = SITE.email.split("@");
 
     .contact__lead {
       max-inline-size: calc(var(--measure) * 0.75);
+    }
+
+    /* The covers peek up from the bottom of the screen: they are sized so about two thirds of
+       each one fits in the room left under the email, and the rest runs off the edge. */
+    .contact__work {
+      --work-marquee-size: clamp(12rem, 100cqb / 0.65 * 4 / 3, min(40rem, 80cqi));
+
+      container-type: size;
+      display: flex;
+      align-items: flex-end;
+      overflow: clip;
+    }
+
+    /* A third of each cover (4:3, so its height is 3/4 of its width) hangs below the screen. */
+    .contact__work :global(.work-marquee) {
+      flex-grow: 1;
+      margin-block-end: calc(var(--work-marquee-size) * -0.75 * 0.35);
     }
 
     /* The email as the headline act: display size, a hairline under it and the row tear every

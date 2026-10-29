@@ -3,9 +3,11 @@
  * Case-study covers drifting sideways in an endless loop (/contact, after the email): a reminder
  * of the work, one click from each case study. Inspired by alexandre-araujo.com/contact.
  *
- * Every cover is cropped to 4:3, as on the work cards, with no caption. Built like the ClientLogos marquee: the list twice (the copy hidden from assistive tech and
- * out of the tab order), slid by one copy in CSS. It pauses on hover and while a cover has focus.
- * Reduced motion: a still row you can scroll sideways.
+ * Every cover is cropped to 4:3, as on the work cards, with no caption. Built like the ClientLogos
+ * marquee: the list twice (the copy hidden from assistive tech and out of the tab order), slid by
+ * one copy in CSS. It stops while a cover is hovered or has focus. With the motion layer
+ * (motion.ts, [data-magnet]) the hovered cover leans towards the pointer and a "View project"
+ * label follows it. Reduced motion: a still row you can scroll sideways.
  */
 import { Image } from "astro:assets";
 import { getPagedWork, workHref, type Work } from "@/lib/work";
@@ -24,7 +26,7 @@ const {
 } = Astro.props;
 ---
 
-<div class:list={["work-marquee", className]}>
+<div class:list={["work-marquee", className]} data-magnet>
   <div class="work-marquee__track">
     {[0, 1].map((copy) => (
       <ul
@@ -40,6 +42,7 @@ const {
               href={workHref(entry)}
               tabindex={copy === 1 ? -1 : undefined}
               data-no-tear
+              data-magnet-item
             >
               <span class="work-marquee__frame">
                 <Image
@@ -60,14 +63,17 @@ const {
       </ul>
     ))}
   </div>
+  <span class="work-marquee__hint text-small" aria-hidden="true" data-magnet-hint>
+    View project
+  </span>
 </div>
 
 <style>
   @layer components {
     .work-marquee {
       --work-marquee-gap: var(--space-4);
-      --work-marquee-size: 22rem;
 
+      position: relative;
       overflow: hidden;
     }
 
@@ -77,7 +83,7 @@ const {
       animation: work-marquee var(--duration-marquee-work) linear infinite;
     }
 
-    .work-marquee:hover .work-marquee__track,
+    .work-marquee:has(.work-marquee__link:hover) .work-marquee__track,
     .work-marquee:focus-within .work-marquee__track {
       animation-play-state: paused;
     }
@@ -90,17 +96,48 @@ const {
 
     .work-marquee__item {
       flex-shrink: 0;
-      inline-size: var(--work-marquee-size);
+      inline-size: var(--work-marquee-size, 22rem);
     }
 
     .work-marquee__link {
       --underline-size: 0%;
 
+      position: relative;
       display: block;
+      transition: scale var(--duration-zoom) var(--ease-out-expo);
     }
 
+    /* Hover: the cover comes forward a little (motion.ts also pulls it towards the pointer). */
     .work-marquee__link:hover {
       --underline-size: 0%;
+
+      z-index: 1;
+      scale: 1.04;
+    }
+
+    /* "View project", beside the pointer while a cover is hovered (motion.ts sets the position). */
+    .work-marquee__hint {
+      position: absolute;
+      inset-block-start: 0;
+      inset-inline-start: 0;
+      z-index: 2;
+      padding: var(--space-1) var(--space-3);
+      border-radius: var(--radius-pill);
+      color: var(--color-on-inverse);
+      background-color: var(--color-inverse-bg);
+      white-space: nowrap;
+      pointer-events: none;
+      opacity: 0;
+      translate: var(--hint-x, 0) var(--hint-y, 0);
+      scale: 0.8;
+      transition:
+        opacity var(--duration-fast) var(--ease-standard),
+        scale var(--duration-fast) var(--ease-standard);
+    }
+
+    .work-marquee__hint[data-active] {
+      opacity: 1;
+      scale: 1;
     }
 
     /* 4:3, centred, like the work cards. */
@@ -154,8 +191,11 @@ const {
 
     @media (width < 48em) {
       .work-marquee {
-        --work-marquee-size: 14rem;
         --work-marquee-gap: var(--space-3);
+      }
+
+      .work-marquee__item {
+        inline-size: var(--work-marquee-size, 14rem);
       }
     }
   }

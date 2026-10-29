@@ -10,6 +10,8 @@
  *   image drifts from its top edge to its bottom edge while the frame scrolls past.
  * - [data-cover-follow]: in a list of links ("Next up"), the hovered link's cover follows the
  *   pointer, beside it.
+ * - [data-magnet]: the hovered [data-magnet-item] leans towards the pointer, and a
+ *   [data-magnet-hint] label follows the pointer (the case-study carousel on /contact).
  * - Links: the "row tear" hover (styles in base.css). Links marked [data-no-tear] keep their own
  *   hover: buttons, pills and quiet links (menu, case-study cards, Next project).
  *
@@ -157,6 +159,44 @@ function coverFollow() {
   }
 }
 
+/**
+ * Magnet: the hovered item is pulled a little towards the pointer (a share of the pointer's
+ * distance from the item's centre) and springs back when it leaves. Its hint label rides beside
+ * the pointer. Fine pointers only; touch just taps through.
+ */
+function magnet() {
+  const PULL = 0.18;
+  const HINT_GAP = 16;
+  if (!matchMedia("(hover: hover) and (pointer: fine)").matches) return;
+  for (const area of document.querySelectorAll<HTMLElement>("[data-magnet]")) {
+    const hint = area.querySelector<HTMLElement>("[data-magnet-hint]");
+    for (const item of area.querySelectorAll<HTMLElement>("[data-magnet-item]")) {
+      const toX = gsap.quickTo(item, "x", { duration: 0.6, ease: "power3.out" });
+      const toY = gsap.quickTo(item, "y", { duration: 0.6, ease: "power3.out" });
+      // Measure the untransformed parent, so the pull doesn't feed back into itself.
+      const box = item.parentElement ?? item;
+      item.addEventListener("pointermove", (event) => {
+        const rect = box.getBoundingClientRect();
+        toX((event.clientX - rect.left - rect.width / 2) * PULL);
+        toY((event.clientY - rect.top - rect.height / 2) * PULL);
+      });
+      item.addEventListener("pointerleave", () => {
+        toX(0);
+        toY(0);
+      });
+    }
+    if (!hint) continue;
+    area.addEventListener("pointermove", (event) => {
+      const rect = area.getBoundingClientRect();
+      hint.style.setProperty("--hint-x", `${event.clientX - rect.left + HINT_GAP}px`);
+      hint.style.setProperty("--hint-y", `${event.clientY - rect.top + HINT_GAP}px`);
+      const over = (event.target as Element).closest("[data-magnet-item]");
+      hint.toggleAttribute("data-active", Boolean(over));
+    });
+    area.addEventListener("pointerleave", () => hint.removeAttribute("data-active"));
+  }
+}
+
 const TEAR_MS = 300; // a little longer than --duration-tear
 
 /** Wraps a link's label (everything before its icon) in .link-tear, once. */
@@ -262,5 +302,6 @@ if (root.classList.contains("motion")) {
   story();
   parallax();
   coverFollow();
+  magnet();
   linkTear();
 }
