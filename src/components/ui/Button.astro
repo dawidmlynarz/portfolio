@@ -150,8 +150,15 @@ const layers = iconOnly ? ["face"] : ["face", "outer", "middle"];
       font-size: var(--text-lead);
     }
 
+    /* Icon buttons match the nav's theme and menu buttons: a 2.5rem circle, a 1.125em icon.
+       Ghost ones also share their hover, a soft fill with no ring. */
     .button--icon {
-      --button-pad: var(--space-3);
+      --button-pad: calc((var(--space-10) - 1.125em) / 2);
+    }
+
+    .button--ghost.button--icon {
+      --hot-bg: var(--color-bg-subtle);
+      --hot-ring: transparent;
     }
 
     .button__face,
@@ -198,8 +205,8 @@ const layers = iconOnly ? ["face"] : ["face", "outer", "middle"];
     }
 
     .button--icon .button__icon {
-      inline-size: 1.25em;
-      block-size: 1.25em;
+      inline-size: 1.125em;
+      block-size: 1.125em;
     }
 
     /* ---------- Text buttons: the row tear ----------

@@ -1,8 +1,10 @@
 ---
 /**
- * Plans as cards side by side (one column on small screens): the plan, a one-line promise, the
- * price and its terms, what's included and a "Book a call" button. A plan without a price is
- * quoted per project and gets the secondary button. Data: src/lib/plans.ts.
+ * Plans as wide rows rather than a row of pricing cards. The featured plan (the retainer) leads
+ * on a tinted panel: what it is and its price on the left, what's included and the button on the
+ * right. The other plans follow as open rows under a rule, side by side from 62em, with the same
+ * parts in the same order. Every plan ends in "Book a call"; the featured one gets the primary
+ * button. Data: src/lib/plans.ts.
  */
 import Button from "@/components/ui/Button.astro";
 import { formatPrice, type Plan } from "@/lib/plans";
@@ -18,33 +20,46 @@ interface Props {
 
 const { plans, headingLevel = 3, id, anchors = true } = Astro.props;
 const Heading = `h${headingLevel}` as const;
+// The featured plan always leads, whatever the data order.
+const ordered = [...plans].sort(
+  (a, b) => Number(Boolean(b.featured)) - Number(Boolean(a.featured)),
+);
 ---
 
 <ul class="plans" role="list" id={id}>
-  {plans.map((plan) => {
-    const { title, promise, price, terms, includes } = plan;
+  {ordered.map((plan) => {
+    const { title, label, promise, price, terms, includes, featured } = plan;
     return (
-      <li class="plans__plan" id={anchors ? plan.id : undefined} data-reveal="fade">
-        <Heading class="plans__title">{title}</Heading>
-        <p class="plans__promise">{promise}</p>
-        <p class="plans__price">
-          <span class="plans__amount">{price ? formatPrice(price) : "Let’s talk"}</span>
-          <span class="text-small plans__terms">{terms}</span>
-        </p>
-        <ul class="plans__includes" role="list">
-          {includes.map((item) => (
-            <li>{item}</li>
-          ))}
-        </ul>
-        <Button
-          class="plans__cta"
-          href={BOOKING_HREF}
-          variant={price ? "primary" : "secondary"}
-          icon="arrow"
-          aria-label={`Book a call about the ${title.toLowerCase()} plan`}
-        >
-          Book a call
-        </Button>
+      <li
+        class:list={["plans__plan", featured && "plans__plan--featured"]}
+        id={anchors ? plan.id : undefined}
+        data-reveal="fade"
+      >
+        <div class="plans__head">
+          <p class="text-caption plans__label">{label}</p>
+          <Heading class="plans__title">{title}</Heading>
+          <p class="plans__promise">{promise}</p>
+          <p class="plans__price">
+            <span class="plans__amount">{price ? formatPrice(price) : "Let’s talk"}</span>
+            <span class="text-small plans__terms">{terms}</span>
+          </p>
+        </div>
+        <div class="plans__body">
+          <ul class="plans__includes" role="list">
+            {includes.map((item) => (
+              <li>{item}</li>
+            ))}
+          </ul>
+          <Button
+            class="plans__cta"
+            href={BOOKING_HREF}
+            variant={featured ? "primary" : "secondary"}
+            icon="arrow"
+            aria-label={`Book a call about the ${title.toLowerCase()}`}
+          >
+            Book a call
+          </Button>
+        </div>
       </li>
     );
   })}
@@ -54,18 +69,40 @@ const Heading = `h${headingLevel}` as const;
   @layer components {
     .plans {
       display: grid;
-      gap: var(--space-6);
+      gap: var(--space-12) var(--space-8);
       padding: 0;
     }
 
     .plans__plan {
       display: grid;
-      grid-template-rows: auto auto auto 1fr auto;
-      gap: var(--space-4);
+      align-content: start;
+      gap: var(--space-8);
+      padding-block-start: var(--space-8);
+      border-block-start: var(--border-width) solid var(--color-text);
+    }
+
+    .plans__plan--featured {
       padding: var(--space-8) var(--space-6);
-      border: var(--border-width) solid var(--color-border-subtle);
+      border: 0;
       border-radius: var(--radius-lg);
-      background-color: var(--color-bg);
+      background-color: var(--color-bg-subtle);
+    }
+
+    .plans__head,
+    .plans__body {
+      display: grid;
+      align-content: start;
+      gap: var(--space-4);
+    }
+
+    .plans__body {
+      gap: var(--space-8);
+    }
+
+    .plans__label,
+    .plans__promise,
+    .plans__terms {
+      color: var(--color-text-muted);
     }
 
     .plans__title {
@@ -73,64 +110,64 @@ const Heading = `h${headingLevel}` as const;
       letter-spacing: var(--tracking-h3);
     }
 
-    .plans__promise,
-    .plans__terms {
-      color: var(--color-text-muted);
+    .plans__plan--featured .plans__title {
+      font-size: var(--text-h2);
+      line-height: var(--leading-h2);
+      letter-spacing: var(--tracking-h2);
+    }
+
+    .plans__promise {
+      max-inline-size: var(--measure-lead);
     }
 
     .plans__price {
       display: grid;
       gap: var(--space-1);
-      padding-block: var(--space-4);
-      border-block: var(--border-width) solid var(--color-border-subtle);
+      padding-block-start: var(--space-2);
     }
 
     .plans__amount {
-      font: var(--weight-medium) var(--text-h2) / var(--leading-h2) var(--font-heading);
+      font: var(--weight-medium) var(--text-h3) / var(--leading-h3) var(--font-heading);
+      letter-spacing: var(--tracking-h3);
+    }
+
+    .plans__plan--featured .plans__amount {
+      font-size: var(--text-h2);
+      line-height: var(--leading-h2);
       letter-spacing: var(--tracking-h2);
     }
 
     .plans__includes {
       display: grid;
-      align-content: start;
-      gap: var(--space-2);
       padding: 0;
     }
 
     .plans__includes li {
-      display: grid;
-      grid-template-columns: var(--space-4) 1fr;
-      gap: var(--space-2);
-    }
-
-    .plans__includes li::before {
-      color: var(--color-text-muted);
-      content: "–" / "";
+      padding-block: var(--space-3);
+      border-block-start: var(--border-width) solid var(--color-border-subtle);
     }
 
     .plans__cta {
       justify-self: start;
-      margin-block-start: var(--space-4);
     }
 
-    /* Two columns on tablets, with an odd last plan across both (no orphan card), then three. */
     @media (width >= 48em) {
+      .plans__plan--featured {
+        padding: var(--space-12) var(--space-10);
+      }
+    }
+
+    /* Wide: the featured plan splits into two columns across the row; the others sit side by side
+       under it, each still head over body. */
+    @media (width >= 62em) {
       .plans {
         grid-template-columns: repeat(2, 1fr);
       }
 
-      .plans__plan:last-child:nth-child(odd) {
+      .plans__plan--featured {
         grid-column: 1 / -1;
-      }
-    }
-
-    @media (width >= 62em) {
-      .plans {
-        grid-template-columns: repeat(3, 1fr);
-      }
-
-      .plans__plan:last-child:nth-child(odd) {
-        grid-column: auto;
+        grid-template-columns: 5fr 6fr;
+        column-gap: var(--space-12);
       }
     }
   }
