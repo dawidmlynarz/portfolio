@@ -7,7 +7,7 @@
  * brain button runs open -> busy -> open: the thoughts get sucked in and a fresh batch bursts out.
  */
 import { gsap } from "gsap";
-import { createGoo } from "./goo";
+import { createGoo, type Drag } from "./goo";
 import { BELT, DESKTOP_COUNT, ICONS, ITEMS, MOBILE_COUNT, type IconName } from "./content";
 
 type Card = HTMLButtonElement & {
@@ -343,6 +343,9 @@ export function init(root: HTMLElement): () => void {
     head.classList.remove("mindblown__head--peek");
     headLook();
     peekTl?.kill();
+    endDrag();
+    goo.free(false);
+    dragHome(T(0.3), "power2.out");
     cut(true);
     head.setAttribute("aria-expanded", "true");
     head.setAttribute("aria-label", "Close my head");
@@ -602,7 +605,16 @@ export function init(root: HTMLElement): () => void {
   brainBtn.addEventListener("pointerleave", () => requestAnimationFrame(settleBrain), on);
   brainBtn.addEventListener("focus", settleBrain, on);
   brainBtn.addEventListener("blur", () => requestAnimationFrame(settleBrain), on);
-  head.addEventListener("click", () => (state === "closed" ? openHead() : closeHead()), on);
+  head.addEventListener(
+    "click",
+    () => {
+      // the lifted lid is for dragging: a click (or a drag) on it doesn't pop the head
+      if (grabbed) return void (grabbed = false);
+      if (state === "closed") openHead();
+      else closeHead();
+    },
+    on,
+  );
   head.addEventListener(
     "keydown",
     (e) => {
@@ -625,7 +637,7 @@ export function init(root: HTMLElement): () => void {
   stage.addEventListener(
     "pointermove",
     (e) => {
-      if (!peeking || RM) return;
+      if (!peeking || dragging || RM) return;
       const r = head.getBoundingClientRect(),
         clamp = gsap.utils.clamp(-1, 1);
       leanTo(clamp((e.clientX - (r.left + r.width * 0.455)) / (r.width * 0.6)));
@@ -634,7 +646,8 @@ export function init(root: HTMLElement): () => void {
   );
 
   /* closed head, mouse hover or keyboard focus: the lid floats up and the brain peeks out */
-  const goo = createGoo(q<SVGSVGElement>("goo"), lid, RM);
+  const drag: Drag = { x: 0, y: 0, r: 0 };
+  const goo = createGoo(q<SVGSVGElement>("goo"), lid, drag, RM);
   const cut = (on: boolean) => {
     head.classList.toggle("mindblown__head--cut", on);
     if (on) goo.start();
@@ -647,6 +660,7 @@ export function init(root: HTMLElement): () => void {
     setFace(on ? "shock" : "rest", false);
     peekTl?.kill();
     if (on) cut(true);
+    else dragHome(T(0.45), "power2.inOut");
     run(() => {
       const tl = (peekTl = gsap.timeline({ onComplete: () => !peeking && cut(false) }));
       // the lid covers the top of the brain: only its eyes show above the rim
@@ -669,8 +683,105 @@ export function init(root: HTMLElement): () => void {
       }
     });
   }
+  /* ---------- the lifted lid can be grabbed ----------
+     While the lid hovers, pressing on it picks it up instead of popping the head: it follows the
+     pointer (with more give the further it goes) and tips with the pointer's speed, the strands
+     stretching behind it. Let go and they pull it back. The drag rides on the lid's CSS
+     translate and rotate, so it never fights GSAP's lean and peek tweens on its transform. */
+  let dragging = false,
+    grabbed = false,
+    grab = { x: 0, y: 0, t: 0, px: 0 };
+  const paint = () => {
+    lid.style.translate = `${drag.x}px ${drag.y}px`;
+    lid.style.rotate = `${drag.r}deg`;
+  };
+  const tilt = run(() =>
+    gsap.quickTo(drag, "r", { duration: 0.35, ease: "power2", onUpdate: paint }),
+  );
+  function dragHome(duration: number, ease = "elastic.out(1,0.35)") {
+    gsap.killTweensOf(drag, "x,y");
+    tilt(0);
+    run(() =>
+      gsap.to(drag, {
+        x: 0,
+        y: 0,
+        duration,
+        ease,
+        onUpdate: paint,
+        onComplete: () => goo.free(false),
+      }),
+    );
+  }
+  const inHead = (e: PointerEvent) => {
+    const r = head.getBoundingClientRect();
+    return { x: ((e.clientX - r.left) / r.width) * 963, y: ((e.clientY - r.top) / r.height) * 896 };
+  };
+  const canGrab = (e: PointerEvent) => {
+    if (state !== "closed" || !peeking || e.pointerType !== "mouse") return false;
+    const p = inHead(e);
+    return goo.onLid(p.x, p.y);
+  };
+  function endDrag() {
+    if (!dragging) return;
+    dragging = false;
+    head.classList.remove("mindblown__head--dragging");
+  }
+  head.addEventListener(
+    "pointerdown",
+    (e) => {
+      grabbed = false;
+      if (e.button !== 0 || !canGrab(e)) return;
+      e.preventDefault();
+      head.setPointerCapture(e.pointerId);
+      dragging = grabbed = true;
+      gsap.killTweensOf(drag, "x,y");
+      grab = { x: e.clientX, y: e.clientY, t: e.timeStamp, px: e.clientX };
+      grab.x -= unrubber(drag.x);
+      grab.y -= unrubber(drag.y);
+      goo.free(true);
+      head.classList.add("mindblown__head--dragging");
+    },
+    on,
+  );
+  /* the further the lid goes, the harder the strands pull: offsets ease off towards a limit */
+  const reach = () => head.getBoundingClientRect().width * 0.9;
+  const rubber = (d: number) => d / (1 + Math.abs(d) / reach());
+  const unrubber = (d: number) => d / Math.max(0.1, 1 - Math.abs(d) / reach());
+  head.addEventListener(
+    "pointermove",
+    (e) => {
+      if (!dragging) {
+        head.classList.toggle("mindblown__head--grab", canGrab(e));
+        return;
+      }
+      drag.x = rubber(e.clientX - grab.x);
+      drag.y = rubber(e.clientY - grab.y);
+      const dt = Math.max(1, e.timeStamp - grab.t);
+      tilt(gsap.utils.clamp(-18, 18, ((e.clientX - grab.px) / dt) * 6));
+      grab.t = e.timeStamp;
+      grab.px = e.clientX;
+      paint();
+    },
+    on,
+  );
+  const release = () => {
+    if (!dragging) return;
+    endDrag();
+    dragHome(T(1.2));
+  };
+  head.addEventListener("pointerup", release, on);
+  head.addEventListener("pointercancel", release, on);
+  head.addEventListener("lostpointercapture", release, on);
+
   head.addEventListener("pointerenter", (e) => e.pointerType === "mouse" && peek(true), on);
-  head.addEventListener("pointerleave", () => peek(false), on);
+  head.addEventListener(
+    "pointerleave",
+    () => {
+      head.classList.remove("mindblown__head--grab");
+      if (!dragging) peek(false);
+    },
+    on,
+  );
   head.addEventListener("focus", () => head.matches(":focus-visible") && peek(true), on);
   head.addEventListener("blur", () => peek(false), on);
 
@@ -1074,7 +1185,12 @@ export function init(root: HTMLElement): () => void {
         else if (t?.closest(".mindblown__brain-btn"))
           label = state === "open" ? "new thoughts" : "";
         else if (t?.closest(".mindblown__head") && root.contains(t))
-          label = state === "closed" ? "pop it open" : "close it";
+          label =
+            state !== "closed"
+              ? "close it"
+              : dragging || head.classList.contains("mindblown__head--grab")
+                ? "drag me"
+                : "pop it open";
         if (label) cursor.textContent = label;
         cursor.classList.toggle("mindblown__cursor--on", !!label && !popOpen);
       },
