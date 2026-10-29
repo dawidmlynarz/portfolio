@@ -4,8 +4,9 @@
  * then a thin line that fills while the quote is up and moves on to the next when it is full.
  * Ghost back and next buttons below it loop round in both directions.
  *
- * - The line pauses while the pointer or focus is inside, while the block is off screen and
- *   while the tab is hidden. With reduced motion nothing advances on its own; the arrows still work.
+ * - The line keeps going under the pointer. It pauses while keyboard focus is inside, while the
+ *   block is off screen and while the tab is hidden. With reduced motion nothing advances on its
+ *   own; the arrows still work.
  * - The change between quotes is the motion layer's (src/scripts/motion.ts): the "quoteswap"
  *   event lets it wipe the old quote's lines out and the new one's in. Without it the quote just
  *   changes.
@@ -125,9 +126,10 @@ const { testimonials, label = "What people say" } = Astro.props;
       else pauses.delete(reason);
       root.toggleAttribute("data-paused", pauses.size > 0);
     };
-    root.addEventListener("pointerenter", () => pause("pointer", true));
-    root.addEventListener("pointerleave", () => pause("pointer", false));
-    root.addEventListener("focusin", () => pause("focus", true));
+    // Keyboard focus only: a mouse click on an arrow should not stop the rotation.
+    root.addEventListener("focusin", (event) => {
+      if ((event.target as Element).matches(":focus-visible")) pause("focus", true);
+    });
     root.addEventListener("focusout", (event) => {
       if (!root.contains(event.relatedTarget as Node | null)) pause("focus", false);
     });

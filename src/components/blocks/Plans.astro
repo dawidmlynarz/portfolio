@@ -1,9 +1,9 @@
 ---
 /**
- * Plans as wide rows rather than a row of pricing cards. The featured plan (the retainer) leads
- * on a tinted panel: what it is and its price on the left, what's included and the button on the
- * right. The other plans follow as open rows under a rule, side by side from 62em, with the same
- * parts in the same order. Every plan ends in "Book a call"; the featured one gets the primary
+ * Plans as wide rows stacked one under another, never a row of pricing cards. Each row puts what
+ * the plan is and its price on the left, what's included and the button on the right (stacked on
+ * small screens). The featured plan (the retainer) leads on a tinted panel with the bigger type;
+ * the others follow as open rows under a rule. Every plan ends in "Book a call"; the featured one gets the primary
  * button. Data: src/lib/plans.ts.
  */
 import Button from "@/components/ui/Button.astro";
@@ -69,7 +69,7 @@ const ordered = [...plans].sort(
   @layer components {
     .plans {
       display: grid;
-      gap: var(--space-12) var(--space-8);
+      gap: var(--space-12);
       padding: 0;
     }
 
@@ -157,15 +157,9 @@ const ordered = [...plans].sort(
       }
     }
 
-    /* Wide: the featured plan splits into two columns across the row; the others sit side by side
-       under it, each still head over body. */
+    /* Wide: every plan is one row, head on the left and body on the right. */
     @media (width >= 62em) {
-      .plans {
-        grid-template-columns: repeat(2, 1fr);
-      }
-
-      .plans__plan--featured {
-        grid-column: 1 / -1;
+      .plans__plan {
         grid-template-columns: 5fr 6fr;
         column-gap: var(--space-12);
       }

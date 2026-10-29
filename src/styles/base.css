@@ -50,6 +50,11 @@
     text-wrap: balance;
   }
 
+  /* A heading set as a caption (a section label) is short and small: no headline measure. */
+  :is(h1, h2):where(.text-caption) {
+    max-inline-size: none;
+  }
+
   h3 {
     font: var(--weight-medium) var(--text-h3) / var(--leading-h3) var(--font-heading);
     letter-spacing: var(--tracking-h3);

@@ -49,19 +49,6 @@ const jsonLd = {
     </Container>
   </Section>
 
-  <Section space="lg" aria-labelledby="working-title">
-    <Container class="services-page">
-      <SectionIntro
-        id="working-title"
-        label="Working together"
-        title="What it’s like"
-        titleMuted="to have me on the project."
-        lead="You’ll know where we stand every week, and you’ll own everything when I leave. One person, start to finish. No account managers, no juniors, no hand-offs."
-      />
-      <Process steps={STEPS} />
-    </Container>
-  </Section>
-
   <Section space="lg" aria-labelledby="approach-title">
     <Container class="services-page">
       <SectionIntro
@@ -78,9 +65,9 @@ const jsonLd = {
     <Container class="services-page">
       <SectionIntro
         id="plans-title"
-        label="Plans"
-        title="I work best inside your team,"
-        titleMuted="two days a week."
+        label="Engagements"
+        title="A senior design lead on your team,"
+        titleMuted="without the hire."
       />
       <div class="services-page__plans">
         <Plans plans={PLANS} headingLevel={3} id="plans" />
@@ -100,6 +87,18 @@ const jsonLd = {
         From people I’ve worked with
       </h2>
       <Testimonials testimonials={TESTIMONIALS} />
+    </Container>
+  </Section>
+  <Section space="lg" aria-labelledby="working-title">
+    <Container class="services-page">
+      <SectionIntro
+        id="working-title"
+        label="Working together"
+        title="What it’s like"
+        titleMuted="to have me on the project."
+        lead="You’ll know where we stand every week, and you’ll own everything when I leave. One person, start to finish. No account managers, no hand-offs."
+      />
+      <Process steps={STEPS} />
     </Container>
   </Section>
 </SiteLayout>

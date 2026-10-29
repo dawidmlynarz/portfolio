@@ -28,20 +28,19 @@ export interface Plan {
 export const PLANS: Plan[] = [
   {
     id: "embedded-lead",
-    title: "Embedded lead",
+    title: "Embedded design lead",
     label: "Retainer",
     promise:
-      "I join your team two days a week as its design lead. You get senior judgment on the decisions that matter, without hiring for it.",
+      "Senior design leadership inside your team, month to month. I set the direction, keep the quality up and do the hands-on work with your people.",
     // Two days a week, averaged over a year: 16 hours × 52 weeks ÷ 12 months.
     price: price((2 * HOURS_PER_DAY * 52) / 12),
     billing: "month",
-    terms: "Per month · 2 days a week",
+    terms: "Per month · three months to start",
     includes: [
-      "Two set days a week, in your Slack, Figma and repo",
-      "Product direction, design reviews and hands-on design",
-      "I look after the design system, so it keeps up with the product",
-      "Your designers get someone to learn from",
-      "Three months to start, then month to month",
+      "Product direction and design reviews on the work that matters",
+      "Hands-on design, from first sketch to shipped",
+      "A design system your team and your AI tools can build on",
+      "In your Slack, Figma and repo, around two days a week",
     ],
     featured: true,
   },
@@ -49,16 +48,15 @@ export const PLANS: Plan[] = [
     id: "design-audit",
     title: "Design audit",
     label: "Fixed price",
-    promise: "Two weeks to find what’s holding the product back, and what to fix first.",
+    promise: "Two weeks, one clear answer: what’s holding the product back, and what to fix first.",
     // Six working days over two weeks.
     price: price(6 * HOURS_PER_DAY),
     billing: "once",
     terms: "Fixed price · 2 weeks",
     includes: [
-      "One focus: your design system, or an AI or agent flow",
-      "A written report, findings ranked by impact",
-      "A roadmap your team can start on the following Monday",
-      "A walkthrough call with your team",
+      "Your design system, or one AI or agent flow",
+      "Findings ranked by impact, and a roadmap to act on",
+      "A walkthrough with your team",
     ],
   },
   {
@@ -66,11 +64,11 @@ export const PLANS: Plan[] = [
     title: "Custom project",
     label: "Project",
     promise:
-      "Something with a clear start and end: a design system build, an AI feature, a redesign.",
+      "A piece of work with a start and an end: a design system build, an AI feature, a redesign.",
     terms: "Quoted per project",
     includes: [
-      "Scope, timeline and price agreed before I start",
-      "A one-page proposal within two business days of our call",
+      "Scope, timeline and price agreed upfront",
+      "A one-page proposal within two business days",
     ],
   },
 ];
