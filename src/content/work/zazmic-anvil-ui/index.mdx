@@ -26,6 +26,7 @@ import agentComponents from "./anvil-agent-components.avif";
 import agentComponents2 from "./anvil-agent-components-2.avif";
 import desktopResearch from "./anvil-desktop-research.avif";
 import mobileBooking from "./anvil-mobile-booking.avif";
+import storybookDocs from "./anvil-storybook-foundations.avif";
 
 {/* Estimates requested by Dawid on 2026-10-28, not measured: about 6 weeks down to 1.5 weeks to a first working agent UI (~75%) and ~350 hours saved per project, for a designer and a front-end engineer. Every other number comes from the repository. */}
 
@@ -126,15 +127,16 @@ For naming I wrote an API contract. There are four props, `variant`, `intent`, `
 
 Under the styling I used shadcn/ui and Radix. Keyboard support, focus and dismissing come from libraries which already do it well. Whenever I changed their behaviour on purpose, I wrote down the reason.
 
-<Figure alt="Anvil tokens in Figma next to the generated CSS variables, in light and dark, desktop and mobile." />
-
 ## Documentation people actually read
 
 I treated Storybook as product. Every component page has live controls, a link to the Figma frame, a usage guide (when to use it, when not, and what to use instead) and a table that maps every Figma property to what it becomes in code.
 
 From molecules up, stories don't use lorem ipsum. They all share one made-up company, one assistant and one project. Reviewers then look at it like at a real product, and less like a gallery of parts.
 
-<Figure alt="The Storybook page for Message Row with controls, a Figma link, the usage guide and the Figma-to-code property table." />
+<Figure
+  src={storybookDocs}
+  alt="Anvil UI Storybook pages: the welcome page explaining the four levels, colour contrast ratios in light and dark, typography with font families and text styles, and motion durations and easing curves."
+/>
 
 ## The Showroom
 
