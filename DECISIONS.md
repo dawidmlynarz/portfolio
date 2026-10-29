@@ -572,8 +572,4 @@ What changed versus the embed, and why:
 
 **Round 7: engagements that sell the retainer.** Section caption "Engagements", title "A senior design lead on your team, without the hire." The retainer copy no longer leans on "two days a week" (it is one line in what's included; the price still assumes it); each plan lists only its essentials. All three are the same horizontal row (head left, body right from 62em), stacked, with only the retainer on the tinted panel. Page order is now Hero, Services, Approach, Engagements, Quotes, Working together. The quotes keep rotating under the pointer; only keyboard focus, off screen and a hidden tab pause them. Headings set as captions (`h2.text-caption`) skip the headline measure, so they stay on one line.
 
-## Services, round 8: plan type and the two smaller plans side by side
-
-- Every plan's price is one step under its name (title `--text-h2`, price `--text-h3`), so the name reads first and the number second.
-- The design audit and custom project sit side by side from 48em under the retainer, each said in one paragraph instead of a list. `includes` is optional in `src/lib/plans.ts` and only the retainer uses it.
-- The retainer's list has no rule above its first item, so it starts level with the label opposite.
+**Round 8: plan type, and the two smaller plans side by side.** Every plan's price is one step under its name (title `--text-h2`, price `--text-h3`). The design audit and custom project sit side by side from 48em under the retainer, each said in one paragraph instead of a list; `includes` is optional in `src/lib/plans.ts` and only the retainer uses it. The retainer's list has no rule above its first item, so it starts level with the label opposite.
