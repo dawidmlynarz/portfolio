@@ -242,6 +242,31 @@
     z-index: 3;
   }
 
+  /* the goo: over the brain and the rim, under the lid, so each strand comes out from under
+     the lid's edge and clings to the front of the rim. Drawn only while the hole is cut */
+  .mindblown__goo {
+    position: absolute;
+    inset: 0;
+    z-index: 3;
+    inline-size: 100%;
+    block-size: 100%;
+    overflow: visible;
+    pointer-events: none;
+    visibility: hidden;
+  }
+
+  .mindblown__goo--on {
+    visibility: visible;
+  }
+
+  .mindblown__goo-body {
+    fill: var(--mb-rim);
+  }
+
+  .mindblown__goo-shine {
+    fill: var(--mb-brain-cheek);
+  }
+
   .mindblown__hole {
     position: absolute;
     left: 0;

@@ -7,6 +7,7 @@
  * brain button runs open -> busy -> open: the thoughts get sucked in and a fresh batch bursts out.
  */
 import { gsap } from "gsap";
+import { createGoo } from "./goo";
 import { BELT, DESKTOP_COUNT, ICONS, ITEMS, MOBILE_COUNT, type IconName } from "./content";
 
 type Card = HTMLButtonElement & {
@@ -633,7 +634,12 @@ export function init(root: HTMLElement): () => void {
   );
 
   /* closed head, mouse hover or keyboard focus: the lid floats up and the brain peeks out */
-  const cut = (on: boolean) => head.classList.toggle("mindblown__head--cut", on);
+  const goo = createGoo(q<SVGSVGElement>("goo"), lid, RM);
+  const cut = (on: boolean) => {
+    head.classList.toggle("mindblown__head--cut", on);
+    if (on) goo.start();
+    else goo.stop();
+  };
   function peek(on: boolean) {
     if (state !== "closed" || on === peeking) return;
     peeking = on;
@@ -1154,6 +1160,7 @@ export function init(root: HTMLElement): () => void {
     abort.abort();
     io.disconnect();
     gsap.ticker.remove(tails);
+    goo.stop();
     cancelAnimationFrame(raf);
     cancelAnimationFrame(lookRaf);
     clearTimeout(rz);

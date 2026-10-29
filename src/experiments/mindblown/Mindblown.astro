@@ -372,6 +372,25 @@ const belt = [...BELT, ...BELT];
               </svg>
             </div>
           </div>
+          {/* gooey strands between the lifted lid and the rim (goo.ts draws the beads) */}
+          <svg class="mindblown__goo" viewBox="0 0 963 896" aria-hidden="true">
+            <defs>
+              <filter
+                id="mindblown-goo"
+                filterUnits="userSpaceOnUse"
+                x="150"
+                y="-120"
+                width="620"
+                height="560"
+                color-interpolation-filters="sRGB"
+              >
+                <feGaussianBlur stdDeviation="3.4"></feGaussianBlur>
+                <feColorMatrix values="1 0 0 0 0  0 1 0 0 0  0 0 1 0 0  0 0 0 22 -10"></feColorMatrix>
+              </filter>
+            </defs>
+            <g class="mindblown__goo-body" filter="url(#mindblown-goo)"></g>
+            <g class="mindblown__goo-shine" filter="url(#mindblown-goo)"></g>
+          </svg>
           <div class="mindblown__layer mindblown__layer--lid">
             <div class="mindblown__lid-front" aria-hidden="true">
               <img
