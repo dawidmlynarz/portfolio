@@ -7,7 +7,7 @@ Non-obvious choices, newest first. One entry per decision: what, why, and what i
 - **/services** lists the three services as schema.org `Service` nodes (from `src/lib/services.ts`), each with its on-page anchor and Dawid as provider, plus breadcrumbs.
 - **/work** is a `CollectionPage` whose `ItemList` holds only public case studies; locked ones are noindex, so listing them would point Google at pages it can't index.
 - **/contact** is a `ContactPage` about the Person node, plus breadcrumbs.
-- **`jobTitle` is "Freelance Product Designer"**, matching the home title and the phrase the site targets. It was "Senior Product Designer".
+- **`jobTitle` stays "Senior Product Designer".** Dawid positions himself as a senior or lead product designer for hire, not as a freelancer, so the data says the role, not the contract type.
 
 ## 2026-10-29 · Contact page; every call to action leads to it
 
