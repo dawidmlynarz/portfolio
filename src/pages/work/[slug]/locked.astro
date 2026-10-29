@@ -5,7 +5,6 @@
  * It is the password panel, centred on the first screen over the hero grain. None of the case
  * study's content is in this page.
  */
-import { getImage } from "astro:assets";
 import SiteLayout from "@/layouts/SiteLayout.astro";
 import HeroBackdrop from "@/components/blocks/HeroBackdrop.astro";
 import LockPanel from "@/components/blocks/LockPanel.astro";
@@ -25,23 +24,12 @@ interface Props {
 const { entry } = Astro.props;
 const { data } = entry;
 const href = workHref(entry);
-
-// Share image: the cover, as on the full page, so a shared link still previews well.
-const og = await getImage({
-  src: data.cover,
-  width: 1200,
-  height: 630,
-  fit: "cover",
-  format: "jpeg",
-  quality: 82,
-});
 ---
 
 <SiteLayout
   title={data.seoTitle ?? data.title}
   description={data.description}
   type="article"
-  image={{ src: og.src, width: 1200, height: 630, alt: data.coverAlt }}
   canonicalPath={href}
   noindex
 >
