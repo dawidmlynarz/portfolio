@@ -5,9 +5,9 @@
  *
  * Every cover is cropped to 4:3, as on the work cards, with no caption. Built like the ClientLogos
  * marquee: the list twice (the copy hidden from assistive tech and out of the tab order), slid by
- * one copy in CSS. It stops while a cover is hovered or has focus. With the motion layer
- * (motion.ts, [data-magnet]) the hovered cover leans towards the pointer and a "View project"
- * label follows it. Reduced motion: a still row you can scroll sideways.
+ * one copy in CSS. It stops while a cover is hovered or has focus, and that cover rises by
+ * --work-marquee-lift (0 by default; /contact lifts it so more of it shows above the screen edge).
+ * Reduced motion: a still row you can scroll sideways.
  */
 import { Image } from "astro:assets";
 import { getPagedWork, workHref, type Work } from "@/lib/work";
@@ -26,7 +26,7 @@ const {
 } = Astro.props;
 ---
 
-<div class:list={["work-marquee", className]} data-magnet>
+<div class:list={["work-marquee", className]}>
   <div class="work-marquee__track">
     {[0, 1].map((copy) => (
       <ul
@@ -42,7 +42,6 @@ const {
               href={workHref(entry)}
               tabindex={copy === 1 ? -1 : undefined}
               data-no-tear
-              data-magnet-item
             >
               <span class="work-marquee__frame">
                 <Image
@@ -63,9 +62,6 @@ const {
       </ul>
     ))}
   </div>
-  <span class="work-marquee__hint text-small" aria-hidden="true" data-magnet-hint>
-    View project
-  </span>
 </div>
 
 <style>
@@ -73,7 +69,7 @@ const {
     .work-marquee {
       --work-marquee-gap: var(--space-4);
 
-      position: relative;
+      padding-block-start: var(--work-marquee-lift, 0); /* room for a lifted cover */
       overflow: hidden;
     }
 
@@ -102,42 +98,15 @@ const {
     .work-marquee__link {
       --underline-size: 0%;
 
-      position: relative;
       display: block;
-      transition: scale var(--duration-zoom) var(--ease-out-expo);
+      transition: translate var(--duration-link) var(--ease-out-expo);
     }
 
-    /* Hover: the cover comes forward a little (motion.ts also pulls it towards the pointer). */
-    .work-marquee__link:hover {
+    .work-marquee__link:hover,
+    .work-marquee__link:focus-visible {
       --underline-size: 0%;
 
-      z-index: 1;
-      scale: 1.04;
-    }
-
-    /* "View project", beside the pointer while a cover is hovered (motion.ts sets the position). */
-    .work-marquee__hint {
-      position: absolute;
-      inset-block-start: 0;
-      inset-inline-start: 0;
-      z-index: 2;
-      padding: var(--space-1) var(--space-3);
-      border-radius: var(--radius-pill);
-      color: var(--color-on-inverse);
-      background-color: var(--color-inverse-bg);
-      white-space: nowrap;
-      pointer-events: none;
-      opacity: 0;
-      translate: var(--hint-x, 0) var(--hint-y, 0);
-      scale: 0.8;
-      transition:
-        opacity var(--duration-fast) var(--ease-standard),
-        scale var(--duration-fast) var(--ease-standard);
-    }
-
-    .work-marquee__hint[data-active] {
-      opacity: 1;
-      scale: 1;
+      translate: 0 calc(-1 * var(--work-marquee-lift, 0));
     }
 
     /* 4:3, centred, like the work cards. */
@@ -149,16 +118,10 @@ const {
       background-color: var(--color-bg-subtle);
     }
 
-    /* Hover: the cover zooms in slowly, as on the work cards. */
     .work-marquee__cover {
       inline-size: 100%;
       block-size: 100%;
       object-fit: cover;
-      transition: scale var(--duration-zoom) var(--ease-out-expo);
-    }
-
-    .work-marquee__link:hover .work-marquee__cover {
-      scale: 1.03;
     }
 
     @keyframes work-marquee {

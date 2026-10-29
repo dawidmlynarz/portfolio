@@ -5,9 +5,6 @@ import Container from "@/components/layout/Container.astro";
 import HeroBackdrop from "@/components/blocks/HeroBackdrop.astro";
 import WorkMarquee from "@/components/blocks/WorkMarquee.astro";
 import { SITE } from "@/lib/site";
-
-/** The email split after the @, so it can break there on narrow screens. */
-const [user, domain] = SITE.email.split("@");
 ---
 
 <SiteLayout
@@ -31,8 +28,7 @@ const [user, domain] = SITE.email.split("@");
 
       <p class="contact__email" data-reveal="fade">
         <a class="contact__email-link text-display" href={`mailto:${SITE.email}`}>
-          {user}@<wbr />
-          {domain}
+          {SITE.email}
         </a>
       </p>
     </Container>
@@ -67,10 +63,11 @@ const [user, domain] = SITE.email.split("@");
       max-inline-size: calc(var(--measure) * 0.75);
     }
 
-    /* The covers peek up from the bottom of the screen: they are sized so about two thirds of
-       each one fits in the room left under the email, and the rest runs off the edge. */
+    /* The covers peek up from the bottom of the screen: about two thirds of each shows and the
+       rest runs off the edge. They are sized so a hovered cover, lifted to show nine tenths,
+       still fits in the room left under the email. */
     .contact__work {
-      --work-marquee-size: clamp(12rem, 100cqb / 0.65 * 4 / 3, min(40rem, 80cqi));
+      --work-marquee-size: clamp(12rem, 100cqb / 0.9 * 4 / 3, min(40rem, 80cqi));
 
       container-type: size;
       display: flex;
@@ -78,8 +75,11 @@ const [user, domain] = SITE.email.split("@");
       overflow: clip;
     }
 
-    /* A third of each cover (4:3, so its height is 3/4 of its width) hangs below the screen. */
+    /* A third of each cover (4:3, so its height is 3/4 of its width) hangs below the screen;
+       a hovered cover rises until nine tenths of it shows. */
     .contact__work :global(.work-marquee) {
+      --work-marquee-lift: calc(var(--work-marquee-size) * 0.75 * 0.25);
+
       flex-grow: 1;
       margin-block-end: calc(var(--work-marquee-size) * -0.75 * 0.35);
     }
@@ -89,7 +89,7 @@ const [user, domain] = SITE.email.split("@");
     .contact__email-link {
       display: inline-block; /* one underline under the whole block, also when it wraps */
       max-inline-size: 100%;
-      overflow-wrap: anywhere;
+      white-space: nowrap;
       padding-block-end: var(--space-2);
     }
   }
