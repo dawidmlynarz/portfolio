@@ -1,0 +1,277 @@
+---
+import { Image } from "astro:assets";
+
+interface Props {
+  /** The earlier image, shown on the left of the handle. Same size as `after`. */
+  before: ImageMetadata;
+  /** The later image, shown on the right of the handle. */
+  after: ImageMetadata;
+  /** Required. Describe what the earlier image shows. */
+  beforeAlt: string;
+  /** Required. Describe what the later image shows. */
+  afterAlt: string;
+  beforeLabel?: string;
+  afterLabel?: string;
+  /** Where the handle starts, in percent from the left. */
+  start?: number;
+  caption?: string;
+  /** Inside Prose: content (reading measure), wide (page width) or full (edge to edge). */
+  width?: "content" | "wide" | "full";
+  class?: string;
+}
+
+const {
+  before,
+  after,
+  beforeAlt,
+  afterAlt,
+  beforeLabel = "Before",
+  afterLabel = "After",
+  start = 50,
+  caption,
+  width = "wide",
+  class: className,
+} = Astro.props;
+
+const widths = [480, 800, 1200, 1600, 2400].filter((w) => w <= after.width);
+const sizes = {
+  content: "(min-width: 44rem) 40rem, calc(100vw - 2rem)",
+  wide: "(min-width: 84rem) 80rem, calc(100vw - 2rem)",
+  full: "100vw",
+}[width];
+---
+
+<figure
+  class:list={["before-after", `before-after--${width}`, className]}
+  data-width={width}
+  data-before-after
+  style={`--position: ${start}%`}
+>
+  <div class="before-after__frame" data-before-after-frame>
+    <Image
+      class="before-after__image"
+      src={after}
+      alt={afterAlt}
+      widths={widths.length ? widths : [after.width]}
+      sizes={sizes}
+      loading="lazy"
+      format="avif"
+    />
+    <div class="before-after__clip">
+      <Image
+        class="before-after__image"
+        src={before}
+        alt={beforeAlt}
+        widths={widths.length ? widths : [before.width]}
+        sizes={sizes}
+        loading="lazy"
+        format="avif"
+      />
+    </div>
+    <span class="before-after__label before-after__label--before" aria-hidden="true">
+      {beforeLabel}
+    </span>
+    <span class="before-after__label before-after__label--after" aria-hidden="true">
+      {afterLabel}
+    </span>
+    <div class="before-after__handle" aria-hidden="true">
+      <span class="before-after__grip">
+        <svg viewBox="0 0 24 24" class="before-after__icon">
+          <path d="M9 7l-5 5 5 5M15 7l5 5-5 5"></path>
+        </svg>
+      </span>
+    </div>
+    {/* Keyboard and screen readers move the handle through this slider; the script wires it up. */}
+    <input
+      class="before-after__range"
+      type="range"
+      min="0"
+      max="100"
+      step="1"
+      value={start}
+      aria-label={`${beforeLabel} and ${afterLabel}: share of the ${beforeLabel.toLowerCase()} image shown`}
+      data-before-after-range
+    />
+  </div>
+  {caption && <figcaption class="before-after__caption">{caption}</figcaption>}
+</figure>
+
+<script>
+  // Drag anywhere on the image (mouse, pen or a horizontal swipe) or use the arrow keys on the
+  // slider. Vertical swipes still scroll the page (touch-action: pan-y). Without JS the handle
+  // stays where `start` puts it, so both images are still visible.
+  for (const root of document.querySelectorAll<HTMLElement>("[data-before-after]")) {
+    const frame = root.querySelector<HTMLElement>("[data-before-after-frame]");
+    const range = root.querySelector<HTMLInputElement>("[data-before-after-range]");
+    if (!frame || !range) continue;
+
+    const set = (percent: number) => {
+      const value = Math.min(100, Math.max(0, percent));
+      root.style.setProperty("--position", `${value}%`);
+      range.value = String(Math.round(value));
+    };
+
+    const fromPointer = (event: PointerEvent) => {
+      const box = frame.getBoundingClientRect();
+      set(((event.clientX - box.left) / box.width) * 100);
+    };
+
+    frame.addEventListener("pointerdown", (event) => {
+      if (event.button !== 0) return;
+      frame.setPointerCapture(event.pointerId);
+      root.dataset.dragging = "";
+      fromPointer(event);
+    });
+    frame.addEventListener("pointermove", (event) => {
+      if (frame.hasPointerCapture(event.pointerId)) fromPointer(event);
+    });
+    const stop = (event: PointerEvent) => {
+      if (frame.hasPointerCapture(event.pointerId)) frame.releasePointerCapture(event.pointerId);
+      delete root.dataset.dragging;
+    };
+    frame.addEventListener("pointerup", stop);
+    frame.addEventListener("pointercancel", stop);
+
+    range.addEventListener("input", () => set(Number(range.value)));
+  }
+</script>
+
+<style>
+  @layer components {
+    .before-after {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr);
+      gap: var(--space-3);
+    }
+
+    .before-after__frame {
+      position: relative;
+      overflow: hidden;
+      border-radius: var(--radius-md);
+      background-color: var(--color-bg-subtle);
+      cursor: ew-resize;
+      touch-action: pan-y;
+      user-select: none;
+    }
+
+    .before-after--full .before-after__frame {
+      border-radius: 0;
+    }
+
+    .before-after__image {
+      display: block;
+      inline-size: 100%;
+      block-size: auto;
+      pointer-events: none;
+    }
+
+    .before-after__clip {
+      position: absolute;
+      inset: 0;
+      clip-path: inset(0 calc(100% - var(--position)) 0 0);
+    }
+
+    .before-after__clip .before-after__image {
+      block-size: 100%;
+      object-fit: cover;
+    }
+
+    .before-after__label {
+      position: absolute;
+      inset-block-start: var(--space-3);
+      padding: var(--space-1) var(--space-3);
+      border-radius: var(--radius-pill);
+      background-color: var(--color-inverse-bg);
+      color: var(--color-on-inverse);
+      font-size: var(--text-caption);
+      line-height: var(--leading-caption);
+      letter-spacing: var(--tracking-caption);
+      pointer-events: none;
+      transition: opacity var(--duration-fast) var(--ease-standard);
+    }
+
+    .before-after__label--before {
+      inset-inline-start: var(--space-3);
+    }
+
+    .before-after__label--after {
+      inset-inline-end: var(--space-3);
+    }
+
+    .before-after__handle {
+      position: absolute;
+      inset-block: 0;
+      inset-inline-start: var(--position);
+      inline-size: var(--border-width);
+      translate: -50% 0;
+      background-color: var(--color-bg);
+      box-shadow: var(--shadow-bar);
+      pointer-events: none;
+    }
+
+    .before-after__grip {
+      position: absolute;
+      inset-block-start: 50%;
+      inset-inline-start: 50%;
+      display: grid;
+      place-items: center;
+      inline-size: max-content;
+      padding: var(--space-2);
+      translate: -50% -50%;
+      border-radius: var(--radius-pill);
+      background-color: var(--color-bg);
+      color: var(--color-text);
+      box-shadow: var(--shadow-panel);
+      transition: scale var(--duration-fast) var(--ease-standard);
+    }
+
+    .before-after[data-dragging] .before-after__grip,
+    .before-after__frame:hover .before-after__grip {
+      scale: 1.1;
+    }
+
+    .before-after__icon {
+      inline-size: var(--space-6);
+      block-size: var(--space-6);
+      fill: none;
+      stroke: currentcolor;
+      stroke-width: 1.5;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+    }
+
+    /* The slider sits under the handle, invisible, so focus lands on the grip. */
+    .before-after__range {
+      position: absolute;
+      inset: 0;
+      inline-size: 100%;
+      block-size: 100%;
+      margin: 0;
+      opacity: 0;
+      pointer-events: none;
+    }
+
+    .before-after__frame:has(.before-after__range:focus-visible) .before-after__grip {
+      outline: var(--border-width) solid var(--color-focus);
+      outline-offset: var(--space-1);
+    }
+
+    .before-after__caption {
+      max-inline-size: var(--measure);
+      font-size: var(--text-small);
+      line-height: var(--leading-small);
+      color: var(--color-text-muted);
+    }
+
+    .before-after--full .before-after__caption {
+      padding-inline: var(--gutter);
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      .before-after__grip,
+      .before-after__label {
+        transition: none;
+      }
+    }
+  }
+</style>

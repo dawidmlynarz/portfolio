@@ -10,7 +10,8 @@ const PRIVATE_PATHS = ["/styleguide", "/404", "/playground"];
 const PROTECTED_PATHS = protectedSlugs().map((slug) => `/work/${slug}`);
 
 export default defineConfig({
-  site: "https://mlynarz.com",
+  // www is the host Google already indexes (Webflow redirected the apex to it).
+  site: "https://www.mlynarz.com",
   trailingSlash: "never",
   build: { format: "file" },
   output: "static",
@@ -34,6 +35,12 @@ export default defineConfig({
     schema: {
       // Set by Cloudflare Pages at build time. Only the production branch is indexable.
       CF_PAGES_BRANCH: envField.string({ context: "server", access: "public", optional: true }),
+      // Cloudflare Web Analytics site token. Production only; no cookies, no consent banner needed.
+      CF_WEB_ANALYTICS_TOKEN: envField.string({
+        context: "server",
+        access: "public",
+        optional: true,
+      }),
     },
   },
 });
