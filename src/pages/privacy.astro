@@ -1,0 +1,98 @@
+---
+import SiteLayout from "@/layouts/SiteLayout.astro";
+import Hero from "@/components/blocks/Hero.astro";
+import Prose from "@/components/content/Prose.astro";
+import Link from "@/components/ui/Link.astro";
+import { SITE } from "@/lib/site";
+
+/** Bump when the text changes. */
+const updated = "29 October 2026";
+---
+
+<SiteLayout
+  title="Privacy"
+  description="What this site stores, what it measures and who handles it. No ads, no tracking cookies, no banner."
+>
+  <Hero
+    eyebrow="Privacy"
+    title="What this site knows about you"
+    lead="Not much. There are no ads, no tracking cookies and nothing sold or shared for marketing. Here is everything it does."
+  />
+
+  <Prose class="privacy">
+    <p class="text-caption privacy__updated">Last updated {updated}</p>
+
+    <h2>Who runs it</h2>
+    <p>
+      I’m {SITE.name}, a product designer, and this is my personal site. I’m responsible for any
+      personal data it handles. If you have a question about it, write to me at{" "}
+      <Link href={`mailto:${SITE.email}`}>{SITE.email}</Link>.
+    </p>
+
+    <h2>Hosting</h2>
+    <p>
+      The site is hosted on Cloudflare Pages. To deliver pages and keep the site safe from abuse,
+      Cloudflare processes technical data from every request, such as your IP address, browser and
+      the page you asked for. I don’t see or keep those logs. You can read how Cloudflare handles
+      them in its <Link href="https://www.cloudflare.com/privacypolicy/">privacy policy</Link>.
+    </p>
+
+    <h2>Visitor statistics</h2>
+    <p>
+      I use Cloudflare Web Analytics to see which pages people read and roughly where visits come
+      from. It doesn’t use cookies, doesn’t store anything on your device and doesn’t follow you
+      across sites. I only see totals: page views, referring sites, countries, browsers and device
+      types. No individual visitor can be picked out.
+    </p>
+
+    <h2>Cookies and local storage</h2>
+    <p>
+      The site doesn’t need your consent for anything it stores, because each item is there only to
+      do something you asked for or to keep the site running:
+    </p>
+    <ul>
+      <li>
+        <strong>case_study_access</strong> is a cookie set only after you enter the password for a
+        protected case study, so you don’t have to type it again. It lasts 30 days and holds no
+        personal data.
+      </li>
+      <li>
+        <strong>theme</strong> is saved in your browser’s local storage when you switch between
+        light and dark mode, so the site remembers your choice.
+      </li>
+      <li>
+        <strong>nav-collapse</strong> lives in session storage for a moment while the menu animates
+        between pages, and is removed as soon as the next page loads.
+      </li>
+      <li>
+        Cloudflare may set a security cookie such as <strong>__cf_bm</strong> or
+        <strong>_cfuvid</strong> to tell people from bots.
+      </li>
+    </ul>
+
+    <h2>Email</h2>
+    <p>
+      If you email me, I keep the conversation in my inbox so I can reply and follow up. I don’t add
+      anyone to a mailing list.
+    </p>
+
+    <h2>Your rights</h2>
+    <p>
+      Under the GDPR you can ask me what I hold about you, and ask me to correct or delete it. Just
+      email me. If you think I’ve handled your data badly, you can also complain to a data
+      protection authority. In Poland that’s <Link href="https://uodo.gov.pl/en">UODO</Link>.
+    </p>
+  </Prose>
+</SiteLayout>
+
+<style>
+  @layer components {
+    .privacy {
+      padding-block-end: var(--space-section-md);
+    }
+
+    .privacy__updated {
+      color: var(--color-text-muted);
+    }
+  }
+</style>

@@ -507,3 +507,9 @@ What changed versus the embed, and why:
 **XWP client work behind the password.** Pantheon and Google Material Design join NerdWallet as `protected: true`; all three came through XWP, so they stay behind the shared password.
 
 **The padlock moves onto the cover.** Cards of protected work no longer show a padlock after the company. It sits in a frosted circle in the top right corner of the cover (`--color-overlay` with the nav's blur), like the Webflow cards had. It is outside the zooming frame, so it stays still on hover.
+
+## 2026-10-29 · Privacy page, no cookie banner
+
+**No consent banner.** Audit of the build: no third-party requests (fonts self-hosted, embeds are plain links), and everything stored is strictly necessary or user-requested, so ePrivacy consent isn't needed: `case_study_access` (signed unlock cookie, only after entering the password, 30 days, HttpOnly), `theme` in localStorage (set by the toggle), `nav-collapse` in sessionStorage (removed on the next page), and Cloudflare's own `__cf_bm`/`_cfuvid` security cookies. Analytics is Cloudflare Web Analytics, enabled in the Pages dashboard (auto-injected beacon, cookieless, nothing on the device). Any analytics or embed that sets cookies or fingerprints would need a consent banner, so pick cookieless tools.
+
+**`/privacy` page.** GDPR transparency still applies (Cloudflare processes IPs), so a short first-person notice lives at `/privacy`, linked from the footer. It reuses `Hero` and the case-study `Prose` column. Update its list and date when anything stored or loaded changes.
