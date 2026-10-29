@@ -155,6 +155,17 @@ Dawid wanted the hero liquid to reveal 3–4 layers at random, with the real pho
 - **AVIF.** Dawid's 2400 × 1792 PNGs (12 MB) are committed as AVIF masters at quality 80 with 4:4:4 chroma (770 KB without the clay). Astro serves the photo at quality 65 (161 KB at 2400, 89 KB at 1600) and the layers at 55, which is visually identical at 100% on the hair and marble veins and about half the bytes. Extras at 1440 (marble and iridescent): about 100 KB (light) to 125 KB (dark); at 375 about 45 KB. No WebP fallback: browsers without AVIF keep the static photo (`<img>` is AVIF-only, as before).
 - **Reveal playground** (`/playground`, noindex, not linked): the same layers through seven alternatives next to the real liquid: glass lens, ink burn, pixel dither, halftone, Voronoi shards, glitch slices and a full-portrait shockwave. Isolated under `src/experiments/reveals/`; one small WebGL canvas per tile (capped at 1.5x), paused off screen. It is for choosing a direction, not production code.
 
+## 2026-10-27 · SEO groundwork before the domain moves
+
+- **www.mlynarz.com is the canonical host.** Webflow redirected the apex to `www`, so that is the host Google has indexed. `site` in `astro.config.mjs` now uses it; at cutover the apex 301s to `www` in Cloudflare (a redirect rule, not `_redirects`, which can't match on hostname).
+- **`/401` redirects to `/`.** It was Webflow's password page and is reachable on the old site.
+- **`seoDescription`** joins `seoTitle` in the case-study schema, so the card summary and lead can stay long while search gets a ~155-character version. The build warns (`[seo]` lines) when an indexable page's title runs past 60 characters or its description past 160. Warnings, not errors, so copy edits never block a deploy.
+- **Structured data shares one Person.** `src/lib/schema.ts` builds the Person (with `@id` `/#person`, the headshot, `alternateName` without the ł, country and `knowsAbout`) and WebSite (`/#website`). Home carries both; About is a `ProfilePage` with the Person as `mainEntity`; case studies point their `author` at the `@id` and add a `BreadcrumbList`.
+- **Analytics: Cloudflare Web Analytics**, cookieless, so no consent banner. The beacon is added only on production builds with `CF_WEB_ANALYTICS_TOKEN` set. Turning on Pages' automatic injection instead would also count preview traffic.
+- **Search phrases: AI-ready design systems, agentic UX and freelance product designer** (Dawid's pick; product strategy stays a service but isn't a search target). Every indexable page now has a title of 60 characters or fewer and a description of 160 or fewer, written around those phrases. Case studies keep their long headline and summary on the page and use `seoTitle`/`seoDescription` for search. Revisit with real Search Console queries 4 to 6 weeks after launch.
+- **The share image (`public/og.png`) still shows the old tagline.** Dawid is redrawing it. Its alt text (`SITE.ogImage.alt`) describes the current image, so update both together.
+- **Refreshed on 2026-10-29** onto the current site: `SHOW_PROTECTED_DRAFTS` stays removed (server-side protection replaced it), and Zazmic Anvil UI gets its own `seoTitle`/`seoDescription`. Locked case studies stay `noindex` and out of the sitemap.
+
 ## 2026-10-27 · Soft rise page transition
 
 - **"Soft rise" replaces the sheet.** Dawid compared four variants live on a preview (curtain, soft rise, columns, spread from the clicked link) and picked soft rise: the old page fades, blurs and lifts away (320 ms), then the new one settles up into focus from 6vh below with a long ease-out (1 s, starting at 200 ms). The backdrop is the page background, so no ink flashes between pages in either theme. The nav is still the only named element and stays put. Timings and distances are tokens (`--duration-page-out`, `--duration-page-in`, `--delay-page-in`, `--shift-page-*`, `--blur-page`); `--duration-page` stays for the ink spread.
@@ -425,7 +436,7 @@ What changed versus the embed, and why:
 
 **Extensionless URLs, no trailing slash.** `build.format: "file"` + `trailingSlash: "never"` produces `/about.html`, which Cloudflare Pages serves at `/about`. Canonical URLs strip `.html` (see `BaseLayout.astro`).
 
-**Indexing is opt-in per environment.** Only a build where `CF_PAGES_BRANCH === "main"` is indexable (`src/lib/site.ts`). Every other build emits `noindex` meta and a `Disallow: /` robots.txt. `public/_headers` also sends `X-Robots-Tag: noindex` on every `*.pages.dev` hostname, so even the production alias stays out of search; only `mlynarz.com` is indexed.
+**Indexing is opt-in per environment.** Only a build where `CF_PAGES_BRANCH === "main"` is indexable (`src/lib/site.ts`). Every other build emits `noindex` meta and a `Disallow: /` robots.txt. `public/_headers` also sends `X-Robots-Tag: noindex` on every `*.pages.dev` hostname, so even the production alias stays out of search; only `www.mlynarz.com` is indexed.
 
 **Cascade layer order is pinned inline in `<head>`.** Layer order is decided by first appearance; bundle order is not guaranteed once pages get their own CSS chunks. A one-line inline `@layer` statement before any stylesheet removes that risk.
 
