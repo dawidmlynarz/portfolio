@@ -372,6 +372,78 @@ const belt = [...BELT, ...BELT];
               </svg>
             </div>
           </div>
+          {/* gooey strands between the lifted lid and the rim (goo.ts draws the beads) */}
+          <svg
+            class="mindblown__goo"
+            viewBox="0 0 963 896"
+            aria-hidden="true"
+            style={`--mb-silhouette: url(${silhouette.src})`}
+          >
+            <defs>
+              <filter id="mindblown-goo-ink" color-interpolation-filters="sRGB">
+                <feColorMatrix values="0 0 0 0 0  0 0 0 0 0  0 0 0 0 0  0 0 0 1 0"></feColorMatrix>
+              </filter>
+              <clipPath id="mindblown-goo-below" class="mindblown__goo-below">
+                <rect></rect>
+              </clipPath>
+              <mask
+                id="mindblown-goo-cut"
+                maskUnits="userSpaceOnUse"
+                x="-2000"
+                y="-2000"
+                width="5000"
+                height="5000"
+              >
+                <rect x="-2000" y="-2000" width="5000" height="5000" fill="white"></rect>
+                <image
+                  href={silhouette.src}
+                  width="963"
+                  height="896"
+                  preserveAspectRatio="none"
+                  clip-path="url(#mindblown-goo-below)"
+                  filter="url(#mindblown-goo-ink)"
+                />
+                <ellipse class="mindblown__goo-hole" fill="white"></ellipse>
+              </mask>
+              <filter
+                id="mindblown-goo"
+                x="-20%"
+                y="-50%"
+                width="140%"
+                height="200%"
+                color-interpolation-filters="sRGB"
+              >
+                <feGaussianBlur stdDeviation="3.4"></feGaussianBlur>
+                <feColorMatrix values="1 0 0 0 0  0 1 0 0 0  0 0 1 0 0  0 0 0 22 -10"></feColorMatrix>
+              </filter>
+              {/* the same goo with a darker outline, so the strands read on the page too */}
+              <filter
+                id="mindblown-goo-edge"
+                x="-20%"
+                y="-50%"
+                width="140%"
+                height="200%"
+                color-interpolation-filters="sRGB"
+              >
+                <feGaussianBlur stdDeviation="3.4"></feGaussianBlur>
+                <feColorMatrix
+                  values="1 0 0 0 0  0 1 0 0 0  0 0 1 0 0  0 0 0 22 -10"
+                  result="goo"
+                ></feColorMatrix>
+                <feMorphology operator="dilate" radius="1.6" result="fat"></feMorphology>
+                <feFlood class="mindblown__goo-line"></feFlood>
+                <feComposite in2="fat" operator="in"></feComposite>
+                <feMerge>
+                  <feMergeNode></feMergeNode>
+                  <feMergeNode in="goo"></feMergeNode>
+                </feMerge>
+              </filter>
+            </defs>
+            <g mask="url(#mindblown-goo-cut)">
+              <g class="mindblown__goo-body" filter="url(#mindblown-goo-edge)"></g>
+              <g class="mindblown__goo-shine" filter="url(#mindblown-goo)"></g>
+            </g>
+          </svg>
           <div class="mindblown__layer mindblown__layer--lid">
             <div class="mindblown__lid-front" aria-hidden="true">
               <img

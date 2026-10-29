@@ -242,6 +242,50 @@
     z-index: 3;
   }
 
+  /* the goo: over the brain, under the lid, trimmed to the head's outline. Each strand comes
+     out from under the lid's edge and goes down into the hole behind its front edge (goo.ts
+     clips it there). Drawn only while the hole is cut */
+  .mindblown__goo {
+    position: absolute;
+    inset: 0;
+    z-index: 3;
+    inline-size: 100%;
+    block-size: 100%;
+    overflow: visible;
+    pointer-events: none;
+    visibility: hidden;
+    mask: var(--mb-silhouette) 0 0 / 100% 100% no-repeat;
+  }
+
+  .mindblown__goo--on {
+    visibility: visible;
+  }
+
+  .mindblown__goo--free {
+    mask: none;
+  }
+
+  /* the lifted lid can be grabbed and pulled around (mindblown.ts) */
+  .mindblown__head--grab {
+    cursor: grab;
+  }
+
+  .mindblown__head--dragging {
+    cursor: grabbing;
+  }
+
+  .mindblown__goo-body {
+    fill: var(--mb-rim);
+  }
+
+  .mindblown__goo-shine {
+    fill: var(--mb-brain-cheek);
+  }
+
+  .mindblown__goo-line {
+    flood-color: var(--mb-brain-line);
+  }
+
   .mindblown__hole {
     position: absolute;
     left: 0;
