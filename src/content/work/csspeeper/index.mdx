@@ -17,6 +17,9 @@ next: nerdwallet
 draft: false
 ---
 
+import before from "./csspeeper-before.jpg";
+import after from "./csspeeper-after.jpg";
+
 ## My role
 
 In 2016 I came up with CSS Peeper, a Chrome extension that shows designers a website’s styles without opening the code inspector. I brought the idea, designed the product and did all the branding: the name, the logo, the colors, the website. My friend Jędrzej Sadowski built the first version. Years later, Kamil took over development and the two of us relaunched it as a paid product.
@@ -58,7 +61,14 @@ I wrote a wish list for the MVP, based on what I was missing in my own work:
 
 Designing for designers is hard. We notice things other people don’t, so the first impression had to be right. I’ve always believed that how an interface looks matters as much as how it works, and I wanted CSS Peeper to stand out from the tools it was replacing. It was made with designers who don’t code in mind, but in the end developers and people who just want to grab a color use it too.
 
-<Figure alt="The first version of CSS Peeper from 2016, with the overview, colors and assets panels." />
+<BeforeAfter
+  before={before}
+  after={after}
+  beforeAlt="The first version of CSS Peeper from 2016, with the Colors, Inspector and Assets panels."
+  afterAlt="The relaunched CSS Peeper from 2025, with the same three panels redesigned."
+  beforeLabel="2016"
+  afterLabel="2025"
+/>
 
 ## Launch and the first users
 

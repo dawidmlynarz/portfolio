@@ -11,6 +11,7 @@ import Button from "@/components/ui/Button.astro";
 import Tag from "@/components/ui/Tag.astro";
 import Figure from "@/components/ui/Figure.astro";
 import Video from "@/components/ui/Video.astro";
+import BeforeAfter from "@/components/ui/BeforeAfter.astro";
 import Hero from "@/components/blocks/Hero.astro";
 import PortraitReveal from "@/components/blocks/PortraitReveal.astro";
 import WorkGrid from "@/components/blocks/WorkGrid.astro";
@@ -31,6 +32,8 @@ import { PORTRAIT_LAYERS, portraitPhoto } from "@/lib/portrait";
 import figureSample from "@/assets/placeholders/figure-sample.jpg";
 import videoSample from "@/assets/placeholders/video-sample.mp4";
 import videoSamplePoster from "@/assets/placeholders/video-sample-poster.jpg";
+import compareBefore from "@/content/work/csspeeper/csspeeper-before.jpg";
+import compareAfter from "@/content/work/csspeeper/csspeeper-after.jpg";
 
 // Contents mini map (right edge, from 62em) over this page's own sections, as on case studies.
 const STYLEGUIDE_SECTIONS = [
@@ -331,6 +334,22 @@ const SECTIONS = [
           <Video
             label="A screen recording of the booking flow."
             caption="Placeholder variant: leave out src while the recording is being made. Previews only; production skips it."
+          />
+        </Stack>
+
+        <Stack gap="4">
+          <h3>BeforeAfter</h3>
+          <p class="muted measure">
+            Two images of the same size stacked on top of each other. Drag anywhere on it, or swipe
+            sideways on a phone, to move the handle; the arrow keys work once the handle has focus.
+            Vertical swipes still scroll the page. Labels default to Before and After.
+          </p>
+          <BeforeAfter
+            before={compareBefore}
+            after={compareAfter}
+            beforeAlt="CSS Peeper in 2016: Colors, Inspector and Assets panels."
+            afterAlt="CSS Peeper in 2025: the same panels redesigned."
+            caption="BeforeAfter with the default labels."
           />
         </Stack>
 
