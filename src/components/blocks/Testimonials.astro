@@ -1,0 +1,248 @@
+---
+/**
+ * Quotes from people Dawid worked with, one at a time: the quote in large type, who said it,
+ * then a thin line that fills while the quote is up and moves on to the next when it is full.
+ * Ghost back and next buttons below it loop round in both directions.
+ *
+ * - The line keeps going under the pointer. It pauses while keyboard focus is inside, while the
+ *   block is off screen and while the tab is hidden. With reduced motion nothing advances on its
+ *   own; the arrows still work.
+ * - The change between quotes is the motion layer's (src/scripts/motion.ts): the "quoteswap"
+ *   event lets it wipe the old quote's lines out and the new one's in. Without it the quote just
+ *   changes.
+ * - Without JS every quote is listed, one under the other, and the line and buttons stay hidden.
+ *
+ * Data: src/lib/testimonials.ts.
+ */
+import Button from "@/components/ui/Button.astro";
+import type { Testimonial } from "@/lib/testimonials";
+
+interface Props {
+  testimonials: Testimonial[];
+  label?: string;
+}
+
+const { testimonials, label = "What people say" } = Astro.props;
+---
+
+<div class="testimonials" role="region" aria-roledescription="carousel" aria-label={label}>
+  <div class="testimonials__slides" aria-live="off" data-testimonials-slides>
+    {testimonials.map(({ quote, name, role, company }, index) => (
+      <figure
+        class="testimonials__slide"
+        role="group"
+        aria-roledescription="slide"
+        aria-label={`${index + 1} of ${testimonials.length}`}
+        data-testimonials-slide
+      >
+        <blockquote class="testimonials__quote" data-testimonials-quote>
+          <p>{quote}</p>
+        </blockquote>
+        <figcaption class="text-small testimonials__source" data-testimonials-source>
+          <span class="testimonials__name">{name}</span>
+          <span class="testimonials__role">{company ? `${role}, ${company}` : role}</span>
+        </figcaption>
+      </figure>
+    ))}
+  </div>
+  <div class="testimonials__controls" data-testimonials-controls hidden>
+    <span class="testimonials__progress" aria-hidden="true" data-testimonials-progress></span>
+    <div class="testimonials__arrows">
+      <Button variant="ghost" icon="arrow-left" label="Previous quote" data-testimonials-prev />
+      <Button variant="ghost" icon="arrow" label="Next quote" data-testimonials-next />
+    </div>
+  </div>
+</div>
+
+<script>
+  type SwapDetail = {
+    from: HTMLElement;
+    to: HTMLElement;
+    direction: 1 | -1;
+    /** Shows the new quote and hides the old one. Called once, by whoever gets there first. */
+    swap: () => void;
+    waitUntil: (promise: Promise<unknown>) => void;
+  };
+
+  document.querySelectorAll<HTMLElement>(".testimonials").forEach((root) => {
+    const list = root.querySelector<HTMLElement>("[data-testimonials-slides]");
+    const slides = [...root.querySelectorAll<HTMLElement>("[data-testimonials-slide]")];
+    const controls = root.querySelector<HTMLElement>("[data-testimonials-controls]");
+    const progress = root.querySelector<HTMLElement>("[data-testimonials-progress]");
+    const prev = root.querySelector<HTMLButtonElement>("[data-testimonials-prev]");
+    const next = root.querySelector<HTMLButtonElement>("[data-testimonials-next]");
+    if (!list || slides.length < 2 || !controls || !progress || !prev || !next) return;
+
+    const reduced = window.matchMedia("(prefers-reduced-motion: reduce)");
+    let at = 0;
+    let busy = false;
+
+    const show = (index: number) =>
+      slides.forEach((slide, i) => {
+        const active = i === index;
+        slide.toggleAttribute("data-active", active);
+        slide.inert = !active;
+      });
+
+    /** Restarts the fill. Removing and re-adding the class replays the CSS animation. */
+    const restart = () => {
+      progress.classList.remove("testimonials__progress--running");
+      void progress.offsetWidth;
+      if (!reduced.matches) progress.classList.add("testimonials__progress--running");
+    };
+
+    /** `byHand`: the visitor asked for it, so screen readers announce the new quote. */
+    const go = async (direction: 1 | -1, byHand = false) => {
+      if (busy) return;
+      busy = true;
+      list.setAttribute("aria-live", byHand ? "polite" : "off");
+      const to = (at + direction + slides.length) % slides.length;
+      let swapped = false;
+      const swap = () => {
+        if (swapped) return;
+        swapped = true;
+        show(to);
+      };
+      const pending: Promise<unknown>[] = [];
+      const detail: SwapDetail = {
+        from: slides[at]!,
+        to: slides[to]!,
+        direction,
+        swap,
+        waitUntil: (promise) => pending.push(promise),
+      };
+      at = to;
+      restart();
+      root.dispatchEvent(new CustomEvent("quoteswap", { detail, bubbles: true }));
+      await Promise.allSettled(pending);
+      swap();
+      busy = false;
+    };
+
+    // Pause while someone is reading or using it, and while nobody can see it.
+    const pauses = new Set<string>();
+    const pause = (reason: string, on: boolean) => {
+      if (on) pauses.add(reason);
+      else pauses.delete(reason);
+      root.toggleAttribute("data-paused", pauses.size > 0);
+    };
+    // Keyboard focus only: a mouse click on an arrow should not stop the rotation.
+    root.addEventListener("focusin", (event) => {
+      if ((event.target as Element).matches(":focus-visible")) pause("focus", true);
+    });
+    root.addEventListener("focusout", (event) => {
+      if (!root.contains(event.relatedTarget as Node | null)) pause("focus", false);
+    });
+    document.addEventListener("visibilitychange", () => pause("tab", document.hidden));
+    new IntersectionObserver(([entry]) => pause("offscreen", !entry?.isIntersecting)).observe(root);
+
+    progress.addEventListener("animationend", () => go(1));
+    prev.addEventListener("click", () => go(-1, true));
+    next.addEventListener("click", () => go(1, true));
+    reduced.addEventListener("change", restart);
+
+    root.dataset.enhanced = "";
+    controls.hidden = false;
+    show(0);
+    restart();
+  });
+</script>
+
+<style>
+  @layer components {
+    .testimonials {
+      display: grid;
+      gap: var(--space-10);
+    }
+
+    /* Without JS: every quote, one under the other. */
+    .testimonials__slides {
+      display: grid;
+      gap: var(--space-section-sm);
+    }
+
+    .testimonials__slide {
+      display: grid;
+      align-content: start;
+      gap: var(--space-8);
+    }
+
+    /* With JS: all quotes share one cell, so the block is as tall as the longest and nothing
+       below it moves when the quote changes. */
+    .testimonials[data-enhanced] .testimonials__slide {
+      grid-area: 1 / 1;
+    }
+
+    .testimonials[data-enhanced] .testimonials__slide:not([data-active]) {
+      visibility: hidden;
+    }
+
+    .testimonials__quote {
+      max-inline-size: var(--measure-h2);
+      font: var(--weight-medium) var(--text-h2) / var(--leading-h2) var(--font-heading);
+      letter-spacing: var(--tracking-h2);
+      text-wrap: pretty;
+    }
+
+    .testimonials__source {
+      display: grid;
+      gap: var(--space-1);
+    }
+
+    .testimonials__name {
+      font-weight: var(--weight-semibold);
+    }
+
+    .testimonials__role {
+      color: var(--color-text-muted);
+    }
+
+    .testimonials__controls {
+      display: grid;
+      gap: var(--space-4);
+    }
+
+    .testimonials__controls[hidden] {
+      display: none;
+    }
+
+    /* The track, with the fill growing from the left while the quote is up. */
+    .testimonials__progress {
+      position: relative;
+      display: block;
+      block-size: var(--border-width);
+      overflow: clip;
+      background-color: var(--color-border-subtle);
+    }
+
+    .testimonials__progress::after {
+      position: absolute;
+      inset: 0;
+      background-color: var(--color-text);
+      content: "";
+      transform: scaleX(0);
+      transform-origin: left;
+    }
+
+    .testimonials__progress--running::after {
+      animation: testimonials-fill var(--duration-quote) linear forwards;
+    }
+
+    .testimonials[data-paused] .testimonials__progress::after {
+      animation-play-state: paused;
+    }
+
+    @keyframes testimonials-fill {
+      to {
+        transform: scaleX(1);
+      }
+    }
+
+    /* Ghost buttons have no ring at rest, so pull the first arrow back to the text edge. */
+    .testimonials__arrows {
+      display: flex;
+      gap: var(--space-2);
+      margin-inline-start: calc(-1 * var(--space-3));
+    }
+  }
+</style>

@@ -37,15 +37,22 @@
   }
 
   h1 {
+    max-inline-size: var(--measure-h1);
     font: var(--weight-medium) var(--text-h1) / var(--leading-h1) var(--font-heading);
     letter-spacing: var(--tracking-h1);
     text-wrap: balance;
   }
 
   h2 {
+    max-inline-size: var(--measure-h2);
     font: var(--weight-medium) var(--text-h2) / var(--leading-h2) var(--font-heading);
     letter-spacing: var(--tracking-h2);
     text-wrap: balance;
+  }
+
+  /* A heading set as a caption (a section label) is short and small: no headline measure. */
+  :is(h1, h2):where(.text-caption) {
+    max-inline-size: none;
   }
 
   h3 {
@@ -195,6 +202,7 @@
   }
 
   .text-lead {
+    max-inline-size: var(--measure-lead);
     font-size: var(--text-lead);
     line-height: var(--leading-lead);
   }

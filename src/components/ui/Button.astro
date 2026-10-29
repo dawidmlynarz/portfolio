@@ -8,8 +8,8 @@ interface Props extends Omit<HTMLAttributes<"button">, "class" | "type"> {
   variant?: "primary" | "secondary" | "ghost";
   /** sm: menu contact · md: default · lg: footer email */
   size?: "sm" | "md" | "lg";
-  /** arrow: after the label (calls to action) · arrow-up: Back to top */
-  icon?: "arrow" | "arrow-up";
+  /** arrow: after the label (calls to action) · arrow-left: carousel back · arrow-up: Back to top */
+  icon?: "arrow" | "arrow-left" | "arrow-up";
   /** Makes an icon-only button: the icon is all that shows and this is its accessible name. */
   label?: string;
   class?: string;
@@ -34,7 +34,11 @@ const classes = [
   className,
 ];
 const content = iconOnly ? "" : await Astro.slots.render("default");
-const ICONS = { arrow: "M5 12h14M13 6l6 6-6 6", "arrow-up": "M12 19V5M5 12l7-7 7 7" };
+const ICONS = {
+  arrow: "M5 12h14M13 6l6 6-6 6",
+  "arrow-left": "M19 12H5M11 6l-6 6 6 6",
+  "arrow-up": "M12 19V5M5 12l7-7 7 7",
+};
 // The face is the button at rest. Text buttons add two copies in the hover colours for the row
 // tear (top and bottom rows, middle row); icon buttons animate the icon instead.
 const layers = iconOnly ? ["face"] : ["face", "outer", "middle"];
@@ -97,7 +101,7 @@ const layers = iconOnly ? ["face"] : ["face", "outer", "middle"];
       font-weight: var(--weight-medium);
       line-height: 1.2;
       text-align: center;
-      background-image: none; /* no link underline */
+      background: none; /* no link underline, no browser fill on <button> (the face paints it) */
       transition: scale var(--duration-fast) var(--ease-standard);
     }
 
@@ -146,8 +150,15 @@ const layers = iconOnly ? ["face"] : ["face", "outer", "middle"];
       font-size: var(--text-lead);
     }
 
+    /* Icon buttons match the nav's theme and menu buttons: a 2.5rem circle, a 1.125em icon.
+       Ghost ones also share their hover, a soft fill with no ring. */
     .button--icon {
-      --button-pad: var(--space-3);
+      --button-pad: calc((var(--space-10) - 1.125em) / 2);
+    }
+
+    .button--ghost.button--icon {
+      --hot-bg: var(--color-bg-subtle);
+      --hot-ring: transparent;
     }
 
     .button__face,
@@ -194,8 +205,8 @@ const layers = iconOnly ? ["face"] : ["face", "outer", "middle"];
     }
 
     .button--icon .button__icon {
-      inline-size: 1.25em;
-      block-size: 1.25em;
+      inline-size: 1.125em;
+      block-size: 1.125em;
     }
 
     /* ---------- Text buttons: the row tear ----------
@@ -278,6 +289,10 @@ const layers = iconOnly ? ["face"] : ["face", "outer", "middle"];
       animation: button-icon-right 560ms;
     }
 
+    .button--icon:not(:disabled):is(:hover, :focus-visible) .button__icon--arrow-left {
+      animation: button-icon-left 560ms;
+    }
+
     .button--icon:not(:disabled):is(:hover, :focus-visible) .button__icon--arrow-up {
       animation: button-icon-up 560ms;
     }
@@ -294,6 +309,26 @@ const layers = iconOnly ? ["face"] : ["face", "outer", "middle"];
 
       41% {
         translate: -200% 0;
+        animation-timing-function: var(--ease-out-expo);
+      }
+
+      100% {
+        translate: 0 0;
+      }
+    }
+
+    @keyframes button-icon-left {
+      0% {
+        translate: 0 0;
+        animation-timing-function: var(--ease-standard);
+      }
+
+      40% {
+        translate: -200% 0;
+      }
+
+      41% {
+        translate: 200% 0;
         animation-timing-function: var(--ease-out-expo);
       }
 

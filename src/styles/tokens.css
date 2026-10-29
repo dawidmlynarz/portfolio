@@ -126,7 +126,13 @@
     --weight-regular: 400;
     --weight-medium: 500;
     --weight-semibold: 600;
+    /* Line lengths, in units of the text's own size so each holds at every breakpoint. Bigger
+       type reads best in shorter lines: about 24 characters for h1, 32 for h2, 50 for leads and
+       65 for body copy. */
     --measure: 65ch;
+    --measure-lead: 50ch;
+    --measure-h2: 16em;
+    --measure-h1: 12em;
     --line-mask-bleed: 0.16em; /* room for descenders inside line-reveal masks (base.css) */
 
     /* ---------- Spacing (4px base, rem so it respects user font size) ---------- */
@@ -171,6 +177,7 @@
     --duration-zoom: 800ms; /* case-study cover zoom on hover */
     --duration-marquee: 40s; /* one full loop of the client logo marquee */
     --duration-marquee-work: 60s; /* one full loop of the case-study covers on /contact */
+    --duration-quote: 9s; /* how long each /services quote stays before the next one */
     --ease-out-expo: cubic-bezier(0.19, 1, 0.22, 1);
     --duration-page: 700ms; /* ink spread (theme switch); the nav during page changes */
     --duration-menu: 900ms; /* nav menu: makes room, then drops open */

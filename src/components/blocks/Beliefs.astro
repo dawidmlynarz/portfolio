@@ -1,0 +1,61 @@
+---
+/**
+ * Short convictions as a numbered list in large two-tone type: the claim in ink, the reason
+ * muted, read as one sentence. One column on phones, two from 62em. Data: src/lib/process.ts.
+ */
+import type { Belief } from "@/lib/process";
+
+interface Props {
+  beliefs: Belief[];
+}
+
+const { beliefs } = Astro.props;
+---
+
+<ol class="beliefs" role="list">
+  {beliefs.map(({ claim, reason }, index) => (
+    <li class="beliefs__item" data-reveal="fade">
+      <span class="text-caption beliefs__index" aria-hidden="true">
+        {String(index + 1).padStart(2, "0")}
+      </span>
+      <p class="beliefs__text">
+        {claim} <span class="beliefs__reason">{reason}</span>
+      </p>
+    </li>
+  ))}
+</ol>
+
+<style>
+  @layer components {
+    .beliefs {
+      display: grid;
+      gap: 0 var(--space-12);
+      padding: 0;
+    }
+
+    .beliefs__item {
+      display: grid;
+      align-content: start;
+      gap: var(--space-4);
+      padding-block: var(--space-8) var(--space-10);
+      border-block-start: var(--border-width) solid var(--color-border-subtle);
+    }
+
+    .beliefs__index,
+    .beliefs__reason {
+      color: var(--color-text-muted);
+    }
+
+    .beliefs__text {
+      font: var(--weight-medium) var(--text-h3) / var(--leading-h3) var(--font-heading);
+      letter-spacing: var(--tracking-h3);
+      text-wrap: pretty;
+    }
+
+    @media (width >= 62em) {
+      .beliefs {
+        grid-template-columns: repeat(2, 1fr);
+      }
+    }
+  }
+</style>
