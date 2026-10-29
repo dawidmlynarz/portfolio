@@ -4,12 +4,42 @@ import Section from "@/components/layout/Section.astro";
 import Container from "@/components/layout/Container.astro";
 import WorkGrid from "@/components/blocks/WorkGrid.astro";
 import HeroBackdrop from "@/components/blocks/HeroBackdrop.astro";
-import { getListedWork } from "@/lib/work";
+import { getListedWork, hasPage, workHref } from "@/lib/work";
+import { breadcrumbs, personId, websiteId } from "@/lib/schema";
 
 const work = await getListedWork();
+
+const site = Astro.site!;
+const url = new URL("/work", site).href;
+// Only public case studies: locked ones are noindex, so they stay out of the list.
+const listed = work.filter((entry) => hasPage(entry) && !entry.data.protected);
+const jsonLd = {
+  "@context": "https://schema.org",
+  "@graph": [
+    {
+      "@type": "CollectionPage",
+      "@id": `${url}#page`,
+      url,
+      name: "Case studies",
+      isPartOf: { "@id": websiteId(site) },
+      author: { "@id": personId(site) },
+      mainEntity: {
+        "@type": "ItemList",
+        itemListElement: listed.map((entry, index) => ({
+          "@type": "ListItem",
+          position: index + 1,
+          name: entry.data.title,
+          url: new URL(workHref(entry), site).href,
+        })),
+      },
+    },
+    breadcrumbs(site, [["Work", "/work"]]),
+  ],
+};
 ---
 
 <SiteLayout
+  jsonLd={jsonLd}
   title="Case studies: design systems, AI and UX"
   description="Case studies by Dawid Młynarz: AI products, design systems, conversion optimisation and product design for Newsweek, NerdWallet, BeatStars, Google and more."
 >
