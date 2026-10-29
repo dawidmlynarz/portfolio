@@ -83,7 +83,10 @@ In total that's around six weeks down to a week and a half, so roughly 350 hours
 
 Engineers can spend that time on what is specific for the client, like the model, the data and the integrations. Rebuilding a chat bubble for the fifth time was never a good use of it.
 
-<Figure alt="Diagram comparing an agent project before Anvil, where every screen is designed and coded from scratch, with one assembled from Anvil building blocks." />
+<Figure
+  src={desktopResearch}
+  alt="The Showroom on desktop: an assistant explains Q3 churn drivers with metrics, next to a sources panel listing the articles it read."
+/>
 
 ## Designing for agents
 
@@ -138,25 +141,11 @@ From molecules up, stories don't use lorem ipsum. They all share one made-up com
 A list of components doesn't tell you much how an agent feels to use. That's why Storybook opens with the Showroom, the features demo. It's a scripted assistant made only from real Anvil components. You can switch between desktop and mobile, light and dark, full screen, side panel or popover, and go through four flows. You can research a task, order a product, book a show or talk to a person.
 
 <Figure
-  src={desktopResearch}
-  alt="The Showroom on desktop: an assistant explains Q3 churn drivers with metrics, next to a sources panel listing the articles it read."
-/>
-
-<Figure
   src={mobileBooking}
   alt="The Showroom on mobile in three steps: the assistant checks availability for Saturday, offers two performances, and a price drop alert for Paper Kingdoms at Lyric Hall."
 />
 
 It's scripted on purpose, so it can't go off script while someone is clicking through it. It still shows loading, error and queued states, the same as real agent goes through. I also hid around 50 small talk replies and easter eggs inside, like a coin flip or a round of rock, paper, scissors. Without them the demo felt a bit dead, and the jokes are what keeps people clicking.
-
-{/* Stand-in clip recorded from the live Showroom (2560×1440, about 12 s) until Dawid sends his own recordings. */}
-
-<Video
-  src={showroomBooking}
-  av1={showroomBookingAv1}
-  poster={showroomBookingPoster}
-  label="The Showroom booking flow, where the assistant searches for shows, offers three in a carousel and opens an availability calendar."
-/>
 
 ## Working with an AI agent, on my terms
 
@@ -169,7 +158,14 @@ I built Anvil together with an AI coding agent, and it did a lot of the typing. 
 5. Required checks run for types, lint, tokens being up to date, Storybook tests in light and dark, and a Storybook build. When any of them fails, work goes back to the agent.
 6. I look at the real result and approve every merge. Then the live Storybook updates.
 
-<Figure alt="How a change reaches main: I set the rules, the agent builds and opens a pull request, required checks gate it, and I review and approve every merge." />
+{/* Stand-in clip recorded from the live Showroom (2560×1440, about 12 s) until Dawid sends his own recordings. */}
+
+<Video
+  src={showroomBooking}
+  av1={showroomBookingAv1}
+  poster={showroomBookingPoster}
+  label="The Showroom booking flow, where the assistant searches for shows, offers three in a carousel and opens an availability calendar."
+/>
 
 Many of the rules fail loudly, so nobody has to remember them. Lint checks component levels (an atom can't import an organism), motion, right-to-left-safe CSS and accessibility. Axe runs on every story in both themes, and screenshot tests catch changes nobody meant to make.
 
