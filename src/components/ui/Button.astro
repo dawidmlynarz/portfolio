@@ -8,8 +8,11 @@ interface Props extends Omit<HTMLAttributes<"button">, "class" | "type"> {
   variant?: "primary" | "secondary" | "ghost";
   /** sm: menu contact · md: default · lg: footer email */
   size?: "sm" | "md" | "lg";
-  /** arrow: after the label (calls to action) · arrow-left: carousel back · arrow-up: Back to top */
-  icon?: "arrow" | "arrow-left" | "arrow-up";
+  /**
+   * arrow: after the label (calls to action) · arrow-left: carousel back · arrow-down: scroll
+   * prompt (bobs gently) · arrow-up: Back to top
+   */
+  icon?: "arrow" | "arrow-left" | "arrow-down" | "arrow-up";
   /** Makes an icon-only button: the icon is all that shows and this is its accessible name. */
   label?: string;
   class?: string;
@@ -37,6 +40,7 @@ const content = iconOnly ? "" : await Astro.slots.render("default");
 const ICONS = {
   arrow: "M5 12h14M13 6l6 6-6 6",
   "arrow-left": "M19 12H5M11 6l-6 6 6 6",
+  "arrow-down": "M12 5v14M5 12l7 7 7-7",
   "arrow-up": "M12 19V5M5 12l7-7 7 7",
 };
 // The face is the button at rest. Text buttons add two copies in the hover colours for the row
@@ -220,6 +224,29 @@ const layers = iconOnly ? ["face"] : ["face", "outer", "middle"];
 
     .button:not(:disabled, .button--icon):is(:hover, :focus-visible) .button__icon {
       translate: var(--space-1) 0;
+    }
+
+    /* A scroll prompt: the arrow bobs downwards at rest and points the way on hover. Reduced
+       motion (reset.css) stills it. */
+    .button__icon--arrow-down {
+      animation: button-icon-bob 2.4s var(--ease-standard) infinite;
+    }
+
+    .button:not(:disabled, .button--icon):is(:hover, :focus-visible) .button__icon--arrow-down {
+      translate: 0 var(--space-1);
+      animation: none;
+    }
+
+    @keyframes button-icon-bob {
+      0%,
+      60%,
+      100% {
+        translate: 0 0;
+      }
+
+      30% {
+        translate: 0 var(--space-1);
+      }
     }
 
     @keyframes button-tear-outer {

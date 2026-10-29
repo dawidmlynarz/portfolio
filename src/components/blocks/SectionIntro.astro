@@ -10,9 +10,11 @@ interface Props {
   id?: string;
   href?: string;
   hrefLabel?: string;
+  /** Optional lead paragraph under the title. */
+  lead?: string;
 }
 
-const { label, title, titleMuted, id, href, hrefLabel } = Astro.props;
+const { label, title, titleMuted, id, href, hrefLabel, lead } = Astro.props;
 ---
 
 <div class="section-intro">
@@ -27,6 +29,11 @@ const { label, title, titleMuted, id, href, hrefLabel } = Astro.props;
       {hrefLabel}
     </a>
   )}
+  {lead && (
+    <p class="text-lead section-intro__lead" data-reveal="fade">
+      {lead}
+    </p>
+  )}
 </div>
 
 <style>
@@ -38,12 +45,17 @@ const { label, title, titleMuted, id, href, hrefLabel } = Astro.props;
     }
 
     .section-intro__label,
-    .section-intro__muted {
+    .section-intro__muted,
+    .section-intro__lead {
       color: var(--color-text-muted);
     }
 
     .section-intro__title {
       max-inline-size: 18em;
+    }
+
+    .section-intro__lead {
+      max-inline-size: var(--measure);
     }
 
     .section-intro__link {
@@ -55,7 +67,8 @@ const { label, title, titleMuted, id, href, hrefLabel } = Astro.props;
         grid-template-columns: 1fr auto;
       }
 
-      .section-intro__label {
+      .section-intro__label,
+      .section-intro__lead {
         grid-column: 1 / -1;
       }
 

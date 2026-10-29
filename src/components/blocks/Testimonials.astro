@@ -1,8 +1,10 @@
 ---
 /**
- * Quotes from people Dawid worked with, as a carousel: a row of slides that scrolls and snaps
- * sideways, with back and next buttons. Without JS it is a plain swipeable, scrollable row (the
- * buttons stay hidden). Data: src/lib/testimonials.ts.
+ * Quotes from people Dawid worked with, one at a time, on a tinted panel under an oversized
+ * quote mark. Slides sit in a row that scrolls and snaps sideways (swipe, trackpad or arrow keys
+ * on the focused row); below them, one bar per quote (the current one filled and clickable to
+ * jump), a counter and ghost back and next buttons. Without JS it is a swipeable row and the
+ * controls stay hidden. Data: src/lib/testimonials.ts.
  */
 import Quote from "@/components/content/Quote.astro";
 import Button from "@/components/ui/Button.astro";
@@ -14,9 +16,13 @@ interface Props {
 }
 
 const { testimonials, label = "What people say" } = Astro.props;
+const total = String(testimonials.length).padStart(2, "0");
 ---
 
 <div class="testimonials" role="region" aria-roledescription="carousel" aria-label={label}>
+  <span class="testimonials__mark" aria-hidden="true">
+    “
+  </span>
   <ul class="testimonials__track" role="list" tabindex="0" data-testimonials-track>
     {testimonials.map(({ quote, name, role, company }, index) => (
       <li
@@ -25,46 +31,66 @@ const { testimonials, label = "What people say" } = Astro.props;
         aria-roledescription="slide"
         aria-label={`${index + 1} of ${testimonials.length}`}
       >
-        <Quote author={name} role={company ? `${role}, ${company}` : role}>
-          “{quote}”
+        <Quote size="lg" author={name} role={company ? `${role}, ${company}` : role}>
+          {quote}
         </Quote>
       </li>
     ))}
   </ul>
   <div class="testimonials__controls" data-testimonials-controls hidden>
-    <Button variant="secondary" icon="arrow-left" label="Previous quote" data-testimonials-prev />
-    <Button variant="secondary" icon="arrow" label="Next quote" data-testimonials-next />
+    <div class="testimonials__pages">
+      {testimonials.map(({ name }, index) => (
+        <button
+          class="testimonials__page"
+          type="button"
+          aria-label={`Quote ${index + 1}: ${name}`}
+          data-testimonials-page={index}
+        />
+      ))}
+    </div>
+    <p class="text-caption testimonials__count" aria-hidden="true">
+      <span data-testimonials-current>01</span> / {total}
+    </p>
+    <div class="testimonials__arrows">
+      <Button variant="ghost" icon="arrow-left" label="Previous quote" data-testimonials-prev />
+      <Button variant="ghost" icon="arrow" label="Next quote" data-testimonials-next />
+    </div>
   </div>
 </div>
 
 <script>
-  // One step is one slide plus the gap. Buttons turn off at either end of the row.
   document.querySelectorAll<HTMLElement>(".testimonials").forEach((root) => {
     const track = root.querySelector<HTMLElement>("[data-testimonials-track]");
     const controls = root.querySelector<HTMLElement>("[data-testimonials-controls]");
     const prev = root.querySelector<HTMLButtonElement>("[data-testimonials-prev]");
     const next = root.querySelector<HTMLButtonElement>("[data-testimonials-next]");
-    if (!track || !controls || !prev || !next) return;
+    const current = root.querySelector<HTMLElement>("[data-testimonials-current]");
+    const pages = [...root.querySelectorAll<HTMLButtonElement>("[data-testimonials-page]")];
+    if (!track || !controls || !prev || !next || !current) return;
 
     const reduced = window.matchMedia("(prefers-reduced-motion: reduce)");
-    const step = () => {
-      const slide = track.firstElementChild as HTMLElement | null;
-      const gap = parseFloat(getComputedStyle(track).columnGap) || 0;
-      return (slide?.offsetWidth ?? track.clientWidth) + gap;
+    const index = () => Math.round(track.scrollLeft / track.clientWidth);
+    const go = (to: number) => {
+      const target = Math.max(0, Math.min(pages.length - 1, to));
+      track.scrollTo({
+        left: target * track.clientWidth,
+        behavior: reduced.matches ? "auto" : "smooth",
+      });
     };
     const update = () => {
-      const end = track.scrollWidth - track.clientWidth - 1;
-      prev.disabled = track.scrollLeft <= 1;
-      next.disabled = track.scrollLeft >= end;
-      controls.hidden = end <= 0;
+      const at = index();
+      prev.disabled = at === 0;
+      next.disabled = at === pages.length - 1;
+      current.textContent = String(at + 1).padStart(2, "0");
+      pages.forEach((page, i) => page.setAttribute("aria-current", String(i === at)));
     };
-    const go = (direction: 1 | -1) =>
-      track.scrollBy({ left: direction * step(), behavior: reduced.matches ? "auto" : "smooth" });
 
-    prev.addEventListener("click", () => go(-1));
-    next.addEventListener("click", () => go(1));
+    prev.addEventListener("click", () => go(index() - 1));
+    next.addEventListener("click", () => go(index() + 1));
+    pages.forEach((page, i) => page.addEventListener("click", () => go(i)));
     track.addEventListener("scroll", update, { passive: true });
     new ResizeObserver(update).observe(track);
+    controls.hidden = pages.length < 2;
     update();
   });
 </script>
@@ -72,13 +98,29 @@ const { testimonials, label = "What people say" } = Astro.props;
 <style>
   @layer components {
     .testimonials {
+      position: relative;
       display: grid;
-      gap: var(--space-8);
+      gap: var(--space-10);
+      padding: var(--space-16) var(--space-6) var(--space-8);
+      overflow: clip;
+      border-radius: var(--radius-xl);
+      background-color: var(--color-bg-subtle);
+    }
+
+    /* Oversized and muted, hanging over the top left of the quote. */
+    .testimonials__mark {
+      position: absolute;
+      inset-block-start: 0;
+      inset-inline-start: var(--space-4);
+      color: var(--color-border-muted);
+      font: var(--weight-medium) calc(var(--text-display) * 2.5) / 0.9 var(--font-heading);
+      pointer-events: none;
+      user-select: none;
     }
 
     .testimonials__track {
+      position: relative;
       display: flex;
-      gap: var(--space-8);
       padding: 0;
       overflow-x: auto;
       overscroll-behavior-x: contain;
@@ -97,24 +139,76 @@ const { testimonials, label = "What people say" } = Astro.props;
 
     .testimonials__slide {
       flex: 0 0 100%;
-      padding-block-start: var(--space-6);
-      border-block-start: var(--border-width) solid var(--color-text);
       scroll-snap-align: start;
+      padding-inline-end: var(--space-1);
+    }
+
+    .testimonials__slide :global(.quote__text) {
+      max-inline-size: 22em;
+      text-wrap: pretty;
     }
 
     .testimonials__controls {
       display: flex;
-      gap: var(--space-3);
+      flex-wrap: wrap;
+      gap: var(--space-4) var(--space-6);
+      align-items: center;
     }
 
     .testimonials__controls[hidden] {
       display: none;
     }
 
-    /* Two quotes in view from tablets up. */
+    .testimonials__pages {
+      display: flex;
+      flex: 1 1 12rem;
+      gap: var(--space-2);
+    }
+
+    /* A tall hit area around a thin bar. */
+    .testimonials__page {
+      flex: 1;
+      padding-block: var(--space-3);
+      border: 0;
+      background: none;
+      cursor: pointer;
+    }
+
+    .testimonials__page::before {
+      display: block;
+      block-size: var(--space-1);
+      border-radius: var(--radius-pill);
+      background-color: var(--color-border-muted);
+      content: "";
+      transition: background-color var(--duration-fast) var(--ease-standard);
+    }
+
+    .testimonials__page:hover::before {
+      background-color: var(--color-text-muted);
+    }
+
+    .testimonials__page[aria-current="true"]::before {
+      background-color: var(--color-text);
+    }
+
+    .testimonials__count {
+      color: var(--color-text-muted);
+      font-variant-numeric: tabular-nums;
+    }
+
+    .testimonials__arrows {
+      display: flex;
+      gap: var(--space-2);
+      margin-inline-start: auto;
+    }
+
     @media (width >= 48em) {
-      .testimonials__slide {
-        flex-basis: calc((100% - var(--space-8)) / 2);
+      .testimonials {
+        padding: var(--space-24) var(--space-16) var(--space-12);
+      }
+
+      .testimonials__mark {
+        inset-inline-start: var(--space-12);
       }
     }
   }

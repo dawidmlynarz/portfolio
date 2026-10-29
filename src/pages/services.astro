@@ -5,10 +5,14 @@ import Container from "@/components/layout/Container.astro";
 import SectionIntro from "@/components/blocks/SectionIntro.astro";
 import Services from "@/components/blocks/Services.astro";
 import HeroBackdrop from "@/components/blocks/HeroBackdrop.astro";
+import Process from "@/components/blocks/Process.astro";
+import Beliefs from "@/components/blocks/Beliefs.astro";
 import Plans from "@/components/blocks/Plans.astro";
 import Testimonials from "@/components/blocks/Testimonials.astro";
+import Button from "@/components/ui/Button.astro";
 import { SERVICES } from "@/lib/services";
 import { PLANS } from "@/lib/plans";
+import { STEPS, BELIEFS } from "@/lib/process";
 import { TESTIMONIALS } from "@/lib/testimonials";
 import { breadcrumbs, offerCatalog, service } from "@/lib/schema";
 
@@ -28,20 +32,61 @@ const jsonLd = {
   title="AI-ready design systems and agentic UX"
   description="Hire a senior product designer for AI-ready design systems, agentic UX and product strategy: a fixed-price audit, an embedded lead, or a custom project."
 >
-  <Section space="md" class="hero-backdrop-host" aria-labelledby="services-title">
+  <Section space="md" class="hero-backdrop-host services-hero" aria-labelledby="services-title">
     <HeroBackdrop />
-    <Container class="services-page">
-      <div class="services-page__head">
-        <p class="text-caption services-page__muted">Services</p>
-        <h1 id="services-title" data-reveal="lines">
-          Strategy, systems and agents, <span class="services-page__muted">designed to ship.</span>
-        </h1>
-        <p class="text-lead services-page__lead services-page__muted" data-reveal="fade">
-          Three services, one way of working: close to the problem, close to engineering, and
-          measured by what changes for the people using the product.
-        </p>
+    <Container class="services-page__head">
+      <p class="text-caption services-page__muted">Services</p>
+      <h1 id="services-title" data-reveal="lines">
+        Your team got fast with AI.{" "}
+        <span class="services-page__muted">Let’s make sure it stays good.</span>
+      </h1>
+      <p class="text-lead services-page__lead services-page__muted" data-reveal="fade">
+        I’m a senior product designer for teams shipping with AI. I build the design systems, agent
+        patterns and review habits that keep the product worth trusting as you speed up.
+      </p>
+      <div data-reveal="fade">
+        <Button href="#what-i-do" variant="secondary" icon="arrow-down">
+          See how I can help
+        </Button>
       </div>
-      <Services services={SERVICES} headingLevel={2} variant="detailed" />
+    </Container>
+  </Section>
+
+  <Section space="lg" id="what-i-do" aria-labelledby="what-i-do-title">
+    <Container class="services-page">
+      <SectionIntro
+        id="what-i-do-title"
+        label="What I do"
+        title="Three services,"
+        titleMuted="one way of working."
+        lead="Close to the problem, close to engineering, and measured by what changes for the people using the product."
+      />
+      <Services services={SERVICES} headingLevel={3} variant="detailed" />
+    </Container>
+  </Section>
+
+  <Section space="lg" aria-labelledby="working-title">
+    <Container class="services-page">
+      <SectionIntro
+        id="working-title"
+        label="Working together"
+        title="What it’s like"
+        titleMuted="to have me on the project."
+        lead="You’ll know where we stand every week, and you’ll own everything when I leave. One person, start to finish. No account managers, no juniors, no hand-offs."
+      />
+      <Process steps={STEPS} />
+    </Container>
+  </Section>
+
+  <Section space="lg" aria-labelledby="approach-title">
+    <Container class="services-page">
+      <SectionIntro
+        id="approach-title"
+        label="Approach"
+        title="A few things"
+        titleMuted="I’m pretty sure about."
+      />
+      <Beliefs beliefs={BELIEFS} />
     </Container>
   </Section>
 
@@ -82,17 +127,13 @@ const jsonLd = {
   @layer components {
     .services-page {
       display: grid;
-      gap: var(--space-section-md);
+      gap: var(--space-section-sm);
     }
 
     .services-page__head {
       display: grid;
       gap: var(--space-6);
-    }
-
-    .services-page__plans {
-      display: grid;
-      gap: var(--space-10);
+      justify-items: start;
     }
 
     .services-page__lead {
@@ -101,6 +142,18 @@ const jsonLd = {
 
     .services-page__muted {
       color: var(--color-text-muted);
+    }
+
+    .services-page__plans {
+      display: grid;
+      gap: var(--space-10);
+    }
+
+    /* The hero fills most of the first screen, so the scroll prompt has somewhere to lead. */
+    .services-hero {
+      display: grid;
+      align-items: end;
+      min-block-size: 72svh;
     }
   }
 </style>

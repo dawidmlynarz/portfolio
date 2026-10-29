@@ -21,6 +21,9 @@ import SectionIntro from "@/components/blocks/SectionIntro.astro";
 import Services from "@/components/blocks/Services.astro";
 import Plans from "@/components/blocks/Plans.astro";
 import Testimonials from "@/components/blocks/Testimonials.astro";
+import Process from "@/components/blocks/Process.astro";
+import Beliefs from "@/components/blocks/Beliefs.astro";
+import Quote from "@/components/content/Quote.astro";
 import StoryIntro from "@/components/blocks/StoryIntro.astro";
 import ClientLogos from "@/components/blocks/ClientLogos.astro";
 import WorkMarquee from "@/components/blocks/WorkMarquee.astro";
@@ -34,6 +37,7 @@ import { COLOR_ROLES, SPACE } from "@/lib/tokens";
 import { SERVICES } from "@/lib/services";
 import { PLANS } from "@/lib/plans";
 import { TESTIMONIALS } from "@/lib/testimonials";
+import { STEPS, BELIEFS } from "@/lib/process";
 import { PORTRAIT_LAYERS, portraitPhoto } from "@/lib/portrait";
 import figureSample from "@/assets/placeholders/figure-sample.jpg";
 import diagramSample from "@/content/work/zazmic-anvil-ui/anvil-levels.avif";
@@ -295,6 +299,9 @@ const SECTIONS = [
             </Button>
             <Button href="#components" variant="secondary" icon="arrow-up" label="Back to top" />
             <Button variant="secondary" icon="arrow-left" label="Previous" />
+            <Button href="#components" variant="secondary" icon="arrow-down">
+              Scroll prompt
+            </Button>
             <Button href="#components" icon="arrow" label="Next" />
           </div>
         </Stack>
@@ -488,6 +495,28 @@ const SECTIONS = [
           Testimonials · quote carousel, one slide on phones and two from tablets (/services)
         </h3>
         <Testimonials testimonials={TESTIMONIALS} label="Testimonials sample" />
+        <h3 class="text-caption muted">
+          Quote · md (case studies) and lg (the /services carousel)
+        </h3>
+        <Quote author="Name" role="Role, Company">
+          A short quote in the case-study size.
+        </Quote>
+        <Quote size="lg" author="Name" role="Role, Company">
+          The same quote, carousel size.
+        </Quote>
+        <h3 class="text-caption muted">
+          Process · steps on a line that draws itself as it scrolls (/services)
+        </h3>
+        <Process steps={STEPS.slice(0, 3)} headingLevel={4} />
+        <h3 class="text-caption muted">Beliefs · numbered two-tone statements (/services)</h3>
+        <Beliefs beliefs={BELIEFS.slice(0, 2)} />
+        <h3 class="text-caption muted">SectionIntro · with a lead paragraph</h3>
+        <SectionIntro
+          label="Label"
+          title="Two-tone title"
+          titleMuted="with a lead."
+          lead="An optional lead paragraph under the title, at most the reading measure wide."
+        />
         <h3 class="text-caption muted">ClientLogos · row (About) and spread; marquee below</h3>
         <ClientLogos />
         <ClientLogos spread />

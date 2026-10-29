@@ -549,3 +549,11 @@ What changed versus the embed, and why:
 **Round 2: services first, then plans, then quotes.** Dawid asked for the services to lead and the plans to follow, with the full-time line right under the plans (no button of its own). Copy speaks as one person: no "we".
 
 **Quotes carousel (`Testimonials`).** Five LinkedIn recommendations, trimmed to the lines about the services. Wording stays the recommender's own (cuts only), so nothing is put in anyone's mouth. Picked for recency and relevance: George Yoon, Chris Beaumont, Anthony A. Marin (Newsweek, 2026), Scott Batchelor (2024), Rohan Mohana (2023). Roles are current LinkedIn headlines. The carousel is a CSS scroll-snap row (one slide on phones, two from 48em) with a small script for the back and next buttons; without JS the buttons stay hidden and the row still swipes and scrolls. Button gained an `arrow-left` icon for it.
+
+**Round 3: a page with a story.** Order is Hero, Services, Working together (Process), Approach (Beliefs), Plans, Quotes, then the site footer. Hero copy is Dawid's headline with a proposed subhead and a "See how I can help" scroll prompt (Button gained `arrow-down`, which bobs gently at rest; reduced motion stills it). SectionIntro gained an optional `lead`.
+
+**Process line.** One segment per step, node to node, so the line always meets the last node whatever the text height. The motion layer (`processLine` in motion.ts) scrubs the segments in sequence as the list passes 65% of the screen and settles each node (scale and fade, expo out, no bounce) with its text as the line arrives. Without JS or with reduced motion the line and nodes are simply drawn.
+
+**Approach as two-tone statements.** Each belief is one sentence, claim in ink and reason muted, the same two-tone voice as the site's headings, numbered in two columns from 62em. A list of cards or icons would have made them read like features.
+
+**Quotes, one at a time.** The carousel shows one large quote (`Quote size="lg"`) on a `--color-bg-subtle` panel under an oversized quote mark, with a bar per quote (click to jump, current one filled), a counter and ghost arrows. It is still a native scroll-snap row, so swipe, trackpad and arrow keys work, and without JS it stays a swipeable row.
