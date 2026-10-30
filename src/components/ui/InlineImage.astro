@@ -1,0 +1,68 @@
+---
+/**
+ * A small picture set inside a line of text, about as tall as the letters, that grows on hover
+ * to show a little more. Sized in em, so it follows whatever text it sits in. The hover zoom is
+ * a nicety: the picture already reads without it, and with reduced motion it jumps instead of
+ * easing.
+ */
+import { Image } from "astro:assets";
+
+interface Props {
+  src: ImageMetadata;
+  /** Required. Describe the picture; it is read in the middle of the sentence. */
+  alt: string;
+  /** Framing inside the crop, as object-position (e.g. "50% 30%" for a face). */
+  focus?: string;
+  class?: string;
+  [key: `data-${string}`]: unknown;
+}
+
+const { src, alt, focus = "50% 50%", class: className, ...attrs } = Astro.props;
+---
+
+<span class:list={["inline-image", className]} {...attrs}>
+  <Image
+    class="inline-image__img"
+    src={src}
+    alt={alt}
+    widths={[160, 320]}
+    sizes="10rem"
+    style={`object-position: ${focus}`}
+  />
+</span>
+
+<style>
+  @layer components {
+    .inline-image {
+      display: inline-block;
+      position: relative;
+      inline-size: 1.5em;
+      block-size: 1em;
+      vertical-align: -0.12em;
+      border-radius: var(--radius-sm);
+      overflow: hidden;
+      background: var(--color-bg-subtle);
+      transition:
+        transform var(--duration-zoom) var(--ease-out-expo),
+        box-shadow var(--duration-zoom) var(--ease-out-expo);
+    }
+
+    .inline-image__img {
+      inline-size: 100%;
+      block-size: 100%;
+      object-fit: cover;
+    }
+
+    .inline-image:hover {
+      z-index: 1;
+      transform: scale(1.6) rotate(-3deg);
+      box-shadow: var(--shadow-panel);
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      .inline-image {
+        transition: none;
+      }
+    }
+  }
+</style>

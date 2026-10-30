@@ -2,6 +2,14 @@
 
 Non-obvious choices, newest first. One entry per decision: what, why, and what it rules out.
 
+## 2026-10-30 · About: story, career timeline, videos
+
+**The home statement moved to About.** The StoryIntro after the home hero now opens About under the ribbon, as the longer `paragraphs` variant: three paragraphs at `--text-h3` with small inline pictures (InlineImage) that grow on hover. Home goes straight from the client logos to the work. The old photo grid and "Personal life" section are folded into the story.
+
+**Career timeline is a list with a shared year axis.** Each role gets a bar on the same 2010–now axis, so length and overlap (CSS Peeper and freelance next to every job) read at a glance; work done alongside is a dashed bar, ongoing work fades out at its end. Data in `src/lib/career.ts`, built from the 2026 CV and LinkedIn; where they disagree, LinkedIn wins (Newsweek ends Apr 2026, Pearson Apr 2016). Durations are computed at build time.
+
+**YouTube loads on click.** `YouTube.astro` shows a local copy of the thumbnail and loads the youtube-nocookie player only when played; without JS it is a link. No third-party requests on page load.
+
 ## 2026-10-29 · Structured data on Services, Work and Contact
 
 - **/services** lists the three services as schema.org `Service` nodes (from `src/lib/services.ts`), each with its on-page anchor and Dawid as provider, plus breadcrumbs.

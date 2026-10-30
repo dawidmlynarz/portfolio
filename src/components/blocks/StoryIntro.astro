@@ -1,34 +1,77 @@
 ---
 /**
- * The hand-off after the home hero: a large about-me statement on the same surface as the hero,
- * lighting up word by word as it scrolls through the screen (the motion layer, data-story).
- * Nothing is pinned. Without the motion layer (no JS, reduced motion) the full statement is
- * visible.
+ * A large about-me statement on the page surface, lighting up word by word as it scrolls
+ * through the screen (the motion layer, data-story). Nothing is pinned. Without the motion layer
+ * (no JS, reduced motion) the full statement is visible.
+ *
+ * `text` is one statement at heading size. `paragraphs` is the longer story variant (About): up
+ * to three paragraphs at a reading size, which can hold links and small inline pictures that grow
+ * on hover (InlineImage); the pictures light up with the words around them.
  */
+import InlineImage from "@/components/ui/InlineImage.astro";
+
+export type StoryPart =
+  string | { image: ImageMetadata; alt: string; focus?: string } | { text: string; href: string };
 
 interface Props {
   label: string;
-  text: string;
+  text?: string;
+  paragraphs?: StoryPart[][];
   /** Optional link under the statement. */
   href?: string;
   hrefLabel?: string;
 }
 
-const { label, text, href, hrefLabel } = Astro.props;
-const words = text.split(/\s+/);
+const { label, text, paragraphs, href, hrefLabel } = Astro.props;
+const labelId = `story-label-${Math.random().toString(36).slice(2, 8)}`;
+const words = text?.split(/\s+/) ?? [];
+/** Words and the spaces between them, so a part can end on a word right before a picture. */
+const tokens = (part: string) => part.split(/(\s+)/).filter(Boolean);
 ---
 
-<section class="story" aria-labelledby="story-label" data-story>
-  <h2 class="text-caption story__label" id="story-label">
+<section
+  class:list={["story", { "story--paragraphs": paragraphs }]}
+  aria-labelledby={labelId}
+  data-story
+>
+  <h2 class="text-caption story__label" id={labelId}>
     {label}
   </h2>
-  <p class="story__text" data-story-text>
-    {words.map((word) => (
-      <span class="story__word" data-story-word>
-        {word}{" "}
-      </span>
-    ))}
-  </p>
+  {paragraphs ? (
+    <div class="story__text" data-story-text>
+      {paragraphs.map((parts) => (
+        <p>
+          {parts.map((part) =>
+            typeof part === "string" ? (
+              tokens(part).map((token) =>
+                /^\s+$/.test(token) ? (
+                  " "
+                ) : (
+                  <span class="story__word" data-story-word>
+                    {token}
+                  </span>
+                ),
+              )
+            ) : "image" in part ? (
+              <InlineImage src={part.image} alt={part.alt} focus={part.focus} data-story-word />
+            ) : (
+              <a href={part.href} data-story-word>
+                {part.text}
+              </a>
+            ),
+          )}
+        </p>
+      ))}
+    </div>
+  ) : (
+    <p class="story__text" data-story-text>
+      {words.map((word) => (
+        <span class="story__word" data-story-word>
+          {word}{" "}
+        </span>
+      ))}
+    </p>
+  )}
   {href && (
     <a class="story__link" href={href}>
       {hrefLabel}
@@ -59,6 +102,14 @@ const words = text.split(/\s+/);
       font: var(--weight-medium) var(--text-h2) / var(--leading-h2) var(--font-heading);
       letter-spacing: var(--tracking-h2);
       text-wrap: pretty;
+    }
+
+    .story--paragraphs .story__text {
+      display: grid;
+      gap: var(--space-6);
+      max-inline-size: 30em;
+      font: var(--weight-medium) var(--text-h3) / var(--leading-h4) var(--font-heading);
+      letter-spacing: var(--tracking-h3);
     }
   }
 </style>

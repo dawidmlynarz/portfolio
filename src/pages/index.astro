@@ -3,7 +3,6 @@ import SiteLayout from "@/layouts/SiteLayout.astro";
 import Section from "@/components/layout/Section.astro";
 import Container from "@/components/layout/Container.astro";
 import HomeHero from "@/components/blocks/HomeHero.astro";
-import StoryIntro from "@/components/blocks/StoryIntro.astro";
 import SectionIntro from "@/components/blocks/SectionIntro.astro";
 import Services from "@/components/blocks/Services.astro";
 import ClientLogos from "@/components/blocks/ClientLogos.astro";
@@ -44,11 +43,6 @@ const jsonLd = {
     <ClientLogos marquee />
   </div>
 
-  <StoryIntro
-    label="About"
-    text="I'm Dawid Młynarz, a Lead Product Designer with 15 years of turning complex problems into clear, useful products. I've shaped newsrooms, fintech and creator platforms, and built the design systems behind them. Today I help teams bring AI into their products in ways people understand, trust and actually use."
-  />
-
   <Section id="work" space="lg" aria-labelledby="work-title">
     <Container class="home__stack">
       <SectionIntro
@@ -86,7 +80,7 @@ const jsonLd = {
       gap: var(--space-section-sm);
     }
 
-    /* About brings its own space below the logos. */
+    /* The work section brings its own space below the logos. */
     .home__clients {
       padding-block-start: var(--space-section-md);
     }

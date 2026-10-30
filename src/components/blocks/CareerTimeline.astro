@@ -1,0 +1,291 @@
+---
+/**
+ * The About career timeline: one row per role, newest first, each with a bar on a shared year
+ * axis, so the length of a job and the overlaps (CSS Peeper and freelance ran next to everything)
+ * read at a glance. Bars of work done alongside a full-time role are outlined; a bar still running
+ * fades out at its end. Hovering or focusing a row inks its bar.
+ *
+ * From 62em a row is logo, role and company, text, dates; the bar runs under it across the row.
+ * The motion layer grows each bar from its start as the row scrolls in; without it the bars are
+ * simply there. Data: src/lib/career.ts.
+ */
+import ClientLogo from "@/components/ui/ClientLogo.astro";
+import { AXIS_END, AXIS_START, bar, dates, duration, type Role } from "@/lib/career";
+
+interface Props {
+  roles: Role[];
+  headingLevel?: 2 | 3 | 4;
+}
+
+const { roles, headingLevel = 3 } = Astro.props;
+const Heading = `h${headingLevel}` as const;
+
+const years = AXIS_END - AXIS_START;
+/** Labelled years on the axis: every second one, and always the last. */
+const ticks = Array.from({ length: years + 1 }, (_, n) => AXIS_START + n).filter(
+  (year, n) => n % 2 === 0 || year === AXIS_END,
+);
+---
+
+<div class="career" data-career>
+  <div class="career__axis" aria-hidden="true">
+    {ticks.map((year) => (
+      <span class="career__tick" style={`--at: ${(year - AXIS_START) / years}`}>
+        {year === AXIS_END ? "" : year}
+      </span>
+    ))}
+  </div>
+  <ol class="career__list" role="list">
+    {roles.map((role) => {
+      const { start, size } = bar(role);
+      return (
+        <li
+          class:list={[
+            "career__role",
+            { "career__role--alongside": role.alongside, "career__role--current": !role.end },
+          ]}
+          data-career-role
+        >
+          <div class="career__brand">
+            {role.logo ? (
+              <span class="career__logo">
+                <ClientLogo client={role.logo} label={role.company} />
+              </span>
+            ) : (
+              <span class="career__wordmark">{role.company}</span>
+            )}
+          </div>
+          <div class="career__head">
+            <Heading class="career__title">{role.role}</Heading>
+            <p class="career__company">
+              {role.company}
+              {role.alongside && <span class="career__badge">alongside</span>}
+            </p>
+          </div>
+          <div class="career__body">
+            <p class="career__text">{role.text}</p>
+            {role.links && (
+              <ul class="career__links" role="list">
+                {role.links.map(([label, href]) => (
+                  <li>
+                    <a href={href}>{label}</a>
+                  </li>
+                ))}
+              </ul>
+            )}
+          </div>
+          <p class="career__when">
+            <span>{dates(role)}</span>
+            <span class="career__muted">{duration(role)}</span>
+            <span class="career__muted">{role.place}</span>
+          </p>
+          <div class="career__track" aria-hidden="true">
+            <span
+              class="career__bar"
+              style={`--start: ${start}; --size: ${size}`}
+              data-career-bar
+            />
+          </div>
+        </li>
+      );
+    })}
+  </ol>
+</div>
+
+<style>
+  @layer components {
+    .career {
+      display: grid;
+      container-type: inline-size;
+    }
+
+    .career__axis {
+      position: relative;
+      block-size: var(--space-6);
+      font: var(--weight-regular) var(--text-caption) / var(--leading-caption) var(--font-mono);
+      letter-spacing: var(--tracking-caption);
+      color: var(--color-text-muted);
+    }
+
+    .career__tick {
+      position: absolute;
+      inset-inline-start: calc(var(--at) * 100%);
+      inset-block-start: 0;
+      padding-inline-start: var(--space-1);
+      border-inline-start: var(--border-width) solid var(--color-border-subtle);
+    }
+
+    /* Every other year label is enough on a phone. */
+    @container (width < 40rem) {
+      .career__tick:nth-child(even) {
+        visibility: hidden;
+      }
+    }
+
+    .career__list {
+      display: grid;
+      padding: 0;
+    }
+
+    .career__role {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) auto;
+      grid-template-areas:
+        "brand when"
+        "head head"
+        "body body"
+        "track track";
+      gap: var(--space-3) var(--space-4);
+      padding-block-start: var(--space-8);
+    }
+
+    .career__brand {
+      grid-area: brand;
+      display: flex;
+      align-items: center;
+      min-block-size: var(--space-8);
+      color: var(--color-text-muted);
+      transition: color var(--duration-fast) var(--ease-standard);
+    }
+
+    .career__logo :global(svg) {
+      display: block;
+      block-size: var(--space-8);
+      inline-size: auto;
+    }
+
+    .career__wordmark {
+      font: var(--weight-semibold) var(--text-small) / var(--leading-small) var(--font-heading);
+      letter-spacing: var(--tracking-h4);
+    }
+
+    .career__head {
+      grid-area: head;
+      display: grid;
+      align-content: start;
+      gap: var(--space-1);
+    }
+
+    .career__title {
+      font: var(--weight-medium) var(--text-h4) / var(--leading-h4) var(--font-heading);
+      letter-spacing: var(--tracking-h4);
+      text-wrap: balance;
+    }
+
+    .career__company {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: var(--space-2);
+      color: var(--color-text-muted);
+    }
+
+    .career__badge {
+      padding: 0 var(--space-2);
+      border: var(--border-width) dashed var(--color-border);
+      border-radius: var(--radius-pill);
+      font: var(--weight-regular) var(--text-caption) / var(--leading-caption) var(--font-mono);
+      letter-spacing: var(--tracking-caption);
+    }
+
+    .career__body {
+      grid-area: body;
+      display: grid;
+      gap: var(--space-3);
+      align-content: start;
+    }
+
+    .career__text {
+      max-inline-size: 38em;
+      color: var(--color-text-muted);
+      text-wrap: pretty;
+    }
+
+    .career__links {
+      display: flex;
+      flex-wrap: wrap;
+      gap: var(--space-1) var(--space-4);
+      padding: 0;
+      font-size: var(--text-small);
+    }
+
+    .career__when {
+      grid-area: when;
+      display: grid;
+      justify-items: end;
+      align-content: start;
+      gap: var(--space-1);
+      font: var(--weight-regular) var(--text-caption) / var(--leading-caption) var(--font-mono);
+      letter-spacing: var(--tracking-caption);
+      text-align: end;
+    }
+
+    .career__muted {
+      color: var(--color-text-muted);
+    }
+
+    .career__track {
+      grid-area: track;
+      position: relative;
+      block-size: var(--space-2);
+      margin-block-start: var(--space-4);
+
+      /* The hairline through the track doubles as the line between rows. */
+      background: linear-gradient(var(--color-border-subtle), var(--color-border-subtle)) center /
+        100% var(--border-width) no-repeat;
+    }
+
+    .career__bar {
+      position: absolute;
+      inset-block: 0;
+      inset-inline-start: calc(var(--start) * 100%);
+      inline-size: max(var(--space-2), calc(var(--size) * 100%));
+      border-radius: var(--radius-pill);
+      background: var(--color-border);
+      transform-origin: left center;
+      transition: background-color var(--duration-fast) var(--ease-standard);
+    }
+
+    .career__role--alongside .career__bar {
+      background: transparent;
+      border: var(--border-width) dashed var(--color-border);
+      transition-property: border-color, background-color;
+    }
+
+    /* Still running: the bar fades out towards today instead of stopping hard. */
+    .career__role--current .career__bar {
+      mask-image: linear-gradient(to right, var(--color-text) 75%, transparent);
+    }
+
+    .career__role:hover .career__brand,
+    .career__role:focus-within .career__brand {
+      color: var(--color-text);
+    }
+
+    .career__role:hover .career__bar,
+    .career__role:focus-within .career__bar {
+      background: var(--color-text);
+    }
+
+    .career__role--alongside:hover .career__bar,
+    .career__role--alongside:focus-within .career__bar {
+      border-color: var(--color-text);
+      background: color-mix(in srgb, var(--color-text) 12%, transparent);
+    }
+
+    @media (width >= 62em) {
+      .career__role {
+        grid-template-columns: 8rem minmax(0, 1fr) minmax(0, 1.25fr) 11rem;
+        grid-template-areas:
+          "brand head body when"
+          "track track track track";
+        gap: var(--space-4) var(--space-8);
+        padding-block-start: var(--space-10);
+      }
+
+      .career__brand {
+        align-items: start;
+      }
+    }
+  }
+</style>

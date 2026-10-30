@@ -8,6 +8,8 @@
  * - [data-story]: the About statement after the home hero lights up word by word as it scrolls.
  * - [data-process]: the /services timeline. Its line draws itself down the page as it scrolls;
  *   each step's node settles into place and its text fades up as the line reaches it.
+ * - [data-career]: the About career timeline. Each role's bar grows from its start date as the
+ *   row scrolls in.
  * - "quoteswap" (the /services quotes): the old quote's lines slide up and out through their
  *   masks, then the new quote's lines rise in, line by line, with its source fading in after.
  * - [data-parallax]: a frame whose image is taller than it (the case-study cover from 48em); the
@@ -101,6 +103,21 @@ function story() {
       scrollTrigger: { trigger: text, start: "top 85%", end: "bottom 55%", scrub: 0.6 },
     },
   );
+}
+
+/**
+ * The About career timeline ([data-career]): each bar grows from its start date as its row comes
+ * into view, so the length of each role reads as it appears.
+ */
+function careerBars() {
+  for (const bar of document.querySelectorAll<HTMLElement>("[data-career-bar]")) {
+    gsap.from(bar, {
+      scaleX: 0,
+      duration: 1.4,
+      ease: EASE,
+      scrollTrigger: { trigger: bar, start: "top 90%", once: true },
+    });
+  }
 }
 
 /**
@@ -360,6 +377,7 @@ if (root.classList.contains("motion")) {
   revealLines();
   story();
   processLine();
+  careerBars();
   quoteSwap();
   parallax();
   coverFollow();
