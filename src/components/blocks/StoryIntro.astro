@@ -33,8 +33,41 @@ interface Props {
 const { label, text, paragraphs, href, hrefLabel } = Astro.props;
 const labelId = `story-label-${Math.random().toString(36).slice(2, 8)}`;
 const words = text?.split(/\s+/) ?? [];
-/** Words and the spaces between them, so a part can end on a word right before a picture. */
-const tokens = (part: string) => part.split(/(\s+)/).filter(Boolean);
+type Picture = Extract<StoryPart, { image: unknown }>;
+type Link = Extract<StoryPart, { href: string }>;
+/** A word, link or picture; " " is a space where the line may break. */
+type Piece = string | Picture | Link | { pair: [Picture, string | Link] };
+
+/**
+ * Splits a paragraph into words, links and pictures. A picture is kept together with the word or
+ * link right after it (the one it illustrates), so a line never breaks between the two.
+ */
+function pieces(parts: StoryPart[]) {
+  const flat = parts.flatMap((part): (string | Picture | Link)[] =>
+    typeof part === "string"
+      ? part
+          .split(/(\s+)/)
+          .filter(Boolean)
+          .map((token) => (/^\s+$/.test(token) ? " " : token))
+      : [part],
+  );
+  const out: Piece[] = [];
+  for (let i = 0; i < flat.length; i++) {
+    const piece = flat[i];
+    if (typeof piece !== "string" && "image" in piece) {
+      let next = i + 1;
+      while (flat[next] === " ") next++;
+      const word = flat[next];
+      if (word !== undefined && (typeof word === "string" || !("image" in word))) {
+        out.push({ pair: [piece, word] });
+        i = next;
+        continue;
+      }
+    }
+    out.push(piece);
+  }
+  return out;
+}
 ---
 
 <section
@@ -49,32 +82,37 @@ const tokens = (part: string) => part.split(/(\s+)/).filter(Boolean);
     <div class="story__text" data-story-text>
       {paragraphs.map((parts) => (
         <p>
-          {parts.map((part) =>
-            typeof part === "string" ? (
-              tokens(part).map((token) =>
-                /^\s+$/.test(token) ? (
-                  " "
-                ) : (
-                  <span class="story__word" data-story-word>
-                    {token}
-                  </span>
-                ),
-              )
-            ) : "image" in part ? (
-              <InlineImage
-                src={part.image}
-                still={part.still}
-                alt={part.alt}
-                shape={part.shape}
-                focus={part.focus}
-                data-story-word
-              />
-            ) : (
-              <a href={part.href} data-story-word>
-                {part.text}
+          {pieces(parts).map(function render(piece: Piece): unknown {
+            if (piece === " ") return " ";
+            if (typeof piece === "string")
+              return (
+                <span class="story__word" data-story-word>
+                  {piece}
+                </span>
+              );
+            if ("pair" in piece)
+              return (
+                <span class="story__pair">
+                  {render(piece.pair[0])} {render(piece.pair[1])}
+                </span>
+              );
+            if ("image" in piece)
+              return (
+                <InlineImage
+                  src={piece.image}
+                  still={piece.still}
+                  alt={piece.alt}
+                  shape={piece.shape}
+                  focus={piece.focus}
+                  data-story-word
+                />
+              );
+            return (
+              <a href={piece.href} data-story-word>
+                {piece.text}
               </a>
-            ),
-          )}
+            );
+          })}
         </p>
       ))}
     </div>
@@ -124,6 +162,11 @@ const tokens = (part: string) => part.split(/(\s+)/).filter(Boolean);
       display: grid;
       gap: 0.6lh;
       line-height: var(--leading-h3);
+    }
+
+    /* A picture and the word it illustrates wrap to the next line together. */
+    .story__pair {
+      white-space: nowrap;
     }
   }
 </style>

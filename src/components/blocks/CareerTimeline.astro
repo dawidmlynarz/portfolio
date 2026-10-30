@@ -1,74 +1,45 @@
 ---
 /**
- * The About career timeline, a little time machine. Roles are listed newest first; under them
- * runs one year line with every role on it (jobs on the line, work done alongside and study on a
- * dashed lane above). As a role comes into view, a window slides along the line to its years and
- * lights them up, so scrolling down travels back in time. Each role on the line is a link: click
- * it to jump to that role.
+ * The About career timeline: roles newest first on one vertical line, the same pattern as the
+ * Services "Working together" steps (Process.astro). Each role has a node on the line, its years
+ * and time there to the left of the node, then the title, company and a sentence or two.
+ * Fractional work (consulting, CSS Peeper) runs next to a main role and says so on a badge.
  *
- * - vertical: roles stack; the line sticks to the bottom of the screen while the list is in view.
- * - horizontal: roles are cards in a sideways scroller that starts at today; the line sits under
- *   it and scrolling left goes back in time.
- *
- * Without JS the line still shows every role and the links still jump; only the window and the
- * lit years need the script. With reduced motion the window moves without easing.
- * Data: src/lib/career.ts.
+ * The motion layer draws the line down the page and settles each node as the line reaches it
+ * (the data-process hooks it shares with Process); without it (no JS, reduced motion) the line
+ * and every node are simply there. Data: src/lib/career.ts.
  */
-import ClientLogo from "@/components/ui/ClientLogo.astro";
-import { AXIS_END, AXIS_START, bar, dates, duration, type Role } from "@/lib/career";
+import { duration, years, type Role } from "@/lib/career";
 
 interface Props {
   roles: Role[];
-  layout?: "vertical" | "horizontal";
   headingLevel?: 2 | 3 | 4;
-  /** Prefix for the role ids, so two timelines can share a page. */
-  idPrefix?: string;
 }
 
-const { roles, layout = "vertical", headingLevel = 3, idPrefix = "career" } = Astro.props;
+const { roles, headingLevel = 3 } = Astro.props;
 const Heading = `h${headingLevel}` as const;
-
-const years = Array.from({ length: AXIS_END - AXIS_START }, (_, n) => AXIS_START + n);
-const span = AXIS_END - AXIS_START;
-const items = roles.map((role) => ({
-  role,
-  ...bar(role),
-  id: `${idPrefix}-${role.id}`,
-  from: Number(role.start.slice(0, 4)),
-  to: role.end ? Number(role.end.slice(0, 4)) : AXIS_END - 1,
-}));
 ---
 
-<div class:list={["career", `career--${layout}`]} data-career={layout}>
-  <ol class="career__list" role="list" data-career-list>
-    {items.map(({ role, id, start, size, from, to }, index) => (
-      <li
-        class:list={["career__role", { "career__role--current": !role.end }]}
-        id={id}
-        data-career-role={index}
-        data-start={start}
-        data-size={size}
-        data-from={from}
-        data-to={to}
-        data-label={`${role.company} · ${dates(role)}`}
-      >
-        <div class="career__brand">
-          {role.logo ? (
-            <span class="career__logo">
-              <ClientLogo client={role.logo} label={role.company} />
-            </span>
-          ) : (
-            <span class="career__wordmark">{role.company}</span>
-          )}
-        </div>
-        <div class="career__head">
+<div class="career" data-process>
+  <ol class="career__list" role="list">
+    {roles.map((role, index) => (
+      <li class="career__role" data-process-step>
+        {index < roles.length - 1 && (
+          <span class="career__segment" aria-hidden="true" data-process-segment />
+        )}
+        <span class="career__node" aria-hidden="true" data-process-node></span>
+        <p class="text-caption career__when" data-process-fade>
+          <span>{years(role)}</span>
+          <span class="career__duration">{duration(role)}</span>
+        </p>
+        <div class="career__head" data-process-fade>
           <Heading class="career__title">{role.role}</Heading>
           <p class="career__company">
             {role.company}
-            {role.alongside && !role.end && <span class="career__badge">alongside</span>}
+            {role.fractional && <span class="career__badge">fractional</span>}
           </p>
         </div>
-        <div class="career__body">
+        <div class="career__body" data-process-fade>
           <p class="career__text">{role.text}</p>
           {role.links && (
             <ul class="career__links" role="list">
@@ -80,128 +51,18 @@ const items = roles.map((role) => ({
             </ul>
           )}
         </div>
-        <p class="career__when">
-          <span>{dates(role)}</span>
-          <span class="career__muted">{duration(role)}</span>
-          <span class="career__muted">{role.place}</span>
-        </p>
       </li>
     ))}
   </ol>
-
-  <nav class="career__machine" aria-label="Jump to a year" data-career-machine>
-    <p class="career__readout" aria-live="polite" data-career-readout>
-      {items[0] && `${items[0].role.company} · ${dates(items[0].role)}`}
-    </p>
-    <div class="career__rail">
-      <span class="career__window" aria-hidden="true"></span>
-      <ul class="career__segments" role="list">
-        {items.map(({ role, id, start, size }) => (
-          <li
-            class:list={[
-              "career__segment",
-              { "career__segment--side": role.alongside, "career__segment--current": !role.end },
-            ]}
-            style={`--start: ${start}; --size: ${size}`}
-          >
-            <a href={`#${id}`} data-no-tear data-career-jump={id}>
-              <span class="visually-hidden">
-                {role.company}, {dates(role)}
-              </span>
-            </a>
-          </li>
-        ))}
-      </ul>
-      <ol class="career__years" role="list" aria-hidden="true">
-        {years.map((year) => (
-          <li class="career__year" style={`--at: ${(year - AXIS_START) / span}`} data-year={year}>
-            <span>{year}</span>
-          </li>
-        ))}
-      </ol>
-    </div>
-  </nav>
 </div>
-
-<script>
-  const reduced = () => window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-
-  for (const root of document.querySelectorAll<HTMLElement>("[data-career]")) {
-    const horizontal = root.dataset.career === "horizontal";
-    const list = root.querySelector<HTMLElement>("[data-career-list]")!;
-    const machine = root.querySelector<HTMLElement>("[data-career-machine]")!;
-    const readout = root.querySelector<HTMLElement>("[data-career-readout]")!;
-    const rows = [...root.querySelectorAll<HTMLElement>("[data-career-role]")];
-    const segments = [...root.querySelectorAll<HTMLElement>(".career__segment")];
-    const years = [...root.querySelectorAll<HTMLElement>("[data-year]")];
-    let active = -1;
-
-    const activate = (index: number) => {
-      if (index === active || !rows[index]) return;
-      active = index;
-      const row = rows[index];
-      const from = Number(row.dataset.from);
-      const to = Number(row.dataset.to);
-      machine.style.setProperty("--win-start", row.dataset.start!);
-      machine.style.setProperty("--win-size", row.dataset.size!);
-      machine.dataset.ready = "";
-      rows.forEach((r, n) => r.toggleAttribute("data-active", n === index));
-      segments.forEach((s, n) => s.toggleAttribute("data-active", n === index));
-      years.forEach((y) => {
-        const year = Number(y.dataset.year);
-        y.toggleAttribute("data-lit", year >= from && year <= to);
-        y.toggleAttribute("data-edge", year === from);
-      });
-      readout.textContent = row.dataset.label ?? "";
-    };
-
-    // The role crossing the middle of the screen (or of the scroller) is the one in view.
-    // After a jump, the clicked role stays lit until the scroll settles.
-    let lockedUntil = 0;
-    const observer = new IntersectionObserver(
-      (entries) => {
-        if (performance.now() < lockedUntil) return;
-        for (const entry of entries) {
-          if (entry.isIntersecting) activate(rows.indexOf(entry.target as HTMLElement));
-        }
-      },
-      horizontal
-        ? { root: list, rootMargin: "0px -49% 0px -50%" }
-        : { rootMargin: "-45% 0px -54% 0px" },
-    );
-    rows.forEach((row) => observer.observe(row));
-    activate(0);
-
-    // A role's link brings it to the middle (of the screen, or of the scroller) and lights it.
-    root.addEventListener("click", (event) => {
-      const link = (event.target as Element).closest<HTMLAnchorElement>("[data-career-jump]");
-      if (!link) return;
-      const index = rows.findIndex((row) => row.id === link.dataset.careerJump);
-      const row = rows[index];
-      if (!row) return;
-      event.preventDefault();
-      const behavior = reduced() ? "auto" : "smooth";
-      if (horizontal) {
-        list.scrollTo({
-          left: row.offsetLeft - (list.clientWidth - row.clientWidth) / 2,
-          behavior,
-        });
-      } else {
-        const box = row.getBoundingClientRect();
-        const top = window.scrollY + box.top - (window.innerHeight - box.height) / 2;
-        window.scrollTo({ top, behavior });
-      }
-      lockedUntil = performance.now() + 1200;
-      activate(index);
-    });
-  }
-</script>
 
 <style>
   @layer components {
     .career {
-      display: grid;
-      gap: var(--space-8);
+      --career-node: var(--space-4);
+      --career-rail: var(--space-8);
+      --career-gap: var(--space-10);
+      --career-when: calc(var(--space-24) + var(--space-8));
     }
 
     .career__list {
@@ -209,58 +70,85 @@ const items = roles.map((role) => ({
       padding: 0;
     }
 
-    /* ---------- A role ---------- */
-
+    /* Phones: the line on the left, everything else stacked next to it. */
     .career__role {
+      position: relative;
       display: grid;
-      grid-template-columns: minmax(0, 1fr) auto;
       grid-template-areas:
-        "brand when"
-        "head head"
-        "body body";
-      gap: var(--space-3) var(--space-4);
-      padding-block: var(--space-8);
-      border-block-end: var(--border-width) solid var(--color-border-subtle);
-      scroll-margin-block: var(--nav-clearance) var(--space-24);
-      opacity: 0.6;
-      transition: opacity var(--duration-reveal) var(--ease-standard);
+        "rail when"
+        "rail head"
+        "rail body";
+      grid-template-columns: var(--career-rail) 1fr;
+      gap: var(--space-3) var(--space-6);
+      align-items: start;
+      padding-block: var(--career-gap);
     }
 
-    /* Before the script picks a role, and without it, every role reads at full strength. */
-    .career:not(:has([data-active])) .career__role,
-    .career__role[data-active] {
-      opacity: 1;
+    /* Node and segment share the caption's line box, so the node centres on the years. */
+    .career__node,
+    .career__segment {
+      font-size: var(--text-caption);
+      line-height: var(--leading-caption);
     }
 
-    .career__brand {
-      grid-area: brand;
+    .career__node {
+      position: relative;
+      grid-area: rail;
+      justify-self: center;
+      inline-size: var(--career-node);
+      block-size: var(--career-node);
+      margin-block-start: calc((1lh - var(--career-node)) / 2);
+      border: var(--border-width) solid var(--color-text);
+      border-radius: var(--radius-pill);
+      background-color: var(--color-bg);
+    }
+
+    .career__node::after {
+      position: absolute;
+      inset: 25%;
+      border-radius: inherit;
+      background-color: var(--color-text);
+      content: "";
+    }
+
+    /* The line, one segment per role: from this node's centre to the next one's. The rail cell is
+       the containing block, so the segment follows the rail wherever the layout puts it. */
+    .career__segment {
+      position: absolute;
+      grid-area: rail;
+      inset-block-start: calc(1lh / 2);
+      inset-inline-start: 50%;
+      inline-size: var(--border-width);
+      block-size: calc(100% + 2 * var(--career-gap));
+      background-color: var(--color-text);
+      transform-origin: top;
+      translate: -50% 0;
+    }
+
+    .career__when {
+      grid-area: when;
       display: flex;
-      align-items: center;
-      min-block-size: var(--space-8);
+      flex-wrap: wrap;
+      gap: 0 var(--space-3);
     }
 
-    .career__logo :global(svg) {
-      display: block;
-      block-size: var(--space-8);
-      inline-size: auto;
+    .career__when span {
+      white-space: nowrap;
     }
 
-    .career__wordmark {
-      font: var(--weight-semibold) var(--text-small) / var(--leading-small) var(--font-heading);
-      letter-spacing: var(--tracking-h4);
+    .career__duration {
+      color: var(--color-text-muted);
     }
 
     .career__head {
       grid-area: head;
       display: grid;
-      align-content: start;
-      gap: var(--space-1);
+      gap: var(--space-2);
     }
 
     .career__title {
-      font: var(--weight-medium) var(--text-h4) / var(--leading-h4) var(--font-heading);
-      letter-spacing: var(--tracking-h4);
-      text-wrap: balance;
+      font: var(--weight-medium) var(--text-h3) / var(--leading-h3) var(--font-heading);
+      letter-spacing: var(--tracking-h3);
     }
 
     .career__company {
@@ -283,11 +171,10 @@ const items = roles.map((role) => ({
       grid-area: body;
       display: grid;
       gap: var(--space-3);
-      align-content: start;
+      max-inline-size: var(--measure);
     }
 
     .career__text {
-      max-inline-size: 38em;
       color: var(--color-text-muted);
       text-wrap: pretty;
     }
@@ -300,265 +187,31 @@ const items = roles.map((role) => ({
       font-size: var(--text-small);
     }
 
-    .career__when {
-      grid-area: when;
-      display: grid;
-      justify-items: end;
-      align-content: start;
-      gap: var(--space-1);
-      font: var(--weight-regular) var(--text-caption) / var(--leading-caption) var(--font-mono);
-      letter-spacing: var(--tracking-caption);
-      text-align: end;
-    }
-
-    .career__muted {
-      color: var(--color-text-muted);
-    }
-
-    /* ---------- The time machine ---------- */
-
-    .career__machine {
-      --win-start: 0;
-      --win-size: 0;
-
-      display: grid;
-      gap: var(--space-2);
-      padding: var(--space-3) var(--space-4) var(--space-2);
-      border: var(--border-width) solid var(--color-border-subtle);
-      border-radius: var(--radius-lg);
-      background: var(--color-glass);
-      backdrop-filter: blur(var(--blur-nav));
-      box-shadow: var(--shadow-bar);
-    }
-
-    .career__readout {
-      min-block-size: 1lh;
-      font: var(--weight-regular) var(--text-caption) / var(--leading-caption) var(--font-mono);
-      letter-spacing: var(--tracking-caption);
-      text-transform: uppercase;
-    }
-
-    .career__machine:not([data-ready]) .career__readout {
-      visibility: hidden;
-    }
-
-    .career__rail {
-      position: relative;
-      display: grid;
-      grid-template-rows: var(--space-3) var(--space-4) auto;
-    }
-
-    /* The highlighted years: a soft band behind the line, sliding from role to role. */
-    .career__window {
-      position: absolute;
-      inset-block: 0 var(--space-6);
-      inset-inline-start: calc(var(--win-start) * 100%);
-      inline-size: max(var(--space-2), calc(var(--win-size) * 100%));
-      border-radius: var(--radius-sm);
-      background: var(--color-hero-tint);
-      opacity: 0;
-      transition:
-        inset-inline-start var(--duration-page) var(--ease-out-expo),
-        inline-size var(--duration-page) var(--ease-out-expo),
-        opacity var(--duration-fast) var(--ease-standard);
-    }
-
-    .career__machine[data-ready] .career__window {
-      opacity: 1;
-    }
-
-    .career__segments {
-      grid-row: 1 / 3;
-      grid-column: 1;
-      position: relative;
-      padding: 0;
-    }
-
-    /* The main line, through the middle of the lower lane. */
-    .career__segments::before {
-      content: "";
-      position: absolute;
-      inset-inline: 0;
-      inset-block-start: calc(var(--space-3) + var(--space-2));
-      border-block-start: var(--border-width) solid var(--color-border-subtle);
-    }
-
-    .career__segment {
-      position: absolute;
-      inset-block-start: var(--space-3);
-      inset-inline-start: calc(var(--start) * 100%);
-      inline-size: max(var(--space-2), calc(var(--size) * 100%));
-      block-size: var(--space-4);
-    }
-
-    .career__segment--side {
-      inset-block-start: 0;
-      block-size: var(--space-3);
-    }
-
-    .career__segment a {
-      display: block;
-      block-size: 100%;
-      background: none;
-    }
-
-    /* The bar itself: thin, centred in its hit area. */
-    .career__segment a::before {
-      content: "";
-      position: absolute;
-      inset-inline: 0;
-      inset-block: 50% auto;
-      block-size: var(--space-2);
-      translate: 0 -50%;
-      border-radius: var(--radius-pill);
-      background: var(--color-border);
-      transition:
-        background-color var(--duration-fast) var(--ease-standard),
-        block-size var(--duration-fast) var(--ease-standard);
-    }
-
-    .career__segment--side a::before {
-      block-size: var(--space-1);
-      background: none;
-      border-block-start: var(--border-width) dashed var(--color-border);
-    }
-
-    .career__segment--current a::before {
-      mask-image: linear-gradient(to right, var(--color-text) 70%, transparent);
-    }
-
-    .career__segment[data-active] a::before,
-    .career__segment a:hover::before,
-    .career__segment a:focus-visible::before {
-      background: var(--color-text);
-      border-color: var(--color-text);
-    }
-
-    .career__segment--side[data-active] a::before,
-    .career__segment--side a:hover::before {
-      background: none;
-    }
-
-    .career__years {
-      grid-row: 3;
-      grid-column: 1;
-      position: relative;
-      block-size: var(--space-6);
-      padding: 0;
-      font: var(--weight-regular) var(--text-caption) / var(--leading-caption) var(--font-mono);
-      letter-spacing: var(--tracking-caption);
-      color: var(--color-text-muted);
-    }
-
-    .career__year {
-      position: absolute;
-      inset-block-start: 0;
-      inset-inline-start: calc(var(--at) * 100%);
-      padding-block-start: var(--space-1);
-      padding-inline-start: var(--space-1);
-      border-inline-start: var(--border-width) solid var(--color-border-subtle);
-      transition: color var(--duration-fast) var(--ease-standard);
-    }
-
-    .career__year[data-lit] {
-      color: var(--color-text);
-      border-color: var(--color-text);
-    }
-
-    /* Narrow: ticks only, plus a label every five years, or just the start of the role in view
-       (the readout above has its full dates). */
-    @container (width < 40rem) {
-      .career__machine:not([data-ready]) .career__year:not(:nth-child(5n + 1)) span,
-      .career__machine[data-ready] .career__year:not([data-edge]) span {
-        visibility: hidden;
+    /* From tablets the years move to the left of the line, right next to the node. */
+    @media (width >= 48em) {
+      .career__role {
+        grid-template-areas:
+          "when rail head"
+          "when rail body";
+        grid-template-columns: var(--career-when) var(--career-rail) 1fr;
+        column-gap: var(--space-4);
       }
-    }
 
-    /* ---------- Vertical: the machine sticks to the bottom of the screen ---------- */
-
-    .career--vertical .career__machine {
-      position: sticky;
-      inset-block-end: var(--space-4);
-      z-index: 2;
-      container-type: inline-size;
-    }
-
-    /* Leave room for the back-to-top button where it would overlap. */
-    @media (width < 90em) {
-      .career--vertical .career__machine {
-        margin-inline-end: var(--space-12);
+      .career__when {
+        flex-direction: column;
+        align-items: end;
+        text-align: end;
       }
-    }
-
-    /* Long enough to scroll past the last role while the machine stays in view. */
-    .career--vertical .career__list {
-      padding-block-end: var(--space-8);
-    }
-
-    /* ---------- Horizontal: cards in a sideways scroller, today on the right ---------- */
-
-    .career--horizontal .career__machine {
-      container-type: inline-size;
-    }
-
-    .career--horizontal .career__list {
-      display: flex;
-      flex-direction: row-reverse;
-      gap: var(--space-4);
-      overflow-x: auto;
-      scroll-snap-type: x mandatory;
-      overscroll-behavior-x: contain;
-      padding-block-end: var(--space-4);
-      scrollbar-width: thin;
-
-      /* Fade the edges, so it's clear there's more to either side. */
-      mask-image: linear-gradient(
-        to right,
-        transparent,
-        var(--color-text) var(--space-16),
-        var(--color-text) calc(100% - var(--space-16)),
-        transparent
-      );
-    }
-
-    /* Room at both ends, so the first and last cards can sit in the middle too. */
-    .career--horizontal .career__list::before,
-    .career--horizontal .career__list::after {
-      content: "";
-      flex: 0 0 calc((100% - min(85%, 26rem)) / 2 - var(--space-4));
-    }
-
-    .career--horizontal .career__role {
-      flex: 0 0 min(85%, 26rem);
-      grid-template-areas:
-        "brand when"
-        "head head"
-        "body body";
-      grid-template-rows: auto auto 1fr;
-      padding: var(--space-6);
-      border: var(--border-width) solid var(--color-border-subtle);
-      border-radius: var(--radius-lg);
-      background: var(--color-bg);
-      scroll-snap-align: center;
     }
 
     @media (width >= 62em) {
-      .career--vertical .career__role {
-        grid-template-columns: 8rem minmax(0, 1fr) minmax(0, 1.25fr) 11rem;
-        grid-template-areas: "brand head body when";
-        gap: var(--space-4) var(--space-8);
-        padding-block: var(--space-10);
+      .career__role {
+        grid-template-areas: "when rail head body";
+        grid-template-columns: var(--career-when) var(--career-rail) 5fr 6fr;
       }
 
-      .career__brand {
-        align-items: start;
-      }
-    }
-
-    @media (prefers-reduced-motion: reduce) {
-      .career__role,
-      .career__window {
-        transition: none;
+      .career__body {
+        margin-inline-start: var(--space-4);
       }
     }
   }

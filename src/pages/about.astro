@@ -10,7 +10,6 @@ import CareerTimeline from "@/components/blocks/CareerTimeline.astro";
 import YouTube from "@/components/ui/YouTube.astro";
 import { CAREER } from "@/lib/career";
 import { ABOUT_STORY } from "@/lib/story";
-import { isProduction } from "@/lib/site";
 import { breadcrumbs, person, websiteId } from "@/lib/schema";
 import maraudersPoster from "@/assets/about/video-marauders-map.jpg";
 import cssPeeperPoster from "@/assets/about/video-css-peeper.jpg";
@@ -85,28 +84,7 @@ const jsonLd = {
         title="Where I’ve been,"
         titleMuted="and what I did there."
       />
-      {isProduction ? (
-        <CareerTimeline roles={CAREER} />
-      ) : (
-        /* Previews only: try both layouts before picking one for production. */
-        <div class="layout-switch">
-          <fieldset class="layout-switch__options">
-            <legend class="text-caption">Preview only · timeline layout</legend>
-            <label>
-              <input type="radio" name="career-layout" value="vertical" checked /> Vertical
-            </label>
-            <label>
-              <input type="radio" name="career-layout" value="horizontal" /> Horizontal
-            </label>
-          </fieldset>
-          <div class="layout-switch__vertical">
-            <CareerTimeline roles={CAREER} />
-          </div>
-          <div class="layout-switch__horizontal">
-            <CareerTimeline roles={CAREER} layout="horizontal" idPrefix="career-h" />
-          </div>
-        </div>
-      )}
+      <CareerTimeline roles={CAREER} />
     </Container>
   </Section>
 
@@ -159,32 +137,6 @@ const jsonLd = {
     .about__stack {
       display: grid;
       gap: var(--space-section-sm);
-    }
-
-    .layout-switch {
-      display: grid;
-      gap: var(--space-6);
-    }
-
-    .layout-switch__options {
-      display: flex;
-      flex-wrap: wrap;
-      gap: var(--space-2) var(--space-6);
-      align-items: center;
-      padding: var(--space-3) var(--space-4);
-      border: var(--border-width) dashed var(--color-border);
-      border-radius: var(--radius-md);
-    }
-
-    .layout-switch__options legend {
-      float: left;
-      margin-inline-end: var(--space-4);
-      color: var(--color-text-muted);
-    }
-
-    .layout-switch:has([value="vertical"]:checked) .layout-switch__horizontal,
-    .layout-switch:has([value="horizontal"]:checked) .layout-switch__vertical {
-      display: none;
     }
 
     .videos {

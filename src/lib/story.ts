@@ -5,7 +5,6 @@
  */
 import type { StoryPart } from "@/components/blocks/StoryIntro.astro";
 import csspeeper from "@/content/work/csspeeper/cover.avif";
-import poznan from "@/assets/about/poznan.jpg";
 import tadzik from "@/assets/about/tadzik.jpg";
 import gaming from "@/assets/about/gaming.jpg";
 import bigBrain from "@/assets/about/gifs/big-brain.webp?url";
@@ -39,9 +38,9 @@ const pictures = {
 /** Home, after the hero: a short summary. */
 export const HOME_STORY: StoryPart[][] = [
   [
-    "I'm Dawid, a Lead Product Designer with ",
+    "I'm Dawid, a ",
     pictures.yesNod,
-    " 15 years of turning complex problems into ",
+    " Lead Product Designer with 15+ years of turning complex problems into ",
     {
       image: bigBrain,
       still: bigBrainStill,
@@ -56,22 +55,16 @@ export const HOME_STORY: StoryPart[][] = [
 /** About, under the ribbon: three short paragraphs, in Dawid's words. */
 export const ABOUT_STORY: StoryPart[][] = [
   [
-    "I’m Dawid, a Lead Product Designer from ",
-    {
-      image: poznan,
-      alt: "Poznań's Old Town: the town hall tower above the colourful merchant houses.",
-      shape: "square",
-    },
-    " Poznań, Poland. ",
+    "I’m Dawid, a ",
     pictures.yesNod,
-    " 15+ years in, I know my way around product strategy, research and design systems. I’ve led ",
+    " Lead Product Designer from Poland. For over 15 years I’ve worked on everything from product strategy and research to design systems. I’ve also ",
     {
       image: leo,
       still: leoStill,
       alt: "GIF: Leonardo DiCaprio in a tuxedo, smiling with fireworks behind him.",
       shape: "square",
     },
-    " design teams, and worked with Newsweek, Google, and companies of every size in between.",
+    " led design teams, and I like the less glamorous side of that job too: setting up design ops and cleaning up the processes that slow people down.",
   ],
   [
     "In 2016 I co-founded ",
@@ -83,7 +76,7 @@ export const ABOUT_STORY: StoryPart[][] = [
     " AI into their products in ways people understand, trust and actually use.",
   ],
   [
-    "After hours I’m a husband and a dad with ",
+    "After hours I’m a family guy with ",
     {
       image: tadzik,
       alt: "Tadzik, a black long-haired dog with a white chest, looking into the camera.",
@@ -101,12 +94,12 @@ export const ABOUT_STORY: StoryPart[][] = [
       image: gaming,
       alt: "My Arc Raiders character in a blue helmet, flashing a peace sign on a snowy mountain.",
     },
-    " Arc Raiders. I take the work seriously, myself a lot less. Oh, and I collect ",
+    " Arc Raiders. Oh, and I collect ",
     {
       image: emmet,
       still: emmetStill,
       alt: "GIF: Emmet from The LEGO Movie, mouth wide open.",
     },
-    " LEGO. A lot of LEGO.",
+    " LEGO. A lot of LEGO. I take the work seriously, myself a lot less.",
   ],
 ];
