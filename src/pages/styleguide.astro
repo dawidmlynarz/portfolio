@@ -48,11 +48,14 @@ import ReadmeButton from "@/components/grist/ReadmeButton.astro";
 import DownloadButton from "@/components/grist/DownloadButton.astro";
 import PermalinkButton from "@/components/grist/PermalinkButton.astro";
 import NewBadge from "@/components/grist/NewBadge.astro";
-import QuestTag from "@/components/grist/QuestTag.astro";
-import VolumeHeader from "@/components/grist/VolumeHeader.astro";
-import QuestCard from "@/components/grist/QuestCard.astro";
-import { getQuests } from "@/lib/quests";
-import { RARITIES } from "@/lib/grist";
+import SeasonHeader from "@/components/grist/SeasonHeader.astro";
+import DropCard from "@/components/grist/DropCard.astro";
+import HumanStamp from "@/components/grist/HumanStamp.astro";
+import LootBox from "@/components/grist/LootBox.astro";
+import Sightings from "@/components/grist/Sightings.astro";
+import CopyButton from "@/components/grist/CopyButton.astro";
+import { getDrops } from "@/lib/drops";
+import { DROP_TYPES, RARITIES, type DropType } from "@/lib/grist";
 import { getEntry } from "astro:content";
 import { COLOR_ROLES, SPACE } from "@/lib/tokens";
 import { SERVICES } from "@/lib/services";
@@ -79,7 +82,8 @@ const STYLEGUIDE_SECTIONS = [
   ["blocks-title", "Blocks"],
 ].map(([slug, text]) => ({ depth: 2, slug: slug!, text: text! }));
 const nextUpSample = (await getPagedWork()).slice(0, 3);
-const sampleQuests = await getQuests();
+const sampleDrops = await getDrops();
+const sampleWithSightings = sampleDrops.find((d) => d.data.sightings.length > 0);
 
 const TYPE_ROLES = [
   { role: "display", className: "text-display", sample: "hello@mlynarz.com" },
@@ -128,18 +132,8 @@ const SECTIONS = [
   ["blocks", "Blocks"],
 ] as const;
 
-/** Grist's line icons for status, type and meta lines, in the site's icon style. */
-const GRIST_ICONS: IconName[] = [
-  "leaf",
-  "shield",
-  "feather",
-  "pointer",
-  "book-open",
-  "braces",
-  "calendar",
-  "arrow-left",
-  "close",
-];
+/** Grist's line icons for meta lines, in the site's icon style. */
+const GRIST_ICONS: IconName[] = ["eye", "calendar", "arrow-left", "close"];
 ---
 
 <SiteLayout title="Styleguide" description="Tokens and components of mlynarz.com." noindex>
@@ -491,7 +485,7 @@ const GRIST_ICONS: IconName[] = [
           <h2 id="grist-title">Grist</h2>
           <p class="muted measure">
             The layer under <code>/grist</code>. It uses the site tokens and components, and adds
-            only the rarity colours, a few line icons for tags, the pixel gems and the logo.
+            only the rarity colours, a few line icons, the pixel gems, the stamp and the logo.
           </p>
         </Stack>
 
@@ -499,8 +493,8 @@ const GRIST_ICONS: IconName[] = [
           <h3>Rarity</h3>
           <p class="muted measure">
             Each tier has a fill, a shade and a light. The gem uses all three; tier names use the
-            shade on light and the light on dark. Epic adds sparkles; Legendary adds a crown, and
-            its sparkles twinkle while a light band crosses the gem (reduced motion stops both).
+            shade on light and the light on dark. Epic adds sparkles; Legendary adds a crown and a
+            light band that crosses the gem (reduced motion stops it). The drop type sets the tier.
           </p>
           <Grid min="10rem" gap="6" as="ul" class="plain-list">
             {RARITIES.map((rarity) => (
@@ -508,7 +502,12 @@ const GRIST_ICONS: IconName[] = [
                 <span class="rarity-swatch__gem">
                   <Gem rarity={rarity} />
                 </span>
-                <RarityLabel rarity={rarity} />
+                <RarityLabel
+                  rarity={rarity}
+                  type={(Object.keys(DROP_TYPES) as DropType[]).find(
+                    (type) => DROP_TYPES[type].rarity === rarity,
+                  )}
+                />
                 <span class="rarity-swatch__chips">
                   {(["fill", "shade", "light"] as const).map((role) => (
                     <span
@@ -531,32 +530,46 @@ const GRIST_ICONS: IconName[] = [
         </Stack>
 
         <Stack gap="4">
-          <h3>Status and New</h3>
+          <h3>Human curated stamp and New</h3>
+          <p class="muted measure">
+            The stamp turns once every 24 seconds, pauses on hover and stands still with reduced
+            motion. Large in the front door hero, small on each drop. New marks drops from the last
+            two weeks.
+          </p>
           <div class="row">
-            <QuestTag status="side-quest" />
-            <QuestTag status="fresh" />
-            <QuestTag status="battle-tested" />
+            <HumanStamp />
+            <HumanStamp size="sm" rarity="rare" />
             <NewBadge />
           </div>
         </Stack>
 
         <Stack gap="4">
-          <h3>Category and quest tile</h3>
+          <h3>Season and drop tile</h3>
           <p class="muted measure">
-            One tile everywhere quests are listed. It reads its own width: from 48rem it lays out as
-            a row with the meta in fixed columns, narrower it stacks.
+            One tile everywhere drops are listed. It reads its own width: from 48rem it lays out as
+            a row with the date and sightings on the right, narrower it stacks.
           </p>
-          <VolumeHeader id="sg-volume" title="Agentic UX" />
-          {sampleQuests[0] && <QuestCard quest={sampleQuests[0]} />}
+          <SeasonHeader season="s01" />
+          {sampleDrops[0] && <DropCard drop={sampleDrops[0]} />}
           <div class="grist-tiles">
-            {sampleQuests.slice(1, 4).map((quest, i) => (
-              <QuestCard quest={quest} category featured={i === 0} />
+            {sampleDrops.slice(1, 4).map((drop) => (
+              <DropCard drop={drop} season />
             ))}
           </div>
         </Stack>
 
+        {sampleWithSightings && (
+          <Stack gap="4">
+            <h3>Loot box and sightings</h3>
+            <div class="grist-loot">
+              <LootBox drop={sampleWithSightings} id="sg-drop" />
+            </div>
+            <Sightings drop={sampleWithSightings} id="sg-sightings" />
+          </Stack>
+        )}
+
         <Stack gap="4">
-          <h3>Tag icons</h3>
+          <h3>Line icons</h3>
           <ul class="row plain-list grist-icons" role="list">
             {GRIST_ICONS.map((name) => (
               <li class="grist-icons__item">
@@ -570,12 +583,14 @@ const GRIST_ICONS: IconName[] = [
         <Stack gap="4">
           <h3>Buttons</h3>
           <p class="muted measure">
-            The site's secondary pill with its own line icons: README, Download (count in a filled
-            circle; on hover the arrow drops out and back in, no tear), Permalink and Get in touch.
+            The site's secondary pill with its own line icons: README, Copy (fetches the markdown
+            twin for Copy for AI), Download (on hover the arrow drops out and back in, no tear),
+            Permalink and Get in touch.
           </p>
           <div class="row">
             <ReadmeButton panel="readme-demo" />
-            <DownloadButton slug="human-checkpoints" count={37} />
+            <CopyButton text="Copied from the styleguide">Copy for AI</CopyButton>
+            <DownloadButton href="/grist/human-checkpoints.md" name="human-checkpoints.md" />
             <PermalinkButton url="https://www.mlynarz.com/grist/human-checkpoints" />
             <Button href="/contact" variant="secondary" icon="arrow">
               Get in touch
@@ -878,6 +893,11 @@ const GRIST_ICONS: IconName[] = [
       display: grid;
       grid-template-columns: repeat(auto-fit, minmax(min(100%, 18rem), 1fr));
       gap: var(--space-4);
+    }
+
+    .grist-loot {
+      max-inline-size: var(--measure);
+      padding-block-start: var(--space-12);
     }
 
     .grist-icons {

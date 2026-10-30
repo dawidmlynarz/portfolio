@@ -1,48 +1,16 @@
 ---
-/** Downloads a quest's markdown twin. The count sits in a filled circle; it is filled in later. */
+/** Downloads a markdown file (an entry's twin, a raw drop, a season pack), named on the button. */
 import Button from "@/components/ui/Button.astro";
 
 interface Props {
-  slug: string;
-  count?: number;
+  href: string;
+  /** File name shown on the button and used for the download. */
+  name: string;
 }
 
-const { slug, count } = Astro.props;
+const { href, name } = Astro.props;
 ---
 
-<Button
-  href={`/grist/${slug}.md`}
-  variant="secondary"
-  icon="arrow-down"
-  hover="icon"
-  class="download-button"
->
-  <span>{slug}.md</span>
-  {count !== undefined && (
-    <span class="download-button__count">
-      {count}
-      <span class="visually-hidden"> downloads</span>
-    </span>
-  )}
+<Button href={href} variant="secondary" icon="arrow-down" hover="icon" download={name}>
+  {name}
 </Button>
-
-<style>
-  @layer components {
-    /* A circle while the count is short, a pill once it grows. Pulled into the button's end padding
-       so it sits as close to the edge as the icon does to the start. */
-    .download-button__count {
-      display: inline-grid;
-      place-items: center;
-      min-inline-size: 1.75em;
-      block-size: 1.75em;
-      margin-block: calc(var(--space-1) * -1);
-      margin-inline: var(--space-2) calc(var(--space-3) * -1);
-      padding-inline: var(--space-2);
-      border-radius: var(--radius-pill);
-      font-size: var(--text-small);
-      font-variant-numeric: tabular-nums;
-      color: var(--color-on-inverse);
-      background-color: var(--color-inverse-bg);
-    }
-  }
-</style>

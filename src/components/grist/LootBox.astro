@@ -1,0 +1,129 @@
+---
+/**
+ * The drop itself on an entry page: the loot text as written in drop.md, ready to copy or download,
+ * in the README's box (2px ink border, hard shadow) with the small "human curated" stamp on its
+ * corner. Rarity and type sit on top, since the type is what sets the tier.
+ */
+import Button from "@/components/ui/Button.astro";
+import CopyButton from "./CopyButton.astro";
+import HumanStamp from "./HumanStamp.astro";
+import RarityLabel from "./RarityLabel.astro";
+import { DROP_TYPES } from "@/lib/grist";
+import { derive, lootHref, lootOf, type Drop } from "@/lib/drops";
+
+interface Props {
+  drop: Drop;
+  /** Id of the heading, for the page's table of contents. */
+  id?: string;
+}
+
+const { drop, id = "the-drop" } = Astro.props;
+const { rarity } = derive(drop);
+const text = lootOf(drop);
+const type = DROP_TYPES[drop.data.drop];
+---
+
+<section class="loot-box" aria-labelledby={id}>
+  <HumanStamp size="sm" rarity={rarity} class="loot-box__stamp" />
+  <div class="loot-box__head">
+    <h2 class="loot-box__title" id={id}>
+      The drop
+    </h2>
+    <p class="loot-box__type">
+      <RarityLabel rarity={rarity} type={drop.data.drop} />
+      <span class="loot-box__note">{type.note}</span>
+    </p>
+  </div>
+  <pre class="loot-box__text"><code>{text}</code></pre>
+  <div class="loot-box__actions">
+    <CopyButton text={text} done="Drop copied">
+      Copy drop
+    </CopyButton>
+    <Button
+      href={lootHref(drop)}
+      variant="secondary"
+      icon="arrow-down"
+      hover="icon"
+      download={`${drop.id}.md`}
+    >
+      Download
+    </Button>
+  </div>
+</section>
+
+<style>
+  @layer components {
+    .loot-box {
+      position: relative;
+      display: grid;
+      gap: var(--space-6);
+      padding: var(--space-6);
+      border: calc(var(--border-width) * 2) solid var(--color-text);
+      background-color: var(--color-bg);
+      box-shadow: var(--space-2) var(--space-2) 0 var(--color-text);
+    }
+
+    /* Half over the top edge, inside the box's right edge so it never pushes the page wider. */
+    .loot-box__stamp {
+      position: absolute;
+      inset-block-start: 0;
+      inset-inline-end: var(--space-6);
+      translate: 0 -50%;
+    }
+
+    .loot-box__head {
+      display: grid;
+      gap: var(--space-2);
+    }
+
+    /* Only the title row sits beside the stamp; the rows under it clear the stamp's lower half. */
+    .loot-box__title {
+      padding-inline-end: calc(var(--space-24) + var(--space-4));
+      font-size: var(--text-h3);
+      line-height: var(--leading-h3);
+      letter-spacing: var(--tracking-h3);
+    }
+
+    .loot-box__type {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: var(--space-1) var(--space-3);
+    }
+
+    .loot-box__note {
+      font-size: var(--text-small);
+      line-height: var(--leading-small);
+      color: var(--color-text-muted);
+    }
+
+    .loot-box__text {
+      overflow-x: auto;
+      margin: 0;
+      padding: var(--space-4);
+      border-radius: var(--radius-sm);
+      font-family: var(--font-mono);
+      font-size: var(--text-small);
+      line-height: var(--leading-small);
+      white-space: pre-wrap;
+      overflow-wrap: anywhere;
+      background-color: var(--color-bg-subtle);
+    }
+
+    .loot-box__actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: var(--space-3);
+    }
+
+    @media (width >= 48em) {
+      .loot-box {
+        padding: var(--space-8);
+      }
+
+      .loot-box__stamp {
+        inset-inline-end: var(--space-8);
+      }
+    }
+  }
+</style>

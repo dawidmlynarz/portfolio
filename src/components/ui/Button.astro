@@ -4,15 +4,17 @@ import type { HTMLAttributes } from "astro/types";
 interface Props extends Omit<HTMLAttributes<"button">, "class" | "type"> {
   /** Renders an <a> when set, otherwise a <button>. */
   href?: string;
+  /** Links only: download the target instead of opening it, under this file name. */
+  download?: string;
   type?: "button" | "submit" | "reset";
   variant?: "primary" | "secondary" | "ghost";
   /** sm: menu contact · md: default · lg: footer email */
   size?: "sm" | "md" | "lg";
   /**
    * After the label: arrow (calls to action) · arrow-left (carousel back) · arrow-up (Back to top).
-   * Before the label: arrow-down (downloads) · info · link.
+   * Before the label: arrow-down (downloads) · info · link · copy.
    */
-  icon?: "arrow" | "arrow-left" | "arrow-up" | "arrow-down" | "info" | "link";
+  icon?: "arrow" | "arrow-left" | "arrow-up" | "arrow-down" | "info" | "link" | "copy";
   /** Text buttons only. tear: the row tear (default) · icon: no tear, the icon moves as on icon buttons. */
   hover?: "tear" | "icon";
   /** Makes an icon-only button: the icon is all that shows and this is its accessible name. */
@@ -48,6 +50,7 @@ const ICONS = {
   "arrow-up": "M12 19V5M5 12l7-7 7 7",
   info: "M12 21a9 9 0 1 0 0-18 9 9 0 0 0 0 18ZM12 11v5M12 7.5h.01",
   "arrow-down": "M12 5v14M5 12l7 7 7-7",
+  copy: "M10 8h9a1 1 0 0 1 1 1v10a1 1 0 0 1-1 1h-9a1 1 0 0 1-1-1V9a1 1 0 0 1 1-1ZM5 16a1 1 0 0 1-1-1V5a1 1 0 0 1 1-1h9a1 1 0 0 1 1 1",
   link: "M10 14a4 4 0 0 0 5.66 0l3-3a4 4 0 0 0-5.66-5.66l-1 1M14 10a4 4 0 0 0-5.66 0l-3 3a4 4 0 0 0 5.66 5.66l1-1",
 };
 // Arrows point onward, so they follow the label; the rest name the action, so they lead.

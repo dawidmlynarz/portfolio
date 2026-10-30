@@ -1,66 +1,66 @@
 ---
 /**
- * One quest as a tile, used everywhere quests are listed (front door, See also). It sizes itself
- * with a container query: narrow, it stacks (rarity, title, summary, then status and date at the
- * bottom, so tiles in a grid line up); from 48rem wide it becomes a row with them on the right.
- * The whole tile is the link's hit area.
+ * One drop as a tile, used everywhere drops are listed (front door, See also, styleguide). It sizes
+ * itself with a container query: narrow, it stacks (rarity and type, title, summary, then date and
+ * sightings at the bottom, so tiles in a grid line up); from 48rem wide it becomes a row with them
+ * on the right. The whole tile is the link's hit area.
  */
 import NewBadge from "./NewBadge.astro";
-import QuestTag from "./QuestTag.astro";
 import RarityLabel from "./RarityLabel.astro";
 import Icon from "./Icon.astro";
-import { VOLUMES } from "@/lib/grist";
-import { derive, isoDate, questHref, type Quest } from "@/lib/quests";
+import { SEASONS } from "@/lib/grist";
+import { derive, dropHref, formatDay, isoDate, type Drop } from "@/lib/drops";
 
 interface Props {
-  quest: Quest;
+  drop: Drop;
   /** Heading level of the title in this page's outline. */
   level?: 2 | 3 | 4;
-  /** Show the category (for lists that don't group by it). */
-  category?: boolean;
-  /** Larger title and the full definition instead of the summary. */
-  featured?: boolean;
+  /** Show the season (for lists that don't group by it). */
+  season?: boolean;
   class?: string;
 }
 
-const { quest, level = 3, category = false, featured = false, class: className } = Astro.props;
-const { data } = quest;
-const { rarity, dateLabel, updated, isNew } = derive(quest);
+const { drop, level = 3, season = false, class: className } = Astro.props;
+const { data } = drop;
+const { rarity, isNew } = derive(drop);
+const seen = data.sightings.length;
 const Heading = `h${level}` as "h2" | "h3" | "h4";
 ---
 
-<article class:list={["quest-card", { "quest-card--featured": featured }, className]}>
-  <div class="quest-card__inner">
-    <div class="quest-card__main">
-      <p class="quest-card__rank">
-        <RarityLabel rarity={rarity} />
-        {category && <span class="quest-card__category">{VOLUMES[data.volume].title}</span>}
+<article class:list={["drop-card", className]}>
+  <div class="drop-card__inner">
+    <div class="drop-card__main">
+      <p class="drop-card__rank">
+        <RarityLabel rarity={rarity} type={data.drop} />
+        {season && <span class="drop-card__season">{SEASONS[data.season].title}</span>}
         {isNew && <NewBadge />}
       </p>
-      <Heading class="quest-card__title">
-        <a class="quest-card__link" href={questHref(quest)} data-no-tear>
+      <Heading class="drop-card__title">
+        <a class="drop-card__link" href={dropHref(drop)} data-no-tear>
           {data.title}
         </a>
       </Heading>
-      <p class="quest-card__summary">
-        {featured ? data.definition : (data.summary ?? data.definition)}
-      </p>
+      <p class="drop-card__summary">{data.summary}</p>
     </div>
-    <ul class="quest-card__meta" role="list">
-      <li>
-        <QuestTag status={data.status} />
-      </li>
-      <li class="quest-card__date">
+    <ul class="drop-card__meta" role="list">
+      <li class="drop-card__fact">
         <Icon name="calendar" />
-        <time datetime={isoDate(updated)}>{dateLabel}</time>
+        <time datetime={isoDate(data.published)}>{formatDay(data.published)}</time>
       </li>
+      {seen > 0 && (
+        <li class="drop-card__fact">
+          <Icon name="eye" />
+          Seen {seen}&times;
+          <span class="visually-hidden"> in real products</span>
+        </li>
+      )}
     </ul>
   </div>
 </article>
 
 <style>
   @layer components {
-    .quest-card {
+    .drop-card {
       container-type: inline-size;
       position: relative;
       border: var(--border-width) solid var(--color-border-subtle);
@@ -69,16 +69,16 @@ const Heading = `h${level}` as "h2" | "h3" | "h4";
       transition: border-color var(--duration-fast) var(--ease-standard);
     }
 
-    .quest-card:hover {
+    .drop-card:hover {
       border-color: var(--color-text);
     }
 
-    .quest-card:has(.quest-card__link:focus-visible) {
+    .drop-card:has(.drop-card__link:focus-visible) {
       outline: calc(var(--border-width) * 2) solid var(--color-focus);
       outline-offset: var(--space-1);
     }
 
-    .quest-card__inner {
+    .drop-card__inner {
       display: flex;
       flex-direction: column;
       gap: var(--space-6);
@@ -86,12 +86,12 @@ const Heading = `h${level}` as "h2" | "h3" | "h4";
       padding: var(--space-6);
     }
 
-    .quest-card__main {
+    .drop-card__main {
       display: grid;
       gap: var(--space-2);
     }
 
-    .quest-card__rank {
+    .drop-card__rank {
       display: flex;
       flex-wrap: wrap;
       align-items: center;
@@ -99,49 +99,43 @@ const Heading = `h${level}` as "h2" | "h3" | "h4";
       margin-block-end: var(--space-2);
     }
 
-    .quest-card__category {
+    .drop-card__season {
       font-size: var(--text-small);
       line-height: var(--leading-small);
       color: var(--color-text-muted);
     }
 
-    .quest-card__title {
+    .drop-card__title {
       font-size: var(--text-h4);
       line-height: var(--leading-h4);
       letter-spacing: var(--tracking-h4);
     }
 
-    .quest-card--featured .quest-card__title {
-      font-size: var(--text-h3);
-      line-height: var(--leading-h3);
-      letter-spacing: var(--tracking-h3);
-    }
-
-    .quest-card__link {
+    .drop-card__link {
       --underline-size: 0%;
     }
 
-    .quest-card:hover .quest-card__link {
+    .drop-card:hover .drop-card__link {
       --underline-size: 100%;
     }
 
-    .quest-card__link:focus-visible {
+    .drop-card__link:focus-visible {
       outline: none;
     }
 
-    .quest-card__link::after {
+    .drop-card__link::after {
       content: "";
       position: absolute;
       inset: 0;
       border-radius: inherit;
     }
 
-    .quest-card__summary {
+    .drop-card__summary {
       max-inline-size: var(--measure);
       color: var(--color-text-muted);
     }
 
-    .quest-card__meta {
+    .drop-card__meta {
       display: flex;
       flex-wrap: wrap;
       gap: var(--space-2) var(--space-6);
@@ -152,7 +146,7 @@ const Heading = `h${level}` as "h2" | "h3" | "h4";
       color: var(--color-text-muted);
     }
 
-    .quest-card__date {
+    .drop-card__fact {
       display: inline-flex;
       align-items: center;
       gap: var(--space-2);
@@ -161,14 +155,14 @@ const Heading = `h${level}` as "h2" | "h3" | "h4";
 
     /* Wide tile: a row, the meta flowing to the right edge. */
     @container (width >= 48rem) {
-      .quest-card__inner {
+      .drop-card__inner {
         display: grid;
         grid-template-columns: minmax(0, 1fr) auto;
         align-items: center;
         gap: var(--space-8);
       }
 
-      .quest-card__meta {
+      .drop-card__meta {
         flex-wrap: nowrap;
         justify-content: flex-end;
         margin-block-start: 0;

@@ -1,0 +1,57 @@
+---
+/**
+ * A season's heading on the front door: number, title and one line on the theme, with its season
+ * pack (every listed drop of the season in one markdown file) on the right, over a 2px rule.
+ */
+import DownloadButton from "./DownloadButton.astro";
+import { SEASONS, type Season } from "@/lib/grist";
+import { seasonPackHref } from "@/lib/drops";
+
+interface Props {
+  season: Season;
+}
+
+const { season } = Astro.props;
+const { number, title, blurb } = SEASONS[season];
+const pack = seasonPackHref(season);
+---
+
+<header class="season-header">
+  <div class="season-header__text">
+    <p class="text-caption season-header__muted">Season {number}</p>
+    <h2 class="season-header__title" id={season}>
+      {title}
+    </h2>
+    <p class="season-header__muted">{blurb}</p>
+  </div>
+  <DownloadButton href={pack} name={pack.split("/").at(-1)!} />
+</header>
+
+<style>
+  @layer components {
+    .season-header {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: end;
+      justify-content: space-between;
+      gap: var(--space-4) var(--space-8);
+      padding-block-end: var(--space-4);
+      border-block-end: calc(var(--border-width) * 2) solid var(--color-text);
+    }
+
+    .season-header__text {
+      display: grid;
+      gap: var(--space-2);
+    }
+
+    .season-header__title {
+      font-size: var(--text-h3);
+      line-height: var(--leading-h3);
+      letter-spacing: var(--tracking-h3);
+    }
+
+    .season-header__muted {
+      color: var(--color-text-muted);
+    }
+  }
+</style>

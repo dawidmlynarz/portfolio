@@ -640,3 +640,13 @@ What changed versus the embed, and why:
 **Lead Product Designer everywhere but the case studies.** The site title, descriptions, structured data (`jobTitle`) and page copy now say Lead Product Designer; case studies keep the job titles Dawid held. The retainer keeps the name Embedded Design Lead and now says "2–3 days a week" in its terms, so $8,300 does not read as full time. The price is still worked out from two days a week.
 
 **Menu links stay at h2.** A separate menu-link size was tried and dropped; the open panel's gap between the links and the social row is now `--space-4`.
+
+## Grist: human-written loot for AI tools (30 Oct 2026)
+
+- Grist is now "human-written loot for your AI tools". Quests, statuses (Side quest, Fresh, Battle-tested), level-ups, versions, the quest log, volumes, the download count and the layouts test page are gone.
+- Each entry is a folder (`src/content/grist/<slug>/`): `index.mdx` holds the note, `drop.md` the loot. The drop type sets the rarity (rule Common, prompt Uncommon, checklist Rare, spec Epic, skill Legendary), so rarity isn't stored and can't drift.
+- Seasons replace volumes (three planned, eight drops each). Each season has a pack at `/grist/season-<n>.md`.
+- Sightings (product, date, one line) replace level-ups. They are evidence and move `dateModified`; they don't change the rarity.
+- AI feeds: `/grist/<slug>.md` (whole entry), `/grist/<slug>/drop.md` (loot only), `/llms.txt`, `/grist/llms-full.txt`.
+- The "human curated" stamp turns with a plain CSS animation (`--duration-stamp`), not GSAP: it's a decorative loop like the gem sweep, needs no scroll or timeline, and stands still under reduced motion.
+- Front door uses the two-up grid from the six layout options.

@@ -2,39 +2,44 @@
 import GristLayout from "@/layouts/GristLayout.astro";
 import Hero from "@/components/blocks/Hero.astro";
 import Container from "@/components/layout/Container.astro";
-import QuestCard from "@/components/grist/QuestCard.astro";
-import VolumeHeader from "@/components/grist/VolumeHeader.astro";
+import DropCard from "@/components/grist/DropCard.astro";
+import HumanStamp from "@/components/grist/HumanStamp.astro";
+import SeasonHeader from "@/components/grist/SeasonHeader.astro";
 import ReadmeButton from "@/components/grist/ReadmeButton.astro";
 import ReadmePanel from "@/components/grist/ReadmePanel.astro";
-import { getVolumes } from "@/lib/quests";
+import { getSeasons } from "@/lib/drops";
 
-const volumes = await getVolumes();
+const seasons = await getSeasons();
 ---
 
 <GristLayout
-  title="Grist"
-  description="Short, opinionated quests from real product work by Dawid Młynarz. They get rarer as they grow, and every one downloads as markdown."
+  title="Grist: human-written loot for your AI tools"
+  description="Rules, prompts, checklists, specs and skills from Dawid Młynarz's product work, written by a human for your AI tools. Copy or download each one as markdown."
 >
+  <link slot="head" rel="alternate" type="text/plain" href="/llms.txt" title="Grist for LLMs" />
   <Hero
     eyebrow="A side quest by Dawid Młynarz"
     title="Grist."
-    titleMuted="Notes on agentic UX and AI-ready design systems."
-    lead="Short, opinionated quests from real product work, written on the side of my day job. They get rarer as they grow, and every one downloads as markdown for your AI tools."
+    titleMuted="Human-written loot for your AI tools."
+    lead="Rules, prompts, checklists, specs and skills from my product work on agentic UX and design systems. I write them; your AI reads them. Every drop copies in one click and downloads as markdown."
   >
     <Fragment slot="actions">
       <ReadmeButton panel="readme" />
     </Fragment>
+    <div slot="media" class="front__stamp">
+      <HumanStamp />
+    </div>
   </Hero>
   <ReadmePanel id="readme" />
 
   <Container class="front">
-    {volumes.map((volume) => (
-      <section class="front__volume" aria-labelledby={volume.id}>
-        <VolumeHeader id={volume.id} title={volume.title} />
-        <ul class="front__list" role="list">
-          {volume.quests.map((quest) => (
+    {seasons.map((season) => (
+      <section class="front__season" aria-labelledby={season.id}>
+        <SeasonHeader season={season.id} />
+        <ul class="front__grid" role="list">
+          {season.drops.map((drop) => (
             <li>
-              <QuestCard quest={quest} />
+              <DropCard drop={drop} />
             </li>
           ))}
         </ul>
@@ -51,15 +56,36 @@ const volumes = await getVolumes();
       padding-block-end: var(--space-section-md);
     }
 
-    .front__volume {
+    .front__stamp {
+      display: flex;
+      justify-content: center;
+    }
+
+    .front__season {
       display: grid;
       gap: var(--space-6);
     }
 
-    .front__list {
+    .front__grid {
       display: grid;
       gap: var(--space-4);
       padding: 0;
+    }
+
+    .front__grid > li {
+      display: grid;
+    }
+
+    @media (width >= 48em) {
+      .front__grid {
+        grid-template-columns: 1fr 1fr;
+      }
+    }
+
+    @media (width >= 62em) {
+      .front__stamp {
+        justify-content: end;
+      }
     }
   }
 </style>

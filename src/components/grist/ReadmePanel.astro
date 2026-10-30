@@ -1,22 +1,18 @@
 ---
 /**
- * The README: what the statuses and rarity tiers mean. A native popover (Escape and light dismiss
- * close it, focus returns to the button), drawn as a 2px box with a hard ink shadow.
+ * The README: what Grist is, the human-written rule, and what each drop type (and so each rarity)
+ * means. A native popover (Escape and light dismiss close it, focus returns to the button), drawn as
+ * a 2px box with a hard ink shadow.
  */
 import Icon from "./Icon.astro";
 import RarityLabel from "./RarityLabel.astro";
-import { RARITIES, STATUSES, type Status } from "@/lib/grist";
+import { DROP_TYPES, type DropType } from "@/lib/grist";
 
 interface Props {
   id: string;
 }
 
 const { id } = Astro.props;
-const STATUS_NOTES: Record<Status, string> = {
-  "side-quest": "a quick note, may stay small",
-  fresh: "a new idea, still growing",
-  "battle-tested": "used on real projects and held up",
-};
 ---
 
 <div class="readme" id={id} popover aria-labelledby={`${id}-title`}>
@@ -36,29 +32,32 @@ const STATUS_NOTES: Record<Status, string> = {
   </div>
   <div class="readme__body">
     <section>
-      <h3 class="readme__label text-caption">Status</h3>
-      <dl class="readme__statuses">
-        {(Object.keys(STATUSES) as Status[]).map((status) => (
-          <div class="readme__status">
-            <Icon name={STATUSES[status].icon} />
-            <dt>{STATUSES[status].label}</dt>
-            <dd>{STATUS_NOTES[status]}</dd>
-          </div>
-        ))}
-      </dl>
+      <h3 class="readme__label text-caption">What this is</h3>
+      <div class="readme__prose">
+        <p>
+          Loot for your AI tools, written by a human. Each drop is a short note on why, plus the
+          thing itself: a rule, a prompt, a checklist, a spec or a skill you can paste into Claude,
+          Cursor or a CLAUDE.md.
+        </p>
+        <p>
+          The ideas and the words are mine. Claude helps me format the files. It doesn’t write the
+          ideas, the examples or the sightings.
+        </p>
+        <p>
+          Every page also comes as plain markdown: add <code>.md</code> to the address.
+        </p>
+      </div>
     </section>
     <section>
-      <h3 class="readme__label text-caption">Rarity</h3>
-      <p class="readme__note">
-        My call on how rare an idea is: how seldom you’ll find it written down this way. Updates
-        don’t change it.
-      </p>
+      <h3 class="readme__label text-caption">Rarity is the drop</h3>
+      <p class="readme__note">Bigger drops take more work, so they’re rarer.</p>
       <dl class="readme__tiers">
-        {RARITIES.map((rarity) => (
+        {(Object.keys(DROP_TYPES) as DropType[]).map((type) => (
           <div class="readme__tier">
             <dt>
-              <RarityLabel rarity={rarity} />
+              <RarityLabel rarity={DROP_TYPES[type].rarity} type={type} />
             </dt>
+            <dd>{DROP_TYPES[type].note}</dd>
           </div>
         ))}
       </dl>
@@ -127,27 +126,11 @@ const STATUS_NOTES: Record<Status, string> = {
       color: var(--color-text-muted);
     }
 
-    .readme__statuses {
+    .readme__prose {
       display: grid;
-      gap: var(--space-4);
-    }
-
-    .readme__status {
-      display: grid;
-      grid-template-columns: auto 1fr;
-      column-gap: var(--space-3);
-      align-items: center;
-    }
-
-    .readme__status dt {
-      font-weight: var(--weight-medium);
-    }
-
-    .readme__status dd {
-      grid-column: 2;
+      gap: var(--space-3);
       font-size: var(--text-small);
       line-height: var(--leading-small);
-      color: var(--color-text-muted);
     }
 
     .readme__note {
@@ -159,15 +142,14 @@ const STATUS_NOTES: Record<Status, string> = {
 
     .readme__tiers {
       display: grid;
-      gap: var(--space-3);
+      gap: var(--space-4);
     }
 
     .readme__tier {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: var(--space-4);
+      display: grid;
+      gap: var(--space-1);
       font-size: var(--text-small);
+      line-height: var(--leading-small);
     }
 
     .readme__tier dd {

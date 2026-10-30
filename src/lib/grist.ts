@@ -1,6 +1,6 @@
 /**
- * Grist (/grist): rarity tiers and statuses. Dawid sets each quest's rarity by hand; level-ups are a
- * changelog and don't change it.
+ * Grist (/grist): human-written loot for AI tools. Every drop has one type, and the type sets the
+ * rarity: bigger drops take more work, so they really are rarer. Seasons group drops by theme.
  */
 
 /** Tiers, lowest first. */
@@ -15,12 +15,15 @@ export const RARITY_LABELS: Record<Rarity, string> = {
   legendary: "Legendary",
 };
 
-export const STATUSES = {
-  "side-quest": { label: "Side quest", icon: "feather" },
-  fresh: { label: "Fresh", icon: "leaf" },
-  "battle-tested": { label: "Battle-tested", icon: "shield" },
-} as const;
-export type Status = keyof typeof STATUSES;
+/** Drop types, Common to Legendary. The type is the rarity. */
+export const DROP_TYPES = {
+  rule: { label: "Rule", rarity: "common", note: "One line for a system prompt or CLAUDE.md" },
+  prompt: { label: "Prompt", rarity: "uncommon", note: "A reusable prompt with blanks to fill" },
+  checklist: { label: "Checklist", rarity: "rare", note: "Checks to review work against" },
+  spec: { label: "Spec", rarity: "epic", note: "A template or a section of a file" },
+  skill: { label: "Skill", rarity: "legendary", note: "A whole agent skill, ready to install" },
+} as const satisfies Record<string, { label: string; rarity: Rarity; note: string }>;
+export type DropType = keyof typeof DROP_TYPES;
 
 /**
  * Gem pixel art, one string per row, drawn at 2px per pixel: a cut gem with a flat table, a
@@ -51,9 +54,22 @@ export const GEM_PIXELS: Record<Rarity, readonly string[]> = {
   legendary: ["...o..o..o...", ...SPARKLED],
 };
 
-/** Volumes in front-door order. */
-export const VOLUMES = {
-  "agentic-ux": { number: "I", title: "Agentic UX" },
-  "ai-ready-design-systems": { number: "II", title: "AI-ready design systems" },
+/** Seasons in front-door order. A season with no listed drops is skipped. */
+export const SEASONS = {
+  s01: {
+    number: 1,
+    title: "Agentic UX",
+    blurb: "How products should behave when an agent does the work.",
+  },
+  s02: {
+    number: 2,
+    title: "AI-ready design systems",
+    blurb: "Making a design system that agents read and use correctly.",
+  },
+  s03: {
+    number: 3,
+    title: "Designing with agents",
+    blurb: "How I work with AI tools day to day as a designer.",
+  },
 } as const;
-export type Volume = keyof typeof VOLUMES;
+export type Season = keyof typeof SEASONS;

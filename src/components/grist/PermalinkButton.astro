@@ -1,6 +1,6 @@
 ---
-/** Copies the quest's canonical URL and says so in a status toast for two seconds. Icon only. */
-import Button from "@/components/ui/Button.astro";
+/** Copies the drop's canonical URL. Icon only. */
+import CopyButton from "./CopyButton.astro";
 
 interface Props {
   /** Absolute URL to copy. */
@@ -10,46 +10,4 @@ interface Props {
 const { url } = Astro.props;
 ---
 
-<span class="permalink">
-  <Button variant="secondary" icon="link" label="Copy link to this quest" data-permalink={url} />
-  <span class="permalink__toast" role="status"></span>
-</span>
-
-<script>
-  for (const button of document.querySelectorAll<HTMLButtonElement>("[data-permalink]")) {
-    const toast = button.parentElement?.querySelector(".permalink__toast");
-    let timer: number | undefined;
-    button.addEventListener("click", async () => {
-      try {
-        await navigator.clipboard.writeText(button.dataset.permalink!);
-      } catch {
-        return;
-      }
-      if (!toast) return;
-      toast.textContent = "Link copied";
-      clearTimeout(timer);
-      timer = window.setTimeout(() => (toast.textContent = ""), 2000);
-    });
-  }
-</script>
-
-<style>
-  @layer components {
-    .permalink {
-      position: relative;
-      display: inline-flex;
-    }
-
-    .permalink__toast:not(:empty) {
-      position: absolute;
-      inset-block-start: calc(100% + var(--space-2));
-      inset-inline-end: 0;
-      padding: var(--space-1) var(--space-3);
-      border-radius: var(--radius-sm);
-      font-size: var(--text-small);
-      white-space: nowrap;
-      color: var(--color-on-inverse);
-      background-color: var(--color-inverse-bg);
-    }
-  }
-</style>
+<CopyButton text={url} icon="link" label="Copy link to this drop" done="Link copied" />

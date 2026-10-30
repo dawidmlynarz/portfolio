@@ -1,0 +1,6 @@
+- [ ] The reason sits next to the action, not in a separate log.
+- [ ] It's two sentences or fewer.
+- [ ] It names the option the agent passed over, when there was one.
+- [ ] It uses the person's words, not the model's.
+- [ ] It shows before the action, while the person can still change it.
+- [ ] A reason that needs more than two sentences turns into a question instead.

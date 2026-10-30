@@ -1,0 +1,87 @@
+---
+/**
+ * Copies text and says so in a status toast for two seconds. The text is either given (`text`) or
+ * fetched on click (`from`, a same-site URL such as a markdown twin). With `label` and no slot
+ * content it's an icon-only button.
+ */
+import Button from "@/components/ui/Button.astro";
+import type { ComponentProps } from "astro/types";
+
+interface Props {
+  text?: string;
+  from?: string;
+  /** Accessible name for an icon-only button. */
+  label?: string;
+  icon?: ComponentProps<typeof Button>["icon"];
+  /** What the toast says once it's copied. */
+  done?: string;
+}
+
+const { text, from, label, icon = "copy", done = "Copied" } = Astro.props;
+---
+
+<span class="copy-button">
+  <Button
+    variant="secondary"
+    icon={icon}
+    label={label}
+    hover="icon"
+    data-copy-text={text}
+    data-copy-from={from}
+    data-copy-done={done}
+  >
+    <slot />
+  </Button>
+  <span class="copy-button__toast" role="status"></span>
+</span>
+
+<script>
+  for (const button of document.querySelectorAll<HTMLButtonElement>(
+    "[data-copy-text], [data-copy-from]",
+  )) {
+    const toast = button.parentElement?.querySelector(".copy-button__toast");
+    let timer: number | undefined;
+    button.addEventListener("click", async () => {
+      const { copyText, copyFrom, copyDone } = button.dataset;
+      try {
+        // Safari wants the clipboard write inside the click, so a fetch goes in as a promise.
+        const text = copyFrom
+          ? fetch(copyFrom).then((response) => response.text())
+          : Promise.resolve(copyText ?? "");
+        await navigator.clipboard.write([
+          new ClipboardItem({
+            "text/plain": text.then((t) => new Blob([t], { type: "text/plain" })),
+          }),
+        ]);
+      } catch {
+        return;
+      }
+      if (!toast) return;
+      toast.textContent = copyDone ?? "Copied";
+      clearTimeout(timer);
+      timer = window.setTimeout(() => (toast.textContent = ""), 2000);
+    });
+  }
+</script>
+
+<style>
+  @layer components {
+    .copy-button {
+      position: relative;
+      display: inline-flex;
+    }
+
+    .copy-button__toast:not(:empty) {
+      position: absolute;
+      inset-block-start: calc(100% + var(--space-2));
+      inset-inline-end: 0;
+      z-index: 1;
+      padding: var(--space-1) var(--space-3);
+      border-radius: var(--radius-sm);
+      font-size: var(--text-small);
+      white-space: nowrap;
+      color: var(--color-on-inverse);
+      background-color: var(--color-inverse-bg);
+    }
+  }
+</style>

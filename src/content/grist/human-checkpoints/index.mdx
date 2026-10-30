@@ -1,16 +1,11 @@
 ---
 title: Human checkpoints
-volume: agentic-ux
-definition: A human checkpoint is a moment where an agent stops before an action it can’t take back, shows exactly what will happen, and waits for a person to approve, change or stop it.
-summary: Where an agent pauses before an action it can’t take back.
-status: battle-tested
-rarity: common
-started: 2026-10-30
-order: 1
+summary: Pause an agent before anything it can’t take back.
+season: s01
+drop: rule
+published: 2026-10-30
 related: [agent-budgets-and-limits, handoff-to-a-human, visible-reasoning]
 ---
-
-## My current take
 
 Checkpoints should follow what an action costs, not how confident the model is. Pause when an action can’t be undone, spends money, or speaks for the person. For everything else, let the agent act, keep a readable log, and make undo easy.
 

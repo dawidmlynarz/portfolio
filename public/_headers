@@ -20,3 +20,12 @@ https://:version.:project.pages.dev/*
 # Grist markdown twins: say they're UTF-8, or browsers show curly quotes as mojibake.
 /grist/*.md
   Content-Type: text/markdown; charset=utf-8
+
+/grist/*/drop.md
+  Content-Type: text/markdown; charset=utf-8
+
+/llms.txt
+  Content-Type: text/plain; charset=utf-8
+
+/grist/llms-full.txt
+  Content-Type: text/plain; charset=utf-8

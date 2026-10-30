@@ -7,47 +7,51 @@ import Link from "@/components/ui/Link.astro";
 import HeroBackdrop from "@/components/blocks/HeroBackdrop.astro";
 import Icon from "@/components/grist/Icon.astro";
 import RarityLabel from "@/components/grist/RarityLabel.astro";
-import QuestCard from "@/components/grist/QuestCard.astro";
-import QuestTag from "@/components/grist/QuestTag.astro";
+import DropCard from "@/components/grist/DropCard.astro";
+import LootBox from "@/components/grist/LootBox.astro";
+import Sightings from "@/components/grist/Sightings.astro";
+import CopyButton from "@/components/grist/CopyButton.astro";
 import DownloadButton from "@/components/grist/DownloadButton.astro";
 import PermalinkButton from "@/components/grist/PermalinkButton.astro";
-import { VOLUMES } from "@/lib/grist";
+import { SEASONS } from "@/lib/grist";
 import { SITE } from "@/lib/site";
 import {
   derive,
+  dropHref,
   formatDate,
-  getQuests,
+  getDrops,
   isoDate,
-  questHref,
+  lootOf,
   twinHref,
-  type Quest,
-} from "@/lib/quests";
+  type Drop,
+} from "@/lib/drops";
 
 export async function getStaticPaths() {
-  const quests = await getQuests();
-  return quests.map((quest) => ({
-    params: { slug: quest.id },
+  const drops = await getDrops();
+  return drops.map((drop) => ({
+    params: { slug: drop.id },
     props: {
-      quest,
-      related: quest.data.related.flatMap((slug) => quests.find((q) => q.id === slug) ?? []),
+      drop,
+      related: drop.data.related.flatMap((slug) => drops.find((d) => d.id === slug) ?? []),
     },
   }));
 }
 
 interface Props {
-  quest: Quest;
-  related: Quest[];
+  drop: Drop;
+  related: Drop[];
 }
 
-const { quest, related } = Astro.props;
-const { data } = quest;
-const { Content, headings } = await render(quest);
-const { rarity, version, updated, dateLabel, levelUps } = derive(quest);
-const volume = VOLUMES[data.volume];
-const url = new URL(questHref(quest), Astro.site).href;
+const { drop, related } = Astro.props;
+const { data } = drop;
+const { Content, headings } = await render(drop);
+const { type, rarity, updated } = derive(drop);
+const season = SEASONS[data.season];
+const url = new URL(dropHref(drop), Astro.site).href;
 const toc = [
   ...headings.filter((heading) => heading.depth === 2),
-  { slug: "level-ups", text: "Level-ups" },
+  { slug: "the-drop", text: "The drop" },
+  { slug: "sightings", text: "Sightings" },
   ...(related.length ? [{ slug: "see-also", text: "See also" }] : []),
 ];
 
@@ -55,74 +59,74 @@ const jsonLd = {
   "@context": "https://schema.org",
   "@type": "Article",
   headline: data.title,
-  description: data.definition,
+  description: data.summary,
   url,
-  datePublished: isoDate(data.started),
+  datePublished: isoDate(data.published),
   dateModified: isoDate(updated),
   author: { "@type": "Person", name: SITE.name, url: Astro.site?.href },
-  about: { "@type": "DefinedTerm", name: data.title, description: data.definition },
+  isAccessibleForFree: true,
+  hasPart: {
+    "@type": "CreativeWork",
+    name: `${data.title}: ${type.label.toLowerCase()}`,
+    encodingFormat: "text/markdown",
+    text: lootOf(drop),
+  },
 };
 ---
 
-<GristLayout title={`${data.title} · Grist`} description={data.definition} type="article" {jsonLd}>
-  <link slot="head" rel="alternate" type="text/markdown" href={twinHref(quest)} />
+<GristLayout title={`${data.title} · Grist`} description={data.summary} type="article" {jsonLd}>
+  <link slot="head" rel="alternate" type="text/markdown" href={twinHref(drop)} />
   <div class="hero-backdrop-host">
     <HeroBackdrop />
-    <Container class="quest">
-      <header class="quest__header">
-        <p class="quest__back text-small">
+    <Container class="drop">
+      <header class="drop__header">
+        <p class="drop__back text-small">
           <Icon name="arrow-left" />
-          <Link href="/grist">All quests</Link>
+          <Link href="/grist">All drops</Link>
         </p>
         <h1>{data.title}</h1>
-        <div class="quest__meta">
-          <div class="quest__tags">
-            <RarityLabel rarity={rarity} />
-            <QuestTag status={data.status} />
-            <span class="quest__date">
+        <div class="drop__meta">
+          <div class="drop__tags">
+            <RarityLabel rarity={rarity} type={data.drop} />
+            <span class="drop__fact">
+              Season {season.number}: {season.title}
+            </span>
+            <span class="drop__fact">
               <Icon name="calendar" />
-              <time datetime={isoDate(updated)}>{dateLabel}</time>
+              <time datetime={isoDate(data.published)}>{formatDate(data.published)}</time>
             </span>
           </div>
-          <div class="quest__actions">
-            <DownloadButton slug={quest.id} />
+          <div class="drop__actions">
+            <CopyButton from={twinHref(drop)} done="Copied as markdown">
+              Copy for AI
+            </CopyButton>
+            <DownloadButton href={twinHref(drop)} name={`${drop.id}.md`} />
             <PermalinkButton url={url} />
           </div>
         </div>
       </header>
 
-      <div class="quest__layout">
-        <article class="quest__main">
-          <p class="text-caption quest__muted">tl;dr</p>
-          <p class="text-lead quest__definition">{data.definition}</p>
-          <div class="quest__body">
+      <div class="drop__layout">
+        <article class="drop__main">
+          <p class="text-caption drop__muted">tl;dr</p>
+          <p class="text-lead drop__summary">{data.summary}</p>
+          <div class="drop__body">
             <Content />
           </div>
-
-          <section class="quest__section" aria-labelledby="level-ups">
-            <h2 class="quest__heading" id="level-ups">
-              Level-ups
-            </h2>
-            <ol class="quest__levels" role="list">
-              {levelUps.map((levelUp) => (
-                <li class="quest__level text-small">
-                  <span>{levelUp.grew}</span>
-                  <span class="quest__muted">
-                    v{levelUp.version} ·{" "}
-                    <time datetime={isoDate(levelUp.date)}>{formatDate(levelUp.date)}</time>
-                  </span>
-                </li>
-              ))}
-            </ol>
-          </section>
+          <div class="drop__loot">
+            <LootBox drop={drop} />
+          </div>
+          <div class="drop__section">
+            <Sightings drop={drop} />
+          </div>
         </article>
 
-        <aside class="quest__rail">
+        <aside class="drop__rail">
           <nav aria-labelledby="on-this-page">
-            <h2 class="text-caption quest__label" id="on-this-page">
+            <h2 class="text-caption drop__label" id="on-this-page">
               On this page
             </h2>
-            <ul class="quest__toc text-small" role="list">
+            <ul class="drop__toc text-small" role="list">
               {toc.map((item) => (
                 <li>
                   <Link href={`#${item.slug}`}>{item.text}</Link>
@@ -130,54 +134,25 @@ const jsonLd = {
               ))}
             </ul>
           </nav>
-          <section aria-labelledby="quest-log">
-            <h2 class="text-caption quest__label" id="quest-log">
-              Quest log
-            </h2>
-            <dl class="quest__log text-small">
-              <div>
-                <dt>Category</dt>
-                <dd>{volume.title}</dd>
-              </div>
-              <div>
-                <dt>Version</dt>
-                <dd>v{version}</dd>
-              </div>
-              <div>
-                <dt>Started</dt>
-                <dd>
-                  <time datetime={isoDate(data.started)}>{formatDate(data.started)}</time>
-                </dd>
-              </div>
-              {data.levelUps.length > 0 && (
-                <div>
-                  <dt>Last level-up</dt>
-                  <dd>
-                    <time datetime={isoDate(updated)}>{formatDate(updated)}</time>
-                  </dd>
-                </div>
-              )}
-            </dl>
-          </section>
         </aside>
 
-        <div class="quest__more">
+        <div class="drop__more">
           {related.length > 0 && (
             <section aria-labelledby="see-also">
-              <h2 class="quest__heading" id="see-also">
+              <h2 class="drop__heading" id="see-also">
                 See also
               </h2>
-              <ul class="quest__related" role="list">
+              <ul class="drop__related" role="list">
                 {related.map((other) => (
                   <li>
-                    <QuestCard quest={other} />
+                    <DropCard drop={other} season={other.data.season !== data.season} />
                   </li>
                 ))}
               </ul>
             </section>
           )}
-          <section class="quest__touch">
-            <p class="quest__muted">
+          <section class="drop__touch">
+            <p class="drop__muted">
               Grist is my side quest. If one of these hit close to something you’re working on, I’d
               like to hear about it.
             </p>
@@ -193,42 +168,42 @@ const jsonLd = {
 
 <style>
   @layer components {
-    .quest {
+    .drop {
       padding-block: var(--space-12) var(--space-section-md);
     }
 
-    .quest__header {
+    .drop__header {
       display: grid;
       gap: var(--space-6);
       padding-block-end: var(--space-8);
       border-block-end: calc(var(--border-width) * 2) solid var(--color-text);
     }
 
-    .quest__back {
+    .drop__back {
       display: inline-flex;
       align-items: center;
       gap: var(--space-2);
       justify-self: start;
     }
 
-    .quest__meta,
-    .quest__tags,
-    .quest__actions {
+    .drop__meta,
+    .drop__tags,
+    .drop__actions {
       display: flex;
       flex-wrap: wrap;
       align-items: center;
       gap: var(--space-4) var(--space-6);
     }
 
-    .quest__meta {
+    .drop__meta {
       justify-content: space-between;
     }
 
-    .quest__actions {
+    .drop__actions {
       gap: var(--space-3);
     }
 
-    .quest__date {
+    .drop__fact {
       display: inline-flex;
       align-items: center;
       gap: var(--space-2);
@@ -237,116 +212,96 @@ const jsonLd = {
       white-space: nowrap;
     }
 
-    .quest__muted {
+    .drop__muted {
       color: var(--color-text-muted);
     }
 
-    .quest__layout {
+    .drop__layout {
       display: grid;
       grid-template-areas: "main" "rail" "more";
       gap: var(--space-12);
       padding-block-start: var(--space-12);
     }
 
-    .quest__main {
+    .drop__main {
       grid-area: main;
       min-inline-size: 0;
     }
 
-    .quest__rail {
+    .drop__rail {
       display: grid;
       grid-area: rail;
       align-content: start;
       gap: var(--space-10);
     }
 
-    .quest__more {
+    .drop__more {
       display: grid;
       grid-area: more;
       gap: var(--space-12);
       min-inline-size: 0;
     }
 
-    .quest__label {
+    .drop__label {
       padding-block-end: var(--space-3);
       border-block-end: var(--border-width) solid var(--color-text);
       color: var(--color-text-muted);
     }
 
-    .quest__definition {
+    .drop__summary {
       max-inline-size: var(--measure);
       margin-block: var(--space-3) var(--space-12);
       color: var(--color-text);
     }
 
-    .quest__body,
-    .quest__section {
+    .drop__body,
+    .drop__loot,
+    .drop__section {
       max-inline-size: var(--measure);
     }
 
+    /* Room above for the stamp, which sits half over the box's top edge. */
+    .drop__loot {
+      margin-block-start: calc(var(--space-12) + var(--space-12));
+    }
+
     /* Section headings in the article use the h3 style, so the page title stays the only big one. */
-    .quest__body :global(h2),
-    .quest__heading {
+    .drop__body :global(h2),
+    .drop__heading {
       margin-block-end: var(--space-4);
       font: var(--weight-medium) var(--text-h3) / var(--leading-h3) var(--font-heading);
       letter-spacing: var(--tracking-h3);
     }
 
-    .quest__body :global(* + h2) {
+    .drop__body :global(* + h2) {
       margin-block-start: var(--space-12);
     }
 
-    .quest__body :global(p + p) {
+    .drop__body :global(p + p) {
       margin-block-start: var(--space-4);
     }
 
-    .quest__section {
+    .drop__section {
       margin-block-start: var(--space-12);
     }
 
-    .quest__levels {
-      padding: 0;
-      border-block-start: var(--border-width) solid var(--color-border-subtle);
-    }
-
-    .quest__level {
-      display: grid;
-      grid-template-columns: 1fr;
-      gap: var(--space-1) var(--space-4);
-      align-items: center;
-      padding-block: var(--space-3);
-      border-block-end: var(--border-width) solid var(--color-border-subtle);
-    }
-
-    .quest__toc {
+    .drop__toc {
       display: grid;
       gap: var(--space-2);
       padding: var(--space-3) 0 0;
     }
 
-    .quest__log div {
-      display: flex;
-      justify-content: space-between;
-      gap: var(--space-4);
-      padding-block: var(--space-2);
-      border-block-end: var(--border-width) solid var(--color-border-subtle);
-    }
-
-    .quest__log dt {
-      color: var(--color-text-muted);
-    }
-
-    .quest__related {
+    .drop__related {
       display: grid;
       gap: var(--space-4);
       padding: 0;
     }
 
-    .quest__related > li {
+    .drop__related > li {
       display: grid;
     }
 
-    .quest__touch {
+    .drop__touch {
       display: flex;
       flex-wrap: wrap;
       align-items: center;
@@ -357,31 +312,27 @@ const jsonLd = {
       border-block-start: calc(var(--border-width) * 2) solid var(--color-text);
     }
 
-    .quest__touch p {
+    .drop__touch p {
       flex: 1 1 20rem;
     }
 
     @media (width >= 48em) {
-      .quest__related {
+      .drop__related {
         grid-template-columns: 1fr 1fr;
       }
     }
 
     @media (width >= 64em) {
-      .quest__layout {
+      .drop__layout {
         grid-template-areas: "main rail" "more rail";
         grid-template-columns: minmax(0, 1fr) 16rem;
         column-gap: var(--space-16);
       }
 
-      .quest__rail {
+      .drop__rail {
         position: sticky;
         inset-block-start: var(--space-8);
         align-self: start;
-      }
-
-      .quest__level {
-        grid-template-columns: 1fr auto;
       }
     }
   }
