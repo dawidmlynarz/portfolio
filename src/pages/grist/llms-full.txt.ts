@@ -3,7 +3,7 @@ import type { APIRoute } from "astro";
 import { dropMarkdown, getSeasons } from "@/lib/drops";
 
 export const GET: APIRoute = async ({ site }) => {
-  const seasons = await getSeasons();
+  const seasons = (await getSeasons()).filter((season) => season.drops.length > 0);
   const text = [
     "# Grist: human-written loot for your AI tools",
     "",

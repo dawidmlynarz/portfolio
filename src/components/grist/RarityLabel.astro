@@ -1,7 +1,7 @@
 ---
 /**
- * Gem plus the tier name, in the small text style and the tier's text colour. Given a drop type it
- * reads "Rare · Checklist", since the type is what sets the tier.
+ * Gem plus a name, in the small text style and the tier's text colour. Given a drop type it names
+ * the type only ("Checklist"), in semibold: the gem and colour already say the tier.
  */
 import Gem from "./Gem.astro";
 import { DROP_TYPES, RARITY_LABELS, type DropType, type Rarity } from "@/lib/grist";
@@ -17,9 +17,8 @@ const { rarity, type, class: className } = Astro.props;
 
 <span class:list={["rarity-label", `rarity-label--${rarity}`, className]}>
   <Gem rarity={rarity} />
-  <span class="rarity-label__name">
-    {RARITY_LABELS[rarity]}
-    {type && ` · ${DROP_TYPES[type].label}`}
+  <span class:list={["rarity-label__name", { "rarity-label__name--type": type }]}>
+    {type ? DROP_TYPES[type].label : RARITY_LABELS[rarity]}
   </span>
 </span>
 
@@ -32,6 +31,10 @@ const { rarity, type, class: className } = Astro.props;
       font-size: var(--text-small);
       line-height: var(--leading-small);
       color: var(--rarity-common-text);
+    }
+
+    .rarity-label__name--type {
+      font-weight: var(--weight-semibold);
     }
 
     .rarity-label--uncommon {

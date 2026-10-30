@@ -34,6 +34,10 @@ export const SITE = {
   },
 } as const;
 
+/** The "M" mark from the nav, drawn in a 32 × 24 box. */
+export const MARK_PATH =
+  "M23.84 0 15.99 7.94 8.15 0 0 17.69h9.1l1.01-2.21L16 24l5.87-8.52 1.06 2.21H32z";
+
 export const SOCIAL_LINKS = [
   { href: "https://www.linkedin.com/in/dawid-mlynarz/", label: "LinkedIn" },
   { href: "https://dribbble.com/dawidmlynarz/", label: "Dribbble" },

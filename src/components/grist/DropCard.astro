@@ -1,18 +1,23 @@
 ---
 /**
  * One drop as a tile, used everywhere drops are listed (front door, See also, styleguide). It sizes
- * itself with a container query: narrow, it stacks (rarity and type, title, summary, then date and
- * sightings at the bottom, so tiles in a grid line up); from 48rem wide it becomes a row with them
- * on the right. The whole tile is the link's hit area.
+ * itself with a container query: narrow, it stacks (type, title, summary, then the date at the
+ * bottom, so tiles in a grid line up); from 48rem wide it becomes a row with the date on the right.
+ * The whole tile is the link's hit area.
+ *
+ * Locked variant (battle pass): a slot whose drop day hasn't come. Dashed border, the planned
+ * type's gem faded, no title, and the day it unlocks. The next one to unlock says so.
  */
 import NewBadge from "./NewBadge.astro";
 import RarityLabel from "./RarityLabel.astro";
 import Icon from "./Icon.astro";
-import { SEASONS } from "@/lib/grist";
+import { DROP_TYPES, SEASONS, type DropType } from "@/lib/grist";
 import { derive, dropHref, formatDay, isoDate, type Drop } from "@/lib/drops";
 
 interface Props {
-  drop: Drop;
+  drop?: Drop;
+  /** A locked slot instead of a drop. */
+  locked?: { type: DropType; date: Date; next?: boolean; late?: boolean };
   /** Heading level of the title in this page's outline. */
   level?: 2 | 3 | 4;
   /** Show the season (for lists that don't group by it). */
@@ -20,43 +25,68 @@ interface Props {
   class?: string;
 }
 
-const { drop, level = 3, season = false, class: className } = Astro.props;
-const { data } = drop;
-const { rarity, isNew } = derive(drop);
-const seen = data.sightings.length;
+const { drop, locked, level = 3, season = false, class: className } = Astro.props;
 const Heading = `h${level}` as "h2" | "h3" | "h4";
+const shown = drop && derive(drop);
 ---
 
-<article class:list={["drop-card", className]}>
-  <div class="drop-card__inner">
-    <div class="drop-card__main">
-      <p class="drop-card__rank">
-        <RarityLabel rarity={rarity} type={data.drop} />
-        {season && <span class="drop-card__season">{SEASONS[data.season].title}</span>}
-        {isNew && <NewBadge />}
-      </p>
-      <Heading class="drop-card__title">
-        <a class="drop-card__link" href={dropHref(drop)} data-no-tear>
-          {data.title}
-        </a>
-      </Heading>
-      <p class="drop-card__summary">{data.summary}</p>
-    </div>
-    <ul class="drop-card__meta" role="list">
-      <li class="drop-card__fact">
-        <Icon name="calendar" />
-        <time datetime={isoDate(data.published)}>{formatDay(data.published)}</time>
-      </li>
-      {seen > 0 && (
+{drop && shown ? (
+  <article class:list={["drop-card", className]}>
+    <div class="drop-card__inner">
+      <div class="drop-card__main">
+        <p class="drop-card__rank">
+          <RarityLabel rarity={shown.rarity} type={drop.data.drop} />
+          {season && <span class="drop-card__season">{SEASONS[drop.data.season].title}</span>}
+          {shown.isNew && <NewBadge />}
+        </p>
+        <Heading class="drop-card__title">
+          <a class="drop-card__link" href={dropHref(drop)} data-no-tear>
+            {drop.data.title}
+          </a>
+        </Heading>
+        <p class="drop-card__summary">{drop.data.summary}</p>
+      </div>
+      <ul class="drop-card__meta" role="list">
         <li class="drop-card__fact">
-          <Icon name="eye" />
-          Seen {seen}&times;
-          <span class="visually-hidden"> in real products</span>
+          <Icon name="calendar" />
+          <time datetime={isoDate(shown.published)}>{formatDay(shown.published)}</time>
         </li>
-      )}
-    </ul>
-  </div>
-</article>
+      </ul>
+    </div>
+  </article>
+) : (
+  locked && (
+    <article
+      class:list={["drop-card", "drop-card--locked", { "drop-card--next": locked.next }, className]}
+    >
+      <div class="drop-card__inner">
+        <div class="drop-card__main">
+          <p class="drop-card__rank">
+            <RarityLabel rarity={DROP_TYPES[locked.type].rarity} type={locked.type} />
+            {locked.next && <span class="drop-card__next text-caption">Next drop</span>}
+          </p>
+          <Heading class="drop-card__title drop-card__title--locked">
+            <Icon name="lock" />
+            Locked
+          </Heading>
+          <p class="drop-card__summary">
+            {locked.late
+              ? "Running late. It drops as soon as it’s ready."
+              : `A ${DROP_TYPES[locked.type].label.toLowerCase()} unlocks on drop day.`}
+          </p>
+        </div>
+        <ul class="drop-card__meta" role="list">
+          <li class="drop-card__fact">
+            <Icon name="calendar" />
+            <time datetime={isoDate(locked.date)}>
+              {locked.late ? "Was due" : "Drops"} {formatDay(locked.date)}
+            </time>
+          </li>
+        </ul>
+      </div>
+    </article>
+  )
+)}
 
 <style>
   @layer components {
@@ -144,6 +174,43 @@ const Heading = `h${level}` as "h2" | "h3" | "h4";
       font-size: var(--text-small);
       line-height: var(--leading-small);
       color: var(--color-text-muted);
+    }
+
+    /* Locked: a dashed outline on no fill, the gem faded, nothing to click. */
+    .drop-card--locked {
+      border-style: dashed;
+      border-color: var(--color-border-muted);
+      background-color: transparent;
+    }
+
+    .drop-card--locked:hover {
+      border-color: var(--color-border-muted);
+    }
+
+    .drop-card--locked :global(.gem) {
+      opacity: 0.45;
+    }
+
+    .drop-card--next {
+      border-style: solid;
+      border-color: var(--color-text);
+    }
+
+    .drop-card--next:hover {
+      border-color: var(--color-text);
+    }
+
+    .drop-card__title--locked {
+      display: inline-flex;
+      align-items: center;
+      gap: var(--space-2);
+      color: var(--color-text-muted);
+    }
+
+    .drop-card__next {
+      padding-inline: var(--space-1) calc(var(--space-1) - var(--tracking-caption));
+      border: var(--border-width) solid currentcolor;
+      border-radius: var(--radius-sm);
     }
 
     .drop-card__fact {

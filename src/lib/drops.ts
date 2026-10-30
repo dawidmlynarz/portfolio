@@ -1,37 +1,88 @@
 /**
- * Grist drops: which ones this build shows, the raw loot text of each, and what's derived from the
- * frontmatter (rarity from the drop type, last-seen date, New).
+ * Grist drops: which ones this build shows, the raw loot text of each, the season grid with its
+ * locked slots, and what's derived from the frontmatter (rarity from the drop type, drop day from
+ * the season slot, New).
  */
 import { getCollection, type CollectionEntry } from "astro:content";
 import { isProduction } from "@/lib/site";
-import { DROP_TYPES, SEASONS, type Season } from "@/lib/grist";
+import {
+  DROP_INTERVAL_DAYS,
+  DROP_TYPES,
+  SEASON_SLOTS,
+  SEASONS,
+  type DropType,
+  type Season,
+} from "@/lib/grist";
 
 export type Drop = CollectionEntry<"grist">;
 
-/** "New" lasts this long after `published`. */
-const NEW_DAYS = 14;
+/** "New" lasts until the next drop. */
+const NEW_DAYS = DROP_INTERVAL_DAYS;
 const DAY = 24 * 60 * 60 * 1000;
 
 /** Built at this moment; dates are compared against it (a daily rebuild keeps it honest). */
 const now = new Date();
 
-/** Production shows published drops whose date has come; previews show everything. */
-export const isListed = ({ data }: Drop) =>
-  !isProduction || (!data.draft && data.published.getTime() <= now.getTime());
+/** A slot's drop day: the season's first Friday plus two weeks per slot. */
+export const dropDay = (season: Season, slot: number) =>
+  new Date(Date.parse(SEASONS[season].starts) + (slot - 1) * DROP_INTERVAL_DAYS * DAY);
+
+export const publishedOf = ({ data }: Drop) => dropDay(data.season, data.slot);
+
+const hasDropped = (date: Date) => date.getTime() <= now.getTime();
+
+/**
+ * Production shows drops whose day has come; a static build only knows "now" at build time, so the
+ * site rebuilds on drop days. Previews show everything, drafts and future slots included.
+ */
+export const isListed = (drop: Drop) =>
+  !isProduction || (!drop.data.draft && hasDropped(publishedOf(drop)));
 
 const byPublished = (a: Drop, b: Drop) =>
-  a.data.published.getTime() - b.data.published.getTime() || a.id.localeCompare(b.id);
+  publishedOf(a).getTime() - publishedOf(b).getTime() || a.id.localeCompare(b.id);
 
 export async function getDrops() {
   return (await getCollection("grist", isListed)).sort(byPublished);
 }
 
-/** Listed drops grouped by season, in front-door order, skipping empty seasons. */
+export type Slot =
+  | { slot: number; date: Date; drop: Drop }
+  | {
+      slot: number;
+      date: Date;
+      drop?: undefined;
+      /** The planned type, shown on the locked card. */
+      type: DropType;
+      /** The first locked slot of a running season. */
+      next: boolean;
+      /** Its day has passed and nothing dropped: shown as late, not hidden. */
+      late: boolean;
+    };
+
+/**
+ * Every season with all eight slots, battle-pass style: listed drops fill their slot, the rest
+ * stay locked. `open` is false until a season's first drop (or, on previews, its first draft); the
+ * front door shows those as a short teaser instead of eight locked cards. Seasons with no listed
+ * drops at all are left out of `drops` (season packs, llms.txt).
+ */
 export async function getSeasons() {
   const drops = await getDrops();
-  return (Object.keys(SEASONS) as Season[])
-    .map((id) => ({ id, ...SEASONS[id], drops: drops.filter((d) => d.data.season === id) }))
-    .filter((season) => season.drops.length > 0);
+  return (Object.keys(SEASONS) as Season[]).map((id) => {
+    const season = SEASONS[id];
+    const own = drops.filter((d) => d.data.season === id);
+    let nextFound = false;
+    const slots: Slot[] = Array.from({ length: SEASON_SLOTS }, (_, i) => {
+      const slot = i + 1;
+      const date = dropDay(id, slot);
+      const drop = own.find((d) => d.data.slot === slot);
+      if (drop) return { slot, date, drop };
+      const late = hasDropped(date);
+      const next = !late && !nextFound;
+      if (next) nextFound = true;
+      return { slot, date, type: season.plan[i]!, next, late };
+    });
+    return { id, ...season, drops: own, slots, open: own.length > 0, starts: dropDay(id, 1) };
+  });
 }
 
 /** The loot itself: each folder's drop.md, as written. */
@@ -63,17 +114,15 @@ export const formatDay = (date: Date) => dayMonth.format(date);
 export const formatDate = (date: Date) => dayMonthYear.format(date);
 export const isoDate = (date: Date) => date.toISOString().slice(0, 10);
 
-export function derive({ data }: Drop) {
-  const type = DROP_TYPES[data.drop];
-  const lastSeen = data.sightings.at(-1)?.date;
+export function derive(drop: Drop) {
+  const type = DROP_TYPES[drop.data.drop];
+  const published = publishedOf(drop);
+  const age = now.getTime() - published.getTime();
   return {
     type,
     rarity: type.rarity,
-    /** The latest of the publish date and the last sighting. */
-    updated: lastSeen && lastSeen > data.published ? lastSeen : data.published,
-    isNew: now.getTime() - data.published.getTime() < NEW_DAYS * DAY,
-    /** Newest first. */
-    sightings: [...data.sightings].reverse(),
+    published,
+    isNew: age >= 0 && age < NEW_DAYS * DAY,
   };
 }
 
@@ -83,7 +132,7 @@ export const toMarkdown = (body = "") => body.replace(/\{\/\*[\s\S]*?\*\/\}\s*/g
 /** One drop as plain markdown: the twin, the season pack and llms-full all use it. */
 export function dropMarkdown(drop: Drop, site: URL | undefined, heading = "#") {
   const { data } = drop;
-  const { type, rarity } = derive(drop);
+  const { type, rarity, published } = derive(drop);
   const fence = "````";
   return [
     `${heading} ${data.title}`,
@@ -92,7 +141,7 @@ export function dropMarkdown(drop: Drop, site: URL | undefined, heading = "#") {
     "",
     `- Drop: ${type.label} (${rarity})`,
     `- Season: ${SEASONS[data.season].number}, ${SEASONS[data.season].title}`,
-    `- Published: ${isoDate(data.published)}`,
+    `- Published: ${isoDate(published)}`,
     `- URL: ${new URL(dropHref(drop), site).href}`,
     `- Written by a human: Dawid Młynarz`,
     "",
@@ -103,16 +152,6 @@ export function dropMarkdown(drop: Drop, site: URL | undefined, heading = "#") {
     `${fence}markdown`,
     lootOf(drop),
     fence,
-    ...(data.sightings.length
-      ? [
-          "",
-          `${heading}# Sightings`,
-          "",
-          ...data.sightings.map(
-            (s) => `- ${isoDate(s.date)}, ${s.product}: ${s.note}${s.url ? ` (${s.url})` : ""}`,
-          ),
-        ]
-      : []),
     "",
   ].join("\n");
 }

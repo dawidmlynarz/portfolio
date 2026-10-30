@@ -54,22 +54,47 @@ export const GEM_PIXELS: Record<Rarity, readonly string[]> = {
   legendary: ["...o..o..o...", ...SPARKLED],
 };
 
-/** Seasons in front-door order. A season with no listed drops is skipped. */
+/** Drops land every other Friday. A season is eight drops; a two-week break follows it. */
+export const DROP_INTERVAL_DAYS = 14;
+export const SEASON_SLOTS = 8;
+
+/**
+ * Seasons in order, battle-pass style: each shows all eight slots, and a slot unlocks on its drop
+ * day (`starts` + (slot - 1) × 14 days). `plan` is the type each slot is meant to hold, shown on
+ * locked cards; the drop's own `drop` field wins once it's written. The Skill comes last.
+ */
+const PLAN: readonly DropType[] = [
+  "rule",
+  "prompt",
+  "rule",
+  "checklist",
+  "prompt",
+  "rule",
+  "spec",
+  "skill",
+];
+
 export const SEASONS = {
   s01: {
     number: 1,
     title: "Agentic UX",
     blurb: "How products should behave when an agent does the work.",
+    starts: "2026-10-30",
+    plan: PLAN,
   },
   s02: {
     number: 2,
     title: "AI-ready design systems",
     blurb: "Making a design system that agents read and use correctly.",
+    starts: "2027-03-05",
+    plan: PLAN,
   },
   s03: {
     number: 3,
     title: "Designing with agents",
     blurb: "How I work with AI tools day to day as a designer.",
+    starts: "2027-07-09",
+    plan: PLAN,
   },
 } as const;
 export type Season = keyof typeof SEASONS;

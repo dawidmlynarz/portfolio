@@ -650,3 +650,13 @@ What changed versus the embed, and why:
 - AI feeds: `/grist/<slug>.md` (whole entry), `/grist/<slug>/drop.md` (loot only), `/llms.txt`, `/grist/llms-full.txt`.
 - The "human curated" stamp turns with a plain CSS animation (`--duration-stamp`), not GSAP: it's a decorative loop like the gem sweep, needs no scroll or timeline, and stands still under reduced motion.
 - Front door uses the two-up grid from the six layout options.
+
+## Grist: battle-pass seasons, no sightings (30 Oct 2026)
+
+- Seasons are battle passes: the front door shows all eight slots of a started season, and a slot unlocks on its drop day, every other Friday. The drop day comes from the season start and the entry's `slot`, so it isn't stored. Locked slots show the planned type and date; the next one is outlined; a missed one says it's late instead of hiding.
+- Each season ends on its Skill (Legendary), then takes a two-week break. Unstarted seasons show only their header and start date.
+- Sightings are gone: drops are Dawid's own, with no references to other products.
+- Next to the gem only the deliverable shows ("Checklist"), in semibold. The gem and colour carry the rarity.
+- The stamp reads HUMAN CURATED twice round, around the nav's mark in a black disc (`MARK_PATH` in src/lib/site.ts, shared with Nav).
+- The Readme moved to the Grist header as a link-style button; the front door hero follows Work and Services (caption, long two-tone headline), stamp on the right.
+- A static build only unlocks on rebuild, so production needs a scheduled build on drop days.

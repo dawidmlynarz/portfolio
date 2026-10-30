@@ -6,7 +6,7 @@
  */
 import Icon from "./Icon.astro";
 import RarityLabel from "./RarityLabel.astro";
-import { DROP_TYPES, type DropType } from "@/lib/grist";
+import { DROP_TYPES, RARITY_LABELS, type DropType } from "@/lib/grist";
 
 interface Props {
   id: string;
@@ -40,8 +40,12 @@ const { id } = Astro.props;
           Cursor or a CLAUDE.md.
         </p>
         <p>
+          A season is eight drops, and a new one unlocks every other Friday. Locked cards show
+          what’s coming and when.
+        </p>
+        <p>
           The ideas and the words are mine. Claude helps me format the files. It doesn’t write the
-          ideas, the examples or the sightings.
+          ideas or the examples.
         </p>
         <p>
           Every page also comes as plain markdown: add <code>.md</code> to the address.
@@ -57,7 +61,9 @@ const { id } = Astro.props;
             <dt>
               <RarityLabel rarity={DROP_TYPES[type].rarity} type={type} />
             </dt>
-            <dd>{DROP_TYPES[type].note}</dd>
+            <dd>
+              {RARITY_LABELS[DROP_TYPES[type].rarity]}. {DROP_TYPES[type].note}.
+            </dd>
           </div>
         ))}
       </dl>

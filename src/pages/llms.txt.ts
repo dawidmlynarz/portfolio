@@ -9,7 +9,7 @@ import { DROP_TYPES } from "@/lib/grist";
 
 export const GET: APIRoute = async ({ site }) => {
   const abs = (path: string) => new URL(path, site).href;
-  const seasons = await getSeasons();
+  const seasons = (await getSeasons()).filter((season) => season.drops.length > 0);
   const text = [
     `# ${SITE.name}`,
     "",

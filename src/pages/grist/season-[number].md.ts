@@ -3,7 +3,7 @@ import type { APIRoute, GetStaticPaths } from "astro";
 import { dropMarkdown, getSeasons } from "@/lib/drops";
 
 export const getStaticPaths = (async () => {
-  const seasons = await getSeasons();
+  const seasons = (await getSeasons()).filter((season) => season.drops.length > 0);
   return seasons.map((season) => ({
     params: { number: String(season.number) },
     props: { season },

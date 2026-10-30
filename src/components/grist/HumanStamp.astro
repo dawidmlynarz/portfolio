@@ -1,22 +1,20 @@
 ---
 /**
- * The "human curated" stamp: the words run round a circle and turn slowly, with a gem in the
- * middle. It's Grist's signature for the pitch (human-written loot for AI tools), so it sits in two
- * places only: the front door hero (lg) and the corner of each drop (sm). Plain SVG and a CSS turn;
- * it pauses on hover and stands still under reduced motion. The words are for sighted readers
- * only, so it carries an accessible name instead.
+ * The "human curated" stamp: HUMAN CURATED runs twice round a circle and turns slowly, around the
+ * site's mark in a black circle (the nav's). It's Grist's signature for the pitch, so it sits in
+ * two places only: the front door hero (lg) and the corner of each drop (sm). Plain SVG and a CSS
+ * turn; it pauses on hover and stands still under reduced motion. The words are for sighted
+ * readers only, so it carries an accessible name instead.
  */
-import Gem from "./Gem.astro";
-import type { Rarity } from "@/lib/grist";
+import { MARK_PATH } from "@/lib/site";
 
 interface Props {
   size?: "sm" | "lg";
-  rarity?: Rarity;
   class?: string;
 }
 
-const { size = "lg", rarity = "legendary", class: className } = Astro.props;
-const WORDS = "Human curated · Human written · ";
+const { size = "lg", class: className } = Astro.props;
+const WORDS = "Human curated • Human curated • ";
 // The text circle's radius in the 120-unit viewBox; textLength fits the words to its whole length.
 const R = 47;
 const ring = `M60 ${60 - R}a${R} ${R} 0 1 1 0 ${2 * R}a${R} ${R} 0 1 1 0 -${2 * R}`;
@@ -26,14 +24,13 @@ const pathId = `stamp-ring-${crypto.randomUUID().slice(0, 8)}`;
 <span
   class:list={["human-stamp", `human-stamp--${size}`, className]}
   role="img"
-  aria-label="Human curated, human written"
+  aria-label="Human curated"
 >
   <svg class="human-stamp__ring" viewBox="0 0 120 120" aria-hidden="true" focusable="false">
     <defs>
       <path id={pathId} d={ring} />
     </defs>
-    <circle class="human-stamp__rule" cx="60" cy="60" r="35" />
-    <text class="human-stamp__words" font-size="10.5">
+    <text class="human-stamp__words" font-size="11">
       <textPath
         href={`#${pathId}`}
         textLength={(2 * Math.PI * R).toFixed(1)}
@@ -43,8 +40,10 @@ const pathId = `stamp-ring-${crypto.randomUUID().slice(0, 8)}`;
       </textPath>
     </text>
   </svg>
-  <span class="human-stamp__gem" aria-hidden="true">
-    <Gem rarity={rarity} />
+  <span class="human-stamp__mark" aria-hidden="true">
+    <svg viewBox="0 0 32 24" focusable="false">
+      <path d={MARK_PATH} />
+    </svg>
   </span>
 </span>
 
@@ -70,7 +69,7 @@ const pathId = `stamp-ring-${crypto.randomUUID().slice(0, 8)}`;
     }
 
     .human-stamp__ring,
-    .human-stamp__gem {
+    .human-stamp__mark {
       grid-area: 1 / 1;
     }
 
@@ -80,12 +79,6 @@ const pathId = `stamp-ring-${crypto.randomUUID().slice(0, 8)}`;
       overflow: visible;
     }
 
-    .human-stamp__rule {
-      fill: none;
-      stroke: currentcolor;
-      stroke-width: 0.75;
-    }
-
     .human-stamp__words {
       font-family: var(--font-body);
       font-weight: var(--weight-medium);
@@ -93,17 +86,20 @@ const pathId = `stamp-ring-${crypto.randomUUID().slice(0, 8)}`;
       fill: currentcolor;
     }
 
-    /* The gem scales with the stamp, a quarter of its height. */
-    .human-stamp__gem :global(.gem) {
-      inline-size: auto;
-      block-size: 25%;
-    }
-
-    .human-stamp__gem {
+    /* The nav's mark: a black disc (white in dark mode) with the M in the page colour. */
+    .human-stamp__mark {
       display: grid;
       place-items: center;
-      inline-size: 100%;
-      block-size: 100%;
+      inline-size: 58%;
+      aspect-ratio: 1;
+      border-radius: var(--radius-pill);
+      background-color: var(--color-text);
+    }
+
+    .human-stamp__mark svg {
+      inline-size: 50%;
+      block-size: auto;
+      fill: var(--color-bg);
     }
 
     @media (prefers-reduced-motion: no-preference) {

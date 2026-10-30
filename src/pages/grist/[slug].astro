@@ -9,7 +9,6 @@ import Icon from "@/components/grist/Icon.astro";
 import RarityLabel from "@/components/grist/RarityLabel.astro";
 import DropCard from "@/components/grist/DropCard.astro";
 import LootBox from "@/components/grist/LootBox.astro";
-import Sightings from "@/components/grist/Sightings.astro";
 import CopyButton from "@/components/grist/CopyButton.astro";
 import DownloadButton from "@/components/grist/DownloadButton.astro";
 import PermalinkButton from "@/components/grist/PermalinkButton.astro";
@@ -45,13 +44,12 @@ interface Props {
 const { drop, related } = Astro.props;
 const { data } = drop;
 const { Content, headings } = await render(drop);
-const { type, rarity, updated } = derive(drop);
+const { type, rarity, published } = derive(drop);
 const season = SEASONS[data.season];
 const url = new URL(dropHref(drop), Astro.site).href;
 const toc = [
   ...headings.filter((heading) => heading.depth === 2),
   { slug: "the-drop", text: "The drop" },
-  { slug: "sightings", text: "Sightings" },
   ...(related.length ? [{ slug: "see-also", text: "See also" }] : []),
 ];
 
@@ -61,8 +59,7 @@ const jsonLd = {
   headline: data.title,
   description: data.summary,
   url,
-  datePublished: isoDate(data.published),
-  dateModified: isoDate(updated),
+  datePublished: isoDate(published),
   author: { "@type": "Person", name: SITE.name, url: Astro.site?.href },
   isAccessibleForFree: true,
   hasPart: {
@@ -93,7 +90,7 @@ const jsonLd = {
             </span>
             <span class="drop__fact">
               <Icon name="calendar" />
-              <time datetime={isoDate(data.published)}>{formatDate(data.published)}</time>
+              <time datetime={isoDate(published)}>{formatDate(published)}</time>
             </span>
           </div>
           <div class="drop__actions">
@@ -115,9 +112,6 @@ const jsonLd = {
           </div>
           <div class="drop__loot">
             <LootBox drop={drop} />
-          </div>
-          <div class="drop__section">
-            <Sightings drop={drop} />
           </div>
         </article>
 

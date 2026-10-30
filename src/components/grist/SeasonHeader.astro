@@ -1,30 +1,38 @@
 ---
 /**
- * A season's heading on the front door: number, title and one line on the theme, with its season
- * pack (every listed drop of the season in one markdown file) on the right, over a 2px rule.
+ * A season's heading on the front door: number and battle-pass progress, title and one line on the
+ * theme, with its season pack (every unlocked drop in one markdown file) on the right, over a 2px
+ * rule. A season that hasn't started says when it does instead.
  */
 import DownloadButton from "./DownloadButton.astro";
-import { SEASONS, type Season } from "@/lib/grist";
-import { seasonPackHref } from "@/lib/drops";
+import { SEASON_SLOTS, SEASONS, type Season } from "@/lib/grist";
+import { dropDay, formatDate, seasonPackHref } from "@/lib/drops";
 
 interface Props {
   season: Season;
+  /** Drops unlocked so far. 0: the season hasn't started. */
+  unlocked: number;
 }
 
-const { season } = Astro.props;
+const { season, unlocked } = Astro.props;
 const { number, title, blurb } = SEASONS[season];
 const pack = seasonPackHref(season);
+const status = unlocked
+  ? `${unlocked} of ${SEASON_SLOTS} unlocked`
+  : `Starts ${formatDate(dropDay(season, 1))}`;
 ---
 
 <header class="season-header">
   <div class="season-header__text">
-    <p class="text-caption season-header__muted">Season {number}</p>
+    <p class="text-caption season-header__muted">
+      Season {number} · {status}
+    </p>
     <h2 class="season-header__title" id={season}>
       {title}
     </h2>
     <p class="season-header__muted">{blurb}</p>
   </div>
-  <DownloadButton href={pack} name={pack.split("/").at(-1)!} />
+  {unlocked > 0 && <DownloadButton href={pack} name={pack.split("/").at(-1)!} />}
 </header>
 
 <style>

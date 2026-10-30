@@ -1,48 +1,55 @@
 ---
 import GristLayout from "@/layouts/GristLayout.astro";
-import Hero from "@/components/blocks/Hero.astro";
 import Container from "@/components/layout/Container.astro";
+import HeroBackdrop from "@/components/blocks/HeroBackdrop.astro";
 import DropCard from "@/components/grist/DropCard.astro";
 import HumanStamp from "@/components/grist/HumanStamp.astro";
 import SeasonHeader from "@/components/grist/SeasonHeader.astro";
-import ReadmeButton from "@/components/grist/ReadmeButton.astro";
-import ReadmePanel from "@/components/grist/ReadmePanel.astro";
 import { getSeasons } from "@/lib/drops";
 
 const seasons = await getSeasons();
 ---
 
 <GristLayout
-  title="Grist: human-written loot for your AI tools"
-  description="Rules, prompts, checklists, specs and skills from Dawid Młynarz's product work, written by a human for your AI tools. Copy or download each one as markdown."
+  title="Grist: human-curated loot for your AI tools"
+  description="Rules, prompts, checklists, specs and skills from Dawid Młynarz's product work, written by a human for your AI tools. A new drop every other Friday."
 >
   <link slot="head" rel="alternate" type="text/plain" href="/llms.txt" title="Grist for LLMs" />
-  <Hero
-    eyebrow="A side quest by Dawid Młynarz"
-    title="Grist."
-    titleMuted="Human-written loot for your AI tools."
-    lead="Rules, prompts, checklists, specs and skills from my product work on agentic UX and design systems. I write them; your AI reads them. Every drop copies in one click and downloads as markdown."
-  >
-    <Fragment slot="actions">
-      <ReadmeButton panel="readme" />
-    </Fragment>
-    <div slot="media" class="front__stamp">
-      <HumanStamp />
-    </div>
-  </Hero>
-  <ReadmePanel id="readme" />
+  <section class="front-hero hero-backdrop-host" aria-labelledby="grist-title">
+    <HeroBackdrop />
+    <Container class="front-hero__grid">
+      <div class="front-hero__head">
+        <p class="text-caption front__muted">Grist, a side quest by Dawid Młynarz</p>
+        <h1 id="grist-title">
+          Your AI is only as good as what you feed it.{" "}
+          <span class="front__muted">
+            Here’s human-curated loot, a new drop every other Friday.
+          </span>
+        </h1>
+      </div>
+      <HumanStamp class="front-hero__stamp" />
+    </Container>
+  </section>
 
   <Container class="front">
     {seasons.map((season) => (
       <section class="front__season" aria-labelledby={season.id}>
-        <SeasonHeader season={season.id} />
-        <ul class="front__grid" role="list">
-          {season.drops.map((drop) => (
-            <li>
-              <DropCard drop={drop} />
-            </li>
-          ))}
-        </ul>
+        <SeasonHeader season={season.id} unlocked={season.drops.length} />
+        {season.open && (
+          <ul class="front__grid" role="list">
+            {season.slots.map((slot) => (
+              <li>
+                {slot.drop ? (
+                  <DropCard drop={slot.drop} />
+                ) : (
+                  <DropCard
+                    locked={{ type: slot.type, date: slot.date, next: slot.next, late: slot.late }}
+                  />
+                )}
+              </li>
+            ))}
+          </ul>
+        )}
       </section>
     ))}
   </Container>
@@ -50,15 +57,33 @@ const seasons = await getSeasons();
 
 <style>
   @layer components {
+    .front-hero {
+      padding-block: var(--space-section-md);
+    }
+
+    .front-hero__grid {
+      display: grid;
+      align-items: center;
+      gap: var(--space-12);
+    }
+
+    .front-hero__head {
+      display: grid;
+      gap: var(--space-4);
+    }
+
+    .front-hero__stamp {
+      justify-self: start;
+    }
+
+    .front__muted {
+      color: var(--color-text-muted);
+    }
+
     .front {
       display: grid;
       gap: var(--space-section-sm);
       padding-block-end: var(--space-section-md);
-    }
-
-    .front__stamp {
-      display: flex;
-      justify-content: center;
     }
 
     .front__season {
@@ -83,8 +108,9 @@ const seasons = await getSeasons();
     }
 
     @media (width >= 62em) {
-      .front__stamp {
-        justify-content: end;
+      .front-hero__grid {
+        grid-template-columns: minmax(0, 1fr) auto;
+        gap: var(--space-16);
       }
     }
   }

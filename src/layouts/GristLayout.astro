@@ -1,14 +1,15 @@
 ---
 /**
- * Grist (/grist): its own slim header (logo home to /grist, "by Dawid Młynarz" back to the
- * portfolio) and the simple footer. Shares BaseLayout, so SEO tags, theme and fonts stay the
+ * Grist (/grist): its own slim header (logo home to /grist, the Readme on the right; the
+ * footer leads back to the portfolio) and the simple footer. Shares BaseLayout, so SEO tags, theme and fonts stay the
  * site's. No motion module: nothing on Grist animates except the gems and the New badge (CSS).
  */
 import BaseLayout from "@/layouts/BaseLayout.astro";
 import Footer from "@/components/blocks/Footer.astro";
 import Container from "@/components/layout/Container.astro";
-import Link from "@/components/ui/Link.astro";
 import Logo from "@/components/grist/Logo.astro";
+import ReadmeButton from "@/components/grist/ReadmeButton.astro";
+import ReadmePanel from "@/components/grist/ReadmePanel.astro";
 import type { ComponentProps } from "astro/types";
 
 type Props = ComponentProps<typeof BaseLayout>;
@@ -25,11 +26,10 @@ type Props = ComponentProps<typeof BaseLayout>;
         <a class="grist__home" href="/grist" aria-label="Grist, all drops" data-no-tear>
           <Logo />
         </a>
-        <Link href="/" icon="arrow" class="text-small">
-          by Dawid Młynarz
-        </Link>
+        <ReadmeButton panel="readme" />
       </Container>
     </header>
+    <ReadmePanel id="readme" />
     <main id="main" tabindex="-1">
       <slot />
     </main>

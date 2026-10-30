@@ -1,15 +1,40 @@
 ---
-/** Opens the README panel (ReadmePanel), a native popover, so it needs no script. */
-import Button from "@/components/ui/Button.astro";
-
+/**
+ * Opens the README panel (ReadmePanel), a native popover, so it needs no script. Drawn as the
+ * site's default link (hairline underline) since it sits in the header next to the logo.
+ */
 interface Props {
   /** id of the ReadmePanel it opens. */
   panel: string;
+  class?: string;
 }
 
-const { panel } = Astro.props;
+const { panel, class: className } = Astro.props;
 ---
 
-<Button variant="secondary" icon="info" popovertarget={panel}>
+<button class:list={["readme-link", className]} type="button" popovertarget={panel}>
   Readme
-</Button>
+</button>
+
+<style>
+  @layer components {
+    /* The <a> underline from base.css, on a button. */
+    .readme-link {
+      padding: 0;
+      border: 0;
+      font: inherit;
+      font-size: var(--text-small);
+      line-height: var(--leading-small);
+      color: inherit;
+      background: linear-gradient(currentcolor, currentcolor) no-repeat left bottom / 100%
+        var(--border-width);
+      cursor: pointer;
+    }
+
+    .readme-link:hover {
+      background-size: 0% var(--border-width);
+      background-position: right bottom;
+      transition: background-size var(--duration-link) var(--ease-out-expo);
+    }
+  }
+</style>

@@ -66,7 +66,7 @@ const work = defineCollection({
 /**
  * Grist drops: one folder per drop, src/content/grist/<slug>/, holding index.mdx (the note, in
  * Dawid's words) and drop.md (the loot itself, served raw at /grist/<slug>/drop.md). The drop type
- * sets the rarity (src/lib/grist.ts), so rarity isn't stored.
+ * sets the rarity and the season slot sets the drop day (src/lib/grist.ts), so neither is stored.
  */
 const keys = <T extends Record<string, unknown>>(object: T) =>
   Object.keys(object) as [Extract<keyof T, string>, ...Extract<keyof T, string>[]];
@@ -83,19 +83,8 @@ const grist = defineCollection({
     summary: z.string(),
     season: z.enum(keys(SEASONS)),
     drop: z.enum(keys(DROP_TYPES)),
-    /** Real publish date. Never backdated; a future date stays off production until then. */
-    published: z.coerce.date(),
-    /** Where Dawid spotted the pattern in a real product, oldest first. Evidence, not rank. */
-    sightings: z
-      .array(
-        z.object({
-          product: z.string(),
-          date: z.coerce.date(),
-          note: z.string(),
-          url: z.url().optional(),
-        }),
-      )
-      .default([]),
+    /** Its place in the season, 1 to 8. The slot sets the drop day (src/lib/grist.ts). */
+    slot: z.number().int().min(1).max(8),
     /** Slugs for See also. */
     related: z.array(z.string()).default([]),
     /** Drafts show on preview builds only. */
