@@ -2,6 +2,10 @@
 
 Non-obvious choices, newest first. One entry per decision: what, why, and what it rules out.
 
+## 2026-10-30 · Native scrolling (Lenis removed)
+
+Lenis eased every wheel and trackpad scroll toward its target, so the page trailed the hand, even at `lerp` 0.16, and felt delayed on every page. Scrolling is native again: instant, about 15 KB less JS, and the platform's own momentum and keyboard behaviour. All scroll-driven motion (reveals, the About story, the Services timeline, cover parallax, the contents mini map) still runs on GSAP ScrollTrigger, which works on native scroll. In-page anchor jumps still glide through CSS `scroll-behavior: smooth`, which reduced motion turns off. This supersedes the Lenis notes in earlier entries (the `lerp` tuning, "stays in step with Lenis", `data-lenis-prevent`, now removed).
+
 ## 2026-10-30 · About: story, career timeline, videos
 
 **Two statements, one component.** Home keeps its summary word for word (Dawid's call: it works as a summary there); About opens under the ribbon with a longer three-paragraph story. Both use StoryIntro's `paragraphs` variant at heading size, with small inline pictures and GIFs (InlineImage) that zoom 3–5× on hover so you can see what's in them. Dawid's portrait stays out of both, since the hero already shows him. Copy lives in `src/lib/story.ts`. The old photo grid and "Personal life" section are folded into the About story.

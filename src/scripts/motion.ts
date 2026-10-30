@@ -2,7 +2,6 @@
  * The motion layer (v2). Runs only when BaseLayout set `html.motion` (no reduced-motion
  * preference). Everything it animates is fully visible without it.
  *
- * - Lenis smooth scrolling, driven by the GSAP ticker so ScrollTrigger stays in sync.
  * - [data-reveal="lines"]: headings rise line by line from behind a mask (SplitText).
  * - [data-reveal="fade"]: blocks fade and rise in once they enter the viewport.
  * - [data-story]: the About statement after the home hero lights up word by word as it scrolls.
@@ -25,7 +24,6 @@
 import { gsap } from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { SplitText } from "gsap/SplitText";
-import Lenis from "lenis";
 
 const root = document.documentElement;
 const EASE = "expo.out";
@@ -33,21 +31,6 @@ const EASE = "expo.out";
 const ready = (el: HTMLElement) => {
   el.dataset.revealReady = "";
 };
-
-function smoothScroll() {
-  const lenis = new Lenis({
-    autoRaf: false,
-    anchors: true,
-    // Tighter than the 0.1 default: the page follows the wheel closely and settles quickly,
-    // smooth without feeling floaty. Touch scrolling stays native.
-    lerp: 0.16,
-    // Let popovers and the open nav menu scroll natively.
-    prevent: (node) => Boolean(node.closest("[popover], [data-nav-panel]")),
-  });
-  lenis.on("scroll", ScrollTrigger.update);
-  gsap.ticker.add((time) => lenis.raf(time * 1000));
-  gsap.ticker.lagSmoothing(0);
-}
 
 function revealLines() {
   const headings = document.querySelectorAll<HTMLElement>('[data-reveal="lines"]');
@@ -367,7 +350,6 @@ function animatedImages() {
 
 if (root.classList.contains("motion")) {
   gsap.registerPlugin(ScrollTrigger, SplitText);
-  smoothScroll();
   revealFades();
   revealLines();
   story();

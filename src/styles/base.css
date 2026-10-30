@@ -28,6 +28,13 @@
     scroll-padding-block-start: var(--space-24);
   }
 
+  /* Scrolling is native. Only in-page anchor jumps glide (reset.css turns this off for reduced motion). */
+  @media (prefers-reduced-motion: no-preference) {
+    html {
+      scroll-behavior: smooth;
+    }
+  }
+
   body {
     font-family: var(--font-body);
     font-size: var(--text-body);
@@ -368,24 +375,6 @@
     to {
       visibility: visible;
     }
-  }
-
-  /* Lenis smooth scrolling (replaces lenis/dist/lenis.css, which is unlayered). */
-  html.lenis,
-  html.lenis body {
-    block-size: auto;
-  }
-
-  .lenis.lenis-smooth {
-    scroll-behavior: auto !important;
-  }
-
-  .lenis.lenis-stopped {
-    overflow: clip;
-  }
-
-  .lenis.lenis-smooth iframe {
-    pointer-events: none;
   }
 }
 
