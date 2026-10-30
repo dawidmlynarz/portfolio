@@ -1,39 +1,63 @@
 ---
 /**
- * A small picture set inside a line of text, about as tall as the letters, that grows on hover
- * to show a little more. Sized in em, so it follows whatever text it sits in. The hover zoom is
- * a nicety: the picture already reads without it, and with reduced motion it jumps instead of
- * easing.
+ * A small picture set inside a line of text, about as tall as the letters, that zooms well past
+ * the line on hover so you can see what's in it. Sized in em, so it follows whatever text it sits
+ * in. The zoom is a nicety: the picture already reads without it.
+ *
+ * `src` is an image (optimised by astro:assets) or, for a GIF, the URL of an animated WebP plus a
+ * `still` frame, which is shown instead with reduced motion. `shape` follows the picture: wide,
+ * portrait or square.
  */
 import { Image } from "astro:assets";
 
 interface Props {
-  src: ImageMetadata;
+  src: ImageMetadata | string;
+  /** Still frame of an animated `src`, shown with reduced motion. */
+  still?: string;
   /** Required. Describe the picture; it is read in the middle of the sentence. */
   alt: string;
+  shape?: "wide" | "portrait" | "square";
   /** Framing inside the crop, as object-position (e.g. "50% 30%" for a face). */
   focus?: string;
   class?: string;
   [key: `data-${string}`]: unknown;
 }
 
-const { src, alt, focus = "50% 50%", class: className, ...attrs } = Astro.props;
+const {
+  src,
+  still,
+  alt,
+  shape = "wide",
+  focus = "50% 50%",
+  class: className,
+  ...attrs
+} = Astro.props;
+const style = `object-position: ${focus}`;
 ---
 
-<span class:list={["inline-image", className]} {...attrs}>
-  <Image
-    class="inline-image__img"
-    src={src}
-    alt={alt}
-    widths={[160, 320]}
-    sizes="10rem"
-    style={`object-position: ${focus}`}
-  />
+<span class:list={["inline-image", `inline-image--${shape}`, className]} {...attrs}>
+  {typeof src === "string" ? (
+    <picture>
+      {still && <source media="(prefers-reduced-motion: reduce)" srcset={still} />}
+      <img class="inline-image__img" src={src} alt={alt} loading="lazy" style={style} />
+    </picture>
+  ) : (
+    <Image
+      class="inline-image__img"
+      src={src}
+      alt={alt}
+      widths={[320, 640, 960]}
+      sizes="24rem"
+      style={style}
+    />
+  )}
 </span>
 
 <style>
   @layer components {
     .inline-image {
+      --inline-image-zoom: 3;
+
       display: inline-block;
       position: relative;
       inline-size: 1.5em;
@@ -47,6 +71,18 @@ const { src, alt, focus = "50% 50%", class: className, ...attrs } = Astro.props;
         box-shadow var(--duration-zoom) var(--ease-out-expo);
     }
 
+    .inline-image--portrait {
+      inline-size: 0.72em;
+    }
+
+    .inline-image--square {
+      inline-size: 1em;
+    }
+
+    .inline-image picture {
+      display: contents;
+    }
+
     .inline-image__img {
       inline-size: 100%;
       block-size: 100%;
@@ -54,9 +90,24 @@ const { src, alt, focus = "50% 50%", class: className, ...attrs } = Astro.props;
     }
 
     .inline-image:hover {
-      z-index: 1;
-      transform: scale(1.6) rotate(-3deg);
-      box-shadow: var(--shadow-panel);
+      z-index: 2;
+      transform: scale(var(--inline-image-zoom)) rotate(-2deg);
+      box-shadow: var(--shadow-bar);
+    }
+
+    /* Portrait pictures are narrow, so they can grow further before covering the line. */
+    .inline-image--portrait:hover {
+      --inline-image-zoom: 4;
+    }
+
+    @media (width >= 48em) {
+      .inline-image {
+        --inline-image-zoom: 4;
+      }
+
+      .inline-image--portrait:hover {
+        --inline-image-zoom: 5;
+      }
     }
 
     @media (prefers-reduced-motion: reduce) {

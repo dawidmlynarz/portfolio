@@ -4,7 +4,9 @@ Non-obvious choices, newest first. One entry per decision: what, why, and what i
 
 ## 2026-10-30 · About: story, career timeline, videos
 
-**The home statement moved to About.** The StoryIntro after the home hero now opens About under the ribbon, as the longer `paragraphs` variant: three paragraphs at `--text-h3` with small inline pictures (InlineImage) that grow on hover. Home goes straight from the client logos to the work. The old photo grid and "Personal life" section are folded into the story.
+**Two statements, one component.** Home keeps its summary word for word (Dawid's call: it works as a summary there); About opens under the ribbon with a longer three-paragraph story. Both use StoryIntro's `paragraphs` variant at heading size, with small inline pictures and GIFs (InlineImage) that zoom 3–5× on hover so you can see what's in them. Dawid's portrait stays out of both, since the hero already shows him. Copy lives in `src/lib/story.ts`. The old photo grid and "Personal life" section are folded into the About story.
+
+**GIFs are self-hosted animated WebP with a still frame.** Converted from Tenor at 400px (50–380 KB, lazy). With reduced motion a `<picture>` source swaps in a still frame, so nothing animates.
 
 **Career timeline is a list with a shared year axis.** Each role gets a bar on the same 2010–now axis, so length and overlap (CSS Peeper and freelance next to every job) read at a glance; work done alongside is a dashed bar, ongoing work fades out at its end. Data in `src/lib/career.ts`, built from the 2026 CV and LinkedIn; where they disagree, LinkedIn wins (Newsweek ends Apr 2026, Pearson Apr 2016). Durations are computed at build time.
 

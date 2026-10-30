@@ -4,53 +4,15 @@ import Section from "@/components/layout/Section.astro";
 import Container from "@/components/layout/Container.astro";
 import Mindblown from "@/experiments/mindblown/Mindblown.astro";
 import HeroBackdrop from "@/components/blocks/HeroBackdrop.astro";
-import StoryIntro, { type StoryPart } from "@/components/blocks/StoryIntro.astro";
+import StoryIntro from "@/components/blocks/StoryIntro.astro";
 import SectionIntro from "@/components/blocks/SectionIntro.astro";
 import CareerTimeline from "@/components/blocks/CareerTimeline.astro";
 import YouTube from "@/components/ui/YouTube.astro";
 import { CAREER } from "@/lib/career";
+import { ABOUT_STORY } from "@/lib/story";
 import { breadcrumbs, person, websiteId } from "@/lib/schema";
-import portrait from "@/assets/portrait/portrait-photo.avif";
-import horseMask from "@/assets/about/about-04.jpg";
-import produktanci from "@/assets/about/about-02.jpg";
-import newsweek from "@/content/work/newsweek-design-system/cover.avif";
-import beatstars from "@/content/work/beatstars-product-design/cover.avif";
-import csspeeper from "@/content/work/csspeeper/cover.avif";
-import anvil from "@/content/work/zazmic-anvil-ui/cover.avif";
 import maraudersPoster from "@/assets/about/video-marauders-map.jpg";
 import cssPeeperPoster from "@/assets/about/video-css-peeper.jpg";
-
-/** The story under the ribbon: three paragraphs, Dawid's voice. Pictures grow on hover. */
-const story: StoryPart[][] = [
-  [
-    "I’m Dawid Młynarz ",
-    { image: portrait, alt: "Black and white portrait of Dawid in glasses.", focus: "40% 40%" },
-    ", a Lead Product Designer from Poznań with 15 years of turning complex problems into clear, useful products. I studied linguistics, not design, and learned the craft on the job. Since then I’ve shaped newsrooms ",
-    { image: newsweek, alt: "The redesigned Newsweek homepage on a desktop and a phone." },
-    ", fintech and creator platforms ",
-    { image: beatstars, alt: "BeatStars app screens for music producers." },
-    ", and built the design systems behind them.",
-  ],
-  [
-    "In 2016 I co-founded ",
-    { text: "CSS Peeper", href: "/work/csspeeper" },
-    " ",
-    { image: csspeeper, alt: "CSS Peeper panels inspecting colours, fonts and assets." },
-    ", a Chrome extension that over half a million designers and developers have installed. Running my own product changed how I work with clients: I know what a feature really costs, because I’ve paid for plenty myself. Today I help teams bring AI into their products ",
-    { image: anvil, alt: "Anvil UI components for AI agents: tool calls, sources and progress." },
-    " in ways people understand, trust and actually use.",
-  ],
-  [
-    "Outside work I’m a husband, a dad, and the owner of Tadzik, a black mixed breed who thinks he runs security. I collect classic LEGO Castle and Pirates sets, rewatch the extended Lord of the Rings far too often, and once the house goes quiet I drop into Arc Raiders. Now and then I make videos ",
-    {
-      image: produktanci,
-      alt: "Dawid on a laptop screen next to the Produktanci design system page, a YouTube series he co-created.",
-    },
-    ", and I take the work seriously, myself a lot less ",
-    { image: horseMask, alt: "Dawid in the office wearing a horse-head mask, holding a mug." },
-    ".",
-  ],
-];
 
 const videos = [
   {
@@ -112,7 +74,7 @@ const jsonLd = {
     </Mindblown>
   </div>
 
-  <StoryIntro label="About me" paragraphs={story} />
+  <StoryIntro label="About me" paragraphs={ABOUT_STORY} />
 
   <Section space="lg" aria-labelledby="career-title">
     <Container class="about__stack">

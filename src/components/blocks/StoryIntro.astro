@@ -4,14 +4,22 @@
  * through the screen (the motion layer, data-story). Nothing is pinned. Without the motion layer
  * (no JS, reduced motion) the full statement is visible.
  *
- * `text` is one statement at heading size. `paragraphs` is the longer story variant (About): up
- * to three paragraphs at a reading size, which can hold links and small inline pictures that grow
- * on hover (InlineImage); the pictures light up with the words around them.
+ * `text` is one plain statement. `paragraphs` takes up to three paragraphs at the same size,
+ * which can hold links and small inline pictures and GIFs that zoom on hover (InlineImage); the
+ * pictures light up with the words around them. Story copy lives in src/lib/story.ts.
  */
 import InlineImage from "@/components/ui/InlineImage.astro";
 
 export type StoryPart =
-  string | { image: ImageMetadata; alt: string; focus?: string } | { text: string; href: string };
+  | string
+  | {
+      image: ImageMetadata | string;
+      still?: string;
+      alt: string;
+      shape?: "wide" | "portrait" | "square";
+      focus?: string;
+    }
+  | { text: string; href: string };
 
 interface Props {
   label: string;
@@ -53,7 +61,14 @@ const tokens = (part: string) => part.split(/(\s+)/).filter(Boolean);
                 ),
               )
             ) : "image" in part ? (
-              <InlineImage src={part.image} alt={part.alt} focus={part.focus} data-story-word />
+              <InlineImage
+                src={part.image}
+                still={part.still}
+                alt={part.alt}
+                shape={part.shape}
+                focus={part.focus}
+                data-story-word
+              />
             ) : (
               <a href={part.href} data-story-word>
                 {part.text}
@@ -104,12 +119,11 @@ const tokens = (part: string) => part.split(/(\s+)/).filter(Boolean);
       text-wrap: pretty;
     }
 
+    /* A touch more leading than the plain statement, so the pictures have room in the line. */
     .story--paragraphs .story__text {
       display: grid;
-      gap: var(--space-6);
-      max-inline-size: 30em;
-      font: var(--weight-medium) var(--text-h3) / var(--leading-h4) var(--font-heading);
-      letter-spacing: var(--tracking-h3);
+      gap: 0.6lh;
+      line-height: var(--leading-h3);
     }
   }
 </style>
