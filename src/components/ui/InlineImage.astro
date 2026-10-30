@@ -5,7 +5,8 @@
  * in. The zoom is a nicety: the picture already reads without it.
  *
  * `src` is an image (optimised by astro:assets) or, for a GIF, the URL of an animated WebP plus a
- * `still` frame, which is shown instead with reduced motion. `shape` follows the picture: wide,
+ * `still` frame. The still frame loads first; the motion layer swaps in the animation once the
+ * page has loaded, so GIFs never hold up the hero. With reduced motion or no JS the still stays. `shape` follows the picture: wide,
  * portrait or square.
  */
 import { Image } from "astro:assets";
@@ -37,17 +38,24 @@ const style = `object-position: ${focus}`;
 
 <span class:list={["inline-image", `inline-image--${shape}`, className]} {...attrs}>
   {typeof src === "string" ? (
-    <picture>
-      {still && <source media="(prefers-reduced-motion: reduce)" srcset={still} />}
-      <img class="inline-image__img" src={src} alt={alt} loading="lazy" style={style} />
-    </picture>
+    <img
+      class="inline-image__img"
+      src={still ?? src}
+      data-animated={still ? src : undefined}
+      alt={alt}
+      loading="lazy"
+      decoding="async"
+      fetchpriority="low"
+      style={style}
+    />
   ) : (
     <Image
       class="inline-image__img"
       src={src}
       alt={alt}
-      widths={[320, 640, 960]}
-      sizes="24rem"
+      widths={[240, 480]}
+      sizes="14rem"
+      fetchpriority="low"
       style={style}
     />
   )}
@@ -77,10 +85,6 @@ const style = `object-position: ${focus}`;
 
     .inline-image--square {
       inline-size: 1em;
-    }
-
-    .inline-image picture {
-      display: contents;
     }
 
     .inline-image__img {
