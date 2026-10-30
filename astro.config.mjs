@@ -10,6 +10,8 @@ const PRIVATE_PATHS = ["/styleguide", "/404", "/playground"];
 const PROTECTED_PATHS = protectedSlugs().map((slug) => `/work/${slug}`);
 
 export default defineConfig({
+  // Code blocks (Grist examples) take the site's own styles, not a Shiki theme.
+  markdown: { syntaxHighlight: false },
   // www is the host Google already indexes (Webflow redirected the apex to it).
   site: "https://www.mlynarz.com",
   trailingSlash: "never",

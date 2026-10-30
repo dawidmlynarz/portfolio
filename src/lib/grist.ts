@@ -15,14 +15,54 @@ export const RARITY_LABELS: Record<Rarity, string> = {
   legendary: "Legendary",
 };
 
-/** Drop types, Common to Legendary. The type is the rarity. */
+/**
+ * Drop types, Common to Legendary. The type is the rarity, and a rarer drop carries more around
+ * it: `needs` lists the frontmatter fields an entry of that type must fill (src/content.config.ts).
+ *   useWhen, outcome: every drop (one line each)
+ *   steps: how to use it, from Prompt up
+ *   example: a worked example in the body (## Example), from Spec up
+ *   limits: when not to use it, Skill only
+ */
 export const DROP_TYPES = {
-  rule: { label: "Rule", rarity: "common", note: "One line for a system prompt or CLAUDE.md" },
-  prompt: { label: "Prompt", rarity: "uncommon", note: "A reusable prompt with blanks to fill" },
-  checklist: { label: "Checklist", rarity: "rare", note: "Checks to review work against" },
-  spec: { label: "Spec", rarity: "epic", note: "A template or a section of a file" },
-  skill: { label: "Skill", rarity: "legendary", note: "A whole agent skill, ready to install" },
-} as const satisfies Record<string, { label: string; rarity: Rarity; note: string }>;
+  rule: {
+    label: "Rule",
+    rarity: "common",
+    note: "One line for a system prompt or CLAUDE.md",
+    needs: [],
+  },
+  prompt: {
+    label: "Prompt",
+    rarity: "uncommon",
+    note: "A reusable prompt with blanks to fill",
+    needs: ["steps"],
+  },
+  checklist: {
+    label: "Checklist",
+    rarity: "rare",
+    note: "Checks to review work against",
+    needs: ["steps"],
+  },
+  spec: {
+    label: "Spec",
+    rarity: "epic",
+    note: "A template or a section of a file",
+    needs: ["steps", "example"],
+  },
+  skill: {
+    label: "Skill",
+    rarity: "legendary",
+    note: "A whole agent skill, ready to install",
+    needs: ["steps", "example", "limits"],
+  },
+} as const satisfies Record<
+  string,
+  {
+    label: string;
+    rarity: Rarity;
+    note: string;
+    needs: readonly ("steps" | "example" | "limits")[];
+  }
+>;
 export type DropType = keyof typeof DROP_TYPES;
 
 /**
@@ -61,40 +101,35 @@ export const SEASON_SLOTS = 8;
 /**
  * Seasons in order, battle-pass style: each shows all eight slots, and a slot unlocks on its drop
  * day (`starts` + (slot - 1) × 14 days). `plan` is the type each slot is meant to hold, shown on
- * locked cards; the drop's own `drop` field wins once it's written. The Skill comes last.
+ * locked cards; the drop's own `drop` field wins once it's written. A season ends on its Skill.
+ *
+ * DEMO SCHEDULE for the preview: season 1 fully dropped, season 2 three drops in. Reset `starts`
+ * to the real launch dates before Grist goes live (drop days are never backdated).
  */
-const PLAN: readonly DropType[] = [
-  "rule",
-  "prompt",
-  "rule",
-  "checklist",
-  "prompt",
-  "rule",
-  "spec",
-  "skill",
-];
-
 export const SEASONS = {
   s01: {
     number: 1,
     title: "Agentic UX",
     blurb: "How products should behave when an agent does the work.",
-    starts: "2026-10-30",
-    plan: PLAN,
+    starts: "2026-06-26",
+    plan: ["rule", "prompt", "checklist", "rule", "prompt", "checklist", "rule", "skill"],
   },
   s02: {
     number: 2,
     title: "AI-ready design systems",
     blurb: "Making a design system that agents read and use correctly.",
-    starts: "2027-03-05",
-    plan: PLAN,
+    starts: "2026-10-02",
+    plan: ["rule", "prompt", "rule", "checklist", "prompt", "rule", "spec", "skill"],
   },
   s03: {
     number: 3,
     title: "Designing with agents",
     blurb: "How I work with AI tools day to day as a designer.",
-    starts: "2027-07-09",
-    plan: PLAN,
+    starts: "2027-02-05",
+    plan: ["rule", "prompt", "rule", "checklist", "prompt", "rule", "spec", "skill"],
   },
-} as const;
+} as const satisfies Record<
+  string,
+  { number: number; title: string; blurb: string; starts: string; plan: readonly DropType[] }
+>;
 export type Season = keyof typeof SEASONS;

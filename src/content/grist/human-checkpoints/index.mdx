@@ -1,11 +1,15 @@
 ---
-title: Human checkpoints
-summary: Pause an agent before anything it can’t take back.
-season: s01
-drop: rule
+title: "Human checkpoints"
+summary: "Pause an agent before anything it can’t take back."
+useWhen: "You’re deciding where an agent should stop and ask before it acts."
+outcome: "A short list of the actions that need a person, and nothing more."
+season: "s01"
 slot: 1
-related: [agent-budgets-and-limits, handoff-to-a-human, visible-reasoning]
+drop: "rule"
+related: [undo-windows, show-the-plan-first, handoff-to-a-human]
 ---
+
+{/* CLAUDE: useWhen and outcome were drafted by Claude. Dawid to confirm or rewrite. The slot date is the demo schedule (src/lib/grist.ts). */}
 
 Checkpoints should follow what an action costs, not how confident the model is. Pause when an action can’t be undone, spends money, or speaks for the person. For everything else, let the agent act, keep a readable log, and make undo easy.
 

@@ -32,17 +32,26 @@ export const publishedOf = ({ data }: Drop) => dropDay(data.season, data.slot);
 const hasDropped = (date: Date) => date.getTime() <= now.getTime();
 
 /**
- * Production shows drops whose day has come; a static build only knows "now" at build time, so the
- * site rebuilds on drop days. Previews show everything, drafts and future slots included.
+ * Listed (front door, feeds): drops whose day has come, on every build, so previews show the battle
+ * pass as it really stands; production also leaves out drafts. A static build only knows "now" at
+ * build time, so production rebuilds on drop days.
  */
 export const isListed = (drop: Drop) =>
-  !isProduction || (!drop.data.draft && hasDropped(publishedOf(drop)));
+  hasDropped(publishedOf(drop)) && (!isProduction || !drop.data.draft);
+
+/** Built as pages: the listed ones, plus on previews every draft and future slot, to review them. */
+const isBuilt = (drop: Drop) => !isProduction || isListed(drop);
 
 const byPublished = (a: Drop, b: Drop) =>
   publishedOf(a).getTime() - publishedOf(b).getTime() || a.id.localeCompare(b.id);
 
 export async function getDrops() {
   return (await getCollection("grist", isListed)).sort(byPublished);
+}
+
+/** Every drop with a page on this build (see isBuilt). */
+export async function getBuiltDrops() {
+  return (await getCollection("grist", isBuilt)).sort(byPublished);
 }
 
 export type Slot =
@@ -129,11 +138,16 @@ export function derive(drop: Drop) {
 /** MDX comments are notes for the author, not the reader. */
 export const toMarkdown = (body = "") => body.replace(/\{\/\*[\s\S]*?\*\/\}\s*/g, "").trim();
 
-/** One drop as plain markdown: the twin, the season pack and llms-full all use it. */
+/**
+ * One drop as plain markdown: the twin, the season pack and llms-full all use it. Laid out for an
+ * agent to act on: the brief (use it when, what you get), the why, how to use it, the drop itself
+ * in a fence, and its limits.
+ */
 export function dropMarkdown(drop: Drop, site: URL | undefined, heading = "#") {
   const { data } = drop;
   const { type, rarity, published } = derive(drop);
   const fence = "````";
+  const h2 = `${heading}#`;
   return [
     `${heading} ${data.title}`,
     "",
@@ -145,13 +159,23 @@ export function dropMarkdown(drop: Drop, site: URL | undefined, heading = "#") {
     `- URL: ${new URL(dropHref(drop), site).href}`,
     `- Written by a human: Dawid Młynarz`,
     "",
-    toMarkdown(drop.body),
+    `**Use it when:** ${data.useWhen}`,
     "",
-    `${heading}# The drop`,
+    `**What you get:** ${data.outcome}`,
+    "",
+    `${h2} Why`,
+    "",
+    toMarkdown(drop.body).replace(/^## /gm, `${h2}# `),
+    "",
+    ...(data.steps.length
+      ? [`${h2} How to use it`, "", ...data.steps.map((step, i) => `${i + 1}. ${step}`), ""]
+      : []),
+    `${h2} The drop`,
     "",
     `${fence}markdown`,
     lootOf(drop),
     fence,
     "",
+    ...(data.limits ? [`${h2} When not to use it`, "", data.limits, ""] : []),
   ].join("\n");
 }

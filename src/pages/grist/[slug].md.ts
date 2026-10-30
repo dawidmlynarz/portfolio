@@ -3,10 +3,10 @@
  * the drop and the sightings as plain markdown (src/lib/drops.ts, dropMarkdown).
  */
 import type { APIRoute, GetStaticPaths } from "astro";
-import { dropMarkdown, getDrops, type Drop } from "@/lib/drops";
+import { dropMarkdown, getBuiltDrops, type Drop } from "@/lib/drops";
 
 export const getStaticPaths = (async () => {
-  const drops = await getDrops();
+  const drops = await getBuiltDrops();
   return drops.map((drop) => ({ params: { slug: drop.id }, props: { drop } }));
 }) satisfies GetStaticPaths;
 

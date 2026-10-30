@@ -1,14 +1,20 @@
 ---
-title: Handoff to a human
-summary: Passing a conversation to a person without losing its context.
-season: s01
-drop: prompt
+title: "Handoff to a human"
+summary: "Passing a conversation to a person without losing its context."
+useWhen: "An agent in support or sales has to pass someone on to a colleague."
+outcome: "A four-line brief the colleague reads in ten seconds."
+steps:
+  - "Add the prompt to the agent’s instructions for the handoff step."
+  - "Show the brief to the person picking up, above the conversation."
+  - "Read ten real briefs after a week and tighten the wording."
+season: "s01"
 slot: 5
-related: [human-checkpoints, agent-budgets-and-limits, visible-reasoning]
+drop: "prompt"
+related: [human-checkpoints, agent-activity-log]
 draft: true
 ---
 
-{/* TEST DATA: a draft by Claude, from your backlog line, so the preview shows every drop type. The note and the drop are placeholders. Rewrite or delete before publishing. */}
+{/* TEST DATA: a draft by Claude for the season demo. The note, the brief and the drop are placeholders. Rewrite or delete before publishing. */}
 
 The agent writes the brief, not the customer. By the time someone asks for a human they have usually explained the problem once already. Asking them to explain it again is the quickest way to lose them.
 

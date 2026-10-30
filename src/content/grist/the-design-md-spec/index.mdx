@@ -1,15 +1,35 @@
 ---
-title: The design.md spec
-summary: One plain file that tells agents how your system works.
-season: s02
-drop: spec
+title: "The design.md spec"
+summary: "One plain file that tells agents how your system works."
+useWhen: "Agents work in a repo and your design rules live somewhere else."
+outcome: "One file in the repo that every agent reads first."
+steps:
+  - "Copy the template into DESIGN.md at the root of the repo."
+  - "Fill in the paths and the component list. One line per component is enough."
+  - "Point your CLAUDE.md or Cursor rules at it: “Read DESIGN.md before any UI change.”"
+  - "Update it in the same pull request as any system change."
+example: true
+season: "s02"
 slot: 7
+drop: "spec"
 related: [agent-readable-tokens, component-contracts]
 draft: true
 ---
 
-{/* TEST DATA: a draft by Claude, from your backlog line, so the preview shows every drop type. The note and the drop are placeholders. Rewrite or delete before publishing. */}
+{/* TEST DATA: a draft by Claude for the season demo. The note, the brief and the drop are placeholders. Rewrite or delete before publishing. */}
 
 Agents read what’s in the repo. If your rules live in Figma comments and a wiki page, the agent never sees them.
 
 So keep one short file next to the code. A design.md that says “semantic tokens only, never hex” and lists each component in a line does more for an agent than a big docs site it can’t reach.
+
+## Example
+
+A filled-in Components section for a small system:
+
+```markdown
+## Components
+
+- Button: actions on this page. Not for navigation; use Link.
+- Link: going somewhere. Not for actions; use Button.
+- Callout: one important note in a long page. Not for errors; use the form's error text.
+```

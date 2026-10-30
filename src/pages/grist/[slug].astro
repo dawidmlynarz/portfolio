@@ -9,8 +9,6 @@ import Icon from "@/components/grist/Icon.astro";
 import RarityLabel from "@/components/grist/RarityLabel.astro";
 import DropCard from "@/components/grist/DropCard.astro";
 import LootBox from "@/components/grist/LootBox.astro";
-import CopyButton from "@/components/grist/CopyButton.astro";
-import DownloadButton from "@/components/grist/DownloadButton.astro";
 import PermalinkButton from "@/components/grist/PermalinkButton.astro";
 import { SEASONS } from "@/lib/grist";
 import { SITE } from "@/lib/site";
@@ -18,7 +16,7 @@ import {
   derive,
   dropHref,
   formatDate,
-  getDrops,
+  getBuiltDrops,
   isoDate,
   lootOf,
   twinHref,
@@ -26,7 +24,7 @@ import {
 } from "@/lib/drops";
 
 export async function getStaticPaths() {
-  const drops = await getDrops();
+  const drops = await getBuiltDrops();
   return drops.map((drop) => ({
     params: { slug: drop.id },
     props: {
@@ -48,8 +46,11 @@ const { type, rarity, published } = derive(drop);
 const season = SEASONS[data.season];
 const url = new URL(dropHref(drop), Astro.site).href;
 const toc = [
+  { slug: "why", text: "Why" },
   ...headings.filter((heading) => heading.depth === 2),
+  ...(data.steps.length ? [{ slug: "how-to-use-it", text: "How to use it" }] : []),
   { slug: "the-drop", text: "The drop" },
+  ...(data.limits ? [{ slug: "limits", text: "When not to use it" }] : []),
   ...(related.length ? [{ slug: "see-also", text: "See also" }] : []),
 ];
 
@@ -93,13 +94,7 @@ const jsonLd = {
               <time datetime={isoDate(published)}>{formatDate(published)}</time>
             </span>
           </div>
-          <div class="drop__actions">
-            <CopyButton from={twinHref(drop)} done="Copied as markdown">
-              Copy for AI
-            </CopyButton>
-            <DownloadButton href={twinHref(drop)} name={`${drop.id}.md`} />
-            <PermalinkButton url={url} />
-          </div>
+          <PermalinkButton url={url} />
         </div>
       </header>
 
@@ -107,12 +102,45 @@ const jsonLd = {
         <article class="drop__main">
           <p class="text-caption drop__muted">tl;dr</p>
           <p class="text-lead drop__summary">{data.summary}</p>
+          <dl class="drop__brief">
+            <div>
+              <dt class="text-caption drop__muted">Use it when</dt>
+              <dd>{data.useWhen}</dd>
+            </div>
+            <div>
+              <dt class="text-caption drop__muted">What you get</dt>
+              <dd>{data.outcome}</dd>
+            </div>
+          </dl>
+          <h2 class="drop__heading" id="why">
+            Why
+          </h2>
           <div class="drop__body">
             <Content />
           </div>
+          {data.steps.length > 0 && (
+            <section class="drop__section" aria-labelledby="how-to-use-it">
+              <h2 class="drop__heading" id="how-to-use-it">
+                How to use it
+              </h2>
+              <ol class="drop__steps">
+                {data.steps.map((step) => (
+                  <li>{step}</li>
+                ))}
+              </ol>
+            </section>
+          )}
           <div class="drop__loot">
             <LootBox drop={drop} />
           </div>
+          {data.limits && (
+            <section class="drop__section" aria-labelledby="limits">
+              <h2 class="drop__heading" id="limits">
+                When not to use it
+              </h2>
+              <p>{data.limits}</p>
+            </section>
+          )}
         </article>
 
         <aside class="drop__rail">
@@ -181,8 +209,7 @@ const jsonLd = {
     }
 
     .drop__meta,
-    .drop__tags,
-    .drop__actions {
+    .drop__tags {
       display: flex;
       flex-wrap: wrap;
       align-items: center;
@@ -191,10 +218,6 @@ const jsonLd = {
 
     .drop__meta {
       justify-content: space-between;
-    }
-
-    .drop__actions {
-      gap: var(--space-3);
     }
 
     .drop__fact {
@@ -242,9 +265,28 @@ const jsonLd = {
       color: var(--color-text-muted);
     }
 
+    .drop__brief {
+      display: grid;
+      gap: var(--space-4) var(--space-8);
+      max-inline-size: var(--measure);
+      margin-block-end: var(--space-12);
+      padding-block: var(--space-4);
+      border-block: var(--border-width) solid var(--color-border-subtle);
+    }
+
+    .drop__brief dt {
+      margin-block-end: var(--space-1);
+    }
+
+    .drop__steps {
+      display: grid;
+      gap: var(--space-2);
+      padding-inline-start: var(--space-6);
+    }
+
     .drop__summary {
       max-inline-size: var(--measure);
-      margin-block: var(--space-3) var(--space-12);
+      margin-block: var(--space-3) var(--space-8);
       color: var(--color-text);
     }
 
@@ -269,6 +311,20 @@ const jsonLd = {
 
     .drop__body :global(* + h2) {
       margin-block-start: var(--space-12);
+    }
+
+    /* Examples: the same plain code panel as the loot box. */
+    .drop__body :global(pre) {
+      overflow-x: auto;
+      margin-block-start: var(--space-4);
+      padding: var(--space-4);
+      border-radius: var(--radius-sm);
+      font-family: var(--font-mono);
+      font-size: var(--text-small);
+      line-height: var(--leading-small);
+      white-space: pre-wrap;
+      overflow-wrap: anywhere;
+      background-color: var(--color-bg-subtle);
     }
 
     .drop__body :global(p + p) {
@@ -311,6 +367,10 @@ const jsonLd = {
     }
 
     @media (width >= 48em) {
+      .drop__brief {
+        grid-template-columns: 1fr 1fr;
+      }
+
       .drop__related {
         grid-template-columns: 1fr 1fr;
       }

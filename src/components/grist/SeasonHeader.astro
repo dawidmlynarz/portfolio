@@ -17,9 +17,12 @@ interface Props {
 const { season, unlocked } = Astro.props;
 const { number, title, blurb } = SEASONS[season];
 const pack = seasonPackHref(season);
-const status = unlocked
-  ? `${unlocked} of ${SEASON_SLOTS} unlocked`
-  : `Starts ${formatDate(dropDay(season, 1))}`;
+const status =
+  unlocked >= SEASON_SLOTS
+    ? "Complete"
+    : unlocked
+      ? `${unlocked} of ${SEASON_SLOTS} unlocked`
+      : `Starts ${formatDate(dropDay(season, 1))}`;
 ---
 
 <header class="season-header">

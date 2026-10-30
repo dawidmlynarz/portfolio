@@ -77,19 +77,46 @@ const grist = defineCollection({
     base: "./src/content/grist",
     generateId: ({ entry }) => entry.split("/")[0]!,
   }),
-  schema: z.object({
-    title: z.string(),
-    /** One sentence: the card line, the tl;dr and the meta description. */
-    summary: z.string(),
-    season: z.enum(keys(SEASONS)),
-    drop: z.enum(keys(DROP_TYPES)),
-    /** Its place in the season, 1 to 8. The slot sets the drop day (src/lib/grist.ts). */
-    slot: z.number().int().min(1).max(8),
-    /** Slugs for See also. */
-    related: z.array(z.string()).default([]),
-    /** Drafts show on preview builds only. */
-    draft: z.boolean().default(false),
-  }),
+  schema: z
+    .object({
+      title: z.string(),
+      /** One sentence: the card line, the tl;dr and the meta description. */
+      summary: z.string(),
+      /** One line: the situation this drop is for. */
+      useWhen: z.string(),
+      /** One line: what you have once you've used it. */
+      outcome: z.string(),
+      /** How to use it, step by step. Prompt and up. */
+      steps: z.array(z.string()).default([]),
+      /** The body has a "## Example" section. Spec and up. */
+      example: z.boolean().default(false),
+      /** One line: when not to use it. Skill only. */
+      limits: z.string().optional(),
+      season: z.enum(keys(SEASONS)),
+      drop: z.enum(keys(DROP_TYPES)),
+      /** Its place in the season, 1 to 8. The slot sets the drop day (src/lib/grist.ts). */
+      slot: z.number().int().min(1).max(8),
+      /** Slugs for See also. */
+      related: z.array(z.string()).default([]),
+      /** Drafts show on preview builds only. */
+      draft: z.boolean().default(false),
+    })
+    .superRefine((data, ctx) => {
+      for (const need of DROP_TYPES[data.drop].needs) {
+        const missing =
+          need === "steps"
+            ? data.steps.length === 0
+            : need === "example"
+              ? !data.example
+              : !data.limits;
+        if (missing)
+          ctx.addIssue({
+            code: "custom",
+            path: [need],
+            message: `A ${data.drop} drop needs \`${need}\` (see DROP_TYPES in src/lib/grist.ts).`,
+          });
+      }
+    }),
 });
 
 export const collections = { work, grist };

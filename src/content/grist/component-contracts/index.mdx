@@ -1,15 +1,34 @@
 ---
-title: Component contracts
-summary: What a component promises, written for people and agents alike.
-season: s02
-drop: skill
+title: "Component contracts"
+summary: "What a component promises, written for people and agents alike."
+useWhen: "Agents pick components and keep picking the wrong one."
+outcome: "A short CONTRACT.md next to every component, and a list of places that break it."
+steps:
+  - "Save the skill as .claude/skills/component-contract/SKILL.md in your repo."
+  - "Ask Claude Code: “Write the contract for Modal.”"
+  - "Review the “Don’t use for” section first. It does most of the work."
+  - "Run it again whenever a component’s props change."
+example: true
+limits: "Skip it for tiny systems with five components or fewer. A DESIGN.md line each is enough there."
+season: "s02"
 slot: 8
-related: [agent-readable-tokens, the-design-md-spec]
+drop: "skill"
+related: [the-design-md-spec, agent-readable-tokens]
 draft: true
 ---
 
-{/* TEST DATA: a draft by Claude, from your backlog line, so the preview shows every drop type. The note and the drop are placeholders. Rewrite or delete before publishing. */}
+{/* TEST DATA: a draft by Claude for the season demo. The note, the brief and the drop are placeholders. Rewrite or delete before publishing. */}
 
 Props tell an agent how to use a component. They don’t tell it whether to, which is how a modal ends up where a toast belonged.
 
 Write the purpose, the limits and a “don’t use for” line once, next to the component. The “don’t use for” line does most of the work, and it’s the one people skip.
+
+## Example
+
+What the skill wrote for a Toast component:
+
+```markdown
+**For:** a short confirmation that something worked.
+**Limits:** one line, no actions except Undo, gone after 5 seconds.
+**Don't use for:** errors that need fixing (use inline errors), or anything the person must read (use a Dialog).
+```

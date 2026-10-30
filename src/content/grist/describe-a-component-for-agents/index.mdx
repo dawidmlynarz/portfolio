@@ -1,0 +1,21 @@
+---
+title: "Describe a component for agents"
+summary: "A prompt that writes the description field agents actually read."
+useWhen: "Your components have props but no plain description of what they’re for."
+outcome: "A two-sentence description per component, ready for docs, Storybook or Code Connect."
+steps:
+  - "Paste the prompt with the component’s source or its Figma link."
+  - "Check the “Not for” sentence against how the team really uses it."
+  - "Put the result in the component’s docs field, where agents look first."
+season: "s02"
+slot: 2
+drop: "prompt"
+related: [agent-readable-tokens, write-the-donts-down]
+draft: true
+---
+
+{/* TEST DATA: a draft by Claude for the season demo. The note, the brief and the drop are placeholders. Rewrite or delete before publishing. */}
+
+Agents choose components by their names and whatever text sits next to them. Most systems give them a prop table and nothing else.
+
+Two sentences fix most of it: what it’s for, and what it isn’t for.
