@@ -15,8 +15,6 @@ import yesNod from "@/assets/about/gifs/yes-nod.webp?url";
 import yesNodStill from "@/assets/about/gifs/yes-nod-still.webp?url";
 import aiPanic from "@/assets/about/gifs/music-sick-ai.webp?url";
 import aiPanicStill from "@/assets/about/gifs/music-sick-ai-still.webp?url";
-import gandalf from "@/assets/about/gifs/gandalf.webp?url";
-import gandalfStill from "@/assets/about/gifs/gandalf-still.webp?url";
 import emmet from "@/assets/about/gifs/emmet.webp?url";
 import emmetStill from "@/assets/about/gifs/emmet-still.webp?url";
 
@@ -38,17 +36,15 @@ const pictures = {
 /** Home, after the hero: a short summary. */
 export const HOME_STORY: StoryPart[][] = [
   [
-    "I'm Dawid, a ",
-    pictures.yesNod,
-    " Lead Product Designer with 15+ years of turning complex problems into ",
+    "I'm Dawid Młynarz, a Lead Product Designer with 15+ years of turning ",
     {
       image: bigBrain,
       still: bigBrainStill,
       alt: "GIF: a man smugly tapping his temple, the “big brain” meme.",
     },
-    " products used by millions, and the design systems behind them. Today I help teams bring ",
+    " complex problems into products used by millions, and the design systems behind them. Today I help teams bring ",
     pictures.aiPanic,
-    " AI into their products in ways people understand, trust and actually use.",
+    " AI into their workflows in ways people trust, understand, and actually use.",
   ],
 ];
 
@@ -64,7 +60,7 @@ export const ABOUT_STORY: StoryPart[][] = [
       alt: "GIF: Leonardo DiCaprio in a tuxedo, smiling with fireworks behind him.",
       shape: "square",
     },
-    " led design teams, and I like the less glamorous side of that job too: setting up design ops and cleaning up the processes that slow people down.",
+    " led design teams, caring about people and cleaning up the processes that slow them down.",
   ],
   [
     "In 2016 I co-founded ",
@@ -82,14 +78,7 @@ export const ABOUT_STORY: StoryPart[][] = [
       alt: "Tadzik, a black long-haired dog with a white chest, looking into the camera.",
       shape: "square",
     },
-    " Tadzik, our dog who runs security. I rewatch the extended ",
-    {
-      image: gandalf,
-      still: gandalfStill,
-      alt: "GIF: Gandalf grinning and bobbing his head.",
-      shape: "square",
-    },
-    " Lord of the Rings more than I should. Late at night you’ll find me in ",
+    " Tadzik, our dog who runs security. Late at night you’ll find me in ",
     {
       image: gaming,
       alt: "My Arc Raiders character in a blue helmet, flashing a peace sign on a snowy mountain.",
@@ -99,6 +88,7 @@ export const ABOUT_STORY: StoryPart[][] = [
       image: emmet,
       still: emmetStill,
       alt: "GIF: Emmet from The LEGO Movie, mouth wide open.",
+      shape: "square",
     },
     " LEGO. A lot of LEGO. I take the work seriously, myself a lot less.",
   ],
