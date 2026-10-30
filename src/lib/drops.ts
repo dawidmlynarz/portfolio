@@ -111,7 +111,7 @@ export function lootOf(drop: Drop) {
 export const dropHref = (drop: Drop) => `/grist/${drop.id}`;
 export const twinHref = (drop: Drop) => `/grist/${drop.id}.md`;
 export const lootHref = (drop: Drop) => `/grist/${drop.id}/drop.md`;
-export const seasonPackHref = (season: Season) => `/grist/season-${SEASONS[season].number}.md`;
+export const seasonPackHref = (season: Season) => `/grist/season/${SEASONS[season].slug}.md`;
 
 const dayMonth = new Intl.DateTimeFormat("en-GB", { day: "numeric", month: "short" });
 const dayMonthYear = new Intl.DateTimeFormat("en-GB", {
@@ -140,7 +140,7 @@ export const toMarkdown = (body = "") => body.replace(/\{\/\*[\s\S]*?\*\/\}\s*/g
 
 /**
  * One drop as plain markdown: the twin, the season pack and llms-full all use it. Laid out for an
- * agent to act on: the brief (use it when, what you get), the why, how to use it, the drop itself
+ * agent to act on: the hint (when to use it, what you get), the why, how to use it, the drop itself
  * in a fence, and its limits.
  */
 export function dropMarkdown(drop: Drop, site: URL | undefined, heading = "#") {
@@ -159,9 +159,7 @@ export function dropMarkdown(drop: Drop, site: URL | undefined, heading = "#") {
     `- URL: ${new URL(dropHref(drop), site).href}`,
     `- Written by a human: Dawid Młynarz`,
     "",
-    `**Use it when:** ${data.useWhen}`,
-    "",
-    `**What you get:** ${data.outcome}`,
+    `**Hint:** ${data.hint}`,
     "",
     `${h2} Why`,
     "",

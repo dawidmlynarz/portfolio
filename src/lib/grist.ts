@@ -18,7 +18,7 @@ export const RARITY_LABELS: Record<Rarity, string> = {
 /**
  * Drop types, Common to Legendary. The type is the rarity, and a rarer drop carries more around
  * it: `needs` lists the frontmatter fields an entry of that type must fill (src/content.config.ts).
- *   useWhen, outcome: every drop (one line each)
+ *   hint: every drop (one sentence: when to use it, what you get)
  *   steps: how to use it, from Prompt up
  *   example: a worked example in the body (## Example), from Spec up
  *   limits: when not to use it, Skill only
@@ -109,6 +109,7 @@ export const SEASON_SLOTS = 8;
 export const SEASONS = {
   s01: {
     number: 1,
+    slug: "agentic-ux",
     title: "Agentic UX",
     blurb: "How products should behave when an agent does the work.",
     starts: "2026-06-26",
@@ -116,6 +117,7 @@ export const SEASONS = {
   },
   s02: {
     number: 2,
+    slug: "ai-ready-design-systems",
     title: "AI-ready design systems",
     blurb: "Making a design system that agents read and use correctly.",
     starts: "2026-10-02",
@@ -123,6 +125,7 @@ export const SEASONS = {
   },
   s03: {
     number: 3,
+    slug: "designing-with-agents",
     title: "Designing with agents",
     blurb: "How I work with AI tools day to day as a designer.",
     starts: "2027-02-05",
@@ -130,6 +133,14 @@ export const SEASONS = {
   },
 } as const satisfies Record<
   string,
-  { number: number; title: string; blurb: string; starts: string; plan: readonly DropType[] }
+  {
+    number: number;
+    /** Season pack file name: /grist/season/<slug>.md */
+    slug: string;
+    title: string;
+    blurb: string;
+    starts: string;
+    plan: readonly DropType[];
+  }
 >;
 export type Season = keyof typeof SEASONS;

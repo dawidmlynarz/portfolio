@@ -101,16 +101,10 @@ const jsonLd = {
         <article class="drop__main">
           <p class="text-caption drop__muted">tl;dr</p>
           <p class="text-lead drop__summary">{data.summary}</p>
-          <dl class="drop__brief">
-            <div>
-              <dt class="text-caption drop__muted">Use it when</dt>
-              <dd>{data.useWhen}</dd>
-            </div>
-            <div>
-              <dt class="text-caption drop__muted">What you get</dt>
-              <dd>{data.outcome}</dd>
-            </div>
-          </dl>
+          <p class="drop__hint">
+            <Icon name="lightbulb" />
+            <span>{data.hint}</span>
+          </p>
           <h2 class="drop__heading" id="why">
             Why
           </h2>
@@ -260,17 +254,20 @@ const jsonLd = {
       color: var(--color-text-muted);
     }
 
-    .drop__brief {
-      display: grid;
-      gap: var(--space-4) var(--space-8);
+    /* One hint under the tl;dr: when to use it and what you get. */
+    .drop__hint {
+      display: flex;
+      gap: var(--space-3);
       max-inline-size: var(--measure);
       margin-block-end: var(--space-12);
-      padding-block: var(--space-4);
-      border-block: var(--border-width) solid var(--color-border-subtle);
+      padding: var(--space-4);
+      border-radius: var(--radius-sm);
+      background-color: var(--color-bg-subtle);
     }
 
-    .drop__brief dt {
-      margin-block-end: var(--space-1);
+    /* A line tall, so the icon centres on the first line of the hint. */
+    .drop__hint :global(.icon) {
+      block-size: 1lh;
     }
 
     .drop__steps {

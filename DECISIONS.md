@@ -669,3 +669,9 @@ What changed versus the embed, and why:
 - Lists respect drop days on previews too, so the battle pass shows as it stands; future and draft drops still get pages on previews for review.
 - Demo schedule: season 1 complete, season 2 three drops in. `starts` in SEASONS must be reset before launch.
 - Shiki is off (`markdown.syntaxHighlight: false`): code blocks only appear in Grist examples and take the site's plain code panel in both themes.
+
+## Grist: badge floats in the headline, one hint (30 Oct 2026)
+
+- The front door badge floats at the lower right of the headline with `shape-outside: circle()`, so the words wrap round it at every width instead of hiding it on phones. A zero-width float sized in headline lines (`lh`) pushes it down, since floats can't anchor to the bottom.
+- `useWhen` and `outcome` merged into one `hint` sentence under the tl;dr (when to use it, what you get).
+- Season packs are named after the season: `/grist/season/<slug>.md` (agentic-ux.md).

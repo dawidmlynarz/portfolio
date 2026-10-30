@@ -17,9 +17,11 @@ const seasons = await getSeasons();
   <link slot="head" rel="alternate" type="text/plain" href="/llms.txt" title="Grist for LLMs" />
   <section class="front-hero hero-backdrop-host" aria-labelledby="grist-title">
     <HeroBackdrop />
-    <Container class="front-hero__grid">
-      <div class="front-hero__head">
-        <p class="text-caption front__muted">Grist for the AI grinders</p>
+    <Container class="front-hero__head">
+      <p class="text-caption front__muted">Grist for the AI grinders</p>
+      <div class="front-hero__title">
+        <span class="front-hero__spacer" aria-hidden="true"></span>
+        <HumanStamp class="front-hero__stamp" words="Human curated for AI grinders" />
         <h1 id="grist-title">
           Your AI is only as good as what you feed it.{" "}
           <span class="front__muted">
@@ -27,7 +29,6 @@ const seasons = await getSeasons();
           </span>
         </h1>
       </div>
-      <HumanStamp class="front-hero__stamp" words="Human curated for AI grinders" />
     </Container>
   </section>
 
@@ -61,23 +62,34 @@ const seasons = await getSeasons();
       padding-block: var(--space-section-md);
     }
 
-    /* The badge overlaps the top right of the headline a little, as a sticker would. */
-    .front-hero__grid {
-      position: relative;
-      display: grid;
-      align-items: center;
-    }
-
     .front-hero__head {
       display: grid;
       gap: var(--space-4);
     }
 
+    /*
+     * The badge floats at the lower right of the headline and the words wrap round it:
+     * shape-outside makes the float a circle. A zero-width float above it (the spacer, sized in
+     * headline lines) pushes it down, since a float can't sit at the bottom on its own. The
+     * title box is a new formatting context, so the floats stay inside it.
+     */
+    .front-hero__title {
+      display: flow-root;
+    }
+
+    .front-hero__spacer {
+      float: right;
+      inline-size: 0;
+      block-size: calc(3 * 1lh);
+      font: var(--weight-medium) var(--text-h1) / var(--leading-h1) var(--font-heading);
+    }
+
     .front-hero__stamp {
-      position: absolute;
-      inset-block-start: 0;
-      inset-inline-end: var(--gutter);
-      translate: 0 -40%;
+      float: right;
+      clear: right;
+      margin-inline-start: var(--space-4);
+      shape-outside: circle(50%);
+      shape-margin: var(--space-3);
     }
 
     .front__muted {
@@ -111,11 +123,10 @@ const seasons = await getSeasons();
       }
     }
 
-    /* Wide: pulled in from the edge so it sits over the ends of the first lines. */
-    @media (width >= 62em) {
-      .front-hero__stamp {
-        inset-inline-end: calc(var(--gutter) + var(--space-24));
-        translate: 0 -10%;
+    /* Wider screens fit more per line, so the headline is fewer lines and the badge starts higher. */
+    @media (width >= 48em) {
+      .front-hero__spacer {
+        block-size: calc(1.5 * 1lh);
       }
     }
   }

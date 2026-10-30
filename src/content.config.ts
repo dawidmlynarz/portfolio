@@ -82,10 +82,8 @@ const grist = defineCollection({
       title: z.string(),
       /** One sentence: the card line, the tl;dr and the meta description. */
       summary: z.string(),
-      /** One line: the situation this drop is for. */
-      useWhen: z.string(),
-      /** One line: what you have once you've used it. */
-      outcome: z.string(),
+      /** One sentence at the top: when to use it and what you get. */
+      hint: z.string(),
       /** How to use it, step by step. Prompt and up. */
       steps: z.array(z.string()).default([]),
       /** The body has a "## Example" section. Spec and up. */

@@ -1,11 +1,11 @@
-/** Season pack (/grist/season-<n>.md): every listed drop of a season in one markdown file. */
+/** Season pack (/grist/season/<slug>.md, e.g. agentic-ux.md): every listed drop of a season in one markdown file. */
 import type { APIRoute, GetStaticPaths } from "astro";
 import { dropMarkdown, getSeasons } from "@/lib/drops";
 
 export const getStaticPaths = (async () => {
   const seasons = (await getSeasons()).filter((season) => season.drops.length > 0);
   return seasons.map((season) => ({
-    params: { number: String(season.number) },
+    params: { season: season.slug },
     props: { season },
   }));
 }) satisfies GetStaticPaths;
