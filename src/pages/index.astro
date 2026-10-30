@@ -11,6 +11,7 @@ import WorkGrid from "@/components/blocks/WorkGrid.astro";
 import Button from "@/components/ui/Button.astro";
 import { SERVICES } from "@/lib/services";
 import { getListedWork } from "@/lib/work";
+import { HOME_STORY } from "@/lib/story";
 import { person, website } from "@/lib/schema";
 
 /** Home shows the first four case studies; the rest are on /work. */
@@ -44,10 +45,7 @@ const jsonLd = {
     <ClientLogos marquee />
   </div>
 
-  <StoryIntro
-    label="About"
-    text="I'm Dawid Młynarz, a Lead Product Designer with 15 years of turning complex problems into clear, useful products. I've shaped newsrooms, fintech and creator platforms, and built the design systems behind them. Today I help teams bring AI into their products in ways people understand, trust and actually use."
-  />
+  <StoryIntro label="About" paragraphs={HOME_STORY} />
 
   <Section id="work" space="lg" aria-labelledby="work-title">
     <Container class="home__stack">

@@ -1,33 +1,34 @@
 ---
-import { Image } from "astro:assets";
 import SiteLayout from "@/layouts/SiteLayout.astro";
 import Section from "@/components/layout/Section.astro";
 import Container from "@/components/layout/Container.astro";
-import Stack from "@/components/layout/Stack.astro";
 import Mindblown from "@/experiments/mindblown/Mindblown.astro";
 import HeroBackdrop from "@/components/blocks/HeroBackdrop.astro";
-import Tag from "@/components/ui/Tag.astro";
-import Link from "@/components/ui/Link.astro";
+import StoryIntro from "@/components/blocks/StoryIntro.astro";
+import SectionIntro from "@/components/blocks/SectionIntro.astro";
+import CareerTimeline from "@/components/blocks/CareerTimeline.astro";
+import YouTube from "@/components/ui/YouTube.astro";
+import { CAREER } from "@/lib/career";
+import { ABOUT_STORY } from "@/lib/story";
 import { breadcrumbs, person, websiteId } from "@/lib/schema";
-import about01 from "@/assets/about/about-01.jpg";
-import about02 from "@/assets/about/about-02.jpg";
-import about03 from "@/assets/about/about-03.jpg";
-import about04 from "@/assets/about/about-04.jpg";
+import maraudersPoster from "@/assets/about/video-marauders-map.jpg";
+import cssPeeperPoster from "@/assets/about/video-css-peeper.jpg";
 
-const photos = [
+const videos = [
   {
-    src: about01,
-    alt: "Smart-home app concept on a phone: a “Welcome back” screen over a house at dusk.",
+    id: "9ITPaRkldDU",
+    title: "What if the Marauder’s Map was a mobile app",
+    poster: maraudersPoster,
+    meta: "Nov 2021",
+    text: "The Marauder’s Map from Harry Potter, reimagined as a phone app and built entirely in Figma. The tools have moved on since 2021, but I still love this one.",
   },
   {
-    src: about02,
-    alt: "Dawid on a laptop screen next to the Produktanci design system page, a YouTube series he co-created.",
+    id: "Ibm2SO8XvA4",
+    title: "Getting started with CSS Peeper",
+    poster: cssPeeperPoster,
+    meta: "Aug 2025",
+    text: "A tour of CSS Peeper after the 2025 relaunch. It shows how to pull colours, fonts and assets out of any website in a few clicks, without opening DevTools.",
   },
-  {
-    src: about03,
-    alt: "Workshop table covered in paper sketches and sticky notes of a newsletter flow.",
-  },
-  { src: about04, alt: "Dawid in the office wearing a horse-head mask, holding a mug." },
 ];
 
 const skills = [
@@ -57,15 +58,6 @@ const jsonLd = {
     breadcrumbs(site, [["About", "/about"]]),
   ],
 };
-
-const interests = [
-  ["🧬", "INTJ"],
-  ["❤️", "Father & Husband"],
-  ["💡", "Startup Founder"],
-  ["🐶", "Dog owner"],
-  ["🏰", "LEGO Fan"],
-  ["🕹", "Gamer"],
-] as const;
 ---
 
 <SiteLayout
@@ -82,18 +74,37 @@ const interests = [
     </Mindblown>
   </div>
 
-  <Section space="sm" aria-label="Photos">
-    <Container>
-      <ul class="photos" role="list">
-        {photos.map(({ src, alt }) => (
-          <li>
-            <Image
-              class="photos__image"
-              src={src}
-              alt={alt}
-              widths={[400, 800]}
-              sizes="(min-width: 62em) 20rem, 50vw"
-            />
+  <StoryIntro label="About me" paragraphs={ABOUT_STORY} />
+
+  <Section space="lg" aria-labelledby="career-title">
+    <Container class="about__stack">
+      <SectionIntro
+        id="career-title"
+        label="Career"
+        title="Where I’ve been,"
+        titleMuted="and what I did there."
+      />
+      <CareerTimeline roles={CAREER} />
+    </Container>
+  </Section>
+
+  <Section space="lg" aria-labelledby="videos-title">
+    <Container class="about__stack">
+      <SectionIntro
+        id="videos-title"
+        label="On YouTube"
+        title="Two videos"
+        titleMuted="I’m still proud of."
+      />
+      <ul class="videos" role="list">
+        {videos.map(({ id, title, poster, meta, text }) => (
+          <li class="videos__item" data-reveal="fade">
+            <YouTube id={id} title={title} poster={poster} />
+            <div class="videos__copy">
+              <p class="text-caption videos__meta">{meta}</p>
+              <h3 class="videos__title">{title}</h3>
+              <p class="videos__text">{text}</p>
+            </div>
           </li>
         ))}
       </ul>
@@ -115,33 +126,6 @@ const interests = [
       </div>
     </Container>
   </Section>
-
-  <Section tone="subtle" aria-labelledby="personal-title">
-    <Container>
-      <div class="split">
-        <div class="split__head">
-          <p class="text-caption muted">Who I am outside design</p>
-          <h2 id="personal-title">Personal life</h2>
-        </div>
-        <Stack gap="8">
-          <p class="text-lead">
-            When I’m not designing, I’m a family guy. I love spending time with my wife and
-            daughter. And we have a dog. In my free time I love assembling LEGO and late-night
-            gaming. I used to make <Link href="https://youtu.be/9ITPaRkldDU">YouTube videos</Link>{" "}
-            in the past.
-          </p>
-          <ul class="interests" role="list">
-            {interests.map(([emoji, label]) => (
-              <Tag as="li">
-                <span aria-hidden="true">{emoji}</span>
-                <span>{label}</span>
-              </Tag>
-            ))}
-          </ul>
-        </Stack>
-      </div>
-    </Container>
-  </Section>
 </SiteLayout>
 
 <style>
@@ -150,19 +134,41 @@ const interests = [
       color: var(--color-text-muted);
     }
 
-    .photos {
+    .about__stack {
       display: grid;
-      grid-template-columns: repeat(2, minmax(0, 1fr));
-      gap: var(--space-4);
+      gap: var(--space-section-sm);
+    }
+
+    .videos {
+      display: grid;
+      gap: var(--space-12) var(--space-8);
       padding: 0;
     }
 
-    .photos__image {
-      inline-size: 100%;
-      block-size: auto;
-      aspect-ratio: 1;
-      object-fit: cover;
-      border-radius: var(--radius-lg);
+    .videos__item {
+      display: grid;
+      align-content: start;
+      gap: var(--space-6);
+    }
+
+    .videos__copy {
+      display: grid;
+      gap: var(--space-2);
+    }
+
+    .videos__meta,
+    .videos__text {
+      color: var(--color-text-muted);
+    }
+
+    .videos__title {
+      font: var(--weight-medium) var(--text-h4) / var(--leading-h4) var(--font-heading);
+      letter-spacing: var(--tracking-h4);
+    }
+
+    .videos__text {
+      max-inline-size: 34em;
+      text-wrap: pretty;
     }
 
     .split {
@@ -187,16 +193,9 @@ const interests = [
       border-block-end: var(--border-width) solid var(--color-border-subtle);
     }
 
-    .interests {
-      display: flex;
-      flex-wrap: wrap;
-      gap: var(--space-2);
-      padding: 0;
-    }
-
     @media (width >= 62em) {
-      .photos {
-        grid-template-columns: repeat(4, minmax(0, 1fr));
+      .videos {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
       }
 
       .split {

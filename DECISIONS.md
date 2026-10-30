@@ -2,6 +2,18 @@
 
 Non-obvious choices, newest first. One entry per decision: what, why, and what it rules out.
 
+## 2026-10-30 · About: story, career timeline, videos
+
+**Two statements, one component.** Home keeps its summary word for word (Dawid's call: it works as a summary there); About opens under the ribbon with a longer three-paragraph story. Both use StoryIntro's `paragraphs` variant at heading size, with small inline pictures and GIFs (InlineImage) that zoom 3–5× on hover so you can see what's in them. Dawid's portrait stays out of both, since the hero already shows him. Copy lives in `src/lib/story.ts`. The old photo grid and "Personal life" section are folded into the About story.
+
+**GIFs are self-hosted animated WebP with a still frame.** Dawid picked them; converted at 320–400px (55–470 KB, lazy). Each picture sits right before the words it illustrates. With reduced motion a `<picture>` source swaps in a still frame, so nothing animates.
+
+**Career timeline reuses the Services steps.** The time machine (a sticky year line, plus a horizontal variant) was dropped: the line didn't read as tied to the entries. Now it's the Process pattern: one vertical line, a node per role, years and time there to the left of the node, title, company and text to the right. It reuses the `data-process` motion hooks, so `motion.ts` draws it the same way. No logos, no location, no university. Consulting and CSS Peeper sit near the top with a "fractional" badge, since they run next to the main job. Each picture in the story text is kept on one line with the word after it (`.story__pair`), so it never ends a line on its own. Data in `src/lib/career.ts` (CV and LinkedIn; LinkedIn wins where they differ).
+
+**Inline GIFs load last.** Measured on a throttled phone, the GIFs were most of the extra weight on Home and About (about 1.2 MB on About) and they competed with the hero portrait for bandwidth. They're now resized to about 200px with every other frame dropped on the long ones (zoomed they show at most about 220px), and each one loads as its still frame. The motion layer swaps in the animation after the page `load` event. With reduced motion or no JS the still frame stays, which also replaces the old `<picture>` media switch. Inline photos are served at 240/480px instead of up to 960px.
+
+**YouTube loads on click.** `YouTube.astro` shows a local copy of the thumbnail and loads the youtube-nocookie player only when played; without JS it is a link. No third-party requests on page load.
+
 ## 2026-10-29 · Structured data on Services, Work and Contact
 
 - **/services** lists the three services as schema.org `Service` nodes (from `src/lib/services.ts`), each with its on-page anchor and Dawid as provider, plus breadcrumbs.

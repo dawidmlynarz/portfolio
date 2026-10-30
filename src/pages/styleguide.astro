@@ -25,6 +25,14 @@ import Process from "@/components/blocks/Process.astro";
 import Beliefs from "@/components/blocks/Beliefs.astro";
 import Quote from "@/components/content/Quote.astro";
 import StoryIntro from "@/components/blocks/StoryIntro.astro";
+import CareerTimeline from "@/components/blocks/CareerTimeline.astro";
+import InlineImage from "@/components/ui/InlineImage.astro";
+import YouTube from "@/components/ui/YouTube.astro";
+import { CAREER } from "@/lib/career";
+import youtubeSample from "@/assets/about/video-css-peeper.jpg";
+import portraitSample from "@/assets/about/tadzik.jpg";
+import gifSample from "@/assets/about/gifs/gandalf.webp?url";
+import gifSampleStill from "@/assets/about/gifs/gandalf-still.webp?url";
 import ClientLogos from "@/components/blocks/ClientLogos.astro";
 import WorkMarquee from "@/components/blocks/WorkMarquee.astro";
 import ClientLogo from "@/components/ui/ClientLogo.astro";
@@ -359,6 +367,35 @@ const SECTIONS = [
         </Stack>
 
         <Stack gap="4">
+          <h3>YouTube</h3>
+          <p class="muted measure">
+            A YouTube video that loads nothing from YouTube until it is played: a local poster and a
+            play button, then the youtube-nocookie player on click. Without JS it links to the
+            video.
+          </p>
+          <div class="measure">
+            <YouTube
+              id="Ibm2SO8XvA4"
+              title="Getting started with CSS Peeper"
+              poster={youtubeSample}
+            />
+          </div>
+        </Stack>
+
+        <Stack gap="4">
+          <h3>InlineImage</h3>
+          <p class="measure text-lead">
+            A small picture inside a sentence, like this one{" "}
+            <InlineImage src={youtubeSample} alt="CSS Peeper inspecting colours and fonts." />, a
+            portrait one <InlineImage src={portraitSample} alt="Tadzik the dog." shape="portrait" />{" "}
+            or a GIF{" "}
+            <InlineImage src={gifSample} still={gifSampleStill} alt="GIF: Gandalf dancing." />,
+            sized in em so it follows the text. Hover zooms it well past the line; with reduced
+            motion a GIF shows a still frame.
+          </p>
+        </Stack>
+
+        <Stack gap="4">
           <h3>VideoTabs</h3>
           <p class="muted measure">
             Several clips in one frame with a tab for each, so a case study can show a lot without
@@ -547,6 +584,23 @@ const SECTIONS = [
     label="StoryIntro · statement"
     text="The words light up as you scroll. Without the motion layer, or with reduced motion, the full statement simply shows."
   />
+  <StoryIntro
+    label="StoryIntro · paragraphs"
+    paragraphs={[
+      [
+        "The longer variant, used on About: up to three paragraphs at reading size, with ",
+        { text: "links", href: "#blocks" },
+        " and small pictures ",
+        { image: youtubeSample, alt: "CSS Peeper inspecting colours and fonts." },
+        " that light up with the words around them.",
+      ],
+    ]}
+  />
+  <Section aria-label="Career timeline" space="sm">
+    <Container>
+      <CareerTimeline roles={CAREER.slice(0, 4)} />
+    </Container>
+  </Section>
   <NextUp entries={nextUpSample} />
   <CaseStudyToc headings={STYLEGUIDE_SECTIONS} body="main" />
 </SiteLayout>

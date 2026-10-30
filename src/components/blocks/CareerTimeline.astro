@@ -1,0 +1,215 @@
+---
+/**
+ * The About career timeline: roles newest first on one vertical line, the same pattern as the
+ * Services "Working together" steps (Process.astro). Each role has a node on the line, its years
+ * and time there to the left of the node, then the title, company and a sentence or two.
+ * Fractional work (consulting, CSS Peeper) runs next to a main role and says so on a badge.
+ *
+ * The motion layer draws the line down the page and settles each node as the line reaches it
+ * (the data-process hooks it shares with Process); without it (no JS, reduced motion) the line
+ * and every node are simply there. Data: src/lib/career.ts.
+ */
+import { duration, years, type Role } from "@/lib/career";
+
+interface Props {
+  roles: Role[];
+  headingLevel?: 2 | 3 | 4;
+}
+
+const { roles, headingLevel = 3 } = Astro.props;
+const Heading = `h${headingLevel}` as const;
+---
+
+<div class="career" data-process>
+  <ol class="career__list" role="list">
+    {roles.map((role, index) => (
+      <li class="career__role" data-process-step>
+        {index < roles.length - 1 && (
+          <span class="career__segment" aria-hidden="true" data-process-segment />
+        )}
+        <span class="career__node" aria-hidden="true" data-process-node></span>
+        <p class="text-caption career__when" data-process-fade>
+          <span>{years(role)}</span>
+          <span class="career__duration">{duration(role)}</span>
+        </p>
+        <div class="career__head" data-process-fade>
+          <Heading class="career__title">{role.role}</Heading>
+          <p class="career__company">
+            {role.company}
+            {role.fractional && <span class="career__badge">fractional</span>}
+          </p>
+        </div>
+        <div class="career__body" data-process-fade>
+          <p class="career__text">{role.text}</p>
+          {role.links && (
+            <ul class="career__links" role="list">
+              {role.links.map(([label, href]) => (
+                <li>
+                  <a href={href}>{label}</a>
+                </li>
+              ))}
+            </ul>
+          )}
+        </div>
+      </li>
+    ))}
+  </ol>
+</div>
+
+<style>
+  @layer components {
+    .career {
+      --career-node: var(--space-4);
+      --career-rail: var(--space-8);
+      --career-gap: var(--space-10);
+      --career-when: calc(var(--space-24) + var(--space-8));
+
+      /* Height of the title's first line: the node and the years centre on it. */
+      --career-title-line: calc(var(--text-h3) * var(--leading-h3));
+    }
+
+    .career__list {
+      display: grid;
+      padding: 0;
+    }
+
+    /* Phones: the line on the left; the title sits level with the node, the rest follows below. */
+    .career__role {
+      position: relative;
+      display: grid;
+      grid-template-areas:
+        "rail head"
+        "rail when"
+        "rail body";
+      grid-template-columns: var(--career-rail) 1fr;
+      gap: var(--space-3) var(--space-6);
+      align-items: start;
+      padding-block: var(--career-gap);
+    }
+
+    .career__node {
+      position: relative;
+      grid-area: rail;
+      justify-self: center;
+      inline-size: var(--career-node);
+      block-size: var(--career-node);
+      margin-block-start: calc((var(--career-title-line) - var(--career-node)) / 2);
+      border: var(--border-width) solid var(--color-text);
+      border-radius: var(--radius-pill);
+      background-color: var(--color-bg);
+    }
+
+    .career__node::after {
+      position: absolute;
+      inset: 25%;
+      border-radius: inherit;
+      background-color: var(--color-text);
+      content: "";
+    }
+
+    /* The line, one segment per role: from this node's centre to the next one's. The rail cell is
+       the containing block, so the segment follows the rail wherever the layout puts it. */
+    .career__segment {
+      position: absolute;
+      grid-area: rail;
+      inset-block-start: calc(var(--career-title-line) / 2);
+      inset-inline-start: 50%;
+      inline-size: var(--border-width);
+      block-size: calc(100% + 2 * var(--career-gap));
+      background-color: var(--color-text);
+      transform-origin: top;
+      translate: -50% 0;
+    }
+
+    .career__when {
+      grid-area: when;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0 var(--space-3);
+    }
+
+    .career__when span {
+      white-space: nowrap;
+    }
+
+    .career__duration {
+      color: var(--color-text-muted);
+    }
+
+    .career__head {
+      grid-area: head;
+      display: grid;
+      gap: var(--space-2);
+    }
+
+    .career__title {
+      font: var(--weight-medium) var(--text-h3) / var(--leading-h3) var(--font-heading);
+      letter-spacing: var(--tracking-h3);
+    }
+
+    .career__company {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: var(--space-2);
+      color: var(--color-text-muted);
+    }
+
+    .career__badge {
+      padding: 0 var(--space-2);
+      border: var(--border-width) dashed var(--color-border);
+      border-radius: var(--radius-pill);
+      font: var(--weight-regular) var(--text-caption) / var(--leading-caption) var(--font-mono);
+      letter-spacing: var(--tracking-caption);
+    }
+
+    .career__body {
+      grid-area: body;
+      display: grid;
+      gap: var(--space-3);
+      max-inline-size: var(--measure);
+    }
+
+    .career__text {
+      color: var(--color-text-muted);
+      text-wrap: pretty;
+    }
+
+    .career__links {
+      display: flex;
+      flex-wrap: wrap;
+      gap: var(--space-1) var(--space-4);
+      padding: 0;
+      font-size: var(--text-small);
+    }
+
+    /* From tablets the years move to the left of the line, level with the node and the title. */
+    @media (width >= 48em) {
+      .career__role {
+        grid-template-areas:
+          "when rail head"
+          "when rail body";
+        grid-template-columns: var(--career-when) var(--career-rail) 1fr;
+        column-gap: var(--space-4);
+      }
+
+      .career__when {
+        flex-direction: column;
+        align-items: end;
+        margin-block-start: calc((var(--career-title-line) - 1lh) / 2);
+        text-align: end;
+      }
+    }
+
+    @media (width >= 62em) {
+      .career__role {
+        grid-template-areas: "when rail head body";
+        grid-template-columns: var(--career-when) var(--career-rail) 5fr 6fr;
+      }
+
+      .career__body {
+        margin-inline-start: var(--space-4);
+      }
+    }
+  }
+</style>

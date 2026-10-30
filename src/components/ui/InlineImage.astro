@@ -1,0 +1,123 @@
+---
+/**
+ * A small picture set inside a line of text, about as tall as the letters, that zooms well past
+ * the line on hover so you can see what's in it. Sized in em, so it follows whatever text it sits
+ * in. The zoom is a nicety: the picture already reads without it.
+ *
+ * `src` is an image (optimised by astro:assets) or, for a GIF, the URL of an animated WebP plus a
+ * `still` frame. The still frame loads first; the motion layer swaps in the animation once the
+ * page has loaded, so GIFs never hold up the hero. With reduced motion or no JS the still stays. `shape` follows the picture: wide,
+ * portrait or square.
+ */
+import { Image } from "astro:assets";
+
+interface Props {
+  src: ImageMetadata | string;
+  /** Still frame of an animated `src`, shown with reduced motion. */
+  still?: string;
+  /** Required. Describe the picture; it is read in the middle of the sentence. */
+  alt: string;
+  shape?: "wide" | "portrait" | "square";
+  /** Framing inside the crop, as object-position (e.g. "50% 30%" for a face). */
+  focus?: string;
+  class?: string;
+  [key: `data-${string}`]: unknown;
+}
+
+const {
+  src,
+  still,
+  alt,
+  shape = "wide",
+  focus = "50% 50%",
+  class: className,
+  ...attrs
+} = Astro.props;
+const style = `object-position: ${focus}`;
+---
+
+<span class:list={["inline-image", `inline-image--${shape}`, className]} {...attrs}>
+  {typeof src === "string" ? (
+    <img
+      class="inline-image__img"
+      src={still ?? src}
+      data-animated={still ? src : undefined}
+      alt={alt}
+      loading="lazy"
+      decoding="async"
+      fetchpriority="low"
+      style={style}
+    />
+  ) : (
+    <Image
+      class="inline-image__img"
+      src={src}
+      alt={alt}
+      widths={[240, 480]}
+      sizes="14rem"
+      fetchpriority="low"
+      style={style}
+    />
+  )}
+</span>
+
+<style>
+  @layer components {
+    .inline-image {
+      --inline-image-zoom: 3;
+
+      display: inline-block;
+      position: relative;
+      inline-size: 1.5em;
+      block-size: 1em;
+      vertical-align: -0.12em;
+      border-radius: var(--radius-sm);
+      overflow: hidden;
+      background: var(--color-bg-subtle);
+      transition:
+        transform var(--duration-zoom) var(--ease-out-expo),
+        box-shadow var(--duration-zoom) var(--ease-out-expo);
+    }
+
+    .inline-image--portrait {
+      inline-size: 0.72em;
+    }
+
+    .inline-image--square {
+      inline-size: 1em;
+    }
+
+    .inline-image__img {
+      inline-size: 100%;
+      block-size: 100%;
+      object-fit: cover;
+    }
+
+    .inline-image:hover {
+      z-index: 2;
+      transform: scale(var(--inline-image-zoom)) rotate(-2deg);
+      box-shadow: var(--shadow-bar);
+    }
+
+    /* Portrait pictures are narrow, so they can grow further before covering the line. */
+    .inline-image--portrait:hover {
+      --inline-image-zoom: 4;
+    }
+
+    @media (width >= 48em) {
+      .inline-image {
+        --inline-image-zoom: 4;
+      }
+
+      .inline-image--portrait:hover {
+        --inline-image-zoom: 5;
+      }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      .inline-image {
+        transition: none;
+      }
+    }
+  }
+</style>

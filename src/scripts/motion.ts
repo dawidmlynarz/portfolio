@@ -14,6 +14,8 @@
  *   image drifts from its top edge to its bottom edge while the frame scrolls past.
  * - [data-cover-follow]: in a list of links ("Next up"), the hovered link's cover follows the
  *   pointer, beside it.
+ * - [data-animated]: inline GIFs (InlineImage) start as a still frame; the animation is swapped
+ *   in after the page has loaded, so it never competes with the hero for bandwidth.
  * - Links: the "row tear" hover (styles in base.css). Links marked [data-no-tear] keep their own
  *   hover: buttons, pills and quiet links (menu, case-study cards, Next project).
  *
@@ -353,6 +355,16 @@ function linkTear() {
   });
 }
 
+function animatedImages() {
+  const swap = () => {
+    for (const img of document.querySelectorAll<HTMLImageElement>("img[data-animated]")) {
+      img.src = img.dataset.animated!;
+    }
+  };
+  if (document.readyState === "complete") swap();
+  else addEventListener("load", swap, { once: true });
+}
+
 if (root.classList.contains("motion")) {
   gsap.registerPlugin(ScrollTrigger, SplitText);
   smoothScroll();
@@ -364,4 +376,5 @@ if (root.classList.contains("motion")) {
   parallax();
   coverFollow();
   linkTear();
+  animatedImages();
 }
