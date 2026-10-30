@@ -1,0 +1,38 @@
+---
+/** Downloads a quest's markdown twin. The count sits after a divider; it is filled in later. */
+import Button from "@/components/ui/Button.astro";
+
+interface Props {
+  slug: string;
+  count?: number;
+}
+
+const { slug, count } = Astro.props;
+---
+
+<Button href={`/grist/${slug}.md`} variant="secondary" icon="download" class="download-button">
+  <span class="download-button__file">{slug}.md</span>
+  {count !== undefined && (
+    <span class="download-button__count">
+      {count}
+      <span class="visually-hidden"> downloads</span>
+    </span>
+  )}
+</Button>
+
+<style>
+  @layer components {
+    .download-button {
+      font-family: var(--font-mono);
+      font-size: var(--text-small);
+      font-weight: var(--weight-regular);
+    }
+
+    .download-button__count {
+      margin-inline-start: var(--space-2);
+      padding-inline-start: var(--space-3);
+      border-inline-start: var(--border-width) solid var(--color-border-muted);
+      font-variant-numeric: tabular-nums;
+    }
+  }
+</style>

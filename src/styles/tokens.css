@@ -188,6 +188,38 @@
     --shift-page-in: 6vh; /* page transition: how far below the new page starts */
     --ease-in-out-quart: cubic-bezier(0.77, 0, 0.175, 1);
     --z-nav: 100;
+
+    /* ---------- Grist (/grist): rarity tiers and the pixel face ----------
+       Figma collection "Grist". Only what the site system has no equivalent for.
+         fill   the gem body
+         shade  the gem's facet lines (a deeper fill); its girdle and left facets mix fill and shade
+         light  the gem's lit facets and sparkles
+         text   tier names: shade on light, light on dark, so both pass 4.5:1 */
+    --rarity-common-fill: #9aa0a6;
+    --rarity-common-shade: #5f6368;
+    --rarity-common-light: #c4c7ca;
+    --rarity-uncommon-fill: #22a04b;
+    --rarity-uncommon-shade: #157a38;
+    --rarity-uncommon-light: #4ade80;
+    --rarity-rare-fill: #2b6fe0;
+    --rarity-rare-shade: #1f5bc4;
+    --rarity-rare-light: #60a5fa;
+    --rarity-epic-fill: #8a3fe0;
+    --rarity-epic-shade: #7330c4;
+    --rarity-epic-light: #c084fc;
+    --rarity-legendary-fill: #e3a008;
+    --rarity-legendary-shade: #8f6400;
+    --rarity-legendary-light: #fbbf24;
+    --rarity-common-text: light-dark(var(--rarity-common-shade), var(--rarity-common-light));
+    --rarity-uncommon-text: light-dark(var(--rarity-uncommon-shade), var(--rarity-uncommon-light));
+    --rarity-rare-text: light-dark(var(--rarity-rare-shade), var(--rarity-rare-light));
+    --rarity-epic-text: light-dark(var(--rarity-epic-shade), var(--rarity-epic-light));
+    --rarity-legendary-text: light-dark(
+      var(--rarity-legendary-shade),
+      var(--rarity-legendary-light)
+    );
+    /* Silkscreen: the README label, tier names, the New badge, anatomy numbers. Never body text. */
+    --font-pixel: "Silkscreen", var(--font-mono);
     --shadow-panel: 0 24px 64px -24px light-dark(rgb(0 0 0 / 28%), rgb(0 0 0 / 80%));
     /* Space above content on pages that don't run under the floating nav (SiteLayout) */
     --nav-clearance: calc(var(--space-4) + var(--space-12) + var(--space-8));

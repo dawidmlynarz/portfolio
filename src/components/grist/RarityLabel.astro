@@ -1,0 +1,48 @@
+---
+/** Gem plus the tier name in the pixel face, in the tier's text colour. */
+import Gem from "./Gem.astro";
+import { RARITY_LABELS, type Rarity } from "@/lib/grist";
+
+interface Props {
+  rarity: Rarity;
+  class?: string;
+}
+
+const { rarity, class: className } = Astro.props;
+---
+
+<span class:list={["rarity-label", `rarity-label--${rarity}`, className]}>
+  <Gem rarity={rarity} />
+  <span class="rarity-label__name">{RARITY_LABELS[rarity]}</span>
+</span>
+
+<style>
+  @layer components {
+    .rarity-label {
+      display: inline-flex;
+      align-items: center;
+      gap: var(--space-2);
+      font-family: var(--font-pixel);
+      font-size: var(--text-caption);
+      line-height: var(--leading-caption);
+      text-transform: uppercase;
+      color: var(--rarity-common-text);
+    }
+
+    .rarity-label--uncommon {
+      color: var(--rarity-uncommon-text);
+    }
+
+    .rarity-label--rare {
+      color: var(--rarity-rare-text);
+    }
+
+    .rarity-label--epic {
+      color: var(--rarity-epic-text);
+    }
+
+    .rarity-label--legendary {
+      color: var(--rarity-legendary-text);
+    }
+  }
+</style>

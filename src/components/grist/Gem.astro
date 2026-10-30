@@ -1,0 +1,178 @@
+---
+/**
+ * Rarity gem, drawn from the pixel maps in src/lib/grist.ts at 2px per pixel. Decorative: a tier
+ * name always sits next to it. Legendary sparkles twinkle and a light band sweeps across the gem;
+ * both stop under reduced motion.
+ */
+import { GEM_PIXELS, type Rarity } from "@/lib/grist";
+
+interface Props {
+  rarity: Rarity;
+  class?: string;
+}
+
+const { rarity, class: className } = Astro.props;
+const rows = GEM_PIXELS[rarity];
+const width = rows[0]!.length;
+const height = rows.length;
+const KIND = {
+  o: "outline",
+  d: "shade",
+  m: "dark",
+  f: "fill",
+  l: "lit",
+  w: "highlight",
+  s: "sparkle",
+} as const;
+type Cell = keyof typeof KIND;
+const pixels = rows.flatMap((row, y) =>
+  [...row].flatMap((cell, x) => (cell in KIND ? [{ x, y, kind: KIND[cell as Cell] }] : [])),
+);
+const animated = rarity === "legendary";
+const clipId = `gem-clip-${rarity}`;
+let sparkle = 0;
+---
+
+<svg
+  class:list={["gem", `gem--${rarity}`, className]}
+  viewBox={`0 0 ${width} ${height}`}
+  width={width * 2}
+  height={height * 2}
+  aria-hidden="true"
+  focusable="false"
+>
+  {animated && (
+    <defs>
+      <clipPath id={clipId}>
+        {pixels
+          .filter((p) => p.kind !== "sparkle")
+          .map((p) => (
+            <rect x={p.x} y={p.y} width="1" height="1" />
+          ))}
+      </clipPath>
+    </defs>
+  )}
+  {pixels.map((p) => (
+    <rect
+      class={`gem__${p.kind}`}
+      x={p.x}
+      y={p.y}
+      width="1"
+      height="1"
+      style={p.kind === "sparkle" ? `--twinkle-delay: ${(sparkle++ % 4) * 0.4}s` : undefined}
+    />
+  ))}
+  {animated && (
+    <g clip-path={`url(#${clipId})`}>
+      <rect class="gem__sweep" x="-4" y="0" width="3" height={height} />
+    </g>
+  )}
+</svg>
+
+<style>
+  @layer components {
+    .gem {
+      --gem-fill: var(--rarity-common-fill);
+      --gem-shade: var(--rarity-common-shade);
+      --gem-light: var(--rarity-common-light);
+
+      flex: none;
+      shape-rendering: crispedges;
+      overflow: visible;
+    }
+
+    .gem--uncommon {
+      --gem-fill: var(--rarity-uncommon-fill);
+      --gem-shade: var(--rarity-uncommon-shade);
+      --gem-light: var(--rarity-uncommon-light);
+    }
+
+    .gem--rare {
+      --gem-fill: var(--rarity-rare-fill);
+      --gem-shade: var(--rarity-rare-shade);
+      --gem-light: var(--rarity-rare-light);
+    }
+
+    .gem--epic {
+      --gem-fill: var(--rarity-epic-fill);
+      --gem-shade: var(--rarity-epic-shade);
+      --gem-light: var(--rarity-epic-light);
+    }
+
+    .gem--legendary {
+      --gem-fill: var(--rarity-legendary-fill);
+      --gem-shade: var(--rarity-legendary-shade);
+      --gem-light: var(--rarity-legendary-light);
+    }
+
+    /* The outline is the ink, so the gem keeps its edge on both backgrounds. */
+    .gem__outline {
+      fill: var(--color-text);
+    }
+
+    .gem__shade {
+      fill: var(--gem-shade);
+    }
+
+    .gem__dark {
+      fill: color-mix(in srgb, var(--gem-fill), var(--gem-shade));
+    }
+
+    .gem__fill {
+      fill: var(--gem-fill);
+    }
+
+    .gem__lit,
+    .gem__sparkle {
+      fill: var(--gem-light);
+    }
+
+    /* Paler than the lit facets: the light shade mixed with the page's whitest ink in either theme. */
+    .gem__highlight {
+      fill: color-mix(
+        in srgb,
+        var(--gem-light) 40%,
+        light-dark(var(--color-bg), var(--color-text))
+      );
+    }
+
+    .gem__sweep {
+      fill: var(--gem-light);
+      opacity: 0;
+    }
+
+    @media (prefers-reduced-motion: no-preference) {
+      .gem--legendary .gem__sparkle {
+        animation: gem-twinkle 1.6s steps(2, jump-none) var(--twinkle-delay, 0s) infinite;
+      }
+
+      .gem--legendary .gem__sweep {
+        animation: gem-sweep 2.4s var(--ease-standard) infinite;
+      }
+    }
+
+    @keyframes gem-twinkle {
+      from {
+        opacity: 1;
+      }
+
+      to {
+        opacity: 0.1;
+      }
+    }
+
+    /* The band crosses in the first half of the loop, then waits off the gem. */
+    @keyframes gem-sweep {
+      0% {
+        opacity: 0.9;
+        translate: 0 0;
+      }
+
+      45%,
+      100% {
+        opacity: 0.9;
+        translate: 20px 0;
+      }
+    }
+  }
+</style>

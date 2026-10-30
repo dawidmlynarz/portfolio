@@ -8,8 +8,11 @@ interface Props extends Omit<HTMLAttributes<"button">, "class" | "type"> {
   variant?: "primary" | "secondary" | "ghost";
   /** sm: menu contact · md: default · lg: footer email */
   size?: "sm" | "md" | "lg";
-  /** arrow: after the label (calls to action) · arrow-left: carousel back · arrow-up: Back to top */
-  icon?: "arrow" | "arrow-left" | "arrow-up";
+  /**
+   * After the label: arrow (calls to action) · arrow-left (carousel back) · arrow-up (Back to top).
+   * Before the label: info · download · link.
+   */
+  icon?: "arrow" | "arrow-left" | "arrow-up" | "info" | "download" | "link";
   /** Makes an icon-only button: the icon is all that shows and this is its accessible name. */
   label?: string;
   class?: string;
@@ -38,7 +41,12 @@ const ICONS = {
   arrow: "M5 12h14M13 6l6 6-6 6",
   "arrow-left": "M19 12H5M11 6l-6 6 6 6",
   "arrow-up": "M12 19V5M5 12l7-7 7 7",
+  info: "M12 21a9 9 0 1 0 0-18 9 9 0 0 0 0 18ZM12 11v5M12 7.5h.01",
+  download: "M12 4v11M7 10l5 5 5-5M5 20h14",
+  link: "M10 14a4 4 0 0 0 5.66 0l3-3a4 4 0 0 0-5.66-5.66l-1 1M14 10a4 4 0 0 0-5.66 0l-3 3a4 4 0 0 0 5.66 5.66l1-1",
 };
+// Arrows point onward, so they follow the label; the rest name the action, so they lead.
+const leading = Boolean(icon && !icon.startsWith("arrow"));
 // The face is the button at rest. Text buttons add two copies in the hover colours for the row
 // tear (top and bottom rows, middle row); icon buttons animate the icon instead.
 const layers = iconOnly ? ["face"] : ["face", "outer", "middle"];
@@ -53,8 +61,17 @@ const layers = iconOnly ? ["face"] : ["face", "outer", "middle"];
       ]}
       aria-hidden={layer === "face" ? undefined : "true"}
     >
+      {leading && icon && (
+        <svg
+          class:list={["button__icon", `button__icon--${icon}`]}
+          viewBox="0 0 24 24"
+          aria-hidden="true"
+        >
+          <path d={ICONS[icon]} />
+        </svg>
+      )}
       {content && <span set:html={content} />}
-      {icon && (
+      {!leading && icon && (
         <svg
           class:list={["button__icon", `button__icon--${icon}`]}
           viewBox="0 0 24 24"
@@ -225,7 +242,8 @@ const layers = iconOnly ? ["face"] : ["face", "outer", "middle"];
       animation: button-tear-middle var(--duration-tear) steps(1, end);
     }
 
-    .button:not(:disabled, .button--icon):is(:hover, :focus-visible) .button__icon {
+    .button:not(:disabled, .button--icon):is(:hover, :focus-visible)
+      :is(.button__icon--arrow, .button__icon--arrow-left, .button__icon--arrow-up) {
       translate: var(--space-1) 0;
     }
 

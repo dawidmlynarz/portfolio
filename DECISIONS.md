@@ -2,6 +2,15 @@
 
 Non-obvious choices, newest first. One entry per decision: what, why, and what it rules out.
 
+## 2026-10-30 · Grist foundations
+
+First step of Grist (`/grist`), the side quest of short "quests" on agentic UX and AI-ready design systems.
+
+- **Only rarity and the pixel face are new.** Each tier has `--rarity-*-fill`, `-shade` and `-light` (Figma collection "Grist"); `--rarity-*-text` is `light-dark(shade, light)`, so tier names pass 4.5:1 on both themes. `--font-pixel` is Silkscreen, self-hosted through fontsource like Geist. Everything else is existing tokens and components.
+- **Gems** follow Dawid's reference: a cut gem with a flat table, a girdle line and shaded facets, drawn from pixel maps in `src/lib/grist.ts` at 2px per pixel (26px wide). The outline is the ink (white in dark mode) so gems keep their edge. Common to Rare share the shape; Epic adds sparkles; Legendary adds a crown, twinkling sparkles and a light sweep, all off under reduced motion. Tier names always sit next to a gem, so colour is never the only signal.
+- **One logo:** the wordmark in the text colour, with no rarity colour on the dot.
+- **Buttons are the site's pill.** Pixel icons looked off inside pills, so `Button` gained three line icons in its own style (`info`, `download`, `link`), placed before the label; arrows still follow it and are the only icons that nudge on hover. Pixelarticons stay for Grist's status and type tags and meta lines.
+
 ## 2026-10-30 · Native scrolling (Lenis removed)
 
 Lenis eased every wheel and trackpad scroll toward its target, so the page trailed the hand, even at `lerp` 0.16, and felt delayed on every page. Scrolling is native again: instant, about 15 KB less JS, and the platform's own momentum and keyboard behaviour. All scroll-driven motion (reveals, the About story, the Services timeline, cover parallax, the contents mini map) still runs on GSAP ScrollTrigger, which works on native scroll. In-page anchor jumps still glide through CSS `scroll-behavior: smooth`, which reduced motion turns off. This supersedes the Lenis notes in earlier entries (the `lerp` tuning, "stays in step with Lenis", `data-lenis-prevent`, now removed).

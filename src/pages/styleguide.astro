@@ -40,6 +40,14 @@ import NextUp from "@/components/content/NextUp.astro";
 import CaseStudyToc from "@/components/content/CaseStudyToc.astro";
 import { getPagedWork } from "@/lib/work";
 import LockPanel from "@/components/blocks/LockPanel.astro";
+import Gem from "@/components/grist/Gem.astro";
+import Icon, { type IconName } from "@/components/grist/Icon.astro";
+import Logo from "@/components/grist/Logo.astro";
+import RarityLabel from "@/components/grist/RarityLabel.astro";
+import ReadmeButton from "@/components/grist/ReadmeButton.astro";
+import DownloadButton from "@/components/grist/DownloadButton.astro";
+import PermalinkButton from "@/components/grist/PermalinkButton.astro";
+import { RARITIES } from "@/lib/grist";
 import { getEntry } from "astro:content";
 import { COLOR_ROLES, SPACE } from "@/lib/tokens";
 import { SERVICES } from "@/lib/services";
@@ -62,6 +70,7 @@ const STYLEGUIDE_SECTIONS = [
   ["shape-title", "Shape & depth"],
   ["layout-title", "Layout"],
   ["components-title", "Components"],
+  ["grist-title", "Grist"],
   ["blocks-title", "Blocks"],
 ].map(([slug, text]) => ({ depth: 2, slug: slug!, text: text! }));
 const nextUpSample = (await getPagedWork()).slice(0, 3);
@@ -109,8 +118,21 @@ const SECTIONS = [
   ["shape", "Shape & depth"],
   ["layout", "Layout"],
   ["components", "Components"],
+  ["grist", "Grist"],
   ["blocks", "Blocks"],
 ] as const;
+
+/** Pixel icons for Grist's status and type tags and meta lines (buttons use the site's icons). */
+const GRIST_ICONS: IconName[] = [
+  "leaf",
+  "shield",
+  "feather",
+  "pointer",
+  "book-open",
+  "braces",
+  "arrow-left",
+  "arrow-right",
+];
 ---
 
 <SiteLayout title="Styleguide" description="Tokens and components of mlynarz.com." noindex>
@@ -455,6 +477,85 @@ const SECTIONS = [
     </Container>
   </Section>
 
+  <Section id="grist" aria-labelledby="grist-title" tone="subtle">
+    <Container>
+      <Stack gap="12">
+        <Stack gap="4">
+          <h2 id="grist-title">Grist</h2>
+          <p class="muted measure">
+            The layer under <code>/grist</code>. It uses the site tokens and components, and adds
+            only the rarity colours, the Silkscreen pixel face, pixel icons for tags, the gems and
+            the logo.
+          </p>
+        </Stack>
+
+        <Stack gap="4">
+          <h3>Rarity</h3>
+          <p class="muted measure">
+            Each tier has a fill, a shade and a light. The gem uses all three; tier names use the
+            shade on light and the light on dark. Epic adds sparkles; Legendary adds a crown, and
+            its sparkles twinkle while a light band crosses the gem (reduced motion stops both).
+          </p>
+          <Grid min="10rem" gap="6" as="ul" class="plain-list">
+            {RARITIES.map((rarity) => (
+              <li class="rarity-swatch">
+                <span class="rarity-swatch__gem">
+                  <Gem rarity={rarity} />
+                </span>
+                <RarityLabel rarity={rarity} />
+                <span class="rarity-swatch__chips">
+                  {(["fill", "shade", "light"] as const).map((role) => (
+                    <span
+                      class="swatch__chip rarity-swatch__chip"
+                      style={`--swatch: var(--rarity-${rarity}-${role})`}
+                      title={`--rarity-${rarity}-${role}`}
+                    />
+                  ))}
+                </span>
+              </li>
+            ))}
+          </Grid>
+        </Stack>
+
+        <Stack gap="4">
+          <h3>Logo</h3>
+          <div class="row">
+            <Logo />
+          </div>
+        </Stack>
+
+        <Stack gap="4">
+          <h3>Pixel face and tag icons</h3>
+          <p class="grist-pixel-sample">Readme · New · 01 02 03</p>
+          <ul class="row plain-list grist-icons" role="list">
+            {GRIST_ICONS.map((name) => (
+              <li class="grist-icons__item">
+                <Icon name={name} />
+                <code>{name}</code>
+              </li>
+            ))}
+          </ul>
+        </Stack>
+
+        <Stack gap="4">
+          <h3>Buttons</h3>
+          <p class="muted measure">
+            The site's secondary pill with its own line icons: README, Download (with its count),
+            Permalink and Get in touch.
+          </p>
+          <div class="row">
+            <ReadmeButton />
+            <DownloadButton slug="human-checkpoints" count={37} />
+            <PermalinkButton />
+            <Button href="/contact" variant="secondary" icon="arrow">
+              Get in touch
+            </Button>
+          </div>
+        </Stack>
+      </Stack>
+    </Container>
+  </Section>
+
   <Section id="blocks" aria-labelledby="blocks-title" tone="subtle" space="sm">
     <Container>
       <Stack gap="4">
@@ -716,6 +817,51 @@ const SECTIONS = [
       padding-block: var(--space-4);
       border: var(--border-width) dashed var(--color-border-muted);
       border-radius: var(--radius-md);
+    }
+
+    .rarity-swatch {
+      display: grid;
+      align-content: start;
+      justify-items: start;
+      gap: var(--space-3);
+    }
+
+    /* Tall enough for the crowned Legendary gem, so every tier's label lines up. */
+    .rarity-swatch__gem {
+      display: flex;
+      align-items: end;
+      min-block-size: var(--space-6);
+      zoom: 3;
+    }
+
+    .rarity-swatch__chips {
+      display: flex;
+      gap: var(--space-1);
+    }
+
+    .rarity-swatch__chip {
+      inline-size: var(--space-8);
+      block-size: var(--space-8);
+    }
+
+    .grist-pixel-sample {
+      font-family: var(--font-pixel);
+      font-size: var(--text-h4);
+    }
+
+    .grist-icons {
+      gap: var(--space-6);
+    }
+
+    .grist-icons__item {
+      display: grid;
+      justify-items: center;
+      gap: var(--space-2);
+      font-size: var(--text-h3);
+    }
+
+    .grist-icons__item code {
+      font-size: var(--text-caption);
     }
   }
 </style>
