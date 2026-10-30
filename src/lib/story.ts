@@ -74,7 +74,7 @@ export const ABOUT_STORY: StoryPart[][] = [
     " AI into their products in ways people understand, trust and actually use.",
   ],
   [
-    "After hours, I’m a husband and a proud dad, enjoying life with my family and our ",
+    "I take the work seriously, myself a lot less. After hours, I’m a husband and a proud dad, enjoying life with my family and our ",
     {
       image: tadzik,
       alt: "Tadzik, a black long-haired dog with a white chest, looking into the camera.",
@@ -92,6 +92,6 @@ export const ABOUT_STORY: StoryPart[][] = [
       alt: "GIF: Emmet from The LEGO Movie, mouth wide open.",
       shape: "square",
     },
-    " LEGO. A lot of LEGO. I take the work seriously, myself a lot less.",
+    " LEGO. Lots of LEGO.",
   ],
 ];
