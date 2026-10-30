@@ -2,7 +2,7 @@ import { defineCollection, reference } from "astro:content";
 import { glob } from "astro/loaders";
 import { z } from "astro/zod";
 import { CLIENTS, type Client } from "./lib/clients";
-import { QUEST_TYPES, STATUSES, VOLUMES } from "./lib/grist";
+import { RARITIES, STATUSES, VOLUMES } from "./lib/grist";
 
 /**
  * Case studies: one folder per case study, src/content/work/<slug>/index.mdx, with its images
@@ -65,8 +65,8 @@ const work = defineCollection({
 
 /**
  * Grist quests: one MDX file per quest, src/content/grist/<slug>.mdx. The body holds the sections
- * (My current take, Anatomy, Known issues…); rarity, version and dates shown on the page are
- * derived from `started` and `levelUps` in src/lib/grist.ts, never stored.
+ * (My current take, Anatomy, Known issues…). Rarity is Dawid's call, set by hand; version and dates
+ * are derived from `started` and `levelUps` in src/lib/quests.ts.
  */
 const keys = <T extends Record<string, unknown>>(object: T) =>
   Object.keys(object) as [Extract<keyof T, string>, ...Extract<keyof T, string>[]];
@@ -81,15 +81,14 @@ const grist = defineCollection({
     /** Shorter line under the title in quest rows. Falls back to `definition`. */
     summary: z.string().optional(),
     status: z.enum(keys(STATUSES)),
-    type: z.enum(keys(QUEST_TYPES)),
+    /** Set by hand: how rare this one feels, not how often it changed. */
+    rarity: z.enum(RARITIES),
     /** Real publish date. Never backdated; a future date stays off production until then. */
     started: z.coerce.date(),
-    /** Level-ups that have actually happened, oldest first. Each one raises the rarity a tier. */
+    /** Changelog: updates that actually happened, oldest first. They don't change the rarity. */
     levelUps: z
       .array(z.object({ version: z.string(), date: z.coerce.date(), grew: z.string() }))
       .default([]),
-    /** What the next level-up will probably bring (Next rank). */
-    next: z.string().optional(),
     /** Slugs for See also. */
     related: z.array(z.string()).default([]),
     /** Tie-break among quests started the same day: lower comes first. */

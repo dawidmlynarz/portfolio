@@ -1,10 +1,10 @@
 /**
  * Grist quests: which ones this build shows, and everything derived from their frontmatter
- * (rarity, version, date label, New, next rank, level-up list). Nothing here is stored.
+ * (version, date label, New, level-up list). Rarity is set by hand in frontmatter.
  */
 import { getCollection, type CollectionEntry } from "astro:content";
 import { isProduction } from "@/lib/site";
-import { RARITIES, VOLUMES, type Rarity, type Volume } from "@/lib/grist";
+import { VOLUMES, type Volume } from "@/lib/grist";
 
 export type Quest = CollectionEntry<"grist">;
 
@@ -49,10 +49,8 @@ export const isoDate = (date: Date) => date.toISOString().slice(0, 10);
 
 export function derive({ data }: Quest) {
   const last = data.levelUps.at(-1);
-  const rarity: Rarity = RARITIES[Math.min(data.levelUps.length, RARITIES.length - 1)]!;
-  const tier = RARITIES.indexOf(rarity);
   return {
-    rarity,
+    rarity: data.rarity,
     version: last?.version ?? "1.0",
     /** "Published 9 Nov" or "Levelled up 23 Nov". */
     dateLabel: last
@@ -60,15 +58,10 @@ export function derive({ data }: Quest) {
       : `Published ${formatDay(data.started)}`,
     updated: last?.date ?? data.started,
     isNew: now.getTime() - data.started.getTime() < NEW_DAYS * DAY,
-    /** The tier after this one; none at Legendary. */
-    nextRarity: RARITIES[tier + 1] as Rarity | undefined,
-    /** Newest first: each level-up with the tier it reached, then "Started" at Common. */
+    /** Newest first, ending with "Started". */
     levelUps: [
-      { rarity: "common" as Rarity, version: "1.0", date: data.started, grew: "Started." },
-      ...data.levelUps.map((levelUp, i) => ({
-        rarity: RARITIES[Math.min(i + 1, RARITIES.length - 1)]!,
-        ...levelUp,
-      })),
+      { version: "1.0", date: data.started, grew: "Started." },
+      ...data.levelUps,
     ].reverse(),
   };
 }

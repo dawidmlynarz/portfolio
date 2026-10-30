@@ -1,12 +1,14 @@
 ---
-/** Status or type: a pixel icon and its label, in the small text style (as RarityLabel). */
+/** Status: a line icon and its label, in the small text style (as RarityLabel). */
 import Icon from "./Icon.astro";
-import { QUEST_TYPES, STATUSES, type QuestType, type Status } from "@/lib/grist";
+import { STATUSES, type Status } from "@/lib/grist";
 
-type Props = { status: Status; type?: never } | { type: QuestType; status?: never };
+interface Props {
+  status: Status;
+}
 
-const { status, type } = Astro.props;
-const { label, icon } = status ? STATUSES[status] : QUEST_TYPES[type!];
+const { status } = Astro.props;
+const { label, icon } = STATUSES[status];
 ---
 
 <span class="quest-tag">

@@ -1,9 +1,9 @@
 /**
- * Grist (/grist): rarity tiers, statuses and quest types. Everything shown about a quest's rank is
- * derived from these lists, never stored in frontmatter.
+ * Grist (/grist): rarity tiers and statuses. Dawid sets each quest's rarity by hand; level-ups are a
+ * changelog and don't change it.
  */
 
-/** Tiers in order. A quest's rarity is the tier at index min(levelUps, 4). */
+/** Tiers, lowest first. */
 export const RARITIES = ["common", "uncommon", "rare", "epic", "legendary"] as const;
 export type Rarity = (typeof RARITIES)[number];
 
@@ -16,18 +16,11 @@ export const RARITY_LABELS: Record<Rarity, string> = {
 };
 
 export const STATUSES = {
+  "side-quest": { label: "Side quest", icon: "feather" },
   fresh: { label: "Fresh", icon: "leaf" },
   "battle-tested": { label: "Battle-tested", icon: "shield" },
 } as const;
 export type Status = keyof typeof STATUSES;
-
-export const QUEST_TYPES = {
-  "side-quest": { label: "Side quest", icon: "feather" },
-  demo: { label: "Demo", icon: "pointer" },
-  "deep-dive": { label: "Deep dive", icon: "book-open" },
-  kit: { label: "Kit", icon: "braces" },
-} as const;
-export type QuestType = keyof typeof QUEST_TYPES;
 
 /**
  * Gem pixel art, one string per row, drawn at 2px per pixel: a cut gem with a flat table, a

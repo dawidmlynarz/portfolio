@@ -1,8 +1,8 @@
 ---
 /**
  * One quest as a tile, used everywhere quests are listed (front door, See also). It sizes itself
- * with a container query: narrow, it stacks (rarity, title, summary, then meta at the bottom, so
- * tiles in a grid line up); from 48rem wide it becomes a row with the meta flowing to the right.
+ * with a container query: narrow, it stacks (rarity, title, summary, then status and date at the
+ * bottom, so tiles in a grid line up); from 48rem wide it becomes a row with them on the right.
  * The whole tile is the link's hit area.
  */
 import NewBadge from "./NewBadge.astro";
@@ -49,9 +49,6 @@ const Heading = `h${level}` as "h2" | "h3" | "h4";
     <ul class="quest-card__meta" role="list">
       <li>
         <QuestTag status={data.status} />
-      </li>
-      <li>
-        <QuestTag type={data.type} />
       </li>
       <li class="quest-card__date">
         <Icon name="calendar" />
@@ -155,11 +152,6 @@ const Heading = `h${level}` as "h2" | "h3" | "h4";
       color: var(--color-text-muted);
     }
 
-    /* Stacked: status and type share a line, the date always takes the next one. */
-    .quest-card__meta > :last-child {
-      flex-basis: 100%;
-    }
-
     .quest-card__date {
       display: inline-flex;
       align-items: center;
@@ -180,10 +172,6 @@ const Heading = `h${level}` as "h2" | "h3" | "h4";
         flex-wrap: nowrap;
         justify-content: flex-end;
         margin-block-start: 0;
-      }
-
-      .quest-card__meta > :last-child {
-        flex-basis: auto;
       }
     }
   }

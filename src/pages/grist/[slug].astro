@@ -42,7 +42,7 @@ interface Props {
 const { quest, related } = Astro.props;
 const { data } = quest;
 const { Content, headings } = await render(quest);
-const { rarity, version, updated, nextRarity, levelUps } = derive(quest);
+const { rarity, version, updated, dateLabel, levelUps } = derive(quest);
 const volume = VOLUMES[data.volume];
 const url = new URL(questHref(quest), Astro.site).href;
 const toc = [
@@ -79,7 +79,10 @@ const jsonLd = {
           <div class="quest__tags">
             <RarityLabel rarity={rarity} />
             <QuestTag status={data.status} />
-            <QuestTag type={data.type} />
+            <span class="quest__date">
+              <Icon name="calendar" />
+              <time datetime={isoDate(updated)}>{dateLabel}</time>
+            </span>
           </div>
           <div class="quest__actions">
             <DownloadButton slug={quest.id} />
@@ -103,7 +106,6 @@ const jsonLd = {
             <ol class="quest__levels" role="list">
               {levelUps.map((levelUp) => (
                 <li class="quest__level text-small">
-                  <RarityLabel rarity={levelUp.rarity} />
                   <span>{levelUp.grew}</span>
                   <span class="quest__muted">
                     v{levelUp.version} ·{" "}
@@ -157,21 +159,6 @@ const jsonLd = {
               )}
             </dl>
           </section>
-          {nextRarity && (
-            <section aria-labelledby="next-rank">
-              <h2 class="text-caption quest__label" id="next-rank">
-                Next rank
-              </h2>
-              <div class="quest__next text-small">
-                <RarityLabel rarity={nextRarity} />
-                <p class="quest__muted">
-                  One more level-up.
-                  {data.next &&
-                    ` Probably ${data.next.charAt(0).toLowerCase()}${data.next.slice(1)}`}
-                </p>
-              </div>
-            </section>
-          )}
         </aside>
 
         <div class="quest__more">
@@ -239,6 +226,15 @@ const jsonLd = {
 
     .quest__actions {
       gap: var(--space-3);
+    }
+
+    .quest__date {
+      display: inline-flex;
+      align-items: center;
+      gap: var(--space-2);
+      font-size: var(--text-small);
+      line-height: var(--leading-small);
+      white-space: nowrap;
     }
 
     .quest__muted {
@@ -315,15 +311,11 @@ const jsonLd = {
 
     .quest__level {
       display: grid;
-      grid-template-columns: 8rem 1fr;
+      grid-template-columns: 1fr;
       gap: var(--space-1) var(--space-4);
       align-items: center;
       padding-block: var(--space-3);
       border-block-end: var(--border-width) solid var(--color-border-subtle);
-    }
-
-    .quest__level > :last-child {
-      grid-column: 2;
     }
 
     .quest__toc {
@@ -342,12 +334,6 @@ const jsonLd = {
 
     .quest__log dt {
       color: var(--color-text-muted);
-    }
-
-    .quest__next {
-      display: grid;
-      gap: var(--space-2);
-      padding-block-start: var(--space-3);
     }
 
     .quest__related {
@@ -395,11 +381,7 @@ const jsonLd = {
       }
 
       .quest__level {
-        grid-template-columns: 8rem 1fr auto;
-      }
-
-      .quest__level > :last-child {
-        grid-column: auto;
+        grid-template-columns: 1fr auto;
       }
     }
   }

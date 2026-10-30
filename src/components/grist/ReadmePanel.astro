@@ -13,10 +13,10 @@ interface Props {
 
 const { id } = Astro.props;
 const STATUS_NOTES: Record<Status, string> = {
+  "side-quest": "a quick note, may stay small",
   fresh: "a new idea, still growing",
   "battle-tested": "used on real projects and held up",
 };
-const TIER_NOTES = ["Just planted", "1 level-up", "2 level-ups", "3 level-ups", "4 level-ups"];
 ---
 
 <div class="readme" id={id} popover aria-labelledby={`${id}-title`}>
@@ -50,16 +50,15 @@ const TIER_NOTES = ["Just planted", "1 level-up", "2 level-ups", "3 level-ups", 
     <section>
       <h3 class="readme__label text-caption">Rarity</h3>
       <p class="readme__note">
-        Quests get rarer as they grow: a runnable demo, real examples, known issues, a change of
-        mind. Small edits don’t count.
+        My call on how rare an idea is: how seldom you’ll find it written down this way. Updates
+        don’t change it.
       </p>
       <dl class="readme__tiers">
-        {RARITIES.map((rarity, i) => (
+        {RARITIES.map((rarity) => (
           <div class="readme__tier">
             <dt>
               <RarityLabel rarity={rarity} />
             </dt>
-            <dd>{TIER_NOTES[i]}</dd>
           </div>
         ))}
       </dl>

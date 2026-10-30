@@ -8,9 +8,15 @@
   @layer components {
     .new-badge {
       position: relative;
-      display: inline-block;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
       overflow: clip;
-      padding: 0 var(--space-2);
+
+      /* The caption's tracking also follows the last letter; the end padding gives it back, so the
+         word sits dead centre. */
+      padding-block: 0;
+      padding-inline: var(--space-1) calc(var(--space-1) - var(--tracking-caption));
       border-radius: var(--radius-sm);
       vertical-align: middle;
       color: var(--color-on-inverse);

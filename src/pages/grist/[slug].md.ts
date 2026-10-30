@@ -3,7 +3,7 @@
  * tools: frontmatter with the derived rank, then the MDX body as plain markdown.
  */
 import type { APIRoute, GetStaticPaths } from "astro";
-import { QUEST_TYPES, RARITY_LABELS, STATUSES, VOLUMES } from "@/lib/grist";
+import { RARITY_LABELS, STATUSES, VOLUMES } from "@/lib/grist";
 import { derive, getQuests, isoDate, questHref, type Quest } from "@/lib/quests";
 
 export const getStaticPaths = (async () => {
@@ -25,7 +25,6 @@ export const GET: APIRoute = ({ props, site }) => {
     `definition: ${yaml(data.definition)}`,
     `category: ${yaml(VOLUMES[data.volume].title)}`,
     `status: ${STATUSES[data.status].label}`,
-    `type: ${QUEST_TYPES[data.type].label}`,
     `rarity: ${RARITY_LABELS[rarity]}`,
     `version: "${version}"`,
     `started: ${isoDate(data.started)}`,
