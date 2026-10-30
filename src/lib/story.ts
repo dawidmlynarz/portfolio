@@ -5,7 +5,6 @@
  */
 import type { StoryPart } from "@/components/blocks/StoryIntro.astro";
 import csspeeper from "@/content/work/csspeeper/cover.avif";
-import tadzik from "@/assets/about/tadzik.jpg";
 import gaming from "@/assets/about/gaming.jpg";
 import bigBrain from "@/assets/about/gifs/big-brain.webp?url";
 import bigBrainStill from "@/assets/about/gifs/big-brain-still.webp?url";
@@ -74,13 +73,7 @@ export const ABOUT_STORY: StoryPart[][] = [
     " AI into their products in ways people understand, trust and actually use.",
   ],
   [
-    "I take the work seriously, myself a lot less. After hours, I’m a husband and a proud dad, enjoying life with my family and our ",
-    {
-      image: tadzik,
-      alt: "Tadzik, a black long-haired dog with a white chest, looking into the camera.",
-      shape: "square",
-    },
-    " head of security. Late at night you’ll find me in ",
+    "I take the work seriously, myself a lot less. After hours, I’m a husband and a proud dad. Late at night you’ll find me in ",
     {
       image: gaming,
       alt: "My Arc Raiders character in a blue helmet, flashing a peace sign on a snowy mountain.",
