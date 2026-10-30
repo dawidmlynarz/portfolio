@@ -36,13 +36,13 @@ const pictures = {
 /** Home, after the hero: a short summary. */
 export const HOME_STORY: StoryPart[][] = [
   [
-    "I'm Dawid Młynarz, a Lead Product Designer with 15+ years of turning ",
+    "I'm Dawid Młynarz, a Lead Product Designer with 15+ years of experience. I've helped turn ",
     {
       image: bigBrain,
       still: bigBrainStill,
       alt: "GIF: a man smugly tapping his temple, the “big brain” meme.",
     },
-    " complex problems into products used by millions, and the design systems behind them. Today I help teams bring ",
+    " complex problems into products used by millions and built the design systems behind them. Today, I help teams bring ",
     pictures.aiPanic,
     " AI into their workflows in ways people trust, understand, and actually use.",
   ],
