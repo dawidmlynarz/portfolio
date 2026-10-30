@@ -5,109 +5,116 @@
  */
 import type { StoryPart } from "@/components/blocks/StoryIntro.astro";
 import newsweek from "@/content/work/newsweek-design-system/cover.avif";
-import beatstars from "@/content/work/beatstars-product-design/cover.avif";
 import designSystem from "@/content/work/xwp/cover.avif";
 import csspeeper from "@/content/work/csspeeper/cover.avif";
 import anvil from "@/content/work/zazmic-anvil-ui/cover.avif";
 import poznan from "@/assets/about/poznan.jpg";
 import tadzik from "@/assets/about/tadzik.jpg";
+import gaming from "@/assets/about/gaming.jpg";
 import horseMask from "@/assets/about/about-04.jpg";
-import mordor from "@/assets/about/gifs/mordor.webp?url";
-import mordorStill from "@/assets/about/gifs/mordor-still.webp?url";
-import precious from "@/assets/about/gifs/precious.webp?url";
-import preciousStill from "@/assets/about/gifs/precious-still.webp?url";
-import legoCastle from "@/assets/about/gifs/lego-castle.webp?url";
-import legoCastleStill from "@/assets/about/gifs/lego-castle-still.webp?url";
-import gamer from "@/assets/about/gifs/friday-gamer.webp?url";
-import gamerStill from "@/assets/about/gifs/friday-gamer-still.webp?url";
+import yesNod from "@/assets/about/gifs/yes-nod.webp?url";
+import yesNodStill from "@/assets/about/gifs/yes-nod-still.webp?url";
+import aiPanic from "@/assets/about/gifs/music-sick-ai.webp?url";
+import aiPanicStill from "@/assets/about/gifs/music-sick-ai-still.webp?url";
+import gandalf from "@/assets/about/gifs/gandalf.webp?url";
+import gandalfStill from "@/assets/about/gifs/gandalf-still.webp?url";
+import emmet from "@/assets/about/gifs/emmet.webp?url";
+import emmetStill from "@/assets/about/gifs/emmet-still.webp?url";
 
+/** Each picture sits right before the words it illustrates. */
 const pictures = {
+  yesNod: {
+    image: yesNod,
+    still: yesNodStill,
+    alt: "GIF: a bearded mountain man nodding in approval.",
+    shape: "square",
+  },
+  aiPanic: {
+    image: aiPanic,
+    still: aiPanicStill,
+    alt: "GIF: a retro robot panicking, its red eyes flashing.",
+  },
   newsweek: { image: newsweek, alt: "The redesigned Newsweek homepage on a desktop and a phone." },
-  beatstars: { image: beatstars, alt: "BeatStars app screens for music producers." },
   designSystem: {
     image: designSystem,
     alt: "Design system documentation: spacing, typography and design tokens.",
   },
-  anvil: {
-    image: anvil,
-    alt: "Anvil UI components for AI agents: tool calls, sources and progress.",
-  },
 } satisfies Record<string, StoryPart>;
 
-/** Home, after the hero: the original summary, word for word. */
+/** Home, after the hero: a short summary. */
 export const HOME_STORY: StoryPart[][] = [
   [
-    "I'm Dawid Młynarz, a Lead Product Designer with 15 years of turning complex problems into clear, useful products. I've shaped newsrooms ",
+    "I'm Dawid Młynarz, a ",
+    pictures.yesNod,
+    " Lead Product Designer with 15 years of turning complex problems into clear, useful products. I've ",
     pictures.newsweek,
-    ", fintech and creator platforms ",
-    pictures.beatstars,
-    ", and built the design systems ",
+    " worked on high-stakes products used by millions, and built the ",
     pictures.designSystem,
-    " behind them. Today I help teams bring AI into their products ",
-    pictures.anvil,
-    " in ways people understand, trust and actually use.",
+    " design systems behind them. Today I help teams bring ",
+    pictures.aiPanic,
+    " AI into their products in ways people understand, trust and actually use.",
   ],
 ];
 
-/** About, under the ribbon: three paragraphs at most. */
+/** About, under the ribbon: three short paragraphs. */
 export const ABOUT_STORY: StoryPart[][] = [
   [
-    "I’m a Lead Product Designer from Poznań ",
+    "I’m a ",
+    pictures.yesNod,
+    " Lead Product Designer from ",
     {
       image: poznan,
       alt: "Poznań's Old Town: the town hall tower above the colourful merchant houses.",
       shape: "portrait",
     },
-    ". I studied linguistics, not design, and learned the craft on the job ",
-    {
-      image: mordor,
-      still: mordorStill,
-      alt: "GIF: Boromir explaining that one does not simply walk into Mordor.",
-    },
-    ". For 15 years I’ve shaped newsrooms ",
+    " Poznań. I studied linguistics, not design. The rest I taught myself. Fifteen years in, I know my way around product strategy, research and ",
+    pictures.designSystem,
+    " design systems, and I’ve led design teams. I’ve worked with ",
     pictures.newsweek,
-    ", fintech and creator platforms ",
-    pictures.beatstars,
-    ", and built the design systems behind them.",
+    " Newsweek and Google, and with companies of every size in between.",
   ],
   [
     "In 2016 I co-founded ",
-    { text: "CSS Peeper", href: "/work/csspeeper" },
-    " ",
     { image: csspeeper, alt: "CSS Peeper panels inspecting colours, fonts and assets." },
-    ", a Chrome extension used by over half a million designers and developers. Today I help teams bring AI into their products ",
-    pictures.anvil,
-    " in ways people understand, trust and actually use.",
+    " ",
+    { text: "CSS Peeper", href: "/work/csspeeper" },
+    ". Over half a million designers and developers use it. Today I’m at ",
+    {
+      image: anvil,
+      alt: "Anvil UI components for AI agents: tool calls, sources and progress.",
+    },
+    " Zazmic, helping teams bring ",
+    pictures.aiPanic,
+    " AI into their products in ways people understand, trust and actually use.",
   ],
   [
-    "At home I’m a husband, a dad, and the owner of Tadzik ",
+    "At home I’m a husband and a dad. ",
     {
       image: tadzik,
       alt: "Tadzik, a black long-haired dog with a white chest, lying on a sofa.",
       shape: "portrait",
       focus: "50% 30%",
     },
-    ", our self-appointed head of security. I collect classic LEGO Castle and Pirates sets ",
+    " Tadzik, our dog, runs security. I collect ",
     {
-      image: legoCastle,
-      still: legoCastleStill,
-      alt: "GIF: a LEGO knight with a crossbow on a castle wall.",
+      image: emmet,
+      still: emmetStill,
+      alt: "GIF: Emmet from The LEGO Movie, mouth wide open.",
     },
-    ", rewatch the extended Lord of the Rings more than I should ",
+    " LEGO. A lot of LEGO. I rewatch the extended ",
     {
-      image: precious,
-      still: preciousStill,
-      alt: "GIF: Gollum's hand reaching for the ring, “my… precious”.",
-    },
-    ", and game late into the night ",
-    {
-      image: gamer,
-      still: gamerStill,
-      alt: "GIF: someone hunched over a gaming setup, captioned “Friday gamer status”.",
+      image: gandalf,
+      still: gandalfStill,
+      alt: "GIF: Gandalf grinning and bobbing his head.",
       shape: "square",
     },
-    ". I take the work seriously, myself a lot less ",
+    " Lord of the Rings more than I should. Late at night you’ll find me in ",
+    {
+      image: gaming,
+      alt: "My Arc Raiders character in a blue helmet, flashing a peace sign on a snowy mountain.",
+    },
+    " Arc Raiders. I take the work seriously, ",
     { image: horseMask, alt: "Dawid in the office wearing a horse-head mask, holding a mug." },
-    ".",
+    " myself a lot less.",
   ],
 ];

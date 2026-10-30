@@ -31,8 +31,8 @@ import YouTube from "@/components/ui/YouTube.astro";
 import { CAREER } from "@/lib/career";
 import youtubeSample from "@/assets/about/video-css-peeper.jpg";
 import portraitSample from "@/assets/about/tadzik.jpg";
-import gifSample from "@/assets/about/gifs/precious.webp?url";
-import gifSampleStill from "@/assets/about/gifs/precious-still.webp?url";
+import gifSample from "@/assets/about/gifs/gandalf.webp?url";
+import gifSampleStill from "@/assets/about/gifs/gandalf-still.webp?url";
 import ClientLogos from "@/components/blocks/ClientLogos.astro";
 import WorkMarquee from "@/components/blocks/WorkMarquee.astro";
 import ClientLogo from "@/components/ui/ClientLogo.astro";
@@ -388,8 +388,9 @@ const SECTIONS = [
             A small picture inside a sentence, like this one{" "}
             <InlineImage src={youtubeSample} alt="CSS Peeper inspecting colours and fonts." />, a
             portrait one <InlineImage src={portraitSample} alt="Tadzik the dog." shape="portrait" />{" "}
-            or a GIF <InlineImage src={gifSample} still={gifSampleStill} alt="GIF: my… precious." />
-            , sized in em so it follows the text. Hover zooms it well past the line; with reduced
+            or a GIF{" "}
+            <InlineImage src={gifSample} still={gifSampleStill} alt="GIF: Gandalf dancing." />,
+            sized in em so it follows the text. Hover zooms it well past the line; with reduced
             motion a GIF shows a still frame.
           </p>
         </Stack>
