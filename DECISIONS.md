@@ -595,3 +595,5 @@ What changed versus the embed, and why:
 **Lead Product Designer everywhere but the case studies.** The site title, descriptions, structured data (`jobTitle`) and page copy now say Lead Product Designer; case studies keep the job titles Dawid held. The retainer keeps the name Embedded Design Lead and now says "2–3 days a week" in its terms, so $8,300 does not read as full time. The price is still worked out from two days a week.
 
 **Menu links stay at h2.** A separate menu-link size was tried and dropped; the open panel's gap between the links and the social row is now `--space-4`.
+
+**Overscroll shows grain, not a bare band.** Pulling the page past its top (rubber-band on macOS and iOS) reveals the canvas, which used to be plain `--color-bg`. The `html` background now tiles `--texture-grain` over `--color-bg` there, with a plain layer covering the document and one screen below it, so the top bounce continues the hero grain and the bottom bounce stays plain. The body still paints the page. The grain itself still scrolls with the hero; a fixed grain was not needed for this.

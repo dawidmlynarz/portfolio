@@ -24,8 +24,17 @@
 }
 
 @layer base {
+  /*
+   * The canvas behind the page, which only shows when the page is pulled past its edges
+   * (rubber-band overscroll on macOS and iOS). The body paints the page itself. Above the top it
+   * continues the hero grain, so pulling down reveals more grain instead of a bare band; the
+   * plain layer covers everything from the top down, with a screen to spare for the bottom bounce.
+   */
   html {
     scroll-padding-block-start: var(--space-24);
+    background:
+      linear-gradient(var(--color-bg), var(--color-bg)) 0 0 / 100% calc(100% + 100vh) no-repeat,
+      var(--texture-grain) var(--color-bg);
   }
 
   /* Scrolling is native. Only in-page anchor jumps glide (reset.css turns this off for reduced motion). */
