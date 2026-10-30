@@ -3,8 +3,8 @@
  * Sign-off on every page: a giant closing line whose last words cycle (CSS only; static with
  * reduced motion; screen readers get the full sentence), "Get in touch" (to /contact) as the
  * main action, social links and the copyright line. Not on /contact (SiteLayout `footer`).
- * The simple variant (Grist) drops the closing line and the button: its own credit line in the
- * slot, then the same social links.
+ * The simple variant (Grist) keeps only the social links and the legal line, where its own credit
+ * line takes the place of the name.
  */
 import Container from "@/components/layout/Container.astro";
 import Button from "@/components/ui/Button.astro";
@@ -13,9 +13,11 @@ import { SITE, SOCIAL_LINKS } from "@/lib/site";
 
 interface Props {
   variant?: "default" | "simple";
+  /** Simple variant: replaces the name before "All rights reserved". */
+  credit?: string;
 }
 
-const { variant = "default" } = Astro.props;
+const { variant = "default", credit } = Astro.props;
 const simple = variant === "simple";
 const year = new Date().getFullYear();
 const endings = ["AI product", "design system", "product team"];
@@ -23,11 +25,7 @@ const endings = ["AI product", "design system", "product team"];
 
 <footer class:list={["footer", { "footer--simple": simple }]}>
   <Container class="footer__inner">
-    {simple ? (
-      <div class="footer__credit text-small">
-        <slot />
-      </div>
-    ) : (
+    {!simple && (
       <>
         <p class="text-caption footer__label">Contact</p>
         <h2 class="footer__title">
@@ -59,9 +57,16 @@ const endings = ["AI product", "design system", "product team"];
         ))}
       </ul>
       <p class="footer__legal">
-        <span>
-          {SITE.name}. All rights reserved © 2011 – {year}
-        </span>
+        {credit ? (
+          <span class="footer__credit">
+            <span>{credit}</span>
+            <span>All rights reserved © 2011 – {year}</span>
+          </span>
+        ) : (
+          <span>
+            {SITE.name}. All rights reserved © 2011 – {year}
+          </span>
+        )}
         <Link href="/privacy">Privacy policy</Link>
       </p>
     </div>
@@ -75,11 +80,17 @@ const endings = ["AI product", "design system", "product team"];
     }
 
     .footer--simple {
-      padding-block: 0 var(--space-12);
+      padding-block: var(--space-section-sm) var(--space-12);
+    }
+
+    .footer--simple .footer__meta {
+      padding-block-start: var(--space-8);
     }
 
     .footer__credit {
-      color: var(--color-text-muted);
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0 var(--space-2);
     }
 
     .footer__inner {

@@ -1,7 +1,7 @@
 ---
 import GristLayout from "@/layouts/GristLayout.astro";
+import Hero from "@/components/blocks/Hero.astro";
 import Container from "@/components/layout/Container.astro";
-import Logo from "@/components/grist/Logo.astro";
 import QuestRow from "@/components/grist/QuestRow.astro";
 import VolumeHeader from "@/components/grist/VolumeHeader.astro";
 import ReadmeButton from "@/components/grist/ReadmeButton.astro";
@@ -9,43 +9,28 @@ import ReadmePanel from "@/components/grist/ReadmePanel.astro";
 import { getVolumes } from "@/lib/quests";
 
 const volumes = await getVolumes();
-const total = volumes.reduce((sum, volume) => sum + volume.quests.length, 0);
-const plural = (n: number, word: string) => `${n} ${word}${n === 1 ? "" : "s"}`;
 ---
 
 <GristLayout
   title="Grist"
   description="Short, opinionated quests from real product work by Dawid Młynarz. They get rarer as they grow, and every one downloads as markdown."
 >
-  <Container class="front">
-    <header class="front__hero">
-      <p class="front__eyebrow">A side quest by Dawid Młynarz</p>
-      <h1 class="front__logo">
-        <Logo />
-      </h1>
-      <p class="front__tagline">Notes on agentic UX and AI-ready design systems.</p>
-      <p class="front__lead">
-        Short, opinionated quests from real product work, written on the side of my day job. They
-        get rarer as they grow, and every one downloads as markdown for your AI tools.
-      </p>
-    </header>
-
-    <div class="front__toolbar">
-      <p class="front__count">
-        {plural(total, "quest")} · {plural(volumes.length, "volume")}
-      </p>
+  <Hero
+    eyebrow="A side quest by Dawid Młynarz"
+    title="Grist."
+    titleMuted="Notes on agentic UX and AI-ready design systems."
+    lead="Short, opinionated quests from real product work, written on the side of my day job. They get rarer as they grow, and every one downloads as markdown for your AI tools."
+  >
+    <Fragment slot="actions">
       <ReadmeButton panel="readme" />
-    </div>
-    <ReadmePanel id="readme" />
+    </Fragment>
+  </Hero>
+  <ReadmePanel id="readme" />
 
+  <Container class="front">
     {volumes.map((volume) => (
       <section class="front__volume" aria-labelledby={volume.id}>
-        <VolumeHeader
-          id={volume.id}
-          number={volume.number}
-          title={volume.title}
-          count={volume.quests.length}
-        />
+        <VolumeHeader id={volume.id} title={volume.title} />
         {volume.quests.map((quest) => (
           <QuestRow quest={quest} />
         ))}
@@ -57,52 +42,9 @@ const plural = (n: number, word: string) => `${n} ${word}${n === 1 ? "" : "s"}`;
 <style>
   @layer components {
     .front {
-      padding-block: var(--space-section-sm) var(--space-section-md);
-    }
-
-    .front__hero {
       display: grid;
-      justify-items: start;
-      gap: var(--space-6);
-    }
-
-    .front__eyebrow,
-    .front__count {
-      font: var(--weight-regular) var(--text-caption) / var(--leading-caption) var(--font-mono);
-      letter-spacing: var(--tracking-caption);
-      color: var(--color-text-muted);
-    }
-
-    .front__eyebrow {
-      text-transform: uppercase;
-    }
-
-    .front__logo :global(.logo) {
-      block-size: calc(var(--space-24) + var(--space-8));
-    }
-
-    .front__tagline {
-      font: var(--weight-medium) var(--text-h2) / var(--leading-h2) var(--font-heading);
-      letter-spacing: var(--tracking-h2);
-    }
-
-    .front__lead {
-      max-inline-size: var(--measure-lead);
-      font-size: var(--text-lead);
-      line-height: var(--leading-lead);
-      color: var(--color-text-muted);
-    }
-
-    .front__toolbar {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: var(--space-4);
-      margin-block: var(--space-section-sm) var(--space-8);
-    }
-
-    .front__volume + .front__volume {
-      margin-block-start: var(--space-section-sm);
+      gap: var(--space-section-sm);
+      padding-block-end: var(--space-section-md);
     }
   }
 </style>

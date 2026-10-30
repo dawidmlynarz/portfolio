@@ -215,8 +215,6 @@
     --rarity-legendary-shade: #8f6400;
     --rarity-legendary-light: #fbbf24;
     --rarity-legendary-text: light-dark(#8f6400, var(--rarity-legendary-light));
-    /* Silkscreen: the README label, tier names, the New badge, anatomy numbers. Never body text. */
-    --font-pixel: "Silkscreen", var(--font-mono);
     --shadow-panel: 0 24px 64px -24px light-dark(rgb(0 0 0 / 28%), rgb(0 0 0 / 80%));
     /* Space above content on pages that don't run under the floating nav (SiteLayout) */
     --nav-clearance: calc(var(--space-4) + var(--space-12) + var(--space-8));

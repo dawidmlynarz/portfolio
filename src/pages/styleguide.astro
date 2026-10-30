@@ -490,8 +490,7 @@ const GRIST_ICONS: IconName[] = [
           <h2 id="grist-title">Grist</h2>
           <p class="muted measure">
             The layer under <code>/grist</code>. It uses the site tokens and components, and adds
-            only the rarity colours, the Silkscreen pixel face, pixel icons for tags, the gems and
-            the logo.
+            only the rarity colours, pixel icons for tags, the gems and the logo.
           </p>
         </Stack>
 
@@ -544,16 +543,15 @@ const GRIST_ICONS: IconName[] = [
         </Stack>
 
         <Stack gap="4">
-          <h3>Volume and quest row</h3>
+          <h3>Category and quest row</h3>
           <div>
-            <VolumeHeader id="sg-volume" number="I" title="Agentic UX" count={1} />
+            <VolumeHeader id="sg-volume" title="Agentic UX" />
             {sampleQuest && <QuestRow quest={sampleQuest} />}
           </div>
         </Stack>
 
         <Stack gap="4">
-          <h3>Pixel face and tag icons</h3>
-          <p class="grist-pixel-sample">Readme · New · 01 02 03</p>
+          <h3>Tag icons</h3>
           <ul class="row plain-list grist-icons" role="list">
             {GRIST_ICONS.map((name) => (
               <li class="grist-icons__item">
@@ -869,11 +867,6 @@ const GRIST_ICONS: IconName[] = [
     .rarity-swatch__chip {
       inline-size: var(--space-8);
       block-size: var(--space-8);
-    }
-
-    .grist-pixel-sample {
-      font-family: var(--font-pixel);
-      font-size: var(--text-h4);
     }
 
     .grist-icons {

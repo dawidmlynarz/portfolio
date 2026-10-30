@@ -5,10 +5,12 @@ import HeroBackdrop from "@/components/blocks/HeroBackdrop.astro";
 interface Props {
   eyebrow?: string;
   title: string;
+  /** Second phrase of a two-tone headline, in the muted ink (as on Home). */
+  titleMuted?: string;
   lead?: string;
 }
 
-const { eyebrow, title, lead } = Astro.props;
+const { eyebrow, title, titleMuted, lead } = Astro.props;
 const hasMedia = Astro.slots.has("media");
 ---
 
@@ -17,7 +19,11 @@ const hasMedia = Astro.slots.has("media");
   <Container class="hero__grid">
     <div class="hero__content">
       {eyebrow && <p class="text-caption hero__eyebrow">{eyebrow}</p>}
-      <h1>{title}</h1>
+      <h1>
+        {title}
+        {titleMuted && " "}
+        {titleMuted && <span class="hero__muted">{titleMuted}</span>}
+      </h1>
       {lead && <p class="text-lead hero__lead">{lead}</p>}
       {Astro.slots.has("actions") && (
         <div class="hero__actions">
@@ -52,6 +58,7 @@ const hasMedia = Astro.slots.has("media");
     }
 
     .hero__eyebrow,
+    .hero__muted,
     .hero__lead {
       color: var(--color-text-muted);
     }

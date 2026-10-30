@@ -29,7 +29,9 @@ const pixels = rows.flatMap((row, y) =>
   [...row].flatMap((cell, x) => (cell in KIND ? [{ x, y, kind: KIND[cell as Cell] }] : [])),
 );
 const animated = rarity === "legendary";
-const clipId = `gem-clip-${rarity}`;
+// Unique per instance: a duplicate id would point every gem at the first clip on the page, which
+// may sit in a hidden popover and then clips nothing.
+const clipId = `gem-clip-${crypto.randomUUID().slice(0, 8)}`;
 let sparkle = 0;
 ---
 

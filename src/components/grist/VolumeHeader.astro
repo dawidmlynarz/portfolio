@@ -1,51 +1,26 @@
 ---
-/** "Vol. I" and the volume title over a 2px rule, with the quest count at the end. */
+/** A volume's title over a 2px rule. */
 interface Props {
   id: string;
-  number: string;
   title: string;
-  count: number;
 }
 
-const { id, number, title, count } = Astro.props;
+const { id, title } = Astro.props;
 ---
 
-<header class="volume-header">
-  <h2 class="volume-header__title" id={id}>
-    <span class="volume-header__number">Vol. {number}</span>
-    {title}
-  </h2>
-  <p class="volume-header__count">
-    {count} {count === 1 ? "quest" : "quests"}
-  </p>
-</header>
+<h2 class="volume-header" id={id}>
+  {title}
+</h2>
 
 <style>
   @layer components {
     .volume-header {
-      display: flex;
-      flex-wrap: wrap;
-      align-items: baseline;
-      justify-content: space-between;
-      gap: var(--space-2) var(--space-4);
+      max-inline-size: none;
       padding-block-end: var(--space-3);
       border-block-end: calc(var(--border-width) * 2) solid var(--color-text);
-    }
-
-    .volume-header__title {
-      display: flex;
-      align-items: baseline;
-      gap: var(--space-3);
       font-size: var(--text-h3);
       line-height: var(--leading-h3);
       letter-spacing: var(--tracking-h3);
-    }
-
-    .volume-header__number,
-    .volume-header__count {
-      font: var(--weight-regular) var(--text-caption) / var(--leading-caption) var(--font-mono);
-      letter-spacing: normal;
-      color: var(--color-text-muted);
     }
   }
 </style>

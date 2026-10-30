@@ -23,7 +23,7 @@ export const GET: APIRoute = ({ props, site }) => {
     "---",
     `title: ${yaml(data.title)}`,
     `definition: ${yaml(data.definition)}`,
-    `volume: ${yaml(VOLUMES[data.volume].title)}`,
+    `category: ${yaml(VOLUMES[data.volume].title)}`,
     `status: ${STATUSES[data.status].label}`,
     `type: ${QUEST_TYPES[data.type].label}`,
     `rarity: ${RARITY_LABELS[rarity]}`,

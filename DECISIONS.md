@@ -2,6 +2,17 @@
 
 Non-obvious choices, newest first. One entry per decision: what, why, and what it rules out.
 
+## 2026-10-30 · Grist review round 1
+
+Dawid's review changed these:
+
+- The front door uses the site `Hero` (the grain backdrop and a two-tone headline through the new `titleMuted` prop), with README as its action.
+- The big logo, the quest and volume counts and the "Vol." labels are gone. Volumes show as plain category titles, and the Quest log says Category.
+- Silkscreen is removed. Tier names and New use the caption face.
+- The simple footer puts "Grist is a side quest from Dawid Młynarz." in place of the name on the copyright line, and the icon credit is gone.
+- The six draft quests carry made-up types, start dates and level-ups (each marked TEST DATA), so previews show every rarity. Production never lists drafts.
+- Gem clip ids are now unique per instance. A shared id pointed at the clip inside the hidden README popover, which left the Legendary sweep unclipped.
+
 ## 2026-10-30 · Grist MVP: pages, quests and markdown twins
 
 `/grist` and `/grist/<slug>` use `GristLayout`, which has a slim header and the `Footer` simple variant, and does not load the motion module. Quests are MDX in `src/content/grist/`. Rarity, version, date labels, New and Next rank are derived in `src/lib/quests.ts`; none of them are stored. `order` only breaks ties between quests that start on the same day. Production lists published quests whose `started` date has passed, and previews list everything. Each quest has a markdown twin at `/grist/<slug>.md`, generated at build with MDX comments stripped. README is a native popover, so it needs no script. Permalink copies the URL and shows a status toast.
@@ -16,7 +27,7 @@ README and Download use the button's own text style, the same as Get in touch. T
 
 First step of Grist (`/grist`), the side quest of short "quests" on agentic UX and AI-ready design systems.
 
-- **Only rarity and the pixel face are new.** Each tier has `--rarity-*-fill`, `-shade` and `-light` (Figma collection "Grist"), plus `--rarity-*-text` for tier names: the Figma text shade on light, the light shade on dark, so both pass 4.5:1. The shade draws the gem's facet lines; for Uncommon, Rare and Epic it is darker than the text shade (Dawid's call) so the lines read as depth. `--font-pixel` is Silkscreen, self-hosted through fontsource like Geist. Everything else is existing tokens and components.
+- **Only rarity is new.** Each tier has `--rarity-*-fill`, `-shade` and `-light` (Figma collection "Grist"), plus `--rarity-*-text` for tier names: the Figma text shade on light, the light shade on dark, so both pass 4.5:1. The shade draws the gem's facet lines; for Uncommon, Rare and Epic it is darker than the text shade (Dawid's call) so the lines read as depth. (The Silkscreen pixel face was dropped on Dawid's review: Grist uses the site's own type.) Everything else is existing tokens and components.
 - **Gems** follow Dawid's reference: a cut gem with a flat table, a girdle line and shaded facets, drawn from pixel maps in `src/lib/grist.ts` at 2px per pixel (26px wide). The outline is the ink (white in dark mode) so gems keep their edge. Common to Rare share the shape; Epic adds sparkles; Legendary adds a crown, twinkling sparkles and a light sweep, all off under reduced motion. Tier names always sit next to a gem, so colour is never the only signal.
 - **One logo:** the wordmark in the text colour, with no rarity colour on the dot.
 - **Buttons are the site's pill.** Pixel icons looked off inside pills, so `Button` gained three line icons in its own style (`info`, `download`, `link`), placed before the label; arrows still follow it and are the only icons that nudge on hover. Pixelarticons stay for Grist's status and type tags and meta lines.

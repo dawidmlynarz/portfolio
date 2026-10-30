@@ -3,6 +3,7 @@ import { render } from "astro:content";
 import GristLayout from "@/layouts/GristLayout.astro";
 import Container from "@/components/layout/Container.astro";
 import Button from "@/components/ui/Button.astro";
+import HeroBackdrop from "@/components/blocks/HeroBackdrop.astro";
 import Icon from "@/components/grist/Icon.astro";
 import Gem from "@/components/grist/Gem.astro";
 import RarityLabel from "@/components/grist/RarityLabel.astro";
@@ -64,149 +65,151 @@ const jsonLd = {
 
 <GristLayout title={`${data.title} · Grist`} description={data.definition} type="article" {jsonLd}>
   <link slot="head" rel="alternate" type="text/markdown" href={twinHref(quest)} />
-  <Container class="quest">
-    <header class="quest__header">
-      <a class="quest__back" href="/grist">
-        <Icon name="arrow-left" />
-        All quests
-      </a>
-      <h1 class="quest__title">{data.title}</h1>
-      <div class="quest__meta">
-        <div class="quest__tags">
-          <RarityLabel rarity={rarity} />
-          <QuestTag status={data.status} />
-          <QuestTag type={data.type} />
+  <div class="hero-backdrop-host">
+    <HeroBackdrop />
+    <Container class="quest">
+      <header class="quest__header">
+        <a class="quest__back" href="/grist">
+          <Icon name="arrow-left" />
+          All quests
+        </a>
+        <h1 class="quest__title">{data.title}</h1>
+        <div class="quest__meta">
+          <div class="quest__tags">
+            <RarityLabel rarity={rarity} />
+            <QuestTag status={data.status} />
+            <QuestTag type={data.type} />
+          </div>
+          <div class="quest__actions">
+            <DownloadButton slug={quest.id} />
+            <PermalinkButton url={url} />
+          </div>
         </div>
-        <div class="quest__actions">
-          <DownloadButton slug={quest.id} />
-          <PermalinkButton url={url} />
-        </div>
-      </div>
-    </header>
+      </header>
 
-    <div class="quest__layout">
-      <article class="quest__main">
-        <p class="quest__label">// tl;dr</p>
-        <p class="quest__definition">{data.definition}</p>
-        <div class="quest__body">
-          <Content />
-        </div>
+      <div class="quest__layout">
+        <article class="quest__main">
+          <p class="quest__label">// tl;dr</p>
+          <p class="quest__definition">{data.definition}</p>
+          <div class="quest__body">
+            <Content />
+          </div>
 
-        <section class="quest__section" aria-labelledby="level-ups">
-          <h2 id="level-ups">Level-ups</h2>
-          <ol class="quest__levels" role="list">
-            {levelUps.map((levelUp) => (
-              <li class="quest__level">
-                <RarityLabel rarity={levelUp.rarity} />
-                <span>{levelUp.grew}</span>
-                <span class="quest__level-date">
-                  v{levelUp.version} ·{" "}
-                  <time datetime={isoDate(levelUp.date)}>{formatDate(levelUp.date)}</time>
-                </span>
-              </li>
-            ))}
-          </ol>
-        </section>
-      </article>
+          <section class="quest__section" aria-labelledby="level-ups">
+            <h2 id="level-ups">Level-ups</h2>
+            <ol class="quest__levels" role="list">
+              {levelUps.map((levelUp) => (
+                <li class="quest__level">
+                  <RarityLabel rarity={levelUp.rarity} />
+                  <span>{levelUp.grew}</span>
+                  <span class="quest__level-date">
+                    v{levelUp.version} ·{" "}
+                    <time datetime={isoDate(levelUp.date)}>{formatDate(levelUp.date)}</time>
+                  </span>
+                </li>
+              ))}
+            </ol>
+          </section>
+        </article>
 
-      <aside class="quest__rail">
-        <nav class="quest__block" aria-labelledby="on-this-page">
-          <h2 class="quest__label quest__label--rule" id="on-this-page">
-            On this page
-          </h2>
-          <ul class="quest__toc" role="list">
-            {toc.map((item) => (
-              <li>
-                <a href={`#${item.slug}`}>{item.text}</a>
-              </li>
-            ))}
-          </ul>
-        </nav>
-        <section class="quest__block" aria-labelledby="quest-log">
-          <h2 class="quest__label quest__label--rule" id="quest-log">
-            Quest log
-          </h2>
-          <dl class="quest__log">
-            <div>
-              <dt>Volume</dt>
-              <dd>
-                {volume.number} · {volume.title}
-              </dd>
-            </div>
-            <div>
-              <dt>Version</dt>
-              <dd>v{version}</dd>
-            </div>
-            <div>
-              <dt>Started</dt>
-              <dd>
-                <time datetime={isoDate(data.started)}>{formatDate(data.started)}</time>
-              </dd>
-            </div>
-            {data.levelUps.length > 0 && (
+        <aside class="quest__rail">
+          <nav class="quest__block" aria-labelledby="on-this-page">
+            <h2 class="quest__label quest__label--rule" id="on-this-page">
+              On this page
+            </h2>
+            <ul class="quest__toc" role="list">
+              {toc.map((item) => (
+                <li>
+                  <a href={`#${item.slug}`}>{item.text}</a>
+                </li>
+              ))}
+            </ul>
+          </nav>
+          <section class="quest__block" aria-labelledby="quest-log">
+            <h2 class="quest__label quest__label--rule" id="quest-log">
+              Quest log
+            </h2>
+            <dl class="quest__log">
               <div>
-                <dt>Last level-up</dt>
+                <dt>Category</dt>
+                <dd>{volume.title}</dd>
+              </div>
+              <div>
+                <dt>Version</dt>
+                <dd>v{version}</dd>
+              </div>
+              <div>
+                <dt>Started</dt>
                 <dd>
-                  <time datetime={isoDate(updated)}>{formatDate(updated)}</time>
+                  <time datetime={isoDate(data.started)}>{formatDate(data.started)}</time>
                 </dd>
               </div>
-            )}
-          </dl>
-        </section>
-        {nextRarity && (
-          <section class="quest__block" aria-labelledby="next-rank">
-            <h2 class="quest__label quest__label--rule" id="next-rank">
-              Next rank
-            </h2>
-            <p class="quest__next">
-              <span class={`quest__next-tier quest__next-tier--${nextRarity}`}>
-                <Gem rarity={nextRarity} />
-                {RARITY_LABELS[nextRarity]}
-              </span>
-              <span class="quest__next-note">
-                One more level-up.
-                {data.next && ` Probably ${data.next.charAt(0).toLowerCase()}${data.next.slice(1)}`}
-              </span>
-            </p>
+              {data.levelUps.length > 0 && (
+                <div>
+                  <dt>Last level-up</dt>
+                  <dd>
+                    <time datetime={isoDate(updated)}>{formatDate(updated)}</time>
+                  </dd>
+                </div>
+              )}
+            </dl>
           </section>
-        )}
-      </aside>
+          {nextRarity && (
+            <section class="quest__block" aria-labelledby="next-rank">
+              <h2 class="quest__label quest__label--rule" id="next-rank">
+                Next rank
+              </h2>
+              <p class="quest__next">
+                <span class={`quest__next-tier quest__next-tier--${nextRarity}`}>
+                  <Gem rarity={nextRarity} />
+                  {RARITY_LABELS[nextRarity]}
+                </span>
+                <span class="quest__next-note">
+                  One more level-up.
+                  {data.next &&
+                    ` Probably ${data.next.charAt(0).toLowerCase()}${data.next.slice(1)}`}
+                </span>
+              </p>
+            </section>
+          )}
+        </aside>
 
-      <div class="quest__more">
-        {related.length > 0 && (
-          <section class="quest__section" aria-labelledby="see-also">
-            <h2 id="see-also">See also</h2>
-            <ul class="quest__related" role="list">
-              {related.map((other) => {
-                const derived = derive(other);
-                return (
-                  <li class="quest__card">
-                    <a href={questHref(other)} data-no-tear>
-                      {other.data.title}
-                    </a>
-                    <span class="quest__card-meta">
-                      <Gem rarity={derived.rarity} />
-                      {RARITY_LABELS[derived.rarity]} · {STATUSES[other.data.status].label} ·{" "}
-                      {QUEST_TYPES[other.data.type].label}
-                    </span>
-                  </li>
-                );
-              })}
-            </ul>
+        <div class="quest__more">
+          {related.length > 0 && (
+            <section class="quest__section" aria-labelledby="see-also">
+              <h2 id="see-also">See also</h2>
+              <ul class="quest__related" role="list">
+                {related.map((other) => {
+                  const derived = derive(other);
+                  return (
+                    <li class="quest__card">
+                      <a href={questHref(other)} data-no-tear>
+                        {other.data.title}
+                      </a>
+                      <span class="quest__card-meta">
+                        <Gem rarity={derived.rarity} />
+                        {RARITY_LABELS[derived.rarity]} · {STATUSES[other.data.status].label} ·{" "}
+                        {QUEST_TYPES[other.data.type].label}
+                      </span>
+                    </li>
+                  );
+                })}
+              </ul>
+            </section>
+          )}
+          <section class="quest__touch">
+            <p>
+              Grist is my side quest. If one of these hit close to something you’re working on, I’d
+              like to hear about it.
+            </p>
+            <Button href="/contact" variant="secondary" icon="arrow">
+              Get in touch
+            </Button>
           </section>
-        )}
-        <section class="quest__touch">
-          <p>
-            Grist is my side quest. If one of these hit close to something you’re working on, I’d
-            like to hear about it.
-          </p>
-          <Button href="/contact" variant="secondary" icon="arrow">
-            Get in touch
-          </Button>
-        </section>
+        </div>
       </div>
-    </div>
-  </Container>
+    </Container>
+  </div>
 </GristLayout>
 
 <style>

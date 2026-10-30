@@ -64,11 +64,11 @@ export function derive({ data }: Quest) {
     nextRarity: RARITIES[tier + 1] as Rarity | undefined,
     /** Newest first: each level-up with the tier it reached, then "Started" at Common. */
     levelUps: [
+      { rarity: "common" as Rarity, version: "1.0", date: data.started, grew: "Started." },
       ...data.levelUps.map((levelUp, i) => ({
         rarity: RARITIES[Math.min(i + 1, RARITIES.length - 1)]!,
         ...levelUp,
       })),
-      { rarity: "common" as Rarity, version: "1.0", date: data.started, grew: "Started." },
     ].reverse(),
   };
 }
