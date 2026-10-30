@@ -36,7 +36,9 @@ const pictures = {
 /** Home, after the hero: a short summary. */
 export const HOME_STORY: StoryPart[][] = [
   [
-    "I'm Dawid Młynarz, a Lead Product Designer with 15+ years of experience. I've helped turn ",
+    "I'm Dawid Młynarz, a ",
+    pictures.yesNod,
+    " Lead Product Designer with 15+ years of experience. I've helped turn ",
     {
       image: bigBrain,
       still: bigBrainStill,
