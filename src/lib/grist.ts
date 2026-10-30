@@ -57,3 +57,10 @@ export const GEM_PIXELS: Record<Rarity, readonly string[]> = {
   epic: SPARKLED,
   legendary: ["...o..o..o...", ...SPARKLED],
 };
+
+/** Volumes in front-door order. */
+export const VOLUMES = {
+  "agentic-ux": { number: "I", title: "Agentic UX" },
+  "ai-ready-design-systems": { number: "II", title: "AI-ready design systems" },
+} as const;
+export type Volume = keyof typeof VOLUMES;

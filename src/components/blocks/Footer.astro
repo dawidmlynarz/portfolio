@@ -3,37 +3,53 @@
  * Sign-off on every page: a giant closing line whose last words cycle (CSS only; static with
  * reduced motion; screen readers get the full sentence), "Get in touch" (to /contact) as the
  * main action, social links and the copyright line. Not on /contact (SiteLayout `footer`).
+ * The simple variant (Grist) drops the closing line and the button: its own credit line in the
+ * slot, then the same social links.
  */
 import Container from "@/components/layout/Container.astro";
 import Button from "@/components/ui/Button.astro";
 import Link from "@/components/ui/Link.astro";
 import { SITE, SOCIAL_LINKS } from "@/lib/site";
 
+interface Props {
+  variant?: "default" | "simple";
+}
+
+const { variant = "default" } = Astro.props;
+const simple = variant === "simple";
 const year = new Date().getFullYear();
 const endings = ["AI product", "design system", "product team"];
 ---
 
-<footer class="footer">
+<footer class:list={["footer", { "footer--simple": simple }]}>
   <Container class="footer__inner">
-    <p class="text-caption footer__label">Contact</p>
-    <h2 class="footer__title">
-      <span class="visually-hidden">
-        Let's build your next {endings.slice(0, -1).join(", ")} or {endings.at(-1)}.
-      </span>
-      <span aria-hidden="true">
-        Let's build your next{" "}
-        <span class="footer__ticker">
-          <span class="footer__ticker-track">
-            {[...endings, endings[0]].map((ending) => (
-              <span>{ending}</span>
-            ))}
+    {simple ? (
+      <div class="footer__credit text-small">
+        <slot />
+      </div>
+    ) : (
+      <>
+        <p class="text-caption footer__label">Contact</p>
+        <h2 class="footer__title">
+          <span class="visually-hidden">
+            Let's build your next {endings.slice(0, -1).join(", ")} or {endings.at(-1)}.
           </span>
-        </span>
-      </span>
-    </h2>
-    <Button href="/contact" size="lg" icon="arrow">
-      Get in touch
-    </Button>
+          <span aria-hidden="true">
+            Let's build your next{" "}
+            <span class="footer__ticker">
+              <span class="footer__ticker-track">
+                {[...endings, endings[0]].map((ending) => (
+                  <span>{ending}</span>
+                ))}
+              </span>
+            </span>
+          </span>
+        </h2>
+        <Button href="/contact" size="lg" icon="arrow">
+          Get in touch
+        </Button>
+      </>
+    )}
     <div class="footer__meta text-small">
       <ul class="footer__social" role="list">
         {SOCIAL_LINKS.map(({ href, label }) => (
@@ -56,6 +72,14 @@ const endings = ["AI product", "design system", "product team"];
   @layer components {
     .footer {
       padding-block: var(--space-section-lg) var(--space-24); /* clears the floating back-to-top button */
+    }
+
+    .footer--simple {
+      padding-block: 0 var(--space-12);
+    }
+
+    .footer__credit {
+      color: var(--color-text-muted);
     }
 
     .footer__inner {

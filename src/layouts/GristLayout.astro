@@ -1,0 +1,94 @@
+---
+/**
+ * Grist (/grist): its own slim header (logo home to /grist, "by Dawid Młynarz" back to the
+ * portfolio) and the simple footer. Shares BaseLayout, so SEO tags, theme and fonts stay the
+ * site's. No motion module: nothing on Grist animates except the gems and the New badge (CSS).
+ */
+import BaseLayout from "@/layouts/BaseLayout.astro";
+import Footer from "@/components/blocks/Footer.astro";
+import Container from "@/components/layout/Container.astro";
+import Link from "@/components/ui/Link.astro";
+import Logo from "@/components/grist/Logo.astro";
+import type { ComponentProps } from "astro/types";
+
+type Props = ComponentProps<typeof BaseLayout>;
+---
+
+<BaseLayout {...Astro.props}>
+  <slot name="head" slot="head" />
+  <div class="grist">
+    <a class="grist__skip" href="#main" data-no-tear>
+      Skip to content
+    </a>
+    <header class="grist__header">
+      <Container class="grist__bar">
+        <a class="grist__home" href="/grist" aria-label="Grist, all quests" data-no-tear>
+          <Logo />
+        </a>
+        <Link href="/" icon="arrow" class="text-small">
+          by Dawid Młynarz
+        </Link>
+      </Container>
+    </header>
+    <main id="main" tabindex="-1">
+      <slot />
+    </main>
+    <Footer variant="simple">
+      Grist is a side quest by <Link href="/">Dawid Młynarz</Link>. Icons: Pixelarticons by Gerrit
+      Halfmann.
+    </Footer>
+  </div>
+</BaseLayout>
+
+<style>
+  @layer components {
+    .grist {
+      display: grid;
+      grid-template-rows: auto 1fr auto;
+      grid-template-columns: minmax(0, 1fr);
+      min-block-size: 100svh;
+    }
+
+    .grist__skip {
+      position: fixed;
+      inset-block-start: var(--space-2);
+      inset-inline-start: var(--space-2);
+      z-index: calc(var(--z-nav) + 1);
+      padding: var(--space-2) var(--space-4);
+      border-radius: var(--radius-sm);
+      color: var(--color-bg);
+      background-color: var(--color-text);
+      translate: 0 -200%;
+    }
+
+    .grist__skip:focus-visible {
+      translate: 0;
+    }
+
+    .grist__header {
+      border-block-end: var(--border-width) solid var(--color-border-subtle);
+    }
+
+    .grist__bar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: var(--space-4);
+      padding-block: var(--space-4);
+    }
+
+    .grist__home {
+      --underline-size: 0%;
+
+      display: block;
+    }
+
+    .grist__home :global(.logo) {
+      block-size: var(--space-6);
+    }
+
+    main:focus {
+      outline: none;
+    }
+  }
+</style>

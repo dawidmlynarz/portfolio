@@ -1,0 +1,48 @@
+---
+/** "New" for quests started in the last two weeks: inverse surface, pixel face, a light sweep. */
+---
+
+<span class="new-badge">New</span>
+
+<style>
+  @layer components {
+    .new-badge {
+      position: relative;
+      display: inline-block;
+      overflow: clip;
+      padding: 0 var(--space-2);
+      border-radius: var(--radius-sm);
+      font-family: var(--font-pixel);
+      font-size: var(--text-caption);
+      line-height: var(--leading-caption);
+      text-transform: uppercase;
+      vertical-align: middle;
+      color: var(--color-on-inverse);
+      background-color: var(--color-inverse-bg);
+    }
+
+    /* The Legendary gem's sweep: a pale band crosses the badge every 2.4s. */
+    @media (prefers-reduced-motion: no-preference) {
+      .new-badge::after {
+        content: "";
+        position: absolute;
+        inset: 0;
+        background: linear-gradient(
+          100deg,
+          transparent 35%,
+          color-mix(in srgb, var(--color-on-inverse) 45%, transparent) 50%,
+          transparent 65%
+        );
+        translate: -100% 0;
+        animation: new-badge-sweep 2.4s var(--ease-standard) infinite;
+      }
+    }
+
+    @keyframes new-badge-sweep {
+      60%,
+      100% {
+        translate: 100% 0;
+      }
+    }
+  }
+</style>

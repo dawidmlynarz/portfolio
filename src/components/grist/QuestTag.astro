@@ -1,0 +1,27 @@
+---
+/** Status or type: a pixel icon and its label, in the caption face without the uppercase. */
+import Icon from "./Icon.astro";
+import { QUEST_TYPES, STATUSES, type QuestType, type Status } from "@/lib/grist";
+
+type Props = { status: Status; type?: never } | { type: QuestType; status?: never };
+
+const { status, type } = Astro.props;
+const { label, icon } = status ? STATUSES[status] : QUEST_TYPES[type!];
+---
+
+<span class="quest-tag">
+  <Icon name={icon} />
+  {label}
+</span>
+
+<style>
+  @layer components {
+    .quest-tag {
+      display: inline-flex;
+      align-items: center;
+      gap: var(--space-2);
+      font: var(--weight-regular) var(--text-caption) / var(--leading-caption) var(--font-mono);
+      white-space: nowrap;
+    }
+  }
+</style>

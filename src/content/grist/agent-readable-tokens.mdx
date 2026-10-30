@@ -1,0 +1,21 @@
+---
+title: Agent-readable tokens
+volume: ai-ready-design-systems
+definition: Agent-readable tokens are design tokens named after the job they do and described in plain words, so a coding agent can pick the right one without guessing.
+summary: Design tokens named and documented so coding agents use them correctly.
+status: battle-tested
+type: side-quest
+started: 2026-10-30
+order: 5
+next: Before and after token names.
+related: [the-design-md-spec, component-contracts]
+draft: true
+---
+
+{/* Draft by Claude from the backlog line ("Name tokens by job and describe each one"). Dawid to rewrite before it ships. */}
+
+## My current take
+
+Name tokens by job and describe each one. An agent reading `blue-500` has to guess what it’s for. An agent reading `color-text-link`, with one line saying where it goes, mostly doesn’t.
+
+The description is what the agent falls back on when two names look alike. It’s also the field most token files leave empty.

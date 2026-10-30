@@ -2,6 +2,12 @@
 
 Non-obvious choices, newest first. One entry per decision: what, why, and what it rules out.
 
+## 2026-10-30 · Grist MVP: pages, quests and markdown twins
+
+`/grist` and `/grist/<slug>` use `GristLayout`, which has a slim header and the `Footer` simple variant, and does not load the motion module. Quests are MDX in `src/content/grist/`. Rarity, version, date labels, New and Next rank are derived in `src/lib/quests.ts`; none of them are stored. `order` only breaks ties between quests that start on the same day. Production lists published quests whose `started` date has passed, and previews list everything. Each quest has a markdown twin at `/grist/<slug>.md`, generated at build with MDX comments stripped. README is a native popover, so it needs no script. Permalink copies the URL and shows a status toast.
+
+Launch content: Human checkpoints uses Dawid's text from the mockups. The other six are drafts written from the backlog lines, marked `draft: true` with an MDX comment saying so, until Dawid rewrites them. Every `started` date is a placeholder (the build day) until launch. Counters, RSS, `llms.txt`, OG images and the demo are not built yet.
+
 ## 2026-10-30 · Grist buttons: one text style, icon hover on Download
 
 README and Download use the button's own text style, the same as Get in touch. They no longer use the pixel face or mono. The download count sits in a filled circle on the inverse surface, which turns into a pill as the number grows. There is no separator. Download skips the row tear: `Button` takes `hover="icon"`, which gives a text button the icon buttons' hover. Its arrow-down drops out through the bottom edge and comes back in from the top, the Back to top motion reversed.

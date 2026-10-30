@@ -2,6 +2,7 @@ import { defineCollection, reference } from "astro:content";
 import { glob } from "astro/loaders";
 import { z } from "astro/zod";
 import { CLIENTS, type Client } from "./lib/clients";
+import { QUEST_TYPES, STATUSES, VOLUMES } from "./lib/grist";
 
 /**
  * Case studies: one folder per case study, src/content/work/<slug>/index.mdx, with its images
@@ -62,4 +63,40 @@ const work = defineCollection({
     }),
 });
 
-export const collections = { work };
+/**
+ * Grist quests: one MDX file per quest, src/content/grist/<slug>.mdx. The body holds the sections
+ * (My current take, Anatomy, Known issues…); rarity, version and dates shown on the page are
+ * derived from `started` and `levelUps` in src/lib/grist.ts, never stored.
+ */
+const keys = <T extends Record<string, unknown>>(object: T) =>
+  Object.keys(object) as [Extract<keyof T, string>, ...Extract<keyof T, string>[]];
+
+const grist = defineCollection({
+  loader: glob({ pattern: "*.mdx", base: "./src/content/grist" }),
+  schema: z.object({
+    title: z.string(),
+    volume: z.enum(keys(VOLUMES)),
+    /** The tl;dr: one sentence, also the meta description. */
+    definition: z.string(),
+    /** Shorter line under the title in quest rows. Falls back to `definition`. */
+    summary: z.string().optional(),
+    status: z.enum(keys(STATUSES)),
+    type: z.enum(keys(QUEST_TYPES)),
+    /** Real publish date. Never backdated; a future date stays off production until then. */
+    started: z.coerce.date(),
+    /** Level-ups that have actually happened, oldest first. Each one raises the rarity a tier. */
+    levelUps: z
+      .array(z.object({ version: z.string(), date: z.coerce.date(), grew: z.string() }))
+      .default([]),
+    /** What the next level-up will probably bring (Next rank). */
+    next: z.string().optional(),
+    /** Slugs for See also. */
+    related: z.array(z.string()).default([]),
+    /** Tie-break among quests started the same day: lower comes first. */
+    order: z.number().default(0),
+    /** Drafts show on preview builds only. */
+    draft: z.boolean().default(false),
+  }),
+});
+
+export const collections = { work, grist };

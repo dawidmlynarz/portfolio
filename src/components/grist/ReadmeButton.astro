@@ -1,8 +1,15 @@
 ---
-/** Opens the README panel (the panel and its toggle come in step 4). */
+/** Opens the README panel (ReadmePanel), a native popover, so it needs no script. */
 import Button from "@/components/ui/Button.astro";
+
+interface Props {
+  /** id of the ReadmePanel it opens. */
+  panel: string;
+}
+
+const { panel } = Astro.props;
 ---
 
-<Button variant="secondary" icon="info">
+<Button variant="secondary" icon="info" popovertarget={panel}>
   Readme
 </Button>

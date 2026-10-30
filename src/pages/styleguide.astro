@@ -47,6 +47,11 @@ import RarityLabel from "@/components/grist/RarityLabel.astro";
 import ReadmeButton from "@/components/grist/ReadmeButton.astro";
 import DownloadButton from "@/components/grist/DownloadButton.astro";
 import PermalinkButton from "@/components/grist/PermalinkButton.astro";
+import NewBadge from "@/components/grist/NewBadge.astro";
+import QuestTag from "@/components/grist/QuestTag.astro";
+import VolumeHeader from "@/components/grist/VolumeHeader.astro";
+import QuestRow from "@/components/grist/QuestRow.astro";
+import { getQuests } from "@/lib/quests";
 import { RARITIES } from "@/lib/grist";
 import { getEntry } from "astro:content";
 import { COLOR_ROLES, SPACE } from "@/lib/tokens";
@@ -74,6 +79,7 @@ const STYLEGUIDE_SECTIONS = [
   ["blocks-title", "Blocks"],
 ].map(([slug, text]) => ({ depth: 2, slug: slug!, text: text! }));
 const nextUpSample = (await getPagedWork()).slice(0, 3);
+const sampleQuest = (await getQuests())[0];
 
 const TYPE_ROLES = [
   { role: "display", className: "text-display", sample: "hello@mlynarz.com" },
@@ -525,6 +531,27 @@ const GRIST_ICONS: IconName[] = [
         </Stack>
 
         <Stack gap="4">
+          <h3>Tags and New</h3>
+          <div class="row">
+            <QuestTag status="fresh" />
+            <QuestTag status="battle-tested" />
+            <QuestTag type="side-quest" />
+            <QuestTag type="demo" />
+            <QuestTag type="deep-dive" />
+            <QuestTag type="kit" />
+            <NewBadge />
+          </div>
+        </Stack>
+
+        <Stack gap="4">
+          <h3>Volume and quest row</h3>
+          <div>
+            <VolumeHeader id="sg-volume" number="I" title="Agentic UX" count={1} />
+            {sampleQuest && <QuestRow quest={sampleQuest} />}
+          </div>
+        </Stack>
+
+        <Stack gap="4">
           <h3>Pixel face and tag icons</h3>
           <p class="grist-pixel-sample">Readme · New · 01 02 03</p>
           <ul class="row plain-list grist-icons" role="list">
@@ -544,9 +571,9 @@ const GRIST_ICONS: IconName[] = [
             circle; on hover the arrow drops out and back in, no tear), Permalink and Get in touch.
           </p>
           <div class="row">
-            <ReadmeButton />
+            <ReadmeButton panel="readme-demo" />
             <DownloadButton slug="human-checkpoints" count={37} />
-            <PermalinkButton />
+            <PermalinkButton url="https://www.mlynarz.com/grist/human-checkpoints" />
             <Button href="/contact" variant="secondary" icon="arrow">
               Get in touch
             </Button>

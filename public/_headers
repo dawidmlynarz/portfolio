@@ -16,3 +16,7 @@ https://:project.pages.dev/*
 
 https://:version.:project.pages.dev/*
   X-Robots-Tag: noindex
+
+# Grist markdown twins: say they're UTF-8, or browsers show curly quotes as mojibake.
+/grist/*.md
+  Content-Type: text/markdown; charset=utf-8

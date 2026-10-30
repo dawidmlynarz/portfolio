@@ -1,0 +1,516 @@
+---
+import { render } from "astro:content";
+import GristLayout from "@/layouts/GristLayout.astro";
+import Container from "@/components/layout/Container.astro";
+import Button from "@/components/ui/Button.astro";
+import Icon from "@/components/grist/Icon.astro";
+import Gem from "@/components/grist/Gem.astro";
+import RarityLabel from "@/components/grist/RarityLabel.astro";
+import QuestTag from "@/components/grist/QuestTag.astro";
+import DownloadButton from "@/components/grist/DownloadButton.astro";
+import PermalinkButton from "@/components/grist/PermalinkButton.astro";
+import { RARITY_LABELS, STATUSES, QUEST_TYPES, VOLUMES } from "@/lib/grist";
+import { SITE } from "@/lib/site";
+import {
+  derive,
+  formatDate,
+  getQuests,
+  isoDate,
+  questHref,
+  twinHref,
+  type Quest,
+} from "@/lib/quests";
+
+export async function getStaticPaths() {
+  const quests = await getQuests();
+  return quests.map((quest) => ({
+    params: { slug: quest.id },
+    props: {
+      quest,
+      related: quest.data.related.flatMap((slug) => quests.find((q) => q.id === slug) ?? []),
+    },
+  }));
+}
+
+interface Props {
+  quest: Quest;
+  related: Quest[];
+}
+
+const { quest, related } = Astro.props;
+const { data } = quest;
+const { Content, headings } = await render(quest);
+const { rarity, version, updated, nextRarity, levelUps } = derive(quest);
+const volume = VOLUMES[data.volume];
+const url = new URL(questHref(quest), Astro.site).href;
+const toc = [
+  ...headings.filter((heading) => heading.depth === 2),
+  { slug: "level-ups", text: "Level-ups" },
+  ...(related.length ? [{ slug: "see-also", text: "See also" }] : []),
+];
+
+const jsonLd = {
+  "@context": "https://schema.org",
+  "@type": "Article",
+  headline: data.title,
+  description: data.definition,
+  url,
+  datePublished: isoDate(data.started),
+  dateModified: isoDate(updated),
+  author: { "@type": "Person", name: SITE.name, url: Astro.site?.href },
+  about: { "@type": "DefinedTerm", name: data.title, description: data.definition },
+};
+---
+
+<GristLayout title={`${data.title} · Grist`} description={data.definition} type="article" {jsonLd}>
+  <link slot="head" rel="alternate" type="text/markdown" href={twinHref(quest)} />
+  <Container class="quest">
+    <header class="quest__header">
+      <a class="quest__back" href="/grist">
+        <Icon name="arrow-left" />
+        All quests
+      </a>
+      <h1 class="quest__title">{data.title}</h1>
+      <div class="quest__meta">
+        <div class="quest__tags">
+          <RarityLabel rarity={rarity} />
+          <QuestTag status={data.status} />
+          <QuestTag type={data.type} />
+        </div>
+        <div class="quest__actions">
+          <DownloadButton slug={quest.id} />
+          <PermalinkButton url={url} />
+        </div>
+      </div>
+    </header>
+
+    <div class="quest__layout">
+      <article class="quest__main">
+        <p class="quest__label">// tl;dr</p>
+        <p class="quest__definition">{data.definition}</p>
+        <div class="quest__body">
+          <Content />
+        </div>
+
+        <section class="quest__section" aria-labelledby="level-ups">
+          <h2 id="level-ups">Level-ups</h2>
+          <ol class="quest__levels" role="list">
+            {levelUps.map((levelUp) => (
+              <li class="quest__level">
+                <RarityLabel rarity={levelUp.rarity} />
+                <span>{levelUp.grew}</span>
+                <span class="quest__level-date">
+                  v{levelUp.version} ·{" "}
+                  <time datetime={isoDate(levelUp.date)}>{formatDate(levelUp.date)}</time>
+                </span>
+              </li>
+            ))}
+          </ol>
+        </section>
+      </article>
+
+      <aside class="quest__rail">
+        <nav class="quest__block" aria-labelledby="on-this-page">
+          <h2 class="quest__label quest__label--rule" id="on-this-page">
+            On this page
+          </h2>
+          <ul class="quest__toc" role="list">
+            {toc.map((item) => (
+              <li>
+                <a href={`#${item.slug}`}>{item.text}</a>
+              </li>
+            ))}
+          </ul>
+        </nav>
+        <section class="quest__block" aria-labelledby="quest-log">
+          <h2 class="quest__label quest__label--rule" id="quest-log">
+            Quest log
+          </h2>
+          <dl class="quest__log">
+            <div>
+              <dt>Volume</dt>
+              <dd>
+                {volume.number} · {volume.title}
+              </dd>
+            </div>
+            <div>
+              <dt>Version</dt>
+              <dd>v{version}</dd>
+            </div>
+            <div>
+              <dt>Started</dt>
+              <dd>
+                <time datetime={isoDate(data.started)}>{formatDate(data.started)}</time>
+              </dd>
+            </div>
+            {data.levelUps.length > 0 && (
+              <div>
+                <dt>Last level-up</dt>
+                <dd>
+                  <time datetime={isoDate(updated)}>{formatDate(updated)}</time>
+                </dd>
+              </div>
+            )}
+          </dl>
+        </section>
+        {nextRarity && (
+          <section class="quest__block" aria-labelledby="next-rank">
+            <h2 class="quest__label quest__label--rule" id="next-rank">
+              Next rank
+            </h2>
+            <p class="quest__next">
+              <span class={`quest__next-tier quest__next-tier--${nextRarity}`}>
+                <Gem rarity={nextRarity} />
+                {RARITY_LABELS[nextRarity]}
+              </span>
+              <span class="quest__next-note">
+                One more level-up.
+                {data.next && ` Probably ${data.next.charAt(0).toLowerCase()}${data.next.slice(1)}`}
+              </span>
+            </p>
+          </section>
+        )}
+      </aside>
+
+      <div class="quest__more">
+        {related.length > 0 && (
+          <section class="quest__section" aria-labelledby="see-also">
+            <h2 id="see-also">See also</h2>
+            <ul class="quest__related" role="list">
+              {related.map((other) => {
+                const derived = derive(other);
+                return (
+                  <li class="quest__card">
+                    <a href={questHref(other)} data-no-tear>
+                      {other.data.title}
+                    </a>
+                    <span class="quest__card-meta">
+                      <Gem rarity={derived.rarity} />
+                      {RARITY_LABELS[derived.rarity]} · {STATUSES[other.data.status].label} ·{" "}
+                      {QUEST_TYPES[other.data.type].label}
+                    </span>
+                  </li>
+                );
+              })}
+            </ul>
+          </section>
+        )}
+        <section class="quest__touch">
+          <p>
+            Grist is my side quest. If one of these hit close to something you’re working on, I’d
+            like to hear about it.
+          </p>
+          <Button href="/contact" variant="secondary" icon="arrow">
+            Get in touch
+          </Button>
+        </section>
+      </div>
+    </div>
+  </Container>
+</GristLayout>
+
+<style>
+  @layer components {
+    .quest {
+      padding-block: var(--space-12) var(--space-section-md);
+    }
+
+    .quest__header {
+      display: grid;
+      gap: var(--space-6);
+      padding-block-end: var(--space-8);
+      border-block-end: calc(var(--border-width) * 2) solid var(--color-text);
+    }
+
+    .quest__back {
+      display: inline-flex;
+      align-items: center;
+      gap: var(--space-2);
+      justify-self: start;
+      font: var(--weight-regular) var(--text-caption) / var(--leading-caption) var(--font-mono);
+
+      --underline-size: 0%;
+
+      color: var(--color-text-muted);
+    }
+
+    .quest__back:hover {
+      color: var(--color-text);
+    }
+
+    .quest__title {
+      font: var(--weight-medium) var(--text-h1) / var(--leading-h1) var(--font-heading);
+      letter-spacing: var(--tracking-h1);
+    }
+
+    .quest__meta,
+    .quest__tags,
+    .quest__actions {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: var(--space-4) var(--space-6);
+    }
+
+    .quest__meta {
+      justify-content: space-between;
+    }
+
+    .quest__actions {
+      gap: var(--space-3);
+    }
+
+    .quest__layout {
+      display: grid;
+      grid-template-areas: "main" "rail" "more";
+      gap: var(--space-12);
+      padding-block-start: var(--space-12);
+    }
+
+    .quest__main {
+      grid-area: main;
+      min-inline-size: 0;
+    }
+
+    .quest__rail {
+      display: grid;
+      grid-area: rail;
+      align-content: start;
+      gap: var(--space-10);
+    }
+
+    .quest__more {
+      display: grid;
+      grid-area: more;
+      gap: var(--space-12);
+      min-inline-size: 0;
+    }
+
+    .quest__label {
+      font: var(--weight-regular) var(--text-caption) / var(--leading-caption) var(--font-mono);
+      letter-spacing: var(--tracking-caption);
+      text-transform: uppercase;
+      color: var(--color-text-muted);
+    }
+
+    .quest__label--rule {
+      max-inline-size: none;
+      padding-block-end: var(--space-3);
+      border-block-end: var(--border-width) solid var(--color-text);
+    }
+
+    .quest__definition {
+      max-inline-size: var(--measure);
+      margin-block: var(--space-3) var(--space-12);
+      font: var(--weight-regular) var(--text-h3) / var(--leading-h3) var(--font-heading);
+      letter-spacing: var(--tracking-h3);
+    }
+
+    .quest__body,
+    .quest__section {
+      max-inline-size: var(--measure);
+    }
+
+    .quest__body :global(h2),
+    .quest__section h2 {
+      margin-block-end: var(--space-4);
+      font: var(--weight-medium) var(--text-h3) / var(--leading-h3) var(--font-heading);
+      letter-spacing: var(--tracking-h3);
+    }
+
+    .quest__body :global(* + h2) {
+      margin-block-start: var(--space-12);
+    }
+
+    .quest__body :global(p + p) {
+      margin-block-start: var(--space-4);
+    }
+
+    .quest__body :global(code) {
+      font-family: var(--font-mono);
+      font-size: var(--text-small);
+    }
+
+    .quest__section {
+      margin-block-start: var(--space-12);
+    }
+
+    .quest__more .quest__section {
+      margin-block-start: 0;
+    }
+
+    .quest__levels {
+      padding: 0;
+      border-block-start: var(--border-width) solid var(--color-border-subtle);
+    }
+
+    .quest__level {
+      display: grid;
+      grid-template-columns: 9rem 1fr;
+      gap: var(--space-1) var(--space-4);
+      align-items: baseline;
+      padding-block: var(--space-3);
+      border-block-end: var(--border-width) solid var(--color-border-subtle);
+      font-size: var(--text-small);
+    }
+
+    .quest__level-date {
+      grid-column: 2;
+      font: var(--weight-regular) var(--text-caption) / var(--leading-caption) var(--font-mono);
+      color: var(--color-text-muted);
+    }
+
+    .quest__toc {
+      display: grid;
+      gap: var(--space-2);
+      padding: var(--space-3) 0 0;
+      font-size: var(--text-small);
+    }
+
+    .quest__toc a {
+      --underline-size: 0%;
+    }
+
+    .quest__toc a:hover {
+      --underline-size: 100%;
+    }
+
+    .quest__log div {
+      display: flex;
+      justify-content: space-between;
+      gap: var(--space-4);
+      padding-block: var(--space-2);
+      border-block-end: var(--border-width) solid var(--color-border-subtle);
+      font: var(--weight-regular) var(--text-caption) / var(--leading-caption) var(--font-mono);
+    }
+
+    .quest__log dt {
+      color: var(--color-text-muted);
+    }
+
+    .quest__next {
+      display: grid;
+      gap: var(--space-2);
+      padding-block-start: var(--space-3);
+      font-size: var(--text-small);
+      line-height: var(--leading-small);
+    }
+
+    .quest__next-tier {
+      display: inline-flex;
+      align-items: center;
+      gap: var(--space-2);
+      font-weight: var(--weight-medium);
+      color: var(--rarity-uncommon-text);
+    }
+
+    .quest__next-tier--rare {
+      color: var(--rarity-rare-text);
+    }
+
+    .quest__next-tier--epic {
+      color: var(--rarity-epic-text);
+    }
+
+    .quest__next-tier--legendary {
+      color: var(--rarity-legendary-text);
+    }
+
+    .quest__next-note {
+      color: var(--color-text-muted);
+    }
+
+    .quest__related {
+      display: grid;
+      gap: var(--space-3);
+      padding: 0;
+    }
+
+    .quest__card {
+      position: relative;
+      display: grid;
+      gap: var(--space-2);
+      padding: var(--space-4);
+      border: var(--border-width) solid var(--color-text);
+    }
+
+    .quest__card a {
+      --underline-size: 0%;
+
+      font-weight: var(--weight-medium);
+    }
+
+    .quest__card a::after {
+      content: "";
+      position: absolute;
+      inset: 0;
+    }
+
+    .quest__card:hover a {
+      --underline-size: 100%;
+    }
+
+    .quest__card:has(a:focus-visible) {
+      outline: calc(var(--border-width) * 2) solid var(--color-focus);
+      outline-offset: var(--space-1);
+    }
+
+    .quest__card a:focus-visible {
+      outline: none;
+    }
+
+    .quest__card-meta {
+      display: inline-flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: var(--space-2);
+      font: var(--weight-regular) var(--text-caption) / var(--leading-caption) var(--font-mono);
+      color: var(--color-text-muted);
+    }
+
+    .quest__touch {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: space-between;
+      gap: var(--space-6);
+      max-inline-size: var(--measure);
+      padding-block-start: var(--space-8);
+      border-block-start: calc(var(--border-width) * 2) solid var(--color-text);
+    }
+
+    .quest__touch p {
+      flex: 1 1 20rem;
+      color: var(--color-text-muted);
+    }
+
+    @media (width >= 48em) {
+      .quest__related {
+        grid-template-columns: 1fr 1fr;
+        max-inline-size: var(--measure);
+      }
+    }
+
+    @media (width >= 64em) {
+      .quest__layout {
+        grid-template-areas: "main rail" "more rail";
+        grid-template-columns: minmax(0, 1fr) 16rem;
+        column-gap: var(--space-16);
+      }
+
+      .quest__rail {
+        position: sticky;
+        inset-block-start: var(--space-8);
+        align-self: start;
+      }
+
+      .quest__level {
+        grid-template-columns: 9rem 1fr auto;
+      }
+
+      .quest__level-date {
+        grid-column: auto;
+      }
+    }
+  }
+</style>
