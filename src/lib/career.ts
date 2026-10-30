@@ -1,8 +1,8 @@
 /**
  * Dawid's career for the About timeline, newest first. Built from the 2026 CV and LinkedIn;
  * where the two disagree, LinkedIn wins (it is the newer of the two). `end` left out = to date.
- * `alongside` marks work that ran next to a full-time role (CSS Peeper, freelance), drawn as an
- * outlined bar so overlaps read at a glance.
+ * `alongside` marks work that ran next to a full-time role (CSS Peeper, freelance) and study; on
+ * the timeline it sits on its own dashed lane above the main line, so overlaps read at a glance.
  */
 import type { Client } from "@/lib/clients";
 
@@ -132,6 +132,7 @@ export const CAREER: Role[] = [
     start: "2010-10",
     end: "2013-06",
     place: "Poznań",
+    alongside: true,
     text: "My degree is in language, not design. The design part I taught myself.",
   },
 ];
