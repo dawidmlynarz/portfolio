@@ -1,13 +1,10 @@
 ---
 /**
- * The "human curated" stamp, after spin-text badges: the words run round the outside, an inner
- * ring holds the site's mark in a black disc, and the whole badge is a link to the portfolio. It
- * doubles as a credential: on hover or focus it stops, a small card says who curated this and for
- * whom he has worked (from SITE), and the mark turns into an arrow.
- *
- * Each character is placed on its own angle, so the spacing is even and nothing overlaps whatever
- * the font. Plain SVG and a CSS turn; reduced motion keeps it still. Two places only: the front
- * door hero (lg) and the corner of each drop (sm, credential card aligned to its right edge).
+ * The "human curated" stamp, a spin-text badge: the words run round a circle (fitted to it exactly
+ * with textLength) and turn slowly, with the site's mark small in a black disc at the centre and a
+ * faint ring outside. No surface of its own on the page; the small one gets the page colour behind
+ * it, since it sits over the loot box's edge. The whole badge links to the portfolio, with no hover
+ * effect. Plain SVG and a CSS turn; reduced motion keeps it still.
  */
 import { MARK_PATH, SITE } from "@/lib/site";
 
@@ -17,226 +14,121 @@ interface Props {
 }
 
 const { size = "lg", class: className } = Astro.props;
-const WORDS = "Human curated • By Dawid Młynarz • ".toUpperCase();
-const chars = [...WORDS];
-const step = 360 / chars.length;
-// Glyph baseline radius in the 120-unit box: caps sit between r 41 and r 49.
-const BASELINE = 41;
-const CLIENTS = "Newsweek, NerdWallet, Google";
+// Small badges carry fewer, larger letters so they stay readable.
+const WORDS =
+  size === "sm"
+    ? "Human curated • Human curated • "
+    : "Human curated · Dawid Młynarz • Human curated · Dawid Młynarz • ";
+const FONT_SIZE = size === "sm" ? 22 : 16;
+// The trailing space is a no-break space, or SVG drops it and the loop's seam closes up.
+// Text circle radius in the 280-unit box; textLength stretches the words to close the loop.
+const R = 100;
+const ring = `M ${140 - R},140 a ${R},${R} 0 1,1 ${2 * R},0 a ${R},${R} 0 1,1 -${2 * R},0`;
+const pathId = `stamp-ring-${crypto.randomUUID().slice(0, 8)}`;
 ---
 
 <a
   class:list={["human-stamp", `human-stamp--${size}`, className]}
   href="/"
   data-no-tear
-  aria-label={`Human curated by ${SITE.name}, ${SITE.jobTitle}. Visit the portfolio.`}
+  aria-label={`Human curated by ${SITE.name}. Visit the portfolio.`}
 >
-  <span class="human-stamp__badge" aria-hidden="true">
-    <svg class="human-stamp__ring" viewBox="0 0 120 120" focusable="false">
-      {chars.map((char, i) => (
-        <text
-          class="human-stamp__char"
-          x="60"
-          y={60 - BASELINE}
-          text-anchor="middle"
-          font-size="10"
-          transform={`rotate(${(i * step).toFixed(2)} 60 60)`}
+  <svg class="human-stamp__svg" viewBox="0 0 280 280" aria-hidden="true" focusable="false">
+    <defs>
+      <path id={pathId} d={ring} />
+    </defs>
+    <circle class="human-stamp__rule" cx="140" cy="140" r="130" />
+    <g class="human-stamp__spin">
+      <text class="human-stamp__words" font-size={FONT_SIZE}>
+        <textPath
+          href={`#${pathId}`}
+          textLength={(2 * Math.PI * R).toFixed(2)}
+          lengthAdjust="spacing"
         >
-          {char}
-        </text>
-      ))}
+          {WORDS.toUpperCase().replace(/ $/, "\u00a0")}
+        </textPath>
+      </text>
+    </g>
+  </svg>
+  <span class="human-stamp__core" aria-hidden="true">
+    <svg viewBox="0 0 32 24" focusable="false">
+      <path d={MARK_PATH} />
     </svg>
-    <span class="human-stamp__core">
-      <svg class="human-stamp__mark" viewBox="0 0 32 24" focusable="false">
-        <path d={MARK_PATH} />
-      </svg>
-      <svg class="human-stamp__arrow" viewBox="0 0 24 24" focusable="false">
-        <path d="M7 17 17 7M8 7h9v9" />
-      </svg>
-    </span>
-  </span>
-  <span class="human-stamp__card" aria-hidden="true">
-    <strong>{SITE.name}</strong>
-    <span>{SITE.jobTitle}, 15 years</span>
-    <span class="human-stamp__muted">{CLIENTS}</span>
-    <span class="human-stamp__cta">Portfolio ↗</span>
   </span>
 </a>
 
 <style>
   @layer components {
     .human-stamp {
-      --stamp-size: calc(var(--space-24) * 2);
+      --stamp-size: calc(var(--space-24) * 2.5);
       --underline-size: 0%;
 
-      position: relative;
-      display: inline-block;
+      display: inline-grid;
       flex: none;
+      place-items: center;
       inline-size: var(--stamp-size);
+      aspect-ratio: 1;
+      border-radius: var(--radius-pill);
       color: var(--color-text);
     }
 
     .human-stamp--sm {
-      --stamp-size: var(--space-24);
+      --stamp-size: calc(var(--space-24) + var(--space-8));
+
+      background-color: var(--color-bg);
     }
 
     .human-stamp:focus-visible {
-      outline: none;
-    }
-
-    .human-stamp__badge {
-      display: grid;
-      place-items: center;
-      aspect-ratio: 1;
-      border: var(--border-width) solid var(--color-text);
-      border-radius: var(--radius-pill);
-      background-color: var(--color-bg);
-      transition: scale var(--duration-fast) var(--ease-standard);
-    }
-
-    .human-stamp:focus-visible .human-stamp__badge {
-      outline: calc(var(--border-width) * 2) solid var(--color-focus);
       outline-offset: var(--space-1);
     }
 
-    .human-stamp__ring,
+    .human-stamp__svg,
     .human-stamp__core {
       grid-area: 1 / 1;
     }
 
-    .human-stamp__ring {
+    .human-stamp__svg {
       inline-size: 100%;
       block-size: 100%;
+      overflow: visible;
     }
 
-    .human-stamp__char {
+    .human-stamp__rule {
+      fill: none;
+      stroke: var(--color-border-muted);
+      stroke-width: 1;
+    }
+
+    .human-stamp__words {
       font-family: var(--font-body);
       font-weight: var(--weight-semibold);
       fill: currentcolor;
     }
 
-    /* Inner ring and the nav's mark: a black disc (white in dark mode), the M in the page colour. */
+    .human-stamp__spin {
+      transform-origin: center;
+      transform-box: view-box;
+    }
+
+    /* The nav's mark: a black disc (white in dark mode) with the M in the page colour. */
     .human-stamp__core {
       display: grid;
       place-items: center;
-      inline-size: 56%;
+      inline-size: 32%;
       aspect-ratio: 1;
       border-radius: var(--radius-pill);
       background-color: var(--color-text);
-      box-shadow:
-        0 0 0 calc(var(--stamp-size) * 0.04) var(--color-bg),
-        0 0 0 calc(var(--stamp-size) * 0.04 + var(--border-width)) var(--color-text);
     }
 
-    .human-stamp__mark,
-    .human-stamp__arrow {
-      grid-area: 1 / 1;
-      inline-size: 48%;
+    .human-stamp__core svg {
+      inline-size: 46%;
       block-size: auto;
-      transition:
-        opacity var(--duration-fast) var(--ease-standard),
-        scale var(--duration-fast) var(--ease-standard);
-    }
-
-    .human-stamp__mark {
       fill: var(--color-bg);
     }
 
-    .human-stamp__arrow {
-      inline-size: 44%;
-      fill: none;
-      stroke: var(--color-bg);
-      stroke-width: 2;
-      stroke-linecap: round;
-      stroke-linejoin: round;
-      opacity: 0;
-      scale: 0.6;
-    }
-
-    .human-stamp:is(:hover, :focus-visible) .human-stamp__mark {
-      opacity: 0;
-      scale: 0.6;
-    }
-
-    .human-stamp:is(:hover, :focus-visible) .human-stamp__arrow {
-      opacity: 1;
-      scale: 1;
-    }
-
-    .human-stamp:active .human-stamp__badge {
-      scale: 0.97;
-    }
-
-    /* The credential: who stands behind the loot. Under the badge, centred (sm: right-aligned). */
-    .human-stamp__card {
-      position: absolute;
-      inset-block-start: calc(100% + var(--space-3));
-      inset-inline-start: 50%;
-      z-index: 2;
-      display: grid;
-      gap: var(--space-1);
-      inline-size: max-content;
-      max-inline-size: 16rem;
-      padding: var(--space-3) var(--space-4);
-      border: calc(var(--border-width) * 2) solid var(--color-text);
-      font-size: var(--text-small);
-      line-height: var(--leading-small);
-      text-align: start;
-      background-color: var(--color-bg);
-      box-shadow: var(--space-1) var(--space-1) 0 var(--color-text);
-      opacity: 0;
-      visibility: hidden;
-      translate: -50% calc(var(--space-2) * -1);
-      transition:
-        opacity var(--duration-fast) var(--ease-standard),
-        translate var(--duration-fast) var(--ease-standard),
-        visibility 0s var(--duration-fast);
-    }
-
-    .human-stamp--sm .human-stamp__card {
-      inset-inline: auto 0;
-      translate: 0 calc(var(--space-2) * -1);
-    }
-
-    .human-stamp:is(:hover, :focus-visible) .human-stamp__card {
-      opacity: 1;
-      visibility: visible;
-      translate: -50% 0;
-      transition-delay: 0s;
-    }
-
-    .human-stamp--sm:is(:hover, :focus-visible) .human-stamp__card {
-      translate: 0 0;
-    }
-
-    /* Narrow screens: the large badge sits at the left edge, so its card starts there too. */
-    @media (width < 62em) {
-      .human-stamp--lg .human-stamp__card {
-        inset-inline-start: 0;
-        translate: 0 calc(var(--space-2) * -1);
-      }
-
-      .human-stamp--lg:is(:hover, :focus-visible) .human-stamp__card {
-        translate: 0 0;
-      }
-    }
-
-    .human-stamp__muted {
-      color: var(--color-text-muted);
-    }
-
-    .human-stamp__cta {
-      margin-block-start: var(--space-1);
-      font-weight: var(--weight-medium);
-    }
-
     @media (prefers-reduced-motion: no-preference) {
-      .human-stamp__ring {
+      .human-stamp__spin {
         animation: human-stamp-turn var(--duration-stamp) linear infinite;
-      }
-
-      .human-stamp:is(:hover, :focus-visible) .human-stamp__ring {
-        animation-play-state: paused;
       }
     }
 

@@ -663,7 +663,7 @@ What changed versus the embed, and why:
 
 ## Grist: credential badge, drop anatomy by rarity, demo seasons (30 Oct 2026)
 
-- The stamp is a spin-text badge that links to the portfolio. Characters sit on their own angles, so nothing overlaps. On hover or focus it pauses, the mark turns into an arrow and a small credential card shows name, role, years and clients (from SITE and the site's own copy).
+- The stamp is a spin-text badge after Dawid's Framer reference: words fitted to a circle with textLength, a faint outer ring, the nav mark small in a black disc, no surface of its own (the small one gets the page colour, as it sits over the loot box edge). It links to the portfolio and has no hover effect.
 - Rarer drops carry more: every drop has `useWhen` and `outcome`; Prompt and up add `steps`; Spec and up an `## Example` in the body (`example: true`); Skill adds `limits`. The schema enforces it per type (DROP_TYPES.needs). The markdown twin follows the same order, so an agent gets brief, why, how to use it, the drop and its limits.
 - Copy for AI and Download moved into the loot box; the raw drop has its own copy icon on the code panel; the permalink sits alone at the end of the meta row.
 - Lists respect drop days on previews too, so the battle pass shows as it stands; future and draft drops still get pages on previews for review.
