@@ -192,32 +192,29 @@
     /* ---------- Grist (/grist): rarity tiers and the pixel face ----------
        Figma collection "Grist". Only what the site system has no equivalent for.
          fill   the gem body
-         shade  the gem's facet lines (a deeper fill); its girdle and left facets mix fill and shade
+         shade  the gem's facet lines, deep enough to read as depth; its dark facets mix fill and shade
          light  the gem's lit facets and sparkles
-         text   tier names: shade on light, light on dark, so both pass 4.5:1 */
+         text   tier names: a deep shade on light, the light shade on dark, so both pass 4.5:1 */
     --rarity-common-fill: #9aa0a6;
     --rarity-common-shade: #5f6368;
     --rarity-common-light: #c4c7ca;
+    --rarity-common-text: light-dark(#5f6368, var(--rarity-common-light));
     --rarity-uncommon-fill: #22a04b;
-    --rarity-uncommon-shade: #157a38;
+    --rarity-uncommon-shade: #0e5f2b;
     --rarity-uncommon-light: #4ade80;
+    --rarity-uncommon-text: light-dark(#157a38, var(--rarity-uncommon-light));
     --rarity-rare-fill: #2b6fe0;
-    --rarity-rare-shade: #1f5bc4;
+    --rarity-rare-shade: #17418f;
     --rarity-rare-light: #60a5fa;
+    --rarity-rare-text: light-dark(#1f5bc4, var(--rarity-rare-light));
     --rarity-epic-fill: #8a3fe0;
-    --rarity-epic-shade: #7330c4;
+    --rarity-epic-shade: #4f1f8f;
     --rarity-epic-light: #c084fc;
+    --rarity-epic-text: light-dark(#7330c4, var(--rarity-epic-light));
     --rarity-legendary-fill: #e3a008;
     --rarity-legendary-shade: #8f6400;
     --rarity-legendary-light: #fbbf24;
-    --rarity-common-text: light-dark(var(--rarity-common-shade), var(--rarity-common-light));
-    --rarity-uncommon-text: light-dark(var(--rarity-uncommon-shade), var(--rarity-uncommon-light));
-    --rarity-rare-text: light-dark(var(--rarity-rare-shade), var(--rarity-rare-light));
-    --rarity-epic-text: light-dark(var(--rarity-epic-shade), var(--rarity-epic-light));
-    --rarity-legendary-text: light-dark(
-      var(--rarity-legendary-shade),
-      var(--rarity-legendary-light)
-    );
+    --rarity-legendary-text: light-dark(#8f6400, var(--rarity-legendary-light));
     /* Silkscreen: the README label, tier names, the New badge, anatomy numbers. Never body text. */
     --font-pixel: "Silkscreen", var(--font-mono);
     --shadow-panel: 0 24px 64px -24px light-dark(rgb(0 0 0 / 28%), rgb(0 0 0 / 80%));
