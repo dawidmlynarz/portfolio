@@ -74,13 +74,13 @@ export const ABOUT_STORY: StoryPart[][] = [
     " AI into their products in ways people understand, trust and actually use.",
   ],
   [
-    "After hours I’m a family guy with ",
+    "After hours, I’m a husband and a proud dad, enjoying life with my family and our ",
     {
       image: tadzik,
       alt: "Tadzik, a black long-haired dog with a white chest, looking into the camera.",
       shape: "square",
     },
-    " Tadzik, our dog who runs security. Late at night you’ll find me in ",
+    " head of security. Late at night you’ll find me in ",
     {
       image: gaming,
       alt: "My Arc Raiders character in a blue helmet, flashing a peace sign on a snowy mountain.",
