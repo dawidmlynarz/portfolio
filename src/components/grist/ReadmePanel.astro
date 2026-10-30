@@ -36,7 +36,7 @@ const TIER_NOTES = ["Just planted", "1 level-up", "2 level-ups", "3 level-ups", 
   </div>
   <div class="readme__body">
     <section>
-      <h3 class="readme__label">Status</h3>
+      <h3 class="readme__label text-caption">Status</h3>
       <dl class="readme__statuses">
         {(Object.keys(STATUSES) as Status[]).map((status) => (
           <div class="readme__status">
@@ -48,7 +48,7 @@ const TIER_NOTES = ["Just planted", "1 level-up", "2 level-ups", "3 level-ups", 
       </dl>
     </section>
     <section>
-      <h3 class="readme__label">Rarity</h3>
+      <h3 class="readme__label text-caption">Rarity</h3>
       <p class="readme__note">
         Quests get rarer as they grow: a runnable demo, real examples, known issues, a change of
         mind. Small edits don’t count.
@@ -125,9 +125,6 @@ const TIER_NOTES = ["Just planted", "1 level-up", "2 level-ups", "3 level-ups", 
 
     .readme__label {
       margin-block-end: var(--space-4);
-      font: var(--weight-regular) var(--text-caption) / var(--leading-caption) var(--font-mono);
-      letter-spacing: var(--tracking-caption);
-      text-transform: uppercase;
       color: var(--color-text-muted);
     }
 

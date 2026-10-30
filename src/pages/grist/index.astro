@@ -2,7 +2,7 @@
 import GristLayout from "@/layouts/GristLayout.astro";
 import Hero from "@/components/blocks/Hero.astro";
 import Container from "@/components/layout/Container.astro";
-import QuestRow from "@/components/grist/QuestRow.astro";
+import QuestCard from "@/components/grist/QuestCard.astro";
 import VolumeHeader from "@/components/grist/VolumeHeader.astro";
 import ReadmeButton from "@/components/grist/ReadmeButton.astro";
 import ReadmePanel from "@/components/grist/ReadmePanel.astro";
@@ -31,9 +31,13 @@ const volumes = await getVolumes();
     {volumes.map((volume) => (
       <section class="front__volume" aria-labelledby={volume.id}>
         <VolumeHeader id={volume.id} title={volume.title} />
-        {volume.quests.map((quest) => (
-          <QuestRow quest={quest} />
-        ))}
+        <ul class="front__list" role="list">
+          {volume.quests.map((quest) => (
+            <li>
+              <QuestCard quest={quest} />
+            </li>
+          ))}
+        </ul>
       </section>
     ))}
   </Container>
@@ -45,6 +49,17 @@ const volumes = await getVolumes();
       display: grid;
       gap: var(--space-section-sm);
       padding-block-end: var(--space-section-md);
+    }
+
+    .front__volume {
+      display: grid;
+      gap: var(--space-6);
+    }
+
+    .front__list {
+      display: grid;
+      gap: var(--space-4);
+      padding: 0;
     }
   }
 </style>

@@ -1,5 +1,5 @@
 ---
-/** Gem plus the tier name in the pixel face, in the tier's text colour. */
+/** Gem plus the tier name, in the small text style and the tier's text colour. */
 import Gem from "./Gem.astro";
 import { RARITY_LABELS, type Rarity } from "@/lib/grist";
 
@@ -22,9 +22,8 @@ const { rarity, class: className } = Astro.props;
       display: inline-flex;
       align-items: center;
       gap: var(--space-2);
-      font: var(--weight-medium) var(--text-caption) / var(--leading-caption) var(--font-mono);
-      letter-spacing: var(--tracking-caption);
-      text-transform: uppercase;
+      font-size: var(--text-small);
+      line-height: var(--leading-small);
       color: var(--rarity-common-text);
     }
 

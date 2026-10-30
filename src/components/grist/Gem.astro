@@ -1,8 +1,8 @@
 ---
 /**
  * Rarity gem, drawn from the pixel maps in src/lib/grist.ts at 2px per pixel. Decorative: a tier
- * name always sits next to it. Legendary sparkles twinkle and a light band sweeps across the gem;
- * both stop under reduced motion.
+ * name always sits next to it. Legendary's sparkles stay still; a light band sweeps across the gem,
+ * and stops under reduced motion.
  */
 import { GEM_PIXELS, type Rarity } from "@/lib/grist";
 
@@ -32,7 +32,6 @@ const animated = rarity === "legendary";
 // Unique per instance: a duplicate id would point every gem at the first clip on the page, which
 // may sit in a hidden popover and then clips nothing.
 const clipId = `gem-clip-${crypto.randomUUID().slice(0, 8)}`;
-let sparkle = 0;
 ---
 
 <svg
@@ -55,14 +54,7 @@ let sparkle = 0;
     </defs>
   )}
   {pixels.map((p) => (
-    <rect
-      class={`gem__${p.kind}`}
-      x={p.x}
-      y={p.y}
-      width="1"
-      height="1"
-      style={p.kind === "sparkle" ? `--twinkle-delay: ${(sparkle++ % 4) * 0.4}s` : undefined}
-    />
+    <rect class={`gem__${p.kind}`} x={p.x} y={p.y} width="1" height="1" />
   ))}
   {animated && (
     <g clip-path={`url(#${clipId})`}>
@@ -144,22 +136,8 @@ let sparkle = 0;
     }
 
     @media (prefers-reduced-motion: no-preference) {
-      .gem--legendary .gem__sparkle {
-        animation: gem-twinkle 1.6s steps(2, jump-none) var(--twinkle-delay, 0s) infinite;
-      }
-
       .gem--legendary .gem__sweep {
         animation: gem-sweep 2.4s var(--ease-standard) infinite;
-      }
-    }
-
-    @keyframes gem-twinkle {
-      from {
-        opacity: 1;
-      }
-
-      to {
-        opacity: 0.1;
       }
     }
 

@@ -2,6 +2,17 @@
 
 Non-obvious choices, newest first. One entry per decision: what, why, and what it rules out.
 
+## 2026-10-30 · Grist review round 2: one quest tile, site text styles only
+
+Grist text uses only the site's text styles:
+
+- Labels use `.text-caption`.
+- Every meta line next to a gem (tier, status, type, dates, quest log) uses the small style, so they all match.
+- The definition uses `.text-lead`.
+- Links on quest pages use the default link style.
+
+`QuestCard` replaces `QuestRow` and is the only quest tile. It sizes itself with a container query: it stacks when narrow and becomes a row at 48rem and wider. The front door, See also and `/grist/layouts` all use it. `/grist/layouts` is a preview-only page with six layout options, and production redirects it to /grist. The Legendary gem keeps only the sweep, and its sparkles stay still.
+
 ## 2026-10-30 · Grist review round 1
 
 Dawid's review changed these:

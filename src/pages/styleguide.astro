@@ -50,7 +50,7 @@ import PermalinkButton from "@/components/grist/PermalinkButton.astro";
 import NewBadge from "@/components/grist/NewBadge.astro";
 import QuestTag from "@/components/grist/QuestTag.astro";
 import VolumeHeader from "@/components/grist/VolumeHeader.astro";
-import QuestRow from "@/components/grist/QuestRow.astro";
+import QuestCard from "@/components/grist/QuestCard.astro";
 import { getQuests } from "@/lib/quests";
 import { RARITIES } from "@/lib/grist";
 import { getEntry } from "astro:content";
@@ -79,7 +79,7 @@ const STYLEGUIDE_SECTIONS = [
   ["blocks-title", "Blocks"],
 ].map(([slug, text]) => ({ depth: 2, slug: slug!, text: text! }));
 const nextUpSample = (await getPagedWork()).slice(0, 3);
-const sampleQuest = (await getQuests())[0];
+const sampleQuests = await getQuests();
 
 const TYPE_ROLES = [
   { role: "display", className: "text-display", sample: "hello@mlynarz.com" },
@@ -543,10 +543,17 @@ const GRIST_ICONS: IconName[] = [
         </Stack>
 
         <Stack gap="4">
-          <h3>Category and quest row</h3>
-          <div>
-            <VolumeHeader id="sg-volume" title="Agentic UX" />
-            {sampleQuest && <QuestRow quest={sampleQuest} />}
+          <h3>Category and quest tile</h3>
+          <p class="muted measure">
+            One tile everywhere quests are listed. It reads its own width: from 48rem it lays out as
+            a row with the meta in fixed columns, narrower it stacks.
+          </p>
+          <VolumeHeader id="sg-volume" title="Agentic UX" />
+          {sampleQuests[0] && <QuestCard quest={sampleQuests[0]} />}
+          <div class="grist-tiles">
+            {sampleQuests.slice(1, 4).map((quest, i) => (
+              <QuestCard quest={quest} category featured={i === 0} />
+            ))}
           </div>
         </Stack>
 
@@ -867,6 +874,12 @@ const GRIST_ICONS: IconName[] = [
     .rarity-swatch__chip {
       inline-size: var(--space-8);
       block-size: var(--space-8);
+    }
+
+    .grist-tiles {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(min(100%, 18rem), 1fr));
+      gap: var(--space-4);
     }
 
     .grist-icons {
