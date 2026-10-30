@@ -10,16 +10,18 @@ import { MARK_PATH, SITE } from "@/lib/site";
 
 interface Props {
   size?: "sm" | "lg";
+  /** One phrase, run round the circle (twice if it is short). */
+  words?: string;
   class?: string;
 }
 
-const { size = "lg", class: className } = Astro.props;
-// Small badges carry fewer, larger letters so they stay readable.
-const WORDS =
-  size === "sm"
-    ? "Human curated • Human curated • "
-    : "Human curated · Dawid Młynarz • Human curated · Dawid Młynarz • ";
-const FONT_SIZE = size === "sm" ? 22 : 16;
+const { size = "lg", words, class: className } = Astro.props;
+const phrase = words ?? (size === "sm" ? "Human curated" : "Human curated · Dawid Młynarz");
+// A long phrase runs round once in larger letters, a short one twice, so both stay readable at
+// phone size.
+const once = phrase.length > 18;
+const WORDS = once ? `${phrase} • ` : `${phrase} • ${phrase} • `;
+const FONT_SIZE = once || size === "sm" ? 22 : 16;
 // The trailing space is a no-break space, or SVG drops it and the loop's seam closes up.
 // Text circle radius in the 280-unit box; textLength stretches the words to close the loop.
 const R = 100;
@@ -59,8 +61,9 @@ const pathId = `stamp-ring-${crypto.randomUUID().slice(0, 8)}`;
 
 <style>
   @layer components {
+    /* Large: scales with the viewport, from 7.5rem on phones to 15rem. */
     .human-stamp {
-      --stamp-size: calc(var(--space-24) * 2.5);
+      --stamp-size: clamp(var(--space-24) + var(--space-6), 24vw, var(--space-24) * 2.5);
       --underline-size: 0%;
 
       display: inline-grid;

@@ -27,7 +27,7 @@ const seasons = await getSeasons();
           </span>
         </h1>
       </div>
-      <HumanStamp class="front-hero__stamp" />
+      <HumanStamp class="front-hero__stamp" words="Human curated for AI grinders" />
     </Container>
   </section>
 
@@ -61,10 +61,11 @@ const seasons = await getSeasons();
       padding-block: var(--space-section-md);
     }
 
+    /* The badge overlaps the top right of the headline a little, as a sticker would. */
     .front-hero__grid {
+      position: relative;
       display: grid;
       align-items: center;
-      gap: var(--space-12);
     }
 
     .front-hero__head {
@@ -73,7 +74,10 @@ const seasons = await getSeasons();
     }
 
     .front-hero__stamp {
-      justify-self: start;
+      position: absolute;
+      inset-block-start: 0;
+      inset-inline-end: var(--gutter);
+      translate: 0 -40%;
     }
 
     .front__muted {
@@ -107,10 +111,11 @@ const seasons = await getSeasons();
       }
     }
 
+    /* Wide: pulled in from the edge so it sits over the ends of the first lines. */
     @media (width >= 62em) {
-      .front-hero__grid {
-        grid-template-columns: minmax(0, 1fr) auto;
-        gap: var(--space-16);
+      .front-hero__stamp {
+        inset-inline-end: calc(var(--gutter) + var(--space-24));
+        translate: 0 -10%;
       }
     }
   }

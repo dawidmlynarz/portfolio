@@ -2,7 +2,6 @@
 import { render } from "astro:content";
 import GristLayout from "@/layouts/GristLayout.astro";
 import Container from "@/components/layout/Container.astro";
-import Button from "@/components/ui/Button.astro";
 import Link from "@/components/ui/Link.astro";
 import HeroBackdrop from "@/components/blocks/HeroBackdrop.astro";
 import Icon from "@/components/grist/Icon.astro";
@@ -173,15 +172,10 @@ const jsonLd = {
               </ul>
             </section>
           )}
-          <section class="drop__touch">
-            <p class="drop__muted">
-              Grist is my side quest. If one of these hit close to something you’re working on, I’d
-              like to hear about it.
-            </p>
-            <Button href="/contact" variant="secondary" icon="arrow">
-              Get in touch
-            </Button>
-          </section>
+          <p class="drop__touch">
+            Grist is my side quest. If you have a question about a drop, or one of them hit close to
+            something you’re working on, <Link href="/contact">drop me a line</Link>.
+          </p>
         </div>
       </div>
     </Container>
@@ -257,6 +251,7 @@ const jsonLd = {
       grid-area: more;
       gap: var(--space-12);
       min-inline-size: 0;
+      max-inline-size: var(--measure);
     }
 
     .drop__label {
@@ -351,26 +346,15 @@ const jsonLd = {
       display: grid;
     }
 
+    /* The sign-off: one line in the h4 style over a 2px rule, the link doing the asking. */
     .drop__touch {
-      display: flex;
-      flex-wrap: wrap;
-      align-items: center;
-      justify-content: space-between;
-      gap: var(--space-6);
-      max-inline-size: var(--measure);
       padding-block-start: var(--space-8);
       border-block-start: calc(var(--border-width) * 2) solid var(--color-text);
-    }
-
-    .drop__touch p {
-      flex: 1 1 20rem;
+      font: var(--weight-medium) var(--text-h4) / var(--leading-h4) var(--font-heading);
+      letter-spacing: var(--tracking-h4);
     }
 
     @media (width >= 48em) {
-      .drop__brief {
-        grid-template-columns: 1fr 1fr;
-      }
-
       .drop__related {
         grid-template-columns: 1fr 1fr;
       }
