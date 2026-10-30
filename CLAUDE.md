@@ -13,7 +13,7 @@ Replacing a Webflow site with a clean, Webflow-agnostic build. Keep the `/work/<
 6. **Experiments are isolated.** Code under `src/experiments/<slug>/` may use any framework island and local styles, but may only read site tokens and must not change global CSS.
 7. **Light and dark from day one.** Every new component must look right in both themes using semantic tokens only (`--color-*` use `light-dark()`). Check both before calling work done. Tokens mirror the Figma file `mlynarz.com — Foundations` by name; change them on both sides.
 8. **Accessibility:** visible focus (`--color-focus`), semantic HTML, respect `prefers-reduced-motion` (including the liquid reveal and link underline).
-9. **Performance:** no framework JS by default; hydrate islands lazily (`client:visible`). Motion lives in one module, `src/scripts/motion.ts` (GSAP + Lenis). Keep it lean, and make sure everything it animates is complete without it (no JS, reduced motion).
+9. **Performance:** no framework JS by default; hydrate islands lazily (`client:visible`). Motion lives in one module, `src/scripts/motion.ts` (GSAP); scrolling stays native. Keep it lean, and make sure everything it animates is complete without it (no JS, reduced motion).
 
 ## Writing case studies
 
