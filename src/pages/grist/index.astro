@@ -68,28 +68,47 @@ const seasons = await getSeasons();
     }
 
     /*
-     * The badge floats at the lower right of the headline and the words wrap round it:
+     * Phones: the headline runs full width and the badge sits under it, pinned to the right.
+     * From 48em the badge floats at the lower right of the headline and the words wrap round it:
      * shape-outside makes the float a circle. A zero-width float above it (the spacer, sized in
-     * headline lines) pushes it down, since a float can't sit at the bottom on its own. The
-     * title box is a new formatting context, so the floats stay inside it.
+     * headline lines) pushes it down, since a float can't sit at the bottom on its own. The title
+     * box is a new formatting context, so the floats stay inside it.
      */
     .front-hero__title {
-      display: flow-root;
+      display: flex;
+      flex-direction: column;
     }
 
     .front-hero__spacer {
-      float: right;
-      inline-size: 0;
-      block-size: calc(3 * 1lh);
-      font: var(--weight-medium) var(--text-h1) / var(--leading-h1) var(--font-heading);
+      display: none;
     }
 
     .front-hero__stamp {
-      float: right;
-      clear: right;
-      margin-inline-start: var(--space-4);
-      shape-outside: circle(50%);
-      shape-margin: var(--space-3);
+      order: 1;
+      align-self: end;
+      margin-block-start: var(--space-4);
+    }
+
+    @media (width >= 48em) {
+      .front-hero__title {
+        display: flow-root;
+      }
+
+      .front-hero__spacer {
+        display: block;
+        float: right;
+        inline-size: 0;
+        block-size: calc(1.5 * 1lh);
+        font: var(--weight-medium) var(--text-h1) / var(--leading-h1) var(--font-heading);
+      }
+
+      .front-hero__stamp {
+        float: right;
+        clear: right;
+        margin: 0 0 0 var(--space-8);
+        shape-outside: circle(50%);
+        shape-margin: var(--space-8);
+      }
     }
 
     .front__muted {
@@ -120,13 +139,6 @@ const seasons = await getSeasons();
     @media (width >= 48em) {
       .front__grid {
         grid-template-columns: 1fr 1fr;
-      }
-    }
-
-    /* Wider screens fit more per line, so the headline is fewer lines and the badge starts higher. */
-    @media (width >= 48em) {
-      .front-hero__spacer {
-        block-size: calc(1.5 * 1lh);
       }
     }
   }

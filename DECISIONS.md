@@ -672,6 +672,6 @@ What changed versus the embed, and why:
 
 ## Grist: badge floats in the headline, one hint (30 Oct 2026)
 
-- The front door badge floats at the lower right of the headline with `shape-outside: circle()`, so the words wrap round it at every width instead of hiding it on phones. A zero-width float sized in headline lines (`lh`) pushes it down, since floats can't anchor to the bottom.
+- The front door badge floats at the lower right of the headline from 48em with `shape-outside: circle()`, so the words wrap round it. On phones it sits under the headline, pinned right. A zero-width float sized in headline lines (`lh`) pushes it down, since floats can't anchor to the bottom.
 - `useWhen` and `outcome` merged into one `hint` sentence under the tl;dr (when to use it, what you get).
 - Season packs are named after the season: `/grist/season/<slug>.md` (agentic-ux.md).
