@@ -1,38 +1,41 @@
 ---
 /**
- * Pixelarticons (MIT, Gerrit Halfmann), inlined so they take currentColor. 16px by default, kept
- * on whole pixels with crispEdges. Decorative unless a label is given.
+ * Grist's line icons, drawn in the site's icon style (24px grid, 1.75 stroke, round caps and
+ * joins, currentColor), like the ones in Button. Shapes follow Lucide (ISC). Decorative unless a
+ * label is given. The gems are the only pixel art on Grist.
  */
-import arrowLeft from "pixelarticons/svg/arrow-left.svg?raw";
-import arrowRight from "pixelarticons/svg/arrow-right.svg?raw";
-import bookOpen from "pixelarticons/svg/book-open.svg?raw";
-import braces from "pixelarticons/svg/braces.svg?raw";
-import close from "pixelarticons/svg/close.svg?raw";
-import download from "pixelarticons/svg/download.svg?raw";
-import feather from "pixelarticons/svg/feather.svg?raw";
-import infoBox from "pixelarticons/svg/info-box.svg?raw";
-import leaf from "pixelarticons/svg/leaf.svg?raw";
-import link from "pixelarticons/svg/link.svg?raw";
-import menu from "pixelarticons/svg/menu.svg?raw";
-import play from "pixelarticons/svg/play.svg?raw";
-import pointer from "pixelarticons/svg/pointer.svg?raw";
-import shield from "pixelarticons/svg/shield.svg?raw";
-
 const ICONS = {
-  "arrow-left": arrowLeft,
-  "arrow-right": arrowRight,
-  "book-open": bookOpen,
-  braces,
-  close,
-  download,
-  feather,
-  "info-box": infoBox,
-  leaf,
-  link,
-  menu,
-  play,
-  pointer,
-  shield,
+  leaf: [
+    "M11 20A7 7 0 0 1 9.8 6.1C15.5 5 17 4.48 19 2c1 2 2 4.18 2 8 0 5.5-4.78 10-10 10Z",
+    "M2 21c0-3 1.85-5.36 5.08-6C9.5 14.52 12 13 13 12",
+  ],
+  shield: [
+    "M20 13c0 5-3.5 7.5-7.66 8.95a1 1 0 0 1-.67-.01C7.5 20.5 4 18 4 13V6a1 1 0 0 1 1-1c2 0 4.5-1.2 6.24-2.72a1.17 1.17 0 0 1 1.52 0C14.51 3.81 17 5 19 5a1 1 0 0 1 1 1Z",
+  ],
+  feather: [
+    "M12.67 19a2 2 0 0 0 1.42-.59l6.15-6.17a6 6 0 0 0-8.49-8.49L5.59 9.91A2 2 0 0 0 5 11.33V18a1 1 0 0 0 1 1Z",
+    "M16 8 2 22",
+    "M17.5 15H9",
+  ],
+  pointer: [
+    "M4.04 4.69a.5.5 0 0 1 .65-.65l16 6.5a.5.5 0 0 1-.06.95l-6.13 1.58a2 2 0 0 0-1.43 1.43l-1.58 6.13a.5.5 0 0 1-.95.06Z",
+  ],
+  "book-open": [
+    "M12 7v14",
+    "M3 18a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1h5a4 4 0 0 1 4 4 4 4 0 0 1 4-4h5a1 1 0 0 1 1 1v13a1 1 0 0 1-1 1h-6a3 3 0 0 0-3 3 3 3 0 0 0-3-3Z",
+  ],
+  braces: [
+    "M8 3H7a2 2 0 0 0-2 2v5a2 2 0 0 1-2 2 2 2 0 0 1 2 2v5a2 2 0 0 0 2 2h1",
+    "M16 21h1a2 2 0 0 0 2-2v-5a2 2 0 0 1 2-2 2 2 0 0 1-2-2V5a2 2 0 0 0-2-2h-1",
+  ],
+  calendar: [
+    "M8 2v4",
+    "M16 2v4",
+    "M5 4h14a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2Z",
+    "M3 10h18",
+  ],
+  "arrow-left": ["M19 12H5", "M11 6l-6 6 6 6"],
+  close: ["M18 6 6 18", "M6 6l12 12"],
 };
 export type IconName = keyof typeof ICONS;
 
@@ -44,20 +47,20 @@ interface Props {
 }
 
 const { name, label, class: className } = Astro.props;
-// Keep only the drawing; the wrapper below sets size, colour and accessibility.
-const paths = ICONS[name].replace(/^[\s\S]*?<svg[^>]*>|<\/svg>\s*$/g, "");
 ---
 
 <svg
   class:list={["icon", className]}
   viewBox="0 0 24 24"
-  fill="currentColor"
   role={label ? "img" : undefined}
   aria-label={label}
   aria-hidden={label ? undefined : "true"}
   focusable="false"
-  set:html={paths}
-/>
+>
+  {ICONS[name].map((d) => (
+    <path d={d} />
+  ))}
+</svg>
 
 <style>
   @layer components {
@@ -65,7 +68,11 @@ const paths = ICONS[name].replace(/^[\s\S]*?<svg[^>]*>|<\/svg>\s*$/g, "");
       flex: none;
       inline-size: 1em;
       block-size: 1em;
-      shape-rendering: crispedges;
+      fill: none;
+      stroke: currentcolor;
+      stroke-width: 1.75;
+      stroke-linecap: round;
+      stroke-linejoin: round;
     }
   }
 </style>

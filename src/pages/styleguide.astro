@@ -128,7 +128,7 @@ const SECTIONS = [
   ["blocks", "Blocks"],
 ] as const;
 
-/** Pixel icons for Grist's status and type tags and meta lines (buttons use the site's icons). */
+/** Grist's line icons for status, type and meta lines, in the site's icon style. */
 const GRIST_ICONS: IconName[] = [
   "leaf",
   "shield",
@@ -136,8 +136,9 @@ const GRIST_ICONS: IconName[] = [
   "pointer",
   "book-open",
   "braces",
+  "calendar",
   "arrow-left",
-  "arrow-right",
+  "close",
 ];
 ---
 
@@ -490,7 +491,7 @@ const GRIST_ICONS: IconName[] = [
           <h2 id="grist-title">Grist</h2>
           <p class="muted measure">
             The layer under <code>/grist</code>. It uses the site tokens and components, and adds
-            only the rarity colours, pixel icons for tags, the gems and the logo.
+            only the rarity colours, a few line icons for tags, the pixel gems and the logo.
           </p>
         </Stack>
 
