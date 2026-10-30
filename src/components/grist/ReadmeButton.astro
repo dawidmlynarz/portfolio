@@ -1,18 +1,8 @@
 ---
-/** Opens the README panel (the panel and its toggle come in step 4). Label in the pixel face. */
+/** Opens the README panel (the panel and its toggle come in step 4). */
 import Button from "@/components/ui/Button.astro";
 ---
 
-<Button variant="secondary" icon="info" class="readme-button">
-  <span class="readme-button__label">Readme</span>
+<Button variant="secondary" icon="info">
+  Readme
 </Button>
-
-<style>
-  @layer components {
-    .readme-button__label {
-      font-family: var(--font-pixel);
-      font-size: var(--text-caption);
-      text-transform: uppercase;
-    }
-  }
-</style>

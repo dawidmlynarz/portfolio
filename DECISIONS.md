@@ -2,6 +2,10 @@
 
 Non-obvious choices, newest first. One entry per decision: what, why, and what it rules out.
 
+## 2026-10-30 · Grist buttons: one text style, icon hover on Download
+
+README and Download use the button's own text style, the same as Get in touch. They no longer use the pixel face or mono. The download count sits in a filled circle on the inverse surface, which turns into a pill as the number grows. There is no separator. Download skips the row tear: `Button` takes `hover="icon"`, which gives a text button the icon buttons' hover. Its arrow-down drops out through the bottom edge and comes back in from the top, the Back to top motion reversed.
+
 ## 2026-10-30 · Grist foundations
 
 First step of Grist (`/grist`), the side quest of short "quests" on agentic UX and AI-ready design systems.

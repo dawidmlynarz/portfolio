@@ -1,5 +1,5 @@
 ---
-/** Downloads a quest's markdown twin. The count sits after a divider; it is filled in later. */
+/** Downloads a quest's markdown twin. The count sits in a filled circle; it is filled in later. */
 import Button from "@/components/ui/Button.astro";
 
 interface Props {
@@ -10,8 +10,14 @@ interface Props {
 const { slug, count } = Astro.props;
 ---
 
-<Button href={`/grist/${slug}.md`} variant="secondary" icon="download" class="download-button">
-  <span class="download-button__file">{slug}.md</span>
+<Button
+  href={`/grist/${slug}.md`}
+  variant="secondary"
+  icon="arrow-down"
+  hover="icon"
+  class="download-button"
+>
+  <span>{slug}.md</span>
   {count !== undefined && (
     <span class="download-button__count">
       {count}
@@ -22,17 +28,21 @@ const { slug, count } = Astro.props;
 
 <style>
   @layer components {
-    .download-button {
-      font-family: var(--font-mono);
-      font-size: var(--text-small);
-      font-weight: var(--weight-regular);
-    }
-
+    /* A circle while the count is short, a pill once it grows. Pulled into the button's end padding
+       so it sits as close to the edge as the icon does to the start. */
     .download-button__count {
-      margin-inline-start: var(--space-2);
-      padding-inline-start: var(--space-3);
-      border-inline-start: var(--border-width) solid var(--color-border-muted);
+      display: inline-grid;
+      place-items: center;
+      min-inline-size: 1.75em;
+      block-size: 1.75em;
+      margin-block: calc(var(--space-1) * -1);
+      margin-inline: var(--space-2) calc(var(--space-3) * -1);
+      padding-inline: var(--space-2);
+      border-radius: var(--radius-pill);
+      font-size: var(--text-small);
       font-variant-numeric: tabular-nums;
+      color: var(--color-on-inverse);
+      background-color: var(--color-inverse-bg);
     }
   }
 </style>
