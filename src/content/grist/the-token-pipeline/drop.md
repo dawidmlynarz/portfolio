@@ -21,7 +21,7 @@
 ## Build
 
 - Tool: Style Dictionary (open source)
-- Outputs: CSS variables for the web, and React Native
+- Outputs: [the platforms you ship to: CSS variables, iOS, Android, React Native]
 - One build command; generated files are never edited by hand
 
 ## Check

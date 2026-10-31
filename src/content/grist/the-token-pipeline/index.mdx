@@ -17,9 +17,7 @@ related: [agent-readable-tokens, tokens-only]
 draft: true
 ---
 
-{/* CLAUDE: Answers to the season 1 questions assumed by Claude from best practice, at Dawid's request (31 Oct). Assumed: the owner and review step. The example token is an illustration. */}
-
-I built a small Figma plugin that turns Figma variables straight into a token file Style Dictionary can read. It keeps the links between tokens (a role pointing at a raw colour) and exports text styles too. I built it to get exactly the token output I wanted; it isn't published. From there Style Dictionary builds the web and React Native outputs, and Storybook shows the result.
+I built a small Figma plugin that turns Figma variables straight into a token file Style Dictionary can read. It keeps the links between tokens (a role pointing at a raw colour) and exports text styles too. I needed one specific export: JSON that follows the W3C design tokens format and that Style Dictionary reads as it is. So I built it. It isn't public. From there Style Dictionary builds the code for each platform, and Storybook shows the result.
 
 For agents the important part is that code only ever sees the semantic layer: names that say what a value is for.
 

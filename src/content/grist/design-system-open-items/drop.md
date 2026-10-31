@@ -27,9 +27,3 @@
 
 - [ ] Docs link to the source tokens and components instead of copying values
 - [ ] Open items are listed where agents read them (DESIGN.md or README)
-
-### Change
-
-- [ ] A version number and a changelog
-- [ ] Retired components are marked, with what replaces them
-- [ ] Light and dark are both covered, or the gaps are listed
