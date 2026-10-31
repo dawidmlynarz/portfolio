@@ -1,0 +1,51 @@
+---
+/**
+ * Preview only: today's pixel gems next to Dawid's tile icons (src/experiments/rarity-icons), in
+ * light and dark. Production builds no page here, and /grist/review is out of the sitemap.
+ */
+import GristLayout from "@/layouts/GristLayout.astro";
+import Container from "@/components/layout/Container.astro";
+import RarityLab from "@/experiments/rarity-icons/RarityLab.astro";
+import { isProduction } from "@/lib/site";
+
+export function getStaticPaths() {
+  return isProduction ? [] : [{ params: { all: undefined } }];
+}
+---
+
+<GristLayout
+  title="Rarity icons · Grist"
+  description="Pixel gems and tile icons, side by side."
+  noindex
+>
+  <Container class="rarity-page">
+    <header class="rarity-page__head">
+      <p class="text-caption rarity-page__muted">Preview only</p>
+      <h1>Rarity icons</h1>
+      <p class="text-lead rarity-page__muted">
+        Today's pixel gems next to the new tile icons, tier by tier, in both themes. Legendary keeps
+        its shine. Ultimate is a future tier and has no pixel gem.
+      </p>
+    </header>
+    <RarityLab />
+  </Container>
+</GristLayout>
+
+<style>
+  @layer components {
+    .rarity-page {
+      display: grid;
+      gap: var(--space-12);
+      padding-block: var(--space-12) var(--space-section-md);
+    }
+
+    .rarity-page__head {
+      display: grid;
+      gap: var(--space-3);
+    }
+
+    .rarity-page__muted {
+      color: var(--color-text-muted);
+    }
+  }
+</style>

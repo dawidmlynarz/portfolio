@@ -1,0 +1,272 @@
+---
+/**
+ * Experiment: today's pixel gems next to Dawid's tile icons, tier by tier, in a light and a dark
+ * panel (each panel sets its own color-scheme, so light-dark() tokens resolve per panel). Each tier
+ * shows the label as it sits on a card, a mock card, and a close-up. Ultimate has no pixel gem yet.
+ */
+import Gem from "@/components/grist/Gem.astro";
+import Icon from "@/components/grist/Icon.astro";
+import { RARITY_LABELS, type Rarity } from "@/lib/grist";
+import RarityIcon from "./RarityIcon.astro";
+import { RARITY_ICON_TIERS, type RarityIconTier } from "./icons";
+
+const NAMES: Record<RarityIconTier, string> = { ...RARITY_LABELS, ultimate: "Ultimate" };
+const EXAMPLES: Record<RarityIconTier, { type: string; title: string; summary: string }> = {
+  common: {
+    type: "Rule",
+    title: "Design tokens only",
+    summary: "Generated UI uses design tokens, never raw values.",
+  },
+  uncommon: {
+    type: "Prompt",
+    title: "Token description writer",
+    summary: "Write a one-line description for every token, by the job it does.",
+  },
+  rare: {
+    type: "Checklist",
+    title: "Design system audit",
+    summary: "The things a design system hasn't decided yet, written down.",
+  },
+  epic: {
+    type: "Spec",
+    title: "DESIGN.md",
+    summary: "One plain file that explains how your design system works.",
+  },
+  legendary: {
+    type: "Skill",
+    title: "Design system for conversational AI",
+    summary: "Plan a design system for conversational AI products.",
+  },
+  ultimate: {
+    type: "Skill",
+    title: "An ultra rare drop",
+    summary: "A future tier: the deepest drops, released rarely.",
+  },
+};
+const hasGem = (tier: RarityIconTier): tier is Rarity => tier !== "ultimate";
+---
+
+<div class="rarity-lab">
+  {(["light", "dark"] as const).map((theme) => (
+    <section class:list={["rarity-lab__panel", `rarity-lab__panel--${theme}`]}>
+      <h2 class="rarity-lab__theme text-caption">{theme === "light" ? "Light" : "Dark"}</h2>
+      <div class="rarity-lab__head text-caption" aria-hidden="true">
+        <span>Tier</span>
+        <span>Pixel gem (today)</span>
+        <span>Tile icon (new)</span>
+      </div>
+      {RARITY_ICON_TIERS.map((tier) => (
+        <div class="rarity-lab__row">
+          <h3 class="rarity-lab__tier">
+            {NAMES[tier]}
+            {!hasGem(tier) && <span class="rarity-lab__note">future tier</span>}
+          </h3>
+          {[false, true].map((tile) => (
+            <div class="rarity-lab__cell">
+              <span class="visually-hidden">{tile ? "Tile icon" : "Pixel gem"}</span>
+              {!tile && !hasGem(tier) ? (
+                <p class="rarity-lab__empty">No pixel gem yet</p>
+              ) : (
+                <>
+                  <div class="rarity-lab__close" aria-hidden="true">
+                    {tile ? (
+                      <RarityIcon tier={tier} size="lg" />
+                    ) : (
+                      hasGem(tier) && <Gem rarity={tier} class="rarity-lab__big-gem" />
+                    )}
+                  </div>
+                  <article class="rarity-lab__card">
+                    <span class:list={["rarity-lab__label", `rarity-lab__label--${tier}`]}>
+                      {tile ? <RarityIcon tier={tier} /> : hasGem(tier) && <Gem rarity={tier} />}
+                      <span>{EXAMPLES[tier].type}</span>
+                    </span>
+                    <p class="rarity-lab__title">{EXAMPLES[tier].title}</p>
+                    <p class="rarity-lab__summary">{EXAMPLES[tier].summary}</p>
+                    <p class="rarity-lab__meta">
+                      <Icon name="calendar" size="lg" />
+                      <span>7 Nov</span>
+                      <Icon name="circle-check" size="lg" />
+                      <span>Tested</span>
+                    </p>
+                  </article>
+                </>
+              )}
+            </div>
+          ))}
+        </div>
+      ))}
+    </section>
+  ))}
+</div>
+
+<style>
+  @layer components {
+    .rarity-lab {
+      display: grid;
+      gap: var(--space-8);
+    }
+
+    /* Each panel picks its theme, so light-dark() tokens resolve inside it whatever the page is. */
+    .rarity-lab__panel {
+      display: grid;
+      gap: var(--space-6);
+      padding: var(--space-6);
+      border: var(--border-width) solid var(--color-border-subtle);
+      border-radius: var(--radius-lg);
+      color: var(--color-text);
+      background-color: var(--color-bg);
+    }
+
+    .rarity-lab__panel--light {
+      color-scheme: light;
+    }
+
+    .rarity-lab__panel--dark {
+      color-scheme: dark;
+    }
+
+    .rarity-lab__theme,
+    .rarity-lab__head,
+    .rarity-lab__note,
+    .rarity-lab__empty,
+    .rarity-lab__summary,
+    .rarity-lab__meta {
+      color: var(--color-text-muted);
+    }
+
+    .rarity-lab__head {
+      display: none;
+    }
+
+    .rarity-lab__row {
+      display: grid;
+      gap: var(--space-4);
+      padding-block-start: var(--space-6);
+      border-block-start: var(--border-width) solid var(--color-border-subtle);
+    }
+
+    .rarity-lab__tier {
+      display: flex;
+      flex-wrap: wrap;
+      gap: var(--space-2);
+      align-items: baseline;
+      font-size: var(--text-h4);
+      line-height: var(--leading-h4);
+    }
+
+    .rarity-lab__note {
+      font-size: var(--text-small);
+    }
+
+    .rarity-lab__cell {
+      display: grid;
+      grid-template-columns: calc(var(--space-16) + var(--space-4)) minmax(0, 1fr);
+      gap: var(--space-4);
+      align-items: center;
+    }
+
+    .rarity-lab__close {
+      display: grid;
+      place-items: center;
+      block-size: calc(var(--space-16) + var(--space-4));
+      border-radius: var(--radius-sm);
+      background-color: var(--color-bg-subtle);
+    }
+
+    /* The 13×10 gem at 5px per pixel, the close-up size of the tile icon. */
+    .rarity-lab__close :global(.rarity-lab__big-gem) {
+      inline-size: var(--space-16);
+      block-size: auto;
+    }
+
+    .rarity-lab__empty {
+      grid-column: 1 / -1;
+      padding: var(--space-6);
+      border: var(--border-width) dashed var(--color-border-muted);
+      border-radius: var(--radius-sm);
+      font-size: var(--text-small);
+      text-align: center;
+    }
+
+    .rarity-lab__card {
+      display: grid;
+      gap: var(--space-2);
+      padding: var(--space-4);
+      border: var(--border-width) solid var(--color-border-subtle);
+      border-radius: var(--radius-lg);
+    }
+
+    .rarity-lab__label {
+      display: inline-flex;
+      gap: var(--space-2);
+      align-items: center;
+      font-size: var(--text-small);
+      font-weight: var(--weight-semibold);
+      line-height: var(--leading-small);
+      color: var(--rarity-common-text);
+    }
+
+    .rarity-lab__label--uncommon {
+      color: var(--rarity-uncommon-text);
+    }
+
+    .rarity-lab__label--rare {
+      color: var(--rarity-rare-text);
+    }
+
+    .rarity-lab__label--epic {
+      color: var(--rarity-epic-text);
+    }
+
+    .rarity-lab__label--legendary {
+      color: var(--rarity-legendary-text);
+    }
+
+    .rarity-lab__label--ultimate {
+      color: var(--rarity-ultimate-text);
+    }
+
+    .rarity-lab__title {
+      font-size: var(--text-h4);
+      line-height: var(--leading-h4);
+    }
+
+    .rarity-lab__summary,
+    .rarity-lab__meta {
+      font-size: var(--text-small);
+      line-height: var(--leading-small);
+    }
+
+    .rarity-lab__meta {
+      display: flex;
+      flex-wrap: wrap;
+      gap: var(--space-2);
+      align-items: center;
+    }
+
+    @media (width >= 48em) {
+      .rarity-lab__head,
+      .rarity-lab__row {
+        display: grid;
+        grid-template-columns: 10rem minmax(0, 1fr) minmax(0, 1fr);
+        gap: var(--space-6);
+        align-items: center;
+      }
+    }
+
+    @media (width >= 80em) {
+      .rarity-lab {
+        grid-template-columns: 1fr 1fr;
+      }
+
+      .rarity-lab__head,
+      .rarity-lab__row {
+        grid-template-columns: 6rem minmax(0, 1fr) minmax(0, 1fr);
+      }
+
+      .rarity-lab__cell {
+        grid-template-columns: minmax(0, 1fr);
+      }
+    }
+  }
+</style>

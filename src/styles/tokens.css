@@ -218,6 +218,15 @@
     --rarity-legendary-shade: #8f6400;
     --rarity-legendary-light: #fbbf24;
     --rarity-legendary-text: light-dark(#8f6400, var(--rarity-legendary-light));
+    /* Experiment (src/experiments/rarity-icons): Dawid's tile icons, in his colours. Legendary
+       deepens on light so every icon keeps 3:1 against the page; Ultimate is a future tier. */
+    --rarity-common-icon: #5f6367;
+    --rarity-uncommon-icon: #179441;
+    --rarity-rare-icon: #1f75ff;
+    --rarity-epic-icon: #9a4df3;
+    --rarity-legendary-icon: light-dark(#c86400, #fb7d00);
+    --rarity-ultimate-icon: #f50000;
+    --rarity-ultimate-text: light-dark(#d00000, #ff5c5c);
     --shadow-panel: 0 24px 64px -24px light-dark(rgb(0 0 0 / 28%), rgb(0 0 0 / 80%));
     /* Space above content on pages that don't run under the floating nav (SiteLayout) */
     --nav-clearance: calc(var(--space-4) + var(--space-12) + var(--space-8));

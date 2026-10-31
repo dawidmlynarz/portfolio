@@ -715,3 +715,7 @@ What changed versus the embed, and why:
 ## Grist: headline audit, industry names first (31 Oct 2026)
 
 - Every drop title was checked against the name the industry already uses (design system audit, pre-mortem, work breakdown, design QA, devil's advocate, AI disclosure, usage guidelines). 41 of 64 renamed; slugs follow the titles (nothing was live yet). Coined names stay only where they name something new, or where Dawid picked them (Agent-readable tokens, Visible reasoning, Write the don'ts down). The full table is in the "Grist — headline audit" doc.
+
+## Grist: tile icon experiment (31 Oct 2026)
+
+- Dawid's tile icons (rounded diamond tiles, plus an Ultimate tier) live in src/experiments/rarity-icons and on the preview-only page /grist/review/rarity, next to the pixel gems in light and dark. Their colours are new `--rarity-*-icon` tokens; legendary deepens on light (#c86400) so every icon keeps 3:1. Legendary keeps the shine sweep. Nothing on the live Grist uses them yet.
