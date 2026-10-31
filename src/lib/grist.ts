@@ -5,6 +5,12 @@
  */
 
 /** Tiers, lowest first. */
+/**
+ * How a tier is drawn next to its name: "tile" (Dawid's tile icons, TileIcon) or "gem" (the pixel
+ * gems, Gem). Switching back to "gem" is this one line; each style has its own text colours.
+ */
+export const RARITY_ICON: "tile" | "gem" = "tile";
+
 export const RARITIES = ["common", "uncommon", "rare", "epic", "legendary"] as const;
 export type Rarity = (typeof RARITIES)[number];
 

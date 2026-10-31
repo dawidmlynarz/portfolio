@@ -41,6 +41,7 @@ import CaseStudyToc from "@/components/content/CaseStudyToc.astro";
 import { getPagedWork } from "@/lib/work";
 import LockPanel from "@/components/blocks/LockPanel.astro";
 import Gem from "@/components/grist/Gem.astro";
+import TileIcon from "@/components/grist/TileIcon.astro";
 import Icon, { type IconName } from "@/components/grist/Icon.astro";
 import Logo from "@/components/grist/Logo.astro";
 import RarityLabel from "@/components/grist/RarityLabel.astro";
@@ -503,13 +504,15 @@ const GRIST_ICONS: IconName[] = [
             Each tier has a fill, a shade and a light. The gem uses all three; tier names use the
             shade on light and the light on dark. Epic adds sparkles; Legendary adds a crown and a
             light band that crosses the gem (reduced motion stops it). Rarity is set per drop, by
-            how deep it goes.
+            how deep it goes. Beside each gem, the tile icon that replaces it while RARITY_ICON is
+            "tile"; tier names then share the icon's hue (the labels below show the active style).
           </p>
           <Grid min="10rem" gap="6" as="ul" class="plain-list">
             {RARITIES.map((rarity) => (
               <li class="rarity-swatch">
                 <span class="rarity-swatch__gem">
                   <Gem rarity={rarity} />
+                  <TileIcon tier={rarity} />
                 </span>
                 <RarityLabel rarity={rarity} />
                 <span class="rarity-swatch__chips">
@@ -920,6 +923,7 @@ const GRIST_ICONS: IconName[] = [
     /* Tall enough for the crowned Legendary gem, so every tier's label lines up. */
     .rarity-swatch__gem {
       display: flex;
+      gap: var(--space-2);
       align-items: end;
       min-block-size: var(--space-6);
       zoom: 3;

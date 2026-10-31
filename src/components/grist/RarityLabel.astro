@@ -1,10 +1,12 @@
 ---
 /**
- * Gem plus a name, in the small text style and the tier's text colour. Given a drop type it names
- * the type only ("Checklist"), in semibold: the gem and colour already say the tier.
+ * The tier's icon plus a name, in the small text style and the tier's text colour. The icon is the
+ * tile icon or the pixel gem (RARITY_ICON in src/lib/grist.ts); each has its own text colours.
+ * Given a drop type it names the type only ("Checklist"), in semibold: icon and colour say the tier.
  */
 import Gem from "./Gem.astro";
-import { DROP_TYPES, RARITY_LABELS, type DropType, type Rarity } from "@/lib/grist";
+import TileIcon from "./TileIcon.astro";
+import { DROP_TYPES, RARITY_ICON, RARITY_LABELS, type DropType, type Rarity } from "@/lib/grist";
 
 interface Props {
   rarity: Rarity;
@@ -15,8 +17,15 @@ interface Props {
 const { rarity, type, class: className } = Astro.props;
 ---
 
-<span class:list={["rarity-label", `rarity-label--${rarity}`, className]}>
-  <Gem rarity={rarity} />
+<span
+  class:list={[
+    "rarity-label",
+    `rarity-label--${rarity}`,
+    { "rarity-label--tile": RARITY_ICON === "tile" },
+    className,
+  ]}
+>
+  {RARITY_ICON === "tile" ? <TileIcon tier={rarity} /> : <Gem rarity={rarity} />}
   <span class:list={["rarity-label__name", { "rarity-label__name--type": type }]}>
     {type ? DROP_TYPES[type].label : RARITY_LABELS[rarity]}
   </span>
@@ -51,6 +60,27 @@ const { rarity, type, class: className } = Astro.props;
 
     .rarity-label--legendary {
       color: var(--rarity-legendary-text);
+    }
+
+    /* Tile icons: the tier name shares the icon's hue (tokens.css). */
+    .rarity-label--tile {
+      color: var(--rarity-common-tile-text);
+    }
+
+    .rarity-label--tile.rarity-label--uncommon {
+      color: var(--rarity-uncommon-tile-text);
+    }
+
+    .rarity-label--tile.rarity-label--rare {
+      color: var(--rarity-rare-tile-text);
+    }
+
+    .rarity-label--tile.rarity-label--epic {
+      color: var(--rarity-epic-tile-text);
+    }
+
+    .rarity-label--tile.rarity-label--legendary {
+      color: var(--rarity-legendary-tile-text);
     }
   }
 </style>

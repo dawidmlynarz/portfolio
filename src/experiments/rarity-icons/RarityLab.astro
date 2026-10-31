@@ -7,8 +7,8 @@
 import Gem from "@/components/grist/Gem.astro";
 import Icon from "@/components/grist/Icon.astro";
 import { RARITY_LABELS, type Rarity } from "@/lib/grist";
-import RarityIcon from "./RarityIcon.astro";
-import { RARITY_ICON_TIERS, type RarityIconTier } from "./icons";
+import RarityIcon from "@/components/grist/TileIcon.astro";
+import { RARITY_ICON_TIERS, type RarityIconTier } from "@/components/grist/tile-icons";
 
 const NAMES: Record<RarityIconTier, string> = { ...RARITY_LABELS, ultimate: "Ultimate" };
 const EXAMPLES: Record<RarityIconTier, { type: string; title: string; summary: string }> = {
@@ -76,7 +76,10 @@ const hasGem = (tier: RarityIconTier): tier is Rarity => tier !== "ultimate";
                     )}
                   </div>
                   <article class="rarity-lab__card">
-                    <span class:list={["rarity-lab__label", `rarity-lab__label--${tier}`]}>
+                    <span
+                      class:list={["rarity-lab__label", { "rarity-lab__label--tile": tile }]}
+                      style={`--tier-gem: var(--rarity-${tier}-text, currentcolor); --tier-tile: var(--rarity-${tier}-tile-text)`}
+                    >
                       {tile ? <RarityIcon tier={tier} /> : hasGem(tier) && <Gem rarity={tier} />}
                       <span>{EXAMPLES[tier].type}</span>
                     </span>
@@ -203,27 +206,11 @@ const hasGem = (tier: RarityIconTier): tier is Rarity => tier !== "ultimate";
       font-size: var(--text-small);
       font-weight: var(--weight-semibold);
       line-height: var(--leading-small);
-      color: var(--rarity-common-text);
+      color: var(--tier-gem);
     }
 
-    .rarity-lab__label--uncommon {
-      color: var(--rarity-uncommon-text);
-    }
-
-    .rarity-lab__label--rare {
-      color: var(--rarity-rare-text);
-    }
-
-    .rarity-lab__label--epic {
-      color: var(--rarity-epic-text);
-    }
-
-    .rarity-lab__label--legendary {
-      color: var(--rarity-legendary-text);
-    }
-
-    .rarity-lab__label--ultimate {
-      color: var(--rarity-ultimate-text);
+    .rarity-lab__label--tile {
+      color: var(--tier-tile);
     }
 
     .rarity-lab__title {

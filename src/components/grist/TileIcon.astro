@@ -1,14 +1,15 @@
 ---
 /**
- * Experiment: Dawid's tile icon for a rarity tier, a candidate to replace the pixel gem. Decorative
+ * Dawid's tile icon for a rarity tier, shown instead of the pixel gem when RARITY_ICON is "tile"
+ * (src/lib/grist.ts). Decorative
  * (a tier name always sits next to it). Legendary and up keep the gem's shine: a light band sweeps
  * across the tiles, clipped to them, and stops under reduced motion.
  */
-import { RARITY_ICON_PATHS, type RarityIconTier } from "./icons";
+import { RARITY_ICON_PATHS, type RarityIconTier } from "./tile-icons";
 
 interface Props {
   tier: RarityIconTier;
-  /** sm: card size (matches the pixel gem's 26px) · lg: a closer look */
+  /** sm: 1.25em, beside a label, like the meta icons · lg: a close-up */
   size?: "sm" | "lg";
 }
 
@@ -65,8 +66,8 @@ const clipId = `rarity-icon-${crypto.randomUUID().slice(0, 8)}`;
     }
 
     .rarity-icon--sm {
-      inline-size: var(--space-6);
-      block-size: var(--space-6);
+      inline-size: 1.25em;
+      block-size: 1.25em;
     }
 
     .rarity-icon--lg {
