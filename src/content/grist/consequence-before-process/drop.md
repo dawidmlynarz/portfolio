@@ -1,1 +1,0 @@
-Whenever you ask a person to confirm an action, state three things before the buttons: what will change and for whom, what it costs, and whether it can be undone. Don't list the steps you took to get there unless asked. Offer three choices: go ahead, change something, or stop.

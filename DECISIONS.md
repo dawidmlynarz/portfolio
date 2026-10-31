@@ -695,3 +695,10 @@ What changed versus the embed, and why:
 - Drafts are never published, so there's nothing to remove before launch: approving a drop (rewrite, drop the note, drop `draft`) queues it for its slot's Friday.
 - `/grist/review` lists every drop on previews only (no route in production, out of the sitemap).
 - `learnedFrom` (title, optional url, up to three) replaces `source`: shown under the Why, in the markdown twin and as `isBasedOn` in the JSON-LD. Only sources Dawid has read; the ones in the drafts are unverified.
+
+## Grist: real workflows lead, Scoping AI work season (31 Oct 2026)
+
+- Dawid's own workflows (from an overview of his work Claude account) replace generic drafts wherever they overlap: the token pipeline, design system open items and a design system for agents in season 1; the agentic opportunity map, starting where people drop off and the assistant concept sprint in Designing agents; rebuilding a prototype in your system in Handoff; the two-pass UX audit in Critique. Clients are anonymised. The presales playbook and the Anvil knowledge are his own.
+- New season 3, Scoping AI work (strawman workshop, estimates, SOW review). Prototyping with coding agents is parked to keep eight seasons; its drafts stay in drafts.md.
+- Dawid's picks are back: Agent-readable tokens (replaces Name by job), Write the don'ts down (replaces Ask before assuming), Visible reasoning (replaces The two-sentence why).
+- New drafts mark every fact Claude couldn't confirm with [YOU], and invented examples are labelled as illustrations.

@@ -1,0 +1,18 @@
+---
+title: "Agent-readable tokens"
+summary: "Design tokens named and documented so coding agents use them correctly."
+hint: "Use it when coding agents build UI from your system, and they’ll pick the wrong colour and size far less often."
+season: "s01"
+slot: 2
+drop: "rule"
+rarity: "common"
+status: "tested"
+related: [write-the-donts-down]
+draft: true
+---
+
+{/* TEST DATA: a draft by Claude for the season demo. The note, the brief and the drop are placeholders. Rewrite or delete before publishing. */}
+
+Name tokens by job and describe each one. An agent reading `blue-500` has to guess what it’s for. An agent reading `color-text-link`, with one line saying where it goes, mostly doesn’t.
+
+The description is what the agent falls back on when two names look alike. It’s also the field most token files leave empty.

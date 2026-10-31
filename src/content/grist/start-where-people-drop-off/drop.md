@@ -1,0 +1,1 @@
+When proposing agent or AI features for a journey, first find the stage where most people drop off, using the data available. Start the scope there. Don't default to the checkout or payment step unless the data says that's where people leave.

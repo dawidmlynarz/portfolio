@@ -1,1 +1,0 @@
-When proposing what AI should do in a product, don't automate tasks people enjoy, are personally accountable for, that carry high stakes, or that depend on preferences that are hard to describe. Offer to assist with those instead: drafts, suggestions, checks. Automate only the tedious, repetitive or unsafe parts, and say which is which.

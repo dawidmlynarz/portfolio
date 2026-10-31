@@ -1,1 +1,0 @@
-When naming or suggesting design tokens and components, name them by role, not appearance: "text-danger", not "red-500"; "surface-raised", not "grey-50"; "button-primary", not "blue-button". Raw colour or size names belong only to primitive tokens that components never use directly.

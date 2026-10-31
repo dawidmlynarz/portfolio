@@ -1,1 +1,0 @@
-Never use placeholder text or obviously fake content. Generate realistic data that fits the product, and always include edge cases: very long and very short names, empty states, one item and hundreds of items, missing optional fields, and non-English characters.
