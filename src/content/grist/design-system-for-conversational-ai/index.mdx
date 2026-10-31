@@ -1,0 +1,28 @@
+---
+title: "Design system for conversational AI"
+summary: "Plan a design system for conversational AI products, with agent components first and names that match the code."
+hint: "Use it when you start a design system for an AI product or check one you have, and you get a component inventory, page structure, variable groups and a list of gaps."
+season: "s01"
+slot: 8
+drop: "skill"
+rarity: "legendary"
+status: "tested"
+steps:
+  - "Save the drop as SKILL.md in a folder called agent-design-system in your AI tool's skills folder."
+  - "Give it the product's agent surfaces, current screens and the code library you use."
+  - "Review the inventory before building anything; cut what the product doesn't need yet."
+example: true
+limits: "If the product has no chat, assistant or agent surfaces, start with Design system audit instead."
+related: [design-system-audit, component-usage-guidelines]
+draft: true
+---
+
+{/* CLAUDE: Answers to the season 1 questions assumed by Claude from best practice, at Dawid's request (31 Oct). Assumed: the component list and what I'd cut next time. The example is an illustration. */}
+
+I built [Anvil UI](/work/zazmic-anvil-ui), a design system for conversational AI agents, in four weeks. A few choices did most of the work. Agent components lived on their own page, apart from the global ones. Every component page opened with a short description. Colour variables were grouped by category and named exactly like the component library the developers used, so Figma and code read the same. And anything new that came out of client prototypes was flagged as a candidate, never added straight in.
+
+It ended up as a GitHub repo with Storybook, a browsable catalogue of every component in code. If I did it again, I'd start with only the components the first product ships, and add the rest when a second product asks for them.
+
+## Example
+
+An illustration: for a booking assistant, the inventory starts like this: Message (agent), Plan card (agent), Approval (agent), Offer card (global card variant), Date picker (global).

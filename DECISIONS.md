@@ -711,3 +711,7 @@ What changed versus the embed, and why:
 
 - Season titles are Title Case ("The AI-ready Design System"). One helper, `seasonName`, prints "Season 1 – The AI-ready Design System" for breadcrumbs and markdown; files lead with "Grist // Season 1 – …".
 - Grist never says "human-written". The line is "Human-curated loot for your AI tools, battle tested by Dawid Młynarz"; each drop's markdown says "Curated by".
+
+## Grist: headline audit, industry names first (31 Oct 2026)
+
+- Every drop title was checked against the name the industry already uses (design system audit, pre-mortem, work breakdown, design QA, devil's advocate, AI disclosure, usage guidelines). 41 of 64 renamed; slugs follow the titles (nothing was live yet). Coined names stay only where they name something new, or where Dawid picked them (Agent-readable tokens, Visible reasoning, Write the don'ts down). The full table is in the "Grist — headline audit" doc.

@@ -1,0 +1,17 @@
+---
+title: "Human-in-the-loop checkpoints"
+summary: "Pause an agent before anything it can’t take back."
+hint: "Use it when you’re deciding where an agent should stop and ask, and you’ll end up with a short list of the actions that need a person."
+season: "s02"
+slot: 1
+drop: "rule"
+rarity: "common"
+status: "tested"
+related: [undo-windows, show-the-plan-first, handoff-to-a-human]
+---
+
+{/* CLAUDE: The hint was drafted by Claude, and the status "tested" is my guess. Dawid to confirm or rewrite both. The slot date is the demo schedule (src/lib/grist.ts). */}
+
+Checkpoints should follow what an action costs, not how confident the model is. Pause when an action can’t be undone, spends money, or speaks for the person. For everything else, let the agent act, keep a readable log, and make undo easy.
+
+The common failure isn’t too few checkpoints. It’s too many. When every step asks for approval, people stop reading and start clicking, and the one pause that mattered gets the same glance as the nine that didn’t.
