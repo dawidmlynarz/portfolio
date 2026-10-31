@@ -49,6 +49,7 @@ import ReadmePanel from "@/components/grist/ReadmePanel.astro";
 import DownloadButton from "@/components/grist/DownloadButton.astro";
 import PermalinkButton from "@/components/grist/PermalinkButton.astro";
 import NewBadge from "@/components/grist/NewBadge.astro";
+import StatusLabel from "@/components/grist/StatusLabel.astro";
 import SeasonHeader from "@/components/grist/SeasonHeader.astro";
 import DropCard from "@/components/grist/DropCard.astro";
 import HumanStamp from "@/components/grist/HumanStamp.astro";
@@ -528,14 +529,25 @@ const GRIST_ICONS: IconName[] = ["lock", "calendar", "arrow-left", "close"];
         <Stack gap="4">
           <h3>Human curated stamp and New</h3>
           <p class="muted measure">
-            The stamp turns once every 24 seconds, pauses on hover and stands still with reduced
-            motion. Large in the front door hero, small on each drop. New marks drops from the last
-            two weeks.
+            The stamp turns once every 24 seconds and stands still with reduced motion. Large in the
+            front door hero, small on each drop. New marks drops from the last two weeks.
           </p>
           <div class="row">
             <HumanStamp />
             <HumanStamp size="sm" />
             <NewBadge />
+          </div>
+        </Stack>
+
+        <Stack gap="4">
+          <h3>Status</h3>
+          <p class="muted measure">
+            Next to the date on every drop: Tested when Dawid has used it on real work, Trying when
+            he's testing it now.
+          </p>
+          <div class="row">
+            <StatusLabel status="tested" />
+            <StatusLabel status="trying" />
           </div>
         </Stack>
 

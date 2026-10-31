@@ -10,6 +10,7 @@ import {
   DROP_TYPES,
   SEASON_SLOTS,
   SEASONS,
+  STATUSES,
   type DropType,
   type Rarity,
   type Season,
@@ -52,7 +53,21 @@ export async function getDrops() {
 
 /** Every drop with a page on this build (see isBuilt). */
 export async function getBuiltDrops() {
-  return (await getCollection("grist", isBuilt)).sort(byPublished);
+  const drops = (await getCollection("grist", isBuilt)).sort(byPublished);
+  if (isProduction) drops.forEach(assertWritten);
+  return drops;
+}
+
+/**
+ * A published drop carries no notes for the author: `CLAUDE:` marks text Claude added that Dawid
+ * hasn't confirmed, `TEST DATA` marks placeholders. Production refuses to build with either left in.
+ */
+const AUTHOR_NOTES = /CLAUDE:|TEST DATA/;
+function assertWritten(drop: Drop) {
+  if (AUTHOR_NOTES.test(drop.body ?? "") || AUTHOR_NOTES.test(lootOf(drop)))
+    throw new Error(
+      `Grist: ${drop.id} still has a CLAUDE: or TEST DATA note. Confirm or rewrite it, or set draft: true.`,
+    );
 }
 
 export type Slot =
@@ -133,6 +148,7 @@ export function derive(drop: Drop) {
   return {
     type,
     rarity: drop.data.rarity,
+    status: STATUSES[drop.data.status],
     published,
     isNew: age >= 0 && age < NEW_DAYS * DAY,
   };
@@ -148,7 +164,7 @@ export const toMarkdown = (body = "") => body.replace(/\{\/\*[\s\S]*?\*\/\}\s*/g
  */
 export function dropMarkdown(drop: Drop, site: URL | undefined, heading = "#") {
   const { data } = drop;
-  const { type, rarity, published } = derive(drop);
+  const { type, rarity, status, published } = derive(drop);
   const fence = "````";
   const h2 = `${heading}#`;
   return [
@@ -158,6 +174,7 @@ export function dropMarkdown(drop: Drop, site: URL | undefined, heading = "#") {
     "",
     `- Drop: ${type.label} (${rarity})`,
     `- Season: ${SEASONS[data.season].number}, ${SEASONS[data.season].title}`,
+    `- Status: ${status.label} (${status.note.toLowerCase()})`,
     `- Published: ${isoDate(published)}`,
     `- URL: ${new URL(dropHref(drop), site).href}`,
     `- Written by a human: Dawid Młynarz`,
@@ -168,6 +185,7 @@ export function dropMarkdown(drop: Drop, site: URL | undefined, heading = "#") {
     "",
     toMarkdown(drop.body).replace(/^## /gm, `${h2}# `),
     "",
+    ...(data.source ? [`*Source:* ${data.source}`, ""] : []),
     ...(data.steps.length
       ? [`${h2} How to use it`, "", ...data.steps.map((step, i) => `${i + 1}. ${step}`), ""]
       : []),

@@ -23,6 +23,10 @@ Replacing a Webflow site with a clean, Webflow-agnostic build. Keep the `/work/<
 - `<Metrics>` takes at most three numbers.
 - A `<Quote>` sits between two paragraphs of text, never right before or after a `Figure`, `Video`, `BeforeAfter` or `ImageGrid`.
 
+## Writing Grist drops
+
+Use the `grist-entry` skill (`.claude/skills/grist-entry/`) and its `voice.md`. Dawid writes the Why; Claude formats and flags what it added with a `CLAUDE:` comment, which production builds refuse to publish. Every drop says `status: tested` or `trying`.
+
 ## Commands
 
 `npm run dev` · `npm run build` · `npm run check` (astro check + stylelint + prettier)

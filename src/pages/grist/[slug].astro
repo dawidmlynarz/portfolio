@@ -6,6 +6,7 @@ import Link from "@/components/ui/Link.astro";
 import HeroBackdrop from "@/components/blocks/HeroBackdrop.astro";
 import Icon from "@/components/grist/Icon.astro";
 import RarityLabel from "@/components/grist/RarityLabel.astro";
+import StatusLabel from "@/components/grist/StatusLabel.astro";
 import DropCard from "@/components/grist/DropCard.astro";
 import LootBox from "@/components/grist/LootBox.astro";
 import PermalinkButton from "@/components/grist/PermalinkButton.astro";
@@ -109,6 +110,7 @@ const jsonLd = {
               <Icon name="calendar" />
               <time datetime={isoDate(published)}>{formatDate(published)}</time>
             </span>
+            <StatusLabel status={data.status} />
           </div>
           <PermalinkButton url={url} />
         </div>
@@ -128,6 +130,7 @@ const jsonLd = {
           <div class="drop__body">
             <Content />
           </div>
+          {data.source && <p class="drop__source drop__muted">{data.source}</p>}
           {data.steps.length > 0 && (
             <section class="drop__section" aria-labelledby="how-to-use-it">
               <h2 class="drop__heading" id="how-to-use-it">
@@ -245,6 +248,13 @@ const jsonLd = {
       font-size: var(--text-small);
       line-height: var(--leading-small);
       white-space: nowrap;
+    }
+
+    .drop__source {
+      max-inline-size: var(--measure);
+      margin-block-start: var(--space-6);
+      font-size: var(--text-small);
+      line-height: var(--leading-small);
     }
 
     .drop__muted {

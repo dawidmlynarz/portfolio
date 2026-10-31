@@ -1,0 +1,35 @@
+---
+/**
+ * Where a drop stands for Dawid, next to its date: Tested (used on real work) or Trying (testing it
+ * now). An icon and a word; the note is the tooltip and the accessible description.
+ */
+import Icon from "./Icon.astro";
+import { STATUSES, type Status } from "@/lib/grist";
+
+interface Props {
+  status: Status;
+  class?: string;
+}
+
+const { status, class: className } = Astro.props;
+const { label, note } = STATUSES[status];
+---
+
+<span class:list={["status-label", `status-label--${status}`, className]} title={note}>
+  <Icon name={status === "tested" ? "circle-check" : "flask"} />
+  {label}
+  <span class="visually-hidden">: {note.toLowerCase()}</span>
+</span>
+
+<style>
+  @layer components {
+    .status-label {
+      display: inline-flex;
+      align-items: center;
+      gap: var(--space-2);
+      font-size: var(--text-small);
+      line-height: var(--leading-small);
+      white-space: nowrap;
+    }
+  }
+</style>

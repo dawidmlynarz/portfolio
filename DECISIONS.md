@@ -680,3 +680,10 @@ What changed versus the embed, and why:
 
 - Rarity no longer follows the type. Each drop sets `rarity` by hand for how deep it goes: a short checklist can be Common and a full review checklist Rare; a simple skill Rare and an advanced one Legendary. The season plan lists `[type, rarity]` pairs so locked cards still show both.
 - What a drop must carry now follows rarity (RARITY_INFO.needs): steps from Uncommon, an `## Example` from Epic, limits at Legendary. The Readme lists the five rarities with what to expect in each, so the call stays anchored.
+
+## Grist: Tested and Trying, the voice guide and the grist-entry skill (31 Oct 2026)
+
+- Every drop has `status`: Tested (used on real work) or Trying (curated or new to Dawid), shown next to the date with an icon. Trying drops can credit where the idea came from in `source`, one sentence in his words; guides and research yes, products no. Rare now describes depth only, so a Trying drop can be Rare.
+- Production builds fail when a built drop still has a `CLAUDE:` or `TEST DATA` note (`assertWritten` in lib/drops.ts). Previews don't check, so drafts stay reviewable.
+- `.claude/skills/grist-entry/` holds the workflow (SKILL.md), the voice guide (voice.md, mirrors the "Grist — voice and tone" doc) and another tool's 96 raw drafts as a backlog (drafts.md, not Dawid's words, ignored by Prettier).
+- Parked: Ultra rare, payments, twice-weekly drops and the drop → skill tree → season hierarchy. Revisit if an audience appears.

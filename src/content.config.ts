@@ -2,7 +2,7 @@ import { defineCollection, reference } from "astro:content";
 import { glob } from "astro/loaders";
 import { z } from "astro/zod";
 import { CLIENTS, type Client } from "./lib/clients";
-import { DROP_TYPES, RARITIES, RARITY_INFO, SEASONS } from "./lib/grist";
+import { DROP_TYPES, RARITIES, RARITY_INFO, SEASONS, STATUSES } from "./lib/grist";
 
 /**
  * Case studies: one folder per case study, src/content/work/<slug>/index.mdx, with its images
@@ -94,6 +94,11 @@ const grist = defineCollection({
       drop: z.enum(keys(DROP_TYPES)),
       /** Set by hand: how deep the drop goes (RARITY_INFO). */
       rarity: z.enum(RARITIES),
+      /** Used on real work, or something Dawid is trying (STATUSES). */
+      status: z.enum(keys(STATUSES)),
+      /** Where the idea came from, one plain sentence in Dawid's words. Guides and research, no
+       * product names. Mostly for Trying drops. */
+      source: z.string().optional(),
       /** Its place in the season, 1 to 8. The slot sets the drop day (src/lib/grist.ts). */
       slot: z.number().int().min(1).max(8),
       /** Slugs for See also. */

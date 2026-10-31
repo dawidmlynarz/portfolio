@@ -33,7 +33,7 @@ export const RARITY_INFO = {
     needs: ["steps"],
   },
   rare: {
-    note: "Tested on real work and goes deeper: a full review checklist, a detailed prompt, a simple skill.",
+    note: "Goes deeper: a full review checklist, a detailed prompt, a simple skill.",
     needs: ["steps"],
   },
   epic: {
@@ -48,6 +48,16 @@ export const RARITY_INFO = {
   Rarity,
   { note: string; needs: readonly ("steps" | "example" | "limits")[] }
 >;
+
+/**
+ * Where a drop stands for Dawid: used on real work, or something he's trying (curated or new to
+ * him). Either way the words are his. Shown next to the date.
+ */
+export const STATUSES = {
+  tested: { label: "Tested", note: "Used on real work" },
+  trying: { label: "Trying", note: "Testing it now" },
+} as const satisfies Record<string, { label: string; note: string }>;
+export type Status = keyof typeof STATUSES;
 
 /** Drop types: the format of the loot. Any type can be any rarity. */
 export const DROP_TYPES = {
