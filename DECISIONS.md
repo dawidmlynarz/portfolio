@@ -706,3 +706,8 @@ What changed versus the embed, and why:
 ## Grist: previews unlock every drop (31 Oct 2026)
 
 - Preview builds list all 64 drops on the front door, in their seasons, with no locked cards, so Dawid can read the seasons whole before launch. Production is unchanged: a drop unlocks on its Friday and drafts stay out, so the locked cards appear once drops go live.
+
+## Grist: Title Case season names, "human-curated" (31 Oct 2026)
+
+- Season titles are Title Case ("The AI-ready Design System"). One helper, `seasonName`, prints "Season 1 – The AI-ready Design System" for breadcrumbs and markdown; files lead with "Grist // Season 1 – …".
+- Grist never says "human-written". The line is "Human-curated loot for your AI tools, battle tested by Dawid Młynarz"; each drop's markdown says "Curated by".

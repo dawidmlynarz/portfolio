@@ -10,7 +10,7 @@ import StatusLabel from "@/components/grist/StatusLabel.astro";
 import DropCard from "@/components/grist/DropCard.astro";
 import LootBox from "@/components/grist/LootBox.astro";
 import PermalinkButton from "@/components/grist/PermalinkButton.astro";
-import { SEASONS } from "@/lib/grist";
+import { SEASONS, seasonName } from "@/lib/grist";
 import { SITE } from "@/lib/site";
 import { breadcrumbs } from "@/lib/schema";
 import {
@@ -44,7 +44,6 @@ const { drop, related } = Astro.props;
 const { data } = drop;
 const { Content, headings } = await render(drop);
 const { type, rarity, published } = derive(drop);
-const season = SEASONS[data.season];
 const url = new URL(dropHref(drop), Astro.site).href;
 const toc = [
   { slug: "why", text: "Why" },
@@ -83,7 +82,7 @@ const jsonLd = {
     article,
     breadcrumbs(Astro.site!, [
       ["Grist", "/grist"],
-      [`Season ${season.number}: ${season.title}`, `/grist#${data.season}`],
+      [seasonName(data.season), `/grist#${data.season}`],
       [data.title, dropHref(drop)],
     ]),
   ],
@@ -103,9 +102,7 @@ const jsonLd = {
               <Link href="/grist">All drops</Link>
             </li>
             <li>
-              <Link href={`/grist#${data.season}`}>
-                Season {season.number}: {season.title}
-              </Link>
+              <Link href={`/grist#${data.season}`}>{seasonName(data.season)}</Link>
             </li>
           </ol>
         </nav>

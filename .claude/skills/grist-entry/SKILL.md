@@ -5,7 +5,7 @@ description: Turn Dawid's rough notes into a Grist drop (src/content/grist/<slug
 
 # Grist entry
 
-Grist (/grist) is Dawid's human-written loot for AI tools. Your job is formatting, never authorship. Read `voice.md` in this folder before writing anything.
+Grist (/grist) is Dawid's human-curated loot for AI tools, battle tested by him. Your job is formatting, never authorship. Read `voice.md` in this folder before writing anything.
 
 ## Inputs
 

@@ -1,5 +1,5 @@
 /**
- * Grist (/grist): human-written loot for AI tools. Each drop has a type (its format: rule, prompt,
+ * Grist (/grist): human-curated loot for AI tools, battle tested by Dawid. Each drop has a type (its format: rule, prompt,
  * checklist, spec, skill) and a rarity (how deep it goes), set separately by hand: a simple
  * checklist can be Common and an advanced one Rare. Seasons group drops by theme.
  */
@@ -115,7 +115,7 @@ export const SEASONS = {
   s01: {
     number: 1,
     slug: "ai-ready-design-system",
-    title: "The AI-ready design system",
+    title: "The AI-ready Design System",
     blurb: "Make a design system that coding agents use correctly.",
     starts: "2026-08-28",
     plan: [
@@ -132,7 +132,7 @@ export const SEASONS = {
   s02: {
     number: 2,
     slug: "designing-agents",
-    title: "Designing agents",
+    title: "Designing Agents",
     blurb: 'From "should this be an agent?" to a full review of an agent concept.',
     starts: "2026-10-30",
     plan: [
@@ -149,7 +149,7 @@ export const SEASONS = {
   s03: {
     number: 3,
     slug: "scoping-ai-work",
-    title: "Scoping AI work",
+    title: "Scoping AI Work",
     blurb:
       "Workshops, estimates and statements of work for AI projects, from the first call to a signed scope.",
     starts: "2027-01-01",
@@ -167,7 +167,7 @@ export const SEASONS = {
   s04: {
     number: 4,
     slug: "ai-design-workspace",
-    title: "Your AI design workspace",
+    title: "Your AI Design Workspace",
     blurb: "Set up context, rules and skills once, so AI tools work the way you do.",
     starts: "2027-03-05",
     plan: [
@@ -184,7 +184,7 @@ export const SEASONS = {
   s05: {
     number: 5,
     slug: "handoff-to-coding-agents",
-    title: "Handoff to coding agents",
+    title: "Handoff to Coding Agents",
     blurb: "Hand a design to a coding agent and get back a build that matches it.",
     starts: "2027-05-07",
     plan: [
@@ -201,7 +201,7 @@ export const SEASONS = {
   s06: {
     number: 6,
     slug: "shipping-agents",
-    title: "Shipping agents",
+    title: "Shipping Agents",
     blurb: "From a reviewed concept to a behaviour spec and an eval kit that tests it.",
     starts: "2027-07-09",
     plan: [
@@ -218,7 +218,7 @@ export const SEASONS = {
   s07: {
     number: 7,
     slug: "trust-and-memory",
-    title: "Trust and memory",
+    title: "Trust and Memory",
     blurb: "Make an agent's explanations, voice and memory something people can rely on.",
     starts: "2027-09-10",
     plan: [
@@ -262,3 +262,7 @@ export const SEASONS = {
   }
 >;
 export type Season = keyof typeof SEASONS;
+
+/** A season's full name, in Title Case with an en dash: "Season 1 – The AI-ready Design System". */
+export const seasonName = (season: Season) =>
+  `Season ${SEASONS[season].number} – ${SEASONS[season].title}`;

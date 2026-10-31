@@ -5,7 +5,7 @@
 import type { APIRoute } from "astro";
 import { SITE } from "@/lib/site";
 import { getSeasons, twinHref } from "@/lib/drops";
-import { DROP_TYPES } from "@/lib/grist";
+import { DROP_TYPES, seasonName } from "@/lib/grist";
 
 export const GET: APIRoute = async ({ site }) => {
   const abs = (path: string) => new URL(path, site).href;
@@ -13,12 +13,12 @@ export const GET: APIRoute = async ({ site }) => {
   const text = [
     `# ${SITE.name}`,
     "",
-    "> Product designer. Grist is my collection of human-written loot for AI tools: rules, prompts, checklists, specs and skills on agentic UX and AI-ready design systems.",
+    "> Product designer. Grist is my human-curated loot for AI tools, battle tested by me: rules, prompts, checklists, specs and skills on agentic UX and AI-ready design systems.",
     "",
     `All of Grist in one file: ${abs("/grist/llms-full.txt")}`,
     "",
     ...seasons.flatMap((season) => [
-      `## Grist, season ${season.number}: ${season.title}`,
+      `## Grist // ${seasonName(season.id)}`,
       "",
       ...season.drops.map(
         (drop) =>
