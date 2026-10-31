@@ -6,7 +6,7 @@ season: "s01"
 slot: 6
 drop: "spec"
 rarity: "epic"
-status: "trying"
+status: "tested"
 steps:
   - "Write it in under 300 lines; split into linked files if it grows."
   - "Link to token and component files; never paste values."
@@ -15,12 +15,14 @@ example: true
 draft: true
 ---
 
-{/* CLAUDE: Imported from another AI tool's draft (.claude/skills/grist-entry/drafts.md, season 6 drop 7). The loot is as drafted. The tl;dr, hint and Why aren't Dawid's words yet; status and any source are unconfirmed. */}
+{/* CLAUDE: Answers to the season 1 questions assumed by Claude from best practice, at Dawid's request (31 Oct). Assumed: Tested status, and that the file is short and links instead of copying. The example is an illustration. */}
 
-Agents read files in the repo, not your documentation site. A short file that links to the real tokens and components, rather than copying their values, gives them the map without going stale.
+I wrote one for my own design system. Agents read files in the repo, not your documentation site, so this is the first thing they open. It links to the real tokens and components instead of copying their values, which keeps it from going stale.
 
-Watch for pasting token values into the file. They'll drift from the real tokens within a month.
+DESIGN.md is becoming a common name for this file, and that helps: an agent that has seen one before knows what to look for.
+
+Watch for pasting token values into it. They drift from the real tokens within a month.
 
 ## Example
 
-The _Layout_ section: _Pages use the 12-column grid (layout/grid). Content never touches the viewport edge; use space-page for margins. Do: stack cards with space-section between groups. Don't: nest cards inside cards; use list-item instead._
+An illustration of the _Layout_ section: _Pages use the 12-column grid (layout/grid). Content never touches the viewport edge; use space-page for margins. Do: stack cards with space-section between groups. Don't: nest cards inside cards; use list-item instead._

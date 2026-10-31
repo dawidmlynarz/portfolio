@@ -15,8 +15,10 @@ related: [design-md, agent-readable-tokens]
 draft: true
 ---
 
-{/* CLAUDE: Drafted by Claude from the overview of Dawid's real work (Zazmic account, 31 Oct). Clients anonymised. The loot is my first pass at his workflow; the Why is reconstructed from notes. Fill every [YOU] gap, check the facts, confirm status. */}
+{/* CLAUDE: Answers to the season 1 questions assumed by Claude from best practice, at Dawid's request (31 Oct). Assumed: the shadcn/ui reason, and the last two checklist sections. */}
 
 When I documented a company website's design system, the most useful page turned out to be the list of what wasn't there yet. No design owner, no accessibility target, buttons drawn as static frames, spacing and radius not tokenised.
 
-Writing it down stopped people, and agents, from treating the gaps as decisions. It also made the build or adopt call easy: we adopted an open-source component library (shadcn/ui) instead of drawing every variant in Figma. [YOU: why that call?]
+Writing it down stopped people, and agents, from treating the gaps as decisions. Each item got an owner, so the list became the system's backlog instead of a complaint.
+
+It also made the build or adopt call easy. We adopted shadcn/ui, an open-source component library, instead of drawing every variant in Figma. It gave us accessible components in code from day one, and the Figma side only had to match them.

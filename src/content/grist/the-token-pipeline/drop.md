@@ -21,7 +21,7 @@
 ## Build
 
 - Tool: Style Dictionary (open source)
-- Outputs: [CSS variables, React Native, ...]
+- Outputs: CSS variables for the web, and React Native
 - One build command; generated files are never edited by hand
 
 ## Check
@@ -31,4 +31,5 @@
 
 ## Owner
 
-- [Who exports, how often, who reviews]
+- The design system designer exports after every change to the variables
+- A developer reviews the generated files in a pull request before they merge

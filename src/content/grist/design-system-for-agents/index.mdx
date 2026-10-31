@@ -17,12 +17,12 @@ related: [design-system-open-items, component-contract-writer]
 draft: true
 ---
 
-{/* CLAUDE: Drafted by Claude from the overview of Dawid's real work (Zazmic account, 31 Oct). Clients anonymised. The loot is my first pass at his workflow; the Why is reconstructed from notes. Fill every [YOU] gap, check the facts, confirm status. */}
+{/* CLAUDE: Answers to the season 1 questions assumed by Claude from best practice, at Dawid's request (31 Oct). Assumed: the component list and what I'd cut next time. The example is an illustration. */}
 
 I built [Anvil UI](/work/zazmic-anvil-ui), a design system for conversational AI agents, in four weeks. A few choices did most of the work. Agent components lived on their own page, apart from the global ones. Every component page opened with a short description. Colour variables were grouped by category and named exactly like the component library the developers used, so Figma and code read the same. And anything new that came out of client prototypes was flagged as a candidate, never added straight in.
 
-It ended up as a GitHub repo with Storybook, a browsable catalogue of every component in code. [YOU: what would you cut next time?]
+It ended up as a GitHub repo with Storybook, a browsable catalogue of every component in code. If I did it again, I'd start with only the components the first product ships, and add the rest when a second product asks for them.
 
 ## Example
 
-An illustration: for a booking assistant, the inventory starts like this: Message (agent), Plan card (agent), Approval (agent), Offer card (global card variant), Date picker (global). [YOU: swap in a real slice.]
+An illustration: for a booking assistant, the inventory starts like this: Message (agent), Plan card (agent), Approval (agent), Offer card (global card variant), Date picker (global).
