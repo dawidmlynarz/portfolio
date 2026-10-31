@@ -4,7 +4,7 @@ Journey: [name] · Audience: [who] · Data: [analytics, research]
 
 ## Columns, one per stage
 
-Stage · What people do · Where they drop off (data) · Data the product has
+Stage · What people do · Pain points (evidence) · Data the product has
 
 ## Rows, per stage
 
@@ -20,6 +20,6 @@ Stage · What people do · Where they drop off (data) · Data the product has
 
 ## Pick the first release (MVP)
 
-- Start at the stage with the highest drop-off
+- Start at the stage with the biggest pain points
 - Take ideas that score 7 or more; anything with reversibility 1 needs a human checkpoint
 - Everything else goes in a Later column, with the reason

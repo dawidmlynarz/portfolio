@@ -1,0 +1,15 @@
+---
+title: "Tokens-only Guardrail"
+summary: "A guardrail for AI tools: build UI only from your design tokens, never raw values."
+hint: "Add it to the rules file of any repo with a design system, and the AI builds from your tokens and asks you before it adds a new value."
+season: "s01"
+slot: 1
+drop: "rule"
+rarity: "common"
+status: "tested"
+draft: true
+---
+
+I want control over the output. I don't want stray styles flying around the codebase.
+
+This is a guardrail: a standing rule the AI reads before it writes any code. Without it, an agent simply makes styles up on the spot, or hard-codes everything. With it, every colour, space and size comes from the system. When something really needs a custom style, the agent asks, I approve it, and we create a new token if one is needed.
