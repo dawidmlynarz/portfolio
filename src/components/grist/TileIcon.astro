@@ -9,8 +9,8 @@ import { RARITY_ICON_PATHS, type RarityIconTier } from "./tile-icons";
 
 interface Props {
   tier: RarityIconTier;
-  /** sm: 1.25em, beside a label, like the meta icons · lg: a close-up */
-  size?: "sm" | "lg";
+  /** sm: 1.25em, beside a label, like the meta icons · md: 1.5em, on the drop page · lg: a close-up */
+  size?: "sm" | "md" | "lg";
 }
 
 const { tier, size = "sm" } = Astro.props;
@@ -68,6 +68,11 @@ const clipId = `rarity-icon-${crypto.randomUUID().slice(0, 8)}`;
     .rarity-icon--sm {
       inline-size: 1.25em;
       block-size: 1.25em;
+    }
+
+    .rarity-icon--md {
+      inline-size: 1.5em;
+      block-size: 1.5em;
     }
 
     .rarity-icon--lg {

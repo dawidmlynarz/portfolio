@@ -231,8 +231,8 @@
     --rarity-epic-tile-text: light-dark(#9341f2, #9f57f4);
     --rarity-legendary-icon: light-dark(#df6f00, #fb7d00);
     --rarity-legendary-tile-text: light-dark(#b15800, #fb7d00);
-    --rarity-ultimate-icon: #f50000;
-    --rarity-ultimate-tile-text: light-dark(#e30000, #fd0000);
+    --rarity-ultimate-icon: #e60303;
+    --rarity-ultimate-tile-text: light-dark(#d40000, #ff3b3b);
     --shadow-panel: 0 24px 64px -24px light-dark(rgb(0 0 0 / 28%), rgb(0 0 0 / 80%));
     /* Space above content on pages that don't run under the floating nav (SiteLayout) */
     --nav-clearance: calc(var(--space-4) + var(--space-12) + var(--space-8));

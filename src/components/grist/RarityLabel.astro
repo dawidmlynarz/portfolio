@@ -11,10 +11,12 @@ import { DROP_TYPES, RARITY_ICON, RARITY_LABELS, type DropType, type Rarity } fr
 interface Props {
   rarity: Rarity;
   type?: DropType;
+  /** md: a larger icon, for the drop page where the tier should stand out */
+  size?: "sm" | "md";
   class?: string;
 }
 
-const { rarity, type, class: className } = Astro.props;
+const { rarity, type, size = "sm", class: className } = Astro.props;
 ---
 
 <span
@@ -25,7 +27,7 @@ const { rarity, type, class: className } = Astro.props;
     className,
   ]}
 >
-  {RARITY_ICON === "tile" ? <TileIcon tier={rarity} /> : <Gem rarity={rarity} />}
+  {RARITY_ICON === "tile" ? <TileIcon tier={rarity} size={size} /> : <Gem rarity={rarity} />}
   <span class:list={["rarity-label__name", { "rarity-label__name--type": type }]}>
     {type ? DROP_TYPES[type].label : RARITY_LABELS[rarity]}
   </span>

@@ -109,7 +109,7 @@ const jsonLd = {
         <h1>{data.title}</h1>
         <div class="drop__meta">
           <div class="drop__tags">
-            <RarityLabel rarity={rarity} type={data.drop} />
+            <RarityLabel rarity={rarity} type={data.drop} size="md" />
             <span class="drop__fact">
               <Icon name="calendar" size="lg" />
               <time datetime={isoDate(published)}>{formatDate(published)}</time>
