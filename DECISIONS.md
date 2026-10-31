@@ -687,3 +687,11 @@ What changed versus the embed, and why:
 - Production builds fail when a built drop still has a `CLAUDE:` or `TEST DATA` note (`assertWritten` in lib/drops.ts). Previews don't check, so drafts stay reviewable.
 - `.claude/skills/grist-entry/` holds the workflow (SKILL.md), the voice guide (voice.md, mirrors the "Grist — voice and tone" doc) and another tool's 96 raw drafts as a backlog (drafts.md, not Dawid's words, ignored by Prettier).
 - Parked: Ultra rare, payments, twice-weekly drops and the drop → skill tree → season hierarchy. Revisit if an audience appears.
+
+## Grist: eight seasons drafted, weekly drops, Learned from (31 Oct 2026)
+
+- Drops land every Friday (DROP_INTERVAL_DAYS 7), a week off between seasons. Posting frequency isn't a ranking factor; launching with a full season and a steady weekly drop gets pages indexed and brings people back, and keeps the eight seasons to about 14 months.
+- All eight seasons are in the repo as drafts, imported from another AI tool's drafts (`drafts.md`) by a one-off script: loot as drafted, tl;dr, hint and Why marked `CLAUDE:` until Dawid rewrites them. Order: AI-ready design system, Designing agents (Human checkpoints in slot 1), AI design workspace, Handoff, Prototyping, Shipping agents, Trust and memory, Critique. Four earlier placeholders (undo windows, show the plan first, activity log, handoff to a human) fill gaps in Shipping agents and Trust and memory; the other eight were deleted.
+- Drafts are never published, so there's nothing to remove before launch: approving a drop (rewrite, drop the note, drop `draft`) queues it for its slot's Friday.
+- `/grist/review` lists every drop on previews only (no route in production, out of the sitemap).
+- `learnedFrom` (title, optional url, up to three) replaces `source`: shown under the Why, in the markdown twin and as `isBasedOn` in the JSON-LD. Only sources Dawid has read; the ones in the drafts are unverified.

@@ -1,0 +1,1 @@
+When you finish a task, never just say it's done. List what you changed, where (file, record, page or recipient), and anything you tried that didn't work. If you couldn't verify the result, say so plainly.

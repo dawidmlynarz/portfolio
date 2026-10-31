@@ -1,0 +1,1 @@
+Build prototypes in a separate sandbox project, never in the product's codebase. Optimise for speed of learning, not code quality. Don't add tests, abstractions or production features unless I ask. Every prototype starts with a README stating the question it's meant to answer.

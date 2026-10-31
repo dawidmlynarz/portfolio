@@ -1,0 +1,1 @@
+Before creating any new component, search the design system for one that does the job, including variants and props. If something close exists, use it and tell me what's different. Only build a new component after I approve, and build it as a local candidate, not inside the design system.

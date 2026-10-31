@@ -96,9 +96,12 @@ const grist = defineCollection({
       rarity: z.enum(RARITIES),
       /** Used on real work, or something Dawid is trying (STATUSES). */
       status: z.enum(keys(STATUSES)),
-      /** Where the idea came from, one plain sentence in Dawid's words. Guides and research, no
-       * product names. Mostly for Trying drops. */
-      source: z.string().optional(),
+      /** Where Dawid learned it: guides, reports, research he has read (up to three). Shown as
+       * "Learned from" under the Why. Publishers are fine to name; product recommendations aren't. */
+      learnedFrom: z
+        .array(z.object({ title: z.string(), url: z.url().optional() }))
+        .max(3)
+        .default([]),
       /** Its place in the season, 1 to 8. The slot sets the drop day (src/lib/grist.ts). */
       slot: z.number().int().min(1).max(8),
       /** Slugs for See also. */

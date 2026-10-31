@@ -98,68 +98,154 @@ export const GEM_PIXELS: Record<Rarity, readonly string[]> = {
   legendary: ["...o..o..o...", ...SPARKLED],
 };
 
-/** Drops land every other Friday. A season is eight drops; a two-week break follows it. */
-export const DROP_INTERVAL_DAYS = 14;
+/** Drops land every Friday. A season is eight drops; a week off follows it. */
+export const DROP_INTERVAL_DAYS = 7;
 export const SEASON_SLOTS = 8;
 
 /**
  * Seasons in order, battle-pass style: each shows all eight slots, and a slot unlocks on its drop
- * day (`starts` + (slot - 1) × 14 days). `plan` is the type and rarity each slot is meant to hold,
+ * day (`starts` + (slot - 1) × 7 days). `plan` is the type and rarity each slot is meant to hold,
  * shown on locked cards; the drop's own fields win once it's written.
  *
- * DEMO SCHEDULE for the preview: season 1 fully dropped, season 2 three drops in. Reset `starts`
- * to the real launch dates before Grist goes live (drop days are never backdated).
+ * DEMO SCHEDULE for the preview: season 1 fully dropped, season 2 one drop in, seasons nine weeks
+ * apart. Every drop except Human checkpoints is an imported draft (draft: true). Reset `starts` to
+ * the real launch dates before Grist goes live (drop days are never backdated).
  */
 export const SEASONS = {
   s01: {
     number: 1,
-    slug: "agentic-ux",
-    title: "Agentic UX",
-    blurb: "How products should behave when an agent does the work.",
-    starts: "2026-06-26",
+    slug: "ai-ready-design-system",
+    title: "The AI-ready design system",
+    blurb: "Make a design system that coding agents use correctly.",
+    starts: "2026-08-28",
     plan: [
       ["rule", "common"],
-      ["prompt", "uncommon"],
       ["checklist", "rare"],
+      ["prompt", "uncommon"],
       ["rule", "common"],
       ["prompt", "uncommon"],
-      ["checklist", "common"],
-      ["rule", "common"],
+      ["spec", "rare"],
+      ["spec", "epic"],
       ["skill", "legendary"],
     ],
   },
   s02: {
     number: 2,
-    slug: "ai-ready-design-systems",
-    title: "AI-ready design systems",
-    blurb: "Making a design system that agents read and use correctly.",
-    starts: "2026-10-02",
+    slug: "designing-agents",
+    title: "Designing agents",
+    blurb: 'From "should this be an agent?" to a full review of an agent concept.',
+    starts: "2026-10-30",
     plan: [
       ["rule", "common"],
       ["prompt", "uncommon"],
       ["rule", "common"],
       ["checklist", "rare"],
-      ["prompt", "uncommon"],
+      ["prompt", "rare"],
       ["rule", "common"],
-      ["spec", "epic"],
-      ["skill", "rare"],
+      ["checklist", "epic"],
+      ["skill", "legendary"],
     ],
   },
   s03: {
     number: 3,
-    slug: "designing-with-agents",
-    title: "Designing with agents",
-    blurb: "How I work with AI tools day to day as a designer.",
-    starts: "2027-02-05",
+    slug: "ai-design-workspace",
+    title: "Your AI design workspace",
+    blurb: "Set up context, rules and skills once, so AI tools work the way you do.",
+    starts: "2027-01-01",
+    plan: [
+      ["rule", "common"],
+      ["prompt", "uncommon"],
+      ["rule", "common"],
+      ["spec", "epic"],
+      ["spec", "rare"],
+      ["prompt", "rare"],
+      ["rule", "common"],
+      ["skill", "legendary"],
+    ],
+  },
+  s04: {
+    number: 4,
+    slug: "handoff-to-coding-agents",
+    title: "Handoff to coding agents",
+    blurb: "Hand a design to a coding agent and get back a build that matches it.",
+    starts: "2027-03-05",
+    plan: [
+      ["rule", "common"],
+      ["checklist", "uncommon"],
+      ["spec", "rare"],
+      ["prompt", "uncommon"],
+      ["rule", "common"],
+      ["prompt", "uncommon"],
+      ["checklist", "rare"],
+      ["skill", "epic"],
+    ],
+  },
+  s05: {
+    number: 5,
+    slug: "prototyping-with-coding-agents",
+    title: "Prototyping with coding agents",
+    blurb: "From a question worth testing to a coded prototype that's ready for a session.",
+    starts: "2027-05-07",
+    plan: [
+      ["rule", "common"],
+      ["spec", "rare"],
+      ["rule", "common"],
+      ["prompt", "uncommon"],
+      ["prompt", "uncommon"],
+      ["checklist", "rare"],
+      ["checklist", "rare"],
+      ["skill", "epic"],
+    ],
+  },
+  s06: {
+    number: 6,
+    slug: "shipping-agents",
+    title: "Shipping agents",
+    blurb: "From a reviewed concept to a behaviour spec and an eval kit that tests it.",
+    starts: "2027-07-09",
+    plan: [
+      ["rule", "common"],
+      ["spec", "epic"],
+      ["rule", "common"],
+      ["spec", "rare"],
+      ["rule", "common"],
+      ["spec", "rare"],
+      ["checklist", "common"],
+      ["skill", "legendary"],
+    ],
+  },
+  s07: {
+    number: 7,
+    slug: "trust-and-memory",
+    title: "Trust and memory",
+    blurb: "Make an agent's explanations, voice and memory something people can rely on.",
+    starts: "2027-09-10",
     plan: [
       ["rule", "common"],
       ["prompt", "uncommon"],
       ["rule", "common"],
       ["checklist", "rare"],
       ["prompt", "uncommon"],
-      ["rule", "common"],
+      ["checklist", "rare"],
       ["spec", "epic"],
       ["skill", "legendary"],
+    ],
+  },
+  s08: {
+    number: 8,
+    slug: "critique-with-ai",
+    title: "Critique with AI",
+    blurb: "Run critiques that end in decisions, with an AI partner that argues fairly.",
+    starts: "2027-11-12",
+    plan: [
+      ["rule", "common"],
+      ["spec", "rare"],
+      ["prompt", "uncommon"],
+      ["rule", "common"],
+      ["prompt", "uncommon"],
+      ["checklist", "uncommon"],
+      ["prompt", "rare"],
+      ["skill", "epic"],
     ],
   },
 } as const satisfies Record<

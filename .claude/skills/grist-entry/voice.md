@@ -7,7 +7,7 @@ How a Grist drop should read. Drawn from Dawid's case studies (NerdWallet, BeatS
 - The ideas, the Why and the judgement are Dawid's. Claude formats, tidies, shortens and fills in frontmatter.
 - Claude never invents an experience, a result, a number or a source. Where one is needed and missing, write `[what happened]` and add a `CLAUDE:` comment.
 - **Tested** drops: Dawid used it on real work. The Why says what happened.
-- **Trying** drops: curated or new to him. The Why says why he picked it up and what he's watching for. `source` credits where it came from in one plain sentence ("I picked this up from …"). Guides and research are fine to name; products are not.
+- **Trying** drops: curated or new to him. The Why says why he picked it up and what he's watching for. `learnedFrom` credits what he read, as linked titles (up to three). Publishers of guides, reports and research are fine to name; product recommendations are not.
 
 ## Traits
 

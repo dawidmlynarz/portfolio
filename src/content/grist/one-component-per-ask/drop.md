@@ -1,0 +1,1 @@
+When building from a design, work one component at a time. For each: name the existing component you're using (or say none exists), build or wire it, and stop for review before the next. Assemble the screen only after its components are approved.

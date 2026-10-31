@@ -1,0 +1,21 @@
+---
+title: "Accessibility pass"
+summary: "The accessibility checks AI-built screens fail most, in the order to run them."
+hint: "Use it when reviewing any screen a coding agent built, and you get a list of failures with where they are, ready to send back to the agent."
+season: "s05"
+slot: 6
+drop: "checklist"
+rarity: "rare"
+status: "trying"
+steps:
+  - "Run an automated checker first and fix what it finds."
+  - "Then do this list by hand, keyboard first, then a screen reader."
+  - "Send failures back one at a time."
+draft: true
+---
+
+{/* CLAUDE: Imported from another AI tool's draft (.claude/skills/grist-entry/drafts.md, season 9 drop 2). The loot is as drafted. The tl;dr, hint and Why aren't Dawid's words yet; status and any source are unconfirmed. */}
+
+Automated checkers catch missing labels and low contrast. They miss focus order, keyboard traps and announcements, which is exactly where generated UI tends to break.
+
+Watch for passing a screen because the checker is green. Most of this list is invisible to it.

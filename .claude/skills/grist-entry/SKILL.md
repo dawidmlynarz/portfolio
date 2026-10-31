@@ -18,12 +18,20 @@ Grist (/grist) is Dawid's human-written loot for AI tools. Your job is formattin
 2. **Place it.** Read `SEASONS` in `src/lib/grist.ts`. Take the season he names, or the current one, and the next free slot (slots are 1 to 8, unique per season). The slot sets the drop day; never set a date.
 3. **Set type and rarity.** Type is the format (`DROP_TYPES`). Rarity is depth (`RARITY_INFO`); check it against the tier notes and say why you picked it. What the tier needs is enforced by the schema in `src/content.config.ts`: steps from Uncommon, `example: true` and a `## Example` section from Epic, `limits` at Legendary.
 4. **Write the files.**
-   - `src/content/grist/<slug>/index.mdx`: frontmatter (`title`, `summary` one sentence, `hint` one sentence on when to use it and what you get, `season`, `slot`, `drop`, `rarity`, `status`, `source` if Trying, `steps`, `example`, `limits`, `related`) and the Why as the body, in his sentences. Epic and up add `## Example`.
+   - `src/content/grist/<slug>/index.mdx`: frontmatter (`title`, `summary` one sentence, `hint` one sentence on when to use it and what you get, `season`, `slot`, `drop`, `rarity`, `status`, `learnedFrom` (title and url of what he read, up to three), `steps`, `example`, `limits`, `related`) and the Why as the body, in his sentences. Epic and up add `## Example`.
    - `src/content/grist/<slug>/drop.md`: the loot only, ready to paste into an AI tool.
    - Keep his wording. Cut and reorder; don't embellish. Follow `voice.md`.
 5. **Flag.** Anything you wrote that isn't his (a hint, a step, a filler sentence, a guessed rarity) gets one MDX comment at the top: `{/* CLAUDE: what I added, for Dawid to confirm. */}`. Production builds fail while a published drop has one, so it can't slip out.
 6. **Check.** Run `npx prettier --write src/content/grist/<slug>` and `npm run check`. Fix schema errors.
 7. **Hand over.** Commit on a branch, push, and tell Dawid the preview URL (`/grist/<slug>`), the rarity you picked and why, and every `CLAUDE:` note. He reads, edits and merges before drop day.
+
+## Sources
+
+Only credit what Dawid has read. The sources named in `drafts.md` are unverified (some couldn't be found), so ask him before adding one, and check that the link opens.
+
+## Reviewing imported drafts
+
+Drops imported from `drafts.md` carry `draft: true` and a `CLAUDE:` note. To finish one: ask Dawid the questions for its Why, rewrite the tl;dr, hint and Why from his answers, confirm status and sources, then remove the note and `draft`. The loot can stay as drafted if he has checked it.
 
 ## Updating a Trying drop
 

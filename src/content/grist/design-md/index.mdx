@@ -1,0 +1,26 @@
+---
+title: "DESIGN.md"
+summary: "One plain file that explains how your design system works, for people and agents alike."
+hint: "Use it when your system's knowledge is spread across a website, design files and people's heads, and you get a DESIGN.md at the root of the repo that any agent reads first."
+season: "s01"
+slot: 7
+drop: "spec"
+rarity: "epic"
+status: "trying"
+steps:
+  - "Write it in under 300 lines; split into linked files if it grows."
+  - "Link to token and component files; never paste values."
+  - "Write rules as do and don't, naming the component each applies to."
+example: true
+draft: true
+---
+
+{/* CLAUDE: Imported from another AI tool's draft (.claude/skills/grist-entry/drafts.md, season 6 drop 7). The loot is as drafted. The tl;dr, hint and Why aren't Dawid's words yet; status and any source are unconfirmed. */}
+
+Agents read files in the repo, not your documentation site. A short file that links to the real tokens and components, rather than copying their values, gives them the map without going stale.
+
+Watch for pasting token values into the file. They'll drift from the real tokens within a month.
+
+## Example
+
+The _Layout_ section: _Pages use the 12-column grid (layout/grid). Content never touches the viewport edge; use space-page for margins. Do: stack cards with space-section between groups. Don't: nest cards inside cards; use list-item instead._

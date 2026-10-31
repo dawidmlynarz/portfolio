@@ -1,0 +1,1 @@
+For any task with more than one step or more than one file, first write a short plan: the steps, the files you'll change, and any questions. Wait for my go-ahead before doing it. If the plan changes along the way, stop and tell me.

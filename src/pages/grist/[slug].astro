@@ -69,6 +69,13 @@ const article = {
     encodingFormat: "text/markdown",
     text: lootOf(drop),
   },
+  ...(data.learnedFrom.length && {
+    isBasedOn: data.learnedFrom.map(({ title, url }) => ({
+      "@type": "CreativeWork",
+      name: title,
+      url,
+    })),
+  }),
 };
 const jsonLd = {
   "@context": "https://schema.org",
@@ -130,7 +137,17 @@ const jsonLd = {
           <div class="drop__body">
             <Content />
           </div>
-          {data.source && <p class="drop__source drop__muted">{data.source}</p>}
+          {data.learnedFrom.length > 0 && (
+            <p class="drop__source drop__muted">
+              Learned from:{" "}
+              {data.learnedFrom.map(({ title, url }, i) => (
+                <>
+                  {i > 0 && "; "}
+                  {url ? <Link href={url}>{title}</Link> : title}
+                </>
+              ))}
+            </p>
+          )}
           {data.steps.length > 0 && (
             <section class="drop__section" aria-labelledby="how-to-use-it">
               <h2 class="drop__heading" id="how-to-use-it">
@@ -138,7 +155,10 @@ const jsonLd = {
               </h2>
               <ol class="drop__steps">
                 {data.steps.map((step) => (
-                  <li>{step}</li>
+                  <li>
+                    {/* `code` in a step (a file or folder name) renders as code. */}
+                    {step.split("`").map((part, i) => (i % 2 ? <code>{part}</code> : part))}
+                  </li>
                 ))}
               </ol>
             </section>

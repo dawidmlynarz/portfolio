@@ -1,0 +1,97 @@
+---
+/**
+ * Preview only: every drop in every season, listed or not, so Dawid can read the queue before it
+ * unlocks. Production builds no page here (getStaticPaths returns nothing), and previews are noindex.
+ */
+import GristLayout from "@/layouts/GristLayout.astro";
+import Container from "@/components/layout/Container.astro";
+import DropCard from "@/components/grist/DropCard.astro";
+import SeasonHeader from "@/components/grist/SeasonHeader.astro";
+import { SEASONS, type Season } from "@/lib/grist";
+import { getBuiltDrops, getDrops } from "@/lib/drops";
+import { isProduction } from "@/lib/site";
+
+export function getStaticPaths() {
+  return isProduction ? [] : [{ params: { all: undefined } }];
+}
+
+const drops = await getBuiltDrops();
+const listed = new Set((await getDrops()).map((drop) => drop.id));
+const needsWords = (body = "") => /CLAUDE:|TEST DATA/.test(body);
+const seasons = (Object.keys(SEASONS) as Season[]).map((id) => ({
+  id,
+  drops: drops.filter((drop) => drop.data.season === id).sort((a, b) => a.data.slot - b.data.slot),
+}));
+const open = drops.filter((drop) => needsWords(drop.body)).length;
+---
+
+<GristLayout title="Grist review queue" description="Every Grist drop, for review." noindex>
+  <Container class="review">
+    <header class="review__head">
+      <p class="text-caption review__muted">Preview only</p>
+      <h1>Review queue</h1>
+      <p class="text-lead review__muted">
+        Every drop in every season, whether it has unlocked or not. {open} of {drops.length} still
+        need your words. Drafts never reach the live site.
+      </p>
+    </header>
+    {seasons.map((season) => (
+      <section class="review__season" aria-labelledby={`review-${season.id}`}>
+        <SeasonHeader
+          season={season.id}
+          unlocked={season.drops.filter((drop) => listed.has(drop.id)).length}
+        />
+        <ol class="review__grid" role="list">
+          {season.drops.map((drop) => (
+            <li class="review__item">
+              <DropCard drop={drop} />
+              <p class="text-caption review__muted">
+                Slot {drop.data.slot}
+                {drop.data.draft ? " · Draft" : " · Ready"}
+                {needsWords(drop.body) && " · Needs your words"}
+              </p>
+            </li>
+          ))}
+        </ol>
+      </section>
+    ))}
+  </Container>
+</GristLayout>
+
+<style>
+  @layer components {
+    .review {
+      display: grid;
+      gap: var(--space-section-md);
+      padding-block: var(--space-section-md);
+    }
+
+    .review__head {
+      display: grid;
+      gap: var(--space-4);
+      max-inline-size: var(--measure);
+    }
+
+    .review__muted {
+      color: var(--color-text-muted);
+    }
+
+    .review__season {
+      display: grid;
+      gap: var(--space-6);
+    }
+
+    .review__grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(min(100%, 20rem), 1fr));
+      gap: var(--space-6) var(--space-4);
+      padding: 0;
+    }
+
+    .review__item {
+      display: grid;
+      gap: var(--space-2);
+      align-content: start;
+    }
+  }
+</style>

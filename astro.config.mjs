@@ -5,7 +5,7 @@ import sitemap from "@astrojs/sitemap";
 import protectedWork, { protectedSlugs } from "./tooling/protected-work.mjs";
 
 // Pages that must never be indexed or listed in the sitemap.
-const PRIVATE_PATHS = ["/styleguide", "/404", "/playground"];
+const PRIVATE_PATHS = ["/styleguide", "/404", "/playground", "/grist/review"];
 // Password-protected case studies: only their locked state is public, and it stays unindexed.
 const PROTECTED_PATHS = protectedSlugs().map((slug) => `/work/${slug}`);
 

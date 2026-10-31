@@ -25,7 +25,7 @@ const DAY = 24 * 60 * 60 * 1000;
 /** Built at this moment; dates are compared against it (a daily rebuild keeps it honest). */
 const now = new Date();
 
-/** A slot's drop day: the season's first Friday plus two weeks per slot. */
+/** A slot's drop day: the season's first Friday plus a week per slot. */
 export const dropDay = (season: Season, slot: number) =>
   new Date(Date.parse(SEASONS[season].starts) + (slot - 1) * DROP_INTERVAL_DAYS * DAY);
 
@@ -185,7 +185,14 @@ export function dropMarkdown(drop: Drop, site: URL | undefined, heading = "#") {
     "",
     toMarkdown(drop.body).replace(/^## /gm, `${h2}# `),
     "",
-    ...(data.source ? [`*Source:* ${data.source}`, ""] : []),
+    ...(data.learnedFrom.length
+      ? [
+          `*Learned from:* ${data.learnedFrom
+            .map(({ title, url }) => (url ? `[${title}](${url})` : title))
+            .join("; ")}`,
+          "",
+        ]
+      : []),
     ...(data.steps.length
       ? [`${h2} How to use it`, "", ...data.steps.map((step, i) => `${i + 1}. ${step}`), ""]
       : []),
