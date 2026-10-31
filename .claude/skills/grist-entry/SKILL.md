@@ -16,14 +16,15 @@ Grist (/grist) is Dawid's human-written loot for AI tools. Your job is formattin
 
 1. **Ask what's missing, once.** Before writing, check you have: Tested or Trying; for Tested, what happened; for Trying, why and where he found it; the loot. Ask for gaps in one short message.
 2. **Place it.** Read `SEASONS` in `src/lib/grist.ts`. Take the season he names, or the current one, and the next free slot (slots are 1 to 8, unique per season). The slot sets the drop day; never set a date.
-3. **Set type and rarity.** Type is the format (`DROP_TYPES`). Rarity is depth (`RARITY_INFO`); check it against the tier notes and say why you picked it. What the tier needs is enforced by the schema in `src/content.config.ts`: steps from Uncommon, `example: true` and a `## Example` section from Epic, `limits` at Legendary.
-4. **Write the files.**
+3. **Name it and benchmark it.** Search for the industry name of the method and use it ("straw man proposal", not a coined term); keep a unique name only for a process that really is new. Compare the workflow with established practice and similar loot published online, and tell Dawid in two or three lines what's the same, what his version adds, and anything the others do that his misses.
+4. **Set type and rarity.** Type is the format (`DROP_TYPES`). Rarity is depth (`RARITY_INFO`); check it against the tier notes and say why you picked it. What the tier needs is enforced by the schema in `src/content.config.ts`: steps from Uncommon, `example: true` and a `## Example` section from Epic, `limits` at Legendary.
+5. **Write the files.**
    - `src/content/grist/<slug>/index.mdx`: frontmatter (`title`, `summary` one sentence, `hint` one sentence on when to use it and what you get, `season`, `slot`, `drop`, `rarity`, `status`, `learnedFrom` (title and url of what he read, up to three), `steps`, `example`, `limits`, `related`) and the Why as the body, in his sentences. Epic and up add `## Example`.
    - `src/content/grist/<slug>/drop.md`: the loot only, ready to paste into an AI tool.
    - Keep his wording. Cut and reorder; don't embellish. Follow `voice.md`.
-5. **Flag.** Anything you wrote that isn't his (a hint, a step, a filler sentence, a guessed rarity) gets one MDX comment at the top: `{/* CLAUDE: what I added, for Dawid to confirm. */}`. Production builds fail while a published drop has one, so it can't slip out.
-6. **Check.** Run `npx prettier --write src/content/grist/<slug>` and `npm run check`. Fix schema errors.
-7. **Hand over.** Commit on a branch, push, and tell Dawid the preview URL (`/grist/<slug>`), the rarity you picked and why, and every `CLAUDE:` note. He reads, edits and merges before drop day.
+6. **Flag.** Anything you wrote that isn't his (a hint, a step, a filler sentence, a guessed rarity) gets one MDX comment at the top: `{/* CLAUDE: what I added, for Dawid to confirm. */}`. Production builds fail while a published drop has one, so it can't slip out.
+7. **Check.** Run `npx prettier --write src/content/grist/<slug>` and `npm run check`. Fix schema errors.
+8. **Hand over.** Commit on a branch, push, and tell Dawid the preview URL (`/grist/<slug>`), the rarity you picked and why, and every `CLAUDE:` note. He reads, edits and merges before drop day.
 
 ## Sources
 

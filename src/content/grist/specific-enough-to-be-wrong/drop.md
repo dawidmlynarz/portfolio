@@ -1,1 +1,1 @@
-When drafting a strawman for a client workshop, make every section specific enough to be wrong: name systems, teams, numbers and dates, and mark each claim with how sure you are. Don't hedge to avoid being corrected. The corrections are what the workshop is for.
+When drafting a straw man for a client workshop, make every section specific enough to be wrong: name systems, teams, numbers and dates, and mark each claim with how sure you are. Don't hedge to avoid being corrected. The corrections are what the workshop is for.

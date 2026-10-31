@@ -1,4 +1,4 @@
-You're helping me draft a strawman for a client workshop about AI.
+You're helping me draft a straw man for a client workshop about AI.
 
 Client: [industry, size, what they sell]
 Discovery notes: [paste]

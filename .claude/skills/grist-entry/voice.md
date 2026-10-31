@@ -22,6 +22,7 @@ Human checkpoints is the model for a Common: two short paragraphs, the rule said
 
 ## Avoid
 
+- Coined names for known methods. Use the name the industry uses (straw man proposal, hypothesis-driven discovery); keep a unique name only for a process that really is new.
 - Inside knowledge. Spell out an acronym the first time it appears in a drop (statement of work (SOW)), say in a few words what a tool is (Style Dictionary, an open-source token build tool), and never refer to a client, project or internal name a reader can't know. When unsure what a term means, ask Dawid instead of guessing.
 
 - "Not X, it's Y" contrasts and "X instead of Y" punchlines. Say the positive version.

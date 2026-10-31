@@ -1,6 +1,6 @@
 # Correction log
 
-Client: [name] · Session: [date] · Strawman version: [v]
+Client: [name] · Session: [date] · Straw man version: [v]
 
 | Section | What we said | What they said (their words) | Who | Impact | Follow-up |
 | ------- | ------------ | ---------------------------- | --- | ------ | --------- |
