@@ -12,9 +12,9 @@ interface Props extends Omit<HTMLAttributes<"button">, "class" | "type"> {
   size?: "sm" | "md" | "lg";
   /**
    * After the label: arrow (calls to action) · arrow-left (carousel back) · arrow-up (Back to top).
-   * Before the label: arrow-down (downloads) · info · link · copy.
+   * Before the label: arrow-down (downloads) · info · link · copy · sparkles (anything for AI tools).
    */
-  icon?: "arrow" | "arrow-left" | "arrow-up" | "arrow-down" | "info" | "link" | "copy";
+  icon?: "arrow" | "arrow-left" | "arrow-up" | "arrow-down" | "info" | "link" | "copy" | "sparkles";
   /** Text buttons only. tear: the row tear (default) · icon: no tear, the icon moves as on icon buttons. */
   hover?: "tear" | "icon";
   /** Makes an icon-only button: the icon is all that shows and this is its accessible name. */
@@ -52,6 +52,9 @@ const ICONS = {
   "arrow-down": "M12 5v14M5 12l7 7 7-7",
   copy: "M10 8h9a1 1 0 0 1 1 1v10a1 1 0 0 1-1 1h-9a1 1 0 0 1-1-1V9a1 1 0 0 1 1-1ZM5 16a1 1 0 0 1-1-1V5a1 1 0 0 1 1-1h9a1 1 0 0 1 1 1",
   link: "M10 14a4 4 0 0 0 5.66 0l3-3a4 4 0 0 0-5.66-5.66l-1 1M14 10a4 4 0 0 0-5.66 0l-3 3a4 4 0 0 0 5.66 5.66l1-1",
+  // Lucide "sparkles" (ISC).
+  sparkles:
+    "M9.94 15.5A2 2 0 0 0 8.5 14.06l-6.14-1.58a.5.5 0 0 1 0-.96L8.5 9.94A2 2 0 0 0 9.94 8.5l1.58-6.14a.5.5 0 0 1 .96 0l1.58 6.14a2 2 0 0 0 1.44 1.44l6.14 1.58a.5.5 0 0 1 0 .96l-6.14 1.58a2 2 0 0 0-1.44 1.44l-1.58 6.14a.5.5 0 0 1-.96 0ZM20 3v4M22 5h-4M4 17v2M5 18H3",
 };
 // Arrows point onward, so they follow the label; the rest name the action, so they lead.
 const leading = Boolean(icon && !["arrow", "arrow-left", "arrow-up"].includes(icon));

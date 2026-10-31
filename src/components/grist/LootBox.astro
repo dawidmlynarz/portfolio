@@ -38,11 +38,17 @@ const type = DROP_TYPES[drop.data.drop];
   <div class="loot-box__loot">
     <pre class="loot-box__text"><code>{text}</code></pre>
     <span class="loot-box__copy">
-      <CopyButton text={text} icon="copy" label="Copy the drop" done="Drop copied" />
+      <CopyButton
+        text={text}
+        icon="copy"
+        variant="ghost"
+        label="Copy just the drop"
+        done="Drop copied"
+      />
     </span>
   </div>
   <div class="loot-box__actions">
-    <CopyButton from={twinHref(drop)} done="Copied as markdown">
+    <CopyButton from={twinHref(drop)} icon="sparkles" done="Copied as markdown">
       Copy for AI
     </CopyButton>
     <DownloadButton href={twinHref(drop)} name={`${drop.id}.md`} />

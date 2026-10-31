@@ -10,7 +10,7 @@ import StatusLabel from "@/components/grist/StatusLabel.astro";
 import DropCard from "@/components/grist/DropCard.astro";
 import LootBox from "@/components/grist/LootBox.astro";
 import PermalinkButton from "@/components/grist/PermalinkButton.astro";
-import { SEASONS, seasonName } from "@/lib/grist";
+import { seasonName } from "@/lib/grist";
 import { SITE } from "@/lib/site";
 import { breadcrumbs } from "@/lib/schema";
 import {
@@ -98,7 +98,7 @@ const jsonLd = {
         <nav class="drop__crumbs text-small" aria-label="Breadcrumb">
           <ol role="list">
             <li>
-              <Icon name="arrow-left" />
+              <Icon name="arrow-left" size="lg" />
               <Link href="/grist">All drops</Link>
             </li>
             <li>
@@ -111,7 +111,7 @@ const jsonLd = {
           <div class="drop__tags">
             <RarityLabel rarity={rarity} type={data.drop} />
             <span class="drop__fact">
-              <Icon name="calendar" />
+              <Icon name="calendar" size="lg" />
               <time datetime={isoDate(published)}>{formatDate(published)}</time>
             </span>
             <StatusLabel status={data.status} />
@@ -285,9 +285,12 @@ const jsonLd = {
       padding-block-start: var(--space-12);
     }
 
+    /* One column width for everything in the article, measured in body text: the tl;dr's larger
+       type would otherwise run past it. */
     .drop__main {
       grid-area: main;
       min-inline-size: 0;
+      max-inline-size: var(--measure);
     }
 
     .drop__rail {
@@ -333,8 +336,9 @@ const jsonLd = {
       padding-inline-start: var(--space-6);
     }
 
+    /* Full column width, like the body (text-lead alone would cap it at a shorter measure). */
     .drop__summary {
-      max-inline-size: var(--measure);
+      max-inline-size: none;
       margin-block: var(--space-3) var(--space-8);
       color: var(--color-text);
     }

@@ -1,6 +1,7 @@
 ---
 /**
- * Grist (/grist): its own slim header (logo home to /grist, the Readme on the right; the
+ * Grist (/grist): its own slim header (logo home to /grist, the Readme and the site's theme switch on
+ * the right; the
  * footer leads back to the portfolio) and the simple footer. Shares BaseLayout, so SEO tags, theme and fonts stay the
  * site's. No motion module: nothing on Grist animates except the gems and the New badge (CSS).
  */
@@ -10,6 +11,7 @@ import Container from "@/components/layout/Container.astro";
 import Logo from "@/components/grist/Logo.astro";
 import ReadmeButton from "@/components/grist/ReadmeButton.astro";
 import ReadmePanel from "@/components/grist/ReadmePanel.astro";
+import ThemeToggle from "@/components/blocks/ThemeToggle.astro";
 import type { ComponentProps } from "astro/types";
 
 type Props = ComponentProps<typeof BaseLayout>;
@@ -26,7 +28,10 @@ type Props = ComponentProps<typeof BaseLayout>;
         <a class="grist__home" href="/grist" aria-label="Grist, all drops" data-no-tear>
           <Logo />
         </a>
-        <ReadmeButton panel="readme" />
+        <div class="grist__actions">
+          <ReadmeButton panel="readme" />
+          <ThemeToggle />
+        </div>
       </Container>
     </header>
     <ReadmePanel id="readme" />
@@ -78,6 +83,36 @@ type Props = ComponentProps<typeof BaseLayout>;
       --underline-size: 0%;
 
       display: block;
+    }
+
+    .grist__actions {
+      display: flex;
+      align-items: center;
+      gap: var(--space-4);
+    }
+
+    /* The theme switch as in the site's nav: a round ghost button, no ring, a soft fill on hover. */
+    .grist__actions :global(.theme-toggle:not([hidden])) {
+      display: grid;
+      place-items: center;
+      inline-size: var(--space-10);
+      block-size: var(--space-10);
+      padding: 0;
+      border: 0;
+    }
+
+    /*
+     * Text links: the site's hairline underline, without the portfolio's row tear (Grist doesn't
+     * load the motion module). On hover the ink softens a shade instead.
+     */
+    .grist :global(a.link) {
+      transition:
+        background-size var(--duration-link) var(--ease-out-expo),
+        color var(--duration-fast) var(--ease-standard);
+    }
+
+    .grist :global(a.link:hover) {
+      color: var(--color-text-muted);
     }
 
     .grist__home :global(.logo) {

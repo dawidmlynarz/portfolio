@@ -49,7 +49,7 @@ const shown = drop && derive(drop);
       </div>
       <ul class="drop-card__meta" role="list">
         <li class="drop-card__fact">
-          <Icon name="calendar" />
+          <Icon name="calendar" size="lg" />
           <time datetime={isoDate(shown.published)}>{formatDay(shown.published)}</time>
         </li>
         <li class="drop-card__fact">
@@ -81,7 +81,7 @@ const shown = drop && derive(drop);
         </div>
         <ul class="drop-card__meta" role="list">
           <li class="drop-card__fact">
-            <Icon name="calendar" />
+            <Icon name="calendar" size="lg" />
             <time datetime={isoDate(locked.date)}>
               {locked.late ? "Was due" : "Drops"} {formatDay(locked.date)}
             </time>

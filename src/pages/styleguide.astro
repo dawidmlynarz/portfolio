@@ -134,7 +134,14 @@ const SECTIONS = [
 ] as const;
 
 /** Grist's line icons for meta lines, in the site's icon style. */
-const GRIST_ICONS: IconName[] = ["lock", "calendar", "arrow-left", "close"];
+const GRIST_ICONS: IconName[] = [
+  "lock",
+  "calendar",
+  "arrow-left",
+  "close",
+  "circle-check",
+  "flask",
+];
 ---
 
 <SiteLayout title="Styleguide" description="Tokens and components of mlynarz.com." noindex>
@@ -596,19 +603,36 @@ const GRIST_ICONS: IconName[] = ["lock", "calendar", "arrow-left", "close"];
               </li>
             ))}
           </ul>
+          <p class="text-small">Size lg (1.25em), for the date, the status and the back arrow:</p>
+          <ul class="row plain-list grist-icons" role="list">
+            {GRIST_ICONS.map((name) => (
+              <li class="grist-icons__item">
+                <Icon name={name} size="lg" />
+                <code>{name}</code>
+              </li>
+            ))}
+          </ul>
         </Stack>
 
         <Stack gap="4">
           <h3>Buttons</h3>
           <p class="muted measure">
             The Readme opens from a link-style button in the Grist header. Then the site's secondary
-            pill with its own line icons: Copy (fetches the markdown twin for Copy for AI), Download
-            (on hover the arrow drops out and back in, no tear), Permalink and Get in touch.
+            pill with its own line icons: Copy for AI (sparkles; fetches the markdown twin), the
+            ghost copy icon on the loot box's corner (just the drop's text), Download (on hover the
+            arrow drops out and back in, no tear), Permalink and Get in touch.
           </p>
           <div class="row">
             <ReadmeButton panel="readme-demo" />
             <ReadmePanel id="readme-demo" />
-            <CopyButton text="Copied from the styleguide">Copy for AI</CopyButton>
+            <CopyButton text="Copied from the styleguide" icon="sparkles">
+              Copy for AI
+            </CopyButton>
+            <CopyButton
+              text="Copied from the styleguide"
+              variant="ghost"
+              label="Copy just the drop"
+            />
             <DownloadButton href="/grist/human-checkpoints.md" name="human-checkpoints.md" />
             <PermalinkButton url="https://www.mlynarz.com/grist/human-checkpoints" />
             <Button href="/contact" variant="secondary" icon="arrow">

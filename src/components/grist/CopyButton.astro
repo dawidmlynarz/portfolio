@@ -13,16 +13,18 @@ interface Props {
   /** Accessible name for an icon-only button. */
   label?: string;
   icon?: ComponentProps<typeof Button>["icon"];
+  /** secondary (default) · ghost: no ring, a soft fill on hover, like the nav's buttons */
+  variant?: "secondary" | "ghost";
   /** What the toast says once it's copied. */
   done?: string;
 }
 
-const { text, from, label, icon = "copy", done = "Copied" } = Astro.props;
+const { text, from, label, icon = "copy", variant = "secondary", done = "Copied" } = Astro.props;
 ---
 
 <span class="copy-button">
   <Button
-    variant="secondary"
+    variant={variant}
     icon={icon}
     label={label}
     hover="icon"

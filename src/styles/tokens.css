@@ -195,21 +195,23 @@
          fill   the gem body
          shade  the gem's facet lines, deep enough to read as depth; its dark facets mix fill and shade
          light  the gem's lit facets and sparkles
-         text   tier names: a deep shade on light, the light shade on dark, so both pass 4.5:1 */
+         text   tier names: a deep shade on light, the light shade on dark, so both pass 4.5:1
+       On dark the outline matches the page, so the gem's own colours draw its edge: every fill
+       and shade there reaches 3:1 against the page (rare, epic and the uncommon shade lift). */
     --rarity-common-fill: #9aa0a6;
     --rarity-common-shade: #5f6368;
     --rarity-common-light: #c4c7ca;
     --rarity-common-text: light-dark(#5f6368, var(--rarity-common-light));
     --rarity-uncommon-fill: #22a04b;
-    --rarity-uncommon-shade: #0e5f2b;
+    --rarity-uncommon-shade: light-dark(#0e5f2b, #136f33);
     --rarity-uncommon-light: #4ade80;
     --rarity-uncommon-text: light-dark(#157a38, var(--rarity-uncommon-light));
-    --rarity-rare-fill: #2b6fe0;
-    --rarity-rare-shade: #17418f;
+    --rarity-rare-fill: light-dark(#2b6fe0, #3b82f6);
+    --rarity-rare-shade: light-dark(#17418f, #235dc0);
     --rarity-rare-light: #60a5fa;
     --rarity-rare-text: light-dark(#1f5bc4, var(--rarity-rare-light));
-    --rarity-epic-fill: #8a3fe0;
-    --rarity-epic-shade: #4f1f8f;
+    --rarity-epic-fill: light-dark(#8a3fe0, #a366f0);
+    --rarity-epic-shade: light-dark(#4f1f8f, #7e39d0);
     --rarity-epic-light: #c084fc;
     --rarity-epic-text: light-dark(#7330c4, var(--rarity-epic-light));
     --rarity-legendary-fill: #e3a008;

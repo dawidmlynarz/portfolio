@@ -29,12 +29,12 @@ const { panel, class: className } = Astro.props;
       background: linear-gradient(currentcolor, currentcolor) no-repeat left bottom / 100%
         var(--border-width);
       cursor: pointer;
+      transition: color var(--duration-fast) var(--ease-standard);
     }
 
+    /* Like every text link on Grist: the underline stays and the ink softens (GristLayout). */
     .readme-link:hover {
-      background-size: 0% var(--border-width);
-      background-position: right bottom;
-      transition: background-size var(--duration-link) var(--ease-out-expo);
+      color: var(--color-text-muted);
     }
   }
 </style>

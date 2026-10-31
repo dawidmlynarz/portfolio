@@ -99,9 +99,10 @@ const clipId = `gem-clip-${crypto.randomUUID().slice(0, 8)}`;
       --gem-light: var(--rarity-legendary-light);
     }
 
-    /* The outline is the ink, so the gem keeps its edge on both backgrounds. */
+    /* Black in both themes: the ink on light, the page itself on dark, where a white edge looks
+       wrong on pixel art. On dark the fills and shades draw the edge (3:1, see tokens.css). */
     .gem__outline {
-      fill: var(--color-text);
+      fill: light-dark(var(--color-text), var(--color-bg));
     }
 
     .gem__shade {

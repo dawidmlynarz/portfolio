@@ -16,7 +16,7 @@ const { label, note } = STATUSES[status];
 ---
 
 <span class:list={["status-label", `status-label--${status}`, className]} title={note}>
-  <Icon name={status === "tested" ? "circle-check" : "flask"} />
+  <Icon name={status === "tested" ? "circle-check" : "flask"} size="lg" />
   {label}
   <span class="visually-hidden">: {note.toLowerCase()}</span>
 </span>

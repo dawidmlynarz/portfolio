@@ -35,14 +35,16 @@ interface Props {
   name: IconName;
   /** Accessible name. Without it the icon is hidden from assistive tech. */
   label?: string;
+  /** md: 1em, the text's size · lg: 1.25em, for meta rows (date, status) and the back arrow */
+  size?: "md" | "lg";
   class?: string;
 }
 
-const { name, label, class: className } = Astro.props;
+const { name, label, size = "md", class: className } = Astro.props;
 ---
 
 <svg
-  class:list={["icon", className]}
+  class:list={["icon", { "icon--lg": size === "lg" }, className]}
   viewBox="0 0 24 24"
   role={label ? "img" : undefined}
   aria-label={label}
@@ -65,6 +67,11 @@ const { name, label, class: className } = Astro.props;
       stroke-width: 1.75;
       stroke-linecap: round;
       stroke-linejoin: round;
+    }
+
+    .icon--lg {
+      inline-size: 1.25em;
+      block-size: 1.25em;
     }
   }
 </style>
