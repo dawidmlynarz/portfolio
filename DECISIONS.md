@@ -719,3 +719,7 @@ What changed versus the embed, and why:
 ## Grist: tile icon experiment (31 Oct 2026)
 
 - Dawid's tile icons (rounded diamond tiles, plus an Ultimate tier) live in src/experiments/rarity-icons and on the preview-only page /grist/review/rarity, next to the pixel gems in light and dark. Their colours are new `--rarity-*-icon` tokens; legendary deepens on light (#c86400) so every icon keeps 3:1. Legendary keeps the shine sweep. Nothing on the live Grist uses them yet.
+
+## Grist: drop titles in Title Case (31 Oct 2026)
+
+- Drop titles follow the season names: Title Case, small words lowercase unless first or last, hyphenated words capitalise only the first part ("Agent-readable Tokens", "Human-in-the-loop Checkpoints"). Acronyms (AI, UX, QA, SOW) and DESIGN.md stay as they are. The rule is in the grist-entry skill.
