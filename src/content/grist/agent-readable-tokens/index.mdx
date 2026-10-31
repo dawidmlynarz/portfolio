@@ -11,8 +11,8 @@ related: [write-the-donts-down]
 draft: true
 ---
 
-{/* TEST DATA: a draft by Claude for the season demo. The note, the brief and the drop are placeholders. Rewrite or delete before publishing. */}
+{/* CLAUDE: Why from Dawid's answers in the season 1 questions doc. Open: which online sources he's read (for learnedFrom), and whether he does this on a real project (Tested) or not yet (Trying). */}
 
-Name tokens by job and describe each one. An agent reading `blue-500` has to guess what it’s for. An agent reading `color-text-link`, with one line saying where it goes, mostly doesn’t.
+Other designers have been flagging this one online: an agent picks the wrong token when all it has is a name. Reading `blue-500`, it has to guess what the colour is for. Reading `color-text-link`, with a line saying it's for links in running text, it mostly doesn't.
 
-The description is what the agent falls back on when two names look alike. It’s also the field most token files leave empty.
+So every semantic token gets its purpose written down. Primitives like `blue-500` don't need one, because components shouldn't use them anyway.

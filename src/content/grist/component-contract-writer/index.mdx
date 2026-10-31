@@ -6,7 +6,7 @@ season: "s01"
 slot: 4
 drop: "prompt"
 rarity: "uncommon"
-status: "trying"
+status: "tested"
 steps:
   - "Paste the component's code, props and any docs."
   - 'Fix the "don''t use for" section; it''s the most valuable line and the tool''s weakest guess.'
@@ -14,6 +14,8 @@ steps:
 draft: true
 ---
 
-{/* CLAUDE: Imported from another AI tool's draft (.claude/skills/grist-entry/drafts.md, season 6 drop 5). The loot is as drafted. The tl;dr, hint and Why aren't Dawid's words yet; status and any source are unconfirmed. */}
+{/* CLAUDE: The button example was picked by Claude at Dawid's request. Swap it for one from Anvil UI if there's a better one. */}
 
-Props say what a component accepts, not when to use it. Agents pass valid props to the wrong component all day; the "don't use for" line prevents most of it.
+Every component page in my design system opens with a short description, and agents are the ones reading it.
+
+Props tell an agent what a component accepts. They don't tell it when to use one, so the description has to. The line that does the most work is what the component isn't for. For a button, that's "Don't use it to go to another page. Use a link."

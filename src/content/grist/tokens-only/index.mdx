@@ -1,15 +1,15 @@
 ---
 title: "Tokens only"
 summary: "Generated UI uses design tokens, never raw values."
-hint: "Use it in the rules file of any repo that has a design system, and you get UI that changes with the system instead of drifting from it."
+hint: "Use it in the rules file of any repo that has a design system, and you get UI built only from your tokens, with any new value coming to you first."
 season: "s01"
 slot: 1
 drop: "rule"
 rarity: "common"
-status: "trying"
+status: "tested"
 draft: true
 ---
 
-{/* CLAUDE: Imported from another AI tool's draft (.claude/skills/grist-entry/drafts.md, season 6 drop 1). The loot is as drafted. The tl;dr, hint and Why aren't Dawid's words yet; status and any source are unconfirmed. */}
+I want control over the output. I don't want stray styles flying around the codebase.
 
-A hard-coded hex value looks right today and breaks on the next theme, dark mode or rebrand. Agents copy whatever they see, so one raw value becomes fifty.
+Without this rule, an agent simply makes styles up on the spot, or hard-codes everything. With it, every colour, space and size comes from the system. When something really needs a custom style, the agent asks, I approve it, and we create a new token if one is needed.
