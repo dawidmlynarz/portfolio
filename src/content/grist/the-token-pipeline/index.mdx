@@ -1,6 +1,6 @@
 ---
 title: "The token pipeline"
-summary: "Figma variables to code in one direction: primitives, semantic aliases, DTCG JSON, then every platform."
+summary: "Figma variables to code in one direction: raw values, named roles, one standard token file, then every platform."
 hint: "Use it when tokens live in Figma and keep drifting from code, and you get one export path where design is the source and code is generated."
 season: "s01"
 slot: 7
@@ -8,10 +8,10 @@ drop: "spec"
 rarity: "epic"
 status: "tested"
 steps:
-  - "Set up two Figma variable collections: primitives, and semantic aliases with light and dark modes."
-  - "Export to DTCG JSON with aliases kept as references."
-  - "Transform with Style Dictionary into each platform's format."
-  - "Check the result in Storybook before anyone builds with it."
+  - "Set up two Figma variable collections: primitives for the raw values (blue-600), and semantic tokens that point at them by role (color-text-link), with light and dark modes."
+  - "Export them as one JSON file in the W3C design tokens format, keeping the links between tokens."
+  - "Turn that file into code for each platform with Style Dictionary, an open-source token build tool."
+  - "Check the result in a page that shows every token, such as Storybook, before anyone builds with it."
 example: true
 related: [agent-readable-tokens, tokens-only]
 draft: true
@@ -19,13 +19,13 @@ draft: true
 
 {/* CLAUDE: Drafted by Claude from the overview of Dawid's real work (Zazmic account, 31 Oct). Clients anonymised. The loot is my first pass at his workflow; the Why is reconstructed from notes. Fill every [YOU] gap, check the facts, confirm status. */}
 
-I built a small Figma plugin that exports variables to DTCG JSON. It keeps aliases as references and exports text styles too. [YOU: why you built your own instead of using an existing exporter.] From there Style Dictionary builds the web and React Native outputs, and Storybook shows the result.
+I built a small Figma plugin that turns Figma variables straight into a token file Style Dictionary can read. It keeps the links between tokens (a role pointing at a raw colour) and exports text styles too. [YOU: why you built your own, the plugin's name, and whether it can be shared.] From there Style Dictionary builds the web and React Native outputs, and Storybook shows the result.
 
-For agents the important part is that code only ever sees the semantic layer. [YOU: can the plugin be shared?]
+For agents the important part is that code only ever sees the semantic layer: names that say what a value is for.
 
 ## Example
 
-A semantic token as it comes out of the export, alias kept:
+A semantic token in the exported file. It points at a raw colour instead of copying its value, and says where it goes:
 
 ```json
 "link": {

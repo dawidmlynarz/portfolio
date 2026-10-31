@@ -18,7 +18,7 @@ Stage · What people do · Where they drop off (data) · Data the product has
 - Reversibility: 3 is easy to undo, 1 can't be undone
 - Data readiness: 3 means the data exists and is reachable, 1 means it doesn't exist yet
 
-## Pick the MVP
+## Pick the first release (MVP)
 
 - Start at the stage with the highest drop-off
 - Take ideas that score 7 or more; anything with reversibility 1 needs a human checkpoint

@@ -10,7 +10,7 @@ Who it's for and which products use it, in three lines.
 
 ## Where things live
 
-- Tokens: [path] (DTCG JSON, with descriptions)
+- Tokens: [path] (a JSON token file in the W3C design tokens format, with descriptions)
 - Components: [path], contracts in [path]
 - Patterns: [path]
 

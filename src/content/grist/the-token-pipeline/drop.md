@@ -3,7 +3,8 @@
 ## Source
 
 - Tool: Figma variables
-- Collections: Primitives (raw values, no modes), Semantic (aliases only; modes: light, dark)
+- Primitives collection: raw values only (blue-600, space-16), no modes
+- Semantic collection: tokens named by role (color-text-link, space-section) that point at primitives; modes for light and dark
 - Rule: components and code use semantic tokens only
 
 ## Naming
@@ -13,20 +14,20 @@
 
 ## Export
 
-- Format: DTCG JSON
-- Aliases stay as references ({color.blue.600}), never resolved values
+- Format: one JSON file in the W3C design tokens format (also called DTCG, after the W3C Design Tokens Community Group), which Style Dictionary reads
+- Links between tokens stay links ({color.blue.600}), never copied values
 - Text styles export as typography tokens
 
-## Transform
+## Build
 
-- Tool: Style Dictionary
-- Outputs: [CSS custom properties, React Native, ...]
+- Tool: Style Dictionary (open source)
+- Outputs: [CSS variables, React Native, ...]
 - One build command; generated files are never edited by hand
 
 ## Check
 
-- A Storybook page lists every semantic token in both modes
-- CI fails if generated files don't match the latest export
+- One page (Storybook or similar) shows every semantic token in both modes
+- The automated build fails if the generated files don't match the latest export
 
 ## Owner
 

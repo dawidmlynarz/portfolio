@@ -7,14 +7,14 @@
 
 ### Accessibility
 
-- [ ] A written target (for example WCAG 2.2 AA)
+- [ ] A written target (for example WCAG 2.2 AA, the common web accessibility standard)
 - [ ] Contrast checked for every text and background token pair
 - [ ] Focus styles defined as tokens
 
 ### Tokens
 
 - [ ] Colour, type, spacing and radius are all tokens; anything still hard-coded is listed
-- [ ] Primitives and semantic tokens are separate, and components use semantic only
+- [ ] Raw values (primitives) and named roles (semantic tokens) are separate, and components use only the named roles
 - [ ] Every semantic token has a one-line description
 
 ### Components

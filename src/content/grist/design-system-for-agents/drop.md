@@ -11,7 +11,7 @@ Ask for anything missing before you start. Never invent components the product d
 
 - The product's agent surfaces (chat, side panel, inline suggestions, voice)
 - Screens or flows that exist today
-- The code library the team uses, if any
+- The component library the developers use in code, if any
 
 ## Step 1: Inventory
 
@@ -23,7 +23,7 @@ Propose pages: one per global component family, and one Agent page for agent-spe
 
 ## Step 3: Variables
 
-Propose variable groups by category (colour, type, space, radius, motion), named like the code library, so a token reads the same in Figma and in code.
+Propose variable groups by category (colour, type, space, radius, motion), named like the component library in code, so a token reads the same in Figma and in code.
 
 ## Step 4: States
 

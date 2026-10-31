@@ -150,7 +150,8 @@ export const SEASONS = {
     number: 3,
     slug: "scoping-ai-work",
     title: "Scoping AI work",
-    blurb: "Workshops, estimates and SOWs for AI projects, from the first call to a signed scope.",
+    blurb:
+      "Workshops, estimates and statements of work for AI projects, from the first call to a signed scope.",
     starts: "2027-01-01",
     plan: [
       ["rule", "common"],

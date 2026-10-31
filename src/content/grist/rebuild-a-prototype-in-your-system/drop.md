@@ -5,7 +5,7 @@ Design system: [package name, docs, component list]
 
 1. List every screen and the components on it.
 2. Map each component to a design system component. Mark it: exact match, needs a variant, or missing.
-3. For anything missing, propose building it locally in the sandbox and flag it as a system candidate. Never add it to the system package.
+3. For anything missing, propose building it locally in the sandbox and flag it as a candidate for the design system. Never add it to the design system's own code.
 4. List raw values (colours, spacing, fonts) that should become tokens.
 5. Write a rebuild order, smallest shared components first.
 

@@ -21,7 +21,7 @@ Before the session, check that every section names real systems or teams, that n
 
 ## Step 3: Session plan
 
-For the PM: an agenda by section with timings, the question to ask at each section ("What did we get wrong here?"), and what to do if the client rejects the whole strawman (ask what the real picture is, and log it as one big correction).
+For the project manager: an agenda by section with timings, the question to ask at each section ("What did we get wrong here?"), and what to do if the client rejects the whole strawman (ask what the real picture is, and log it as one big correction).
 
 ## Step 4: Correction log
 
@@ -33,5 +33,5 @@ After the session, turn the log into a proposal outline: scope from the "changes
 
 ## Done when
 
-- The PM can run the session from the plan alone
+- The project manager can run the session from the plan alone
 - Every correction shows up in the proposal or the follow-ups
