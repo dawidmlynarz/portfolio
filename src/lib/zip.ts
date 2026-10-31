@@ -29,6 +29,7 @@ export function zip(files: { path: string; text: string }[]): Uint8Array<ArrayBu
     head.setUint16(4, 20, true); // version needed
     head.setUint16(6, 0x0800, true); // UTF-8 names
     head.setUint16(8, 0, true); // stored
+    head.setUint16(12, 0x21, true); // date: 1 Jan 1980 (a fixed date keeps builds identical)
     head.setUint32(14, crc, true);
     head.setUint32(18, data.length, true);
     head.setUint32(22, data.length, true);
@@ -41,6 +42,7 @@ export function zip(files: { path: string; text: string }[]): Uint8Array<ArrayBu
     entry.setUint16(6, 20, true); // version needed
     entry.setUint16(8, 0x0800, true);
     entry.setUint16(10, 0, true);
+    entry.setUint16(14, 0x21, true); // date: 1 Jan 1980
     entry.setUint32(16, crc, true);
     entry.setUint32(20, data.length, true);
     entry.setUint32(24, data.length, true);
