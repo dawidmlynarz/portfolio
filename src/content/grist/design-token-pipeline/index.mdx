@@ -2,10 +2,11 @@
 title: "Design Token Pipeline"
 summary: "Figma variables to code in one direction: raw values, named roles, one standard token file, then every platform."
 hint: "Use it when tokens live in Figma and keep drifting from code, and you get one export path where design is the source and code is generated."
+limits: "If your system has a handful of tokens that rarely change, keep one hand-written token file instead. If tokens are decided in code, not in Figma, don't make Figma the source."
 season: "s01"
-slot: 7
+slot: 5
 drop: "spec"
-rarity: "epic"
+rarity: "legendary"
 status: "tested"
 steps:
   - "Set up two Figma variable collections: primitives for the raw values (blue-600), and semantic tokens that point at them by role (color-text-link), with light and dark modes."
@@ -16,6 +17,8 @@ example: true
 related: [agent-readable-tokens, design-tokens-only]
 draft: true
 ---
+
+{/* CLAUDE: limits added for the Legendary tier. Confirm or rewrite. */}
 
 I built a small Figma plugin that turns Figma variables straight into a token file Style Dictionary can read. It keeps the links between tokens (a role pointing at a raw colour) and exports text styles too. I needed one specific export: JSON that follows the W3C design tokens format and that Style Dictionary reads as it is. So I built it. It isn't public. From there Style Dictionary builds the code for each platform, and Storybook shows the result.
 

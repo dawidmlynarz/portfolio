@@ -2,14 +2,21 @@
 title: "Agent-readable Tokens"
 summary: "Design tokens named and documented so coding agents use them correctly."
 hint: "Use it when coding agents build UI from your system, and they’ll pick the wrong colour and size far less often."
+steps:
+  - "List your semantic tokens, the ones components use. Leave the primitives out."
+  - "Draft a one-line purpose for each with Token Description Writer, then fix the ones it gets wrong."
+  - "Put the descriptions where the agent reads them: the $description field in your token file, or your DESIGN.md."
+  - "Paste the rule into your CLAUDE.md or rules file."
 season: "s01"
-slot: 2
+slot: 6
 drop: "rule"
-rarity: "common"
+rarity: "uncommon"
 status: "tested"
 related: [write-the-donts-down]
 draft: true
 ---
+
+{/* CLAUDE: steps added for the Uncommon tier. Confirm or rewrite. */}
 
 Other designers have been flagging this one online: an agent picks the wrong token when all it has is a name. Reading `blue-500`, it has to guess what the colour is for. Reading `color-text-link`, with a line saying it's for links in running text, it mostly doesn't.
 

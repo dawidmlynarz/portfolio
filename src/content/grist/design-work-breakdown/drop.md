@@ -12,5 +12,5 @@ Break the work into units:
 5. Handoff and QA support.
 
 For each unit, give low and high hours from my baselines and one line of reasoning.
-Then list the assumptions, the exclusions, and the UX risks that could push it to the high end.
+Then list the assumptions (what we believe is true), the exclusions (what isn't included), and the UX risks that could push it to the high end. Never give hours without them.
 Ask me about anything the brief doesn't say before you guess.

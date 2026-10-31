@@ -1,1 +1,0 @@
-Every design estimate you write lists its assumptions (what we believe is true) and exclusions (what isn't included) next to the hours. Give hours as a range, with the main risk that would push it to the top. Never give a single number without them.
