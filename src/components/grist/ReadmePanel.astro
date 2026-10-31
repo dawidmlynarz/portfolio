@@ -1,12 +1,12 @@
 ---
 /**
- * The README: what Grist is, the human-written rule, and what each drop type (and so each rarity)
+ * The README: what Grist is, the human-written rule, and what each rarity
  * means. A native popover (Escape and light dismiss close it, focus returns to the button), drawn as
  * a 2px box with a hard ink shadow.
  */
 import Icon from "./Icon.astro";
 import RarityLabel from "./RarityLabel.astro";
-import { DROP_TYPES, RARITY_LABELS, type DropType } from "@/lib/grist";
+import { RARITIES, RARITY_INFO } from "@/lib/grist";
 
 interface Props {
   id: string;
@@ -53,17 +53,18 @@ const { id } = Astro.props;
       </div>
     </section>
     <section>
-      <h3 class="readme__label text-caption">Rarity is the drop</h3>
-      <p class="readme__note">Bigger drops take more work, so they’re rarer.</p>
+      <h3 class="readme__label text-caption">Rarity</h3>
+      <p class="readme__note">
+        Rarity is how deep a drop goes. A short checklist can be Common and a full review checklist
+        Rare. A simple skill starts at Rare, and an advanced one is Legendary.
+      </p>
       <dl class="readme__tiers">
-        {(Object.keys(DROP_TYPES) as DropType[]).map((type) => (
+        {RARITIES.map((rarity) => (
           <div class="readme__tier">
             <dt>
-              <RarityLabel rarity={DROP_TYPES[type].rarity} type={type} />
+              <RarityLabel rarity={rarity} />
             </dt>
-            <dd>
-              {RARITY_LABELS[DROP_TYPES[type].rarity]}. {DROP_TYPES[type].note}.
-            </dd>
+            <dd>{RARITY_INFO[rarity].note}</dd>
           </div>
         ))}
       </dl>

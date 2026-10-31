@@ -55,7 +55,7 @@ import HumanStamp from "@/components/grist/HumanStamp.astro";
 import LootBox from "@/components/grist/LootBox.astro";
 import CopyButton from "@/components/grist/CopyButton.astro";
 import { getDrops } from "@/lib/drops";
-import { DROP_TYPES, RARITIES, type DropType } from "@/lib/grist";
+import { RARITIES } from "@/lib/grist";
 import { getEntry } from "astro:content";
 import { COLOR_ROLES, SPACE } from "@/lib/tokens";
 import { SERVICES } from "@/lib/services";
@@ -494,7 +494,8 @@ const GRIST_ICONS: IconName[] = ["lock", "calendar", "arrow-left", "close"];
           <p class="muted measure">
             Each tier has a fill, a shade and a light. The gem uses all three; tier names use the
             shade on light and the light on dark. Epic adds sparkles; Legendary adds a crown and a
-            light band that crosses the gem (reduced motion stops it). The drop type sets the tier.
+            light band that crosses the gem (reduced motion stops it). Rarity is set per drop, by
+            how deep it goes.
           </p>
           <Grid min="10rem" gap="6" as="ul" class="plain-list">
             {RARITIES.map((rarity) => (
@@ -502,12 +503,7 @@ const GRIST_ICONS: IconName[] = ["lock", "calendar", "arrow-left", "close"];
                 <span class="rarity-swatch__gem">
                   <Gem rarity={rarity} />
                 </span>
-                <RarityLabel
-                  rarity={rarity}
-                  type={(Object.keys(DROP_TYPES) as DropType[]).find(
-                    (type) => DROP_TYPES[type].rarity === rarity,
-                  )}
-                />
+                <RarityLabel rarity={rarity} />
                 <span class="rarity-swatch__chips">
                   {(["fill", "shade", "light"] as const).map((role) => (
                     <span
@@ -556,9 +552,15 @@ const GRIST_ICONS: IconName[] = ["lock", "calendar", "arrow-left", "close"];
             {sampleDrops.slice(1, 4).map((drop) => (
               <DropCard drop={drop} season />
             ))}
-            <DropCard locked={{ type: "spec", date: new Date("2027-01-22"), next: true }} />
-            <DropCard locked={{ type: "skill", date: new Date("2027-02-05") }} />
-            <DropCard locked={{ type: "rule", date: new Date("2026-10-16"), late: true }} />
+            <DropCard
+              locked={{ type: "spec", rarity: "epic", date: new Date("2027-01-22"), next: true }}
+            />
+            <DropCard
+              locked={{ type: "skill", rarity: "legendary", date: new Date("2027-02-05") }}
+            />
+            <DropCard
+              locked={{ type: "rule", rarity: "common", date: new Date("2026-10-16"), late: true }}
+            />
           </div>
           <SeasonHeader season="s03" unlocked={0} />
         </Stack>

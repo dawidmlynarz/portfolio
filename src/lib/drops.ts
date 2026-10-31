@@ -1,6 +1,6 @@
 /**
  * Grist drops: which ones this build shows, the raw loot text of each, the season grid with its
- * locked slots, and what's derived from the frontmatter (rarity from the drop type, drop day from
+ * locked slots, and what's derived from the frontmatter (drop day from
  * the season slot, New).
  */
 import { getCollection, type CollectionEntry } from "astro:content";
@@ -11,6 +11,7 @@ import {
   SEASON_SLOTS,
   SEASONS,
   type DropType,
+  type Rarity,
   type Season,
 } from "@/lib/grist";
 
@@ -60,8 +61,9 @@ export type Slot =
       slot: number;
       date: Date;
       drop?: undefined;
-      /** The planned type, shown on the locked card. */
+      /** The planned type and rarity, shown on the locked card. */
       type: DropType;
+      rarity: Rarity;
       /** The first locked slot of a running season. */
       next: boolean;
       /** Its day has passed and nothing dropped: shown as late, not hidden. */
@@ -88,7 +90,8 @@ export async function getSeasons() {
       const late = hasDropped(date);
       const next = !late && !nextFound;
       if (next) nextFound = true;
-      return { slot, date, type: season.plan[i]!, next, late };
+      const [type, rarity] = season.plan[i]!;
+      return { slot, date, type, rarity, next, late };
     });
     return { id, ...season, drops: own, slots, open: own.length > 0, starts: dropDay(id, 1) };
   });
@@ -129,7 +132,7 @@ export function derive(drop: Drop) {
   const age = now.getTime() - published.getTime();
   return {
     type,
-    rarity: type.rarity,
+    rarity: drop.data.rarity,
     published,
     isNew: age >= 0 && age < NEW_DAYS * DAY,
   };

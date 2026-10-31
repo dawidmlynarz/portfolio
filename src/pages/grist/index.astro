@@ -44,7 +44,13 @@ const seasons = await getSeasons();
                   <DropCard drop={slot.drop} />
                 ) : (
                   <DropCard
-                    locked={{ type: slot.type, date: slot.date, next: slot.next, late: slot.late }}
+                    locked={{
+                      type: slot.type,
+                      rarity: slot.rarity,
+                      date: slot.date,
+                      next: slot.next,
+                      late: slot.late,
+                    }}
                   />
                 )}
               </li>

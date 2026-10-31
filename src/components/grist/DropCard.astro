@@ -6,18 +6,18 @@
  * The whole tile is the link's hit area.
  *
  * Locked variant (battle pass): a slot whose drop day hasn't come. Dashed border, the planned
- * type's gem faded, no title, and the day it unlocks. The next one to unlock says so.
+ * gem faded, no title, and the day it unlocks. The next one to unlock says so.
  */
 import NewBadge from "./NewBadge.astro";
 import RarityLabel from "./RarityLabel.astro";
 import Icon from "./Icon.astro";
-import { DROP_TYPES, SEASONS, type DropType } from "@/lib/grist";
+import { DROP_TYPES, SEASONS, type DropType, type Rarity } from "@/lib/grist";
 import { derive, dropHref, formatDay, isoDate, type Drop } from "@/lib/drops";
 
 interface Props {
   drop?: Drop;
   /** A locked slot instead of a drop. */
-  locked?: { type: DropType; date: Date; next?: boolean; late?: boolean };
+  locked?: { type: DropType; rarity: Rarity; date: Date; next?: boolean; late?: boolean };
   /** Heading level of the title in this page's outline. */
   level?: 2 | 3 | 4;
   /** Show the season (for lists that don't group by it). */
@@ -62,7 +62,7 @@ const shown = drop && derive(drop);
       <div class="drop-card__inner">
         <div class="drop-card__main">
           <p class="drop-card__rank">
-            <RarityLabel rarity={DROP_TYPES[locked.type].rarity} type={locked.type} />
+            <RarityLabel rarity={locked.rarity} type={locked.type} />
             {locked.next && <span class="drop-card__next text-caption">Next drop</span>}
           </p>
           <Heading class="drop-card__title drop-card__title--locked">

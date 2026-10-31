@@ -2,7 +2,7 @@ import { defineCollection, reference } from "astro:content";
 import { glob } from "astro/loaders";
 import { z } from "astro/zod";
 import { CLIENTS, type Client } from "./lib/clients";
-import { DROP_TYPES, SEASONS } from "./lib/grist";
+import { DROP_TYPES, RARITIES, RARITY_INFO, SEASONS } from "./lib/grist";
 
 /**
  * Case studies: one folder per case study, src/content/work/<slug>/index.mdx, with its images
@@ -66,7 +66,7 @@ const work = defineCollection({
 /**
  * Grist drops: one folder per drop, src/content/grist/<slug>/, holding index.mdx (the note, in
  * Dawid's words) and drop.md (the loot itself, served raw at /grist/<slug>/drop.md). The drop type
- * sets the rarity and the season slot sets the drop day (src/lib/grist.ts), so neither is stored.
+ * is its format, the rarity how deep it goes, and the season slot sets the drop day (src/lib/grist.ts).
  */
 const keys = <T extends Record<string, unknown>>(object: T) =>
   Object.keys(object) as [Extract<keyof T, string>, ...Extract<keyof T, string>[]];
@@ -92,6 +92,8 @@ const grist = defineCollection({
       limits: z.string().optional(),
       season: z.enum(keys(SEASONS)),
       drop: z.enum(keys(DROP_TYPES)),
+      /** Set by hand: how deep the drop goes (RARITY_INFO). */
+      rarity: z.enum(RARITIES),
       /** Its place in the season, 1 to 8. The slot sets the drop day (src/lib/grist.ts). */
       slot: z.number().int().min(1).max(8),
       /** Slugs for See also. */
@@ -100,7 +102,7 @@ const grist = defineCollection({
       draft: z.boolean().default(false),
     })
     .superRefine((data, ctx) => {
-      for (const need of DROP_TYPES[data.drop].needs) {
+      for (const need of RARITY_INFO[data.rarity].needs) {
         const missing =
           need === "steps"
             ? data.steps.length === 0
@@ -111,7 +113,7 @@ const grist = defineCollection({
           ctx.addIssue({
             code: "custom",
             path: [need],
-            message: `A ${data.drop} drop needs \`${need}\` (see DROP_TYPES in src/lib/grist.ts).`,
+            message: `A ${data.rarity} drop needs \`${need}\` (see RARITY_INFO in src/lib/grist.ts).`,
           });
       }
     }),

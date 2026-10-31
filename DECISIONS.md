@@ -675,3 +675,8 @@ What changed versus the embed, and why:
 - The front door badge floats at the lower right of the headline from 48em with `shape-outside: circle()`, so the words wrap round it. On phones it sits under the headline, pinned right. A zero-width float sized in headline lines (`lh`) pushes it down, since floats can't anchor to the bottom.
 - `useWhen` and `outcome` merged into one `hint` sentence under the tl;dr (when to use it, what you get).
 - Season packs are named after the season: `/grist/season/<slug>.md` (agentic-ux.md).
+
+## Grist: rarity is set per drop (31 Oct 2026)
+
+- Rarity no longer follows the type. Each drop sets `rarity` by hand for how deep it goes: a short checklist can be Common and a full review checklist Rare; a simple skill Rare and an advanced one Legendary. The season plan lists `[type, rarity]` pairs so locked cards still show both.
+- What a drop must carry now follows rarity (RARITY_INFO.needs): steps from Uncommon, an `## Example` from Epic, limits at Legendary. The Readme lists the five rarities with what to expect in each, so the call stays anchored.
