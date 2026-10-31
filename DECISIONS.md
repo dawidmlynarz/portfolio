@@ -702,3 +702,7 @@ What changed versus the embed, and why:
 - New season 3, Scoping AI work (strawman workshop, estimates, SOW review). Prototyping with coding agents is parked to keep eight seasons; its drafts stay in drafts.md.
 - Dawid's picks are back: Agent-readable tokens (replaces Name by job), Write the don'ts down (replaces Ask before assuming), Visible reasoning (replaces The two-sentence why).
 - New drafts mark every fact Claude couldn't confirm with [YOU], and invented examples are labelled as illustrations.
+
+## Grist: previews unlock every drop (31 Oct 2026)
+
+- Preview builds list all 64 drops on the front door, in their seasons, with no locked cards, so Dawid can read the seasons whole before launch. Production is unchanged: a drop unlocks on its Friday and drafts stay out, so the locked cards appear once drops go live.

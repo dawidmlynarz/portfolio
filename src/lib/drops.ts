@@ -34,12 +34,12 @@ export const publishedOf = ({ data }: Drop) => dropDay(data.season, data.slot);
 const hasDropped = (date: Date) => date.getTime() <= now.getTime();
 
 /**
- * Listed (front door, feeds): drops whose day has come, on every build, so previews show the battle
- * pass as it really stands; production also leaves out drafts. A static build only knows "now" at
- * build time, so production rebuilds on drop days.
+ * Listed (front door, feeds). Production: drops whose day has come, minus drafts; a static build
+ * only knows "now" at build time, so production rebuilds on drop days. Previews are the work in
+ * progress, so they list every drop, unlocked, to read the seasons whole before launch.
  */
 export const isListed = (drop: Drop) =>
-  hasDropped(publishedOf(drop)) && (!isProduction || !drop.data.draft);
+  !isProduction || (hasDropped(publishedOf(drop)) && !drop.data.draft);
 
 /** Built as pages: the listed ones, plus on previews every draft and future slot, to review them. */
 const isBuilt = (drop: Drop) => !isProduction || isListed(drop);
