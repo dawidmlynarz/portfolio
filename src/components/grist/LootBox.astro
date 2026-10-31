@@ -4,13 +4,15 @@
  * small "human curated" stamp on its corner. The loot text sits as written in drop.md, with a copy
  * button on its corner for just that text. Below it, the actions for the whole entry: Copy for AI
  * (the markdown twin: brief, why, how to use it and the drop) and Download (the same, as a file).
+ * A workflow shows each of its files under its path, each with its own copy button, and Download
+ * gives the whole folder as a .zip.
  */
 import CopyButton from "./CopyButton.astro";
 import HumanStamp from "./HumanStamp.astro";
 import RarityLabel from "./RarityLabel.astro";
 import { DROP_TYPES } from "@/lib/grist";
 import DownloadButton from "./DownloadButton.astro";
-import { derive, lootOf, twinHref, type Drop } from "@/lib/drops";
+import { derive, lootFilesOf, twinHref, zipHref, type Drop } from "@/lib/drops";
 
 interface Props {
   drop: Drop;
@@ -20,7 +22,8 @@ interface Props {
 
 const { drop, id = "the-drop" } = Astro.props;
 const { rarity } = derive(drop);
-const text = lootOf(drop);
+const files = lootFilesOf(drop);
+const workflow = drop.data.drop === "workflow";
 const type = DROP_TYPES[drop.data.drop];
 ---
 
@@ -35,23 +38,32 @@ const type = DROP_TYPES[drop.data.drop];
       <span class="loot-box__note">{type.note}</span>
     </p>
   </div>
-  <div class="loot-box__loot">
-    <pre class="loot-box__text"><code>{text}</code></pre>
-    <span class="loot-box__copy">
-      <CopyButton
-        text={text}
-        icon="copy"
-        variant="ghost"
-        label="Copy just the drop"
-        done="Drop copied"
-      />
-    </span>
-  </div>
+  {files.map(({ path, text }) => (
+    <div class="loot-box__file">
+      {workflow && <p class="loot-box__path">{path}</p>}
+      <div class="loot-box__loot">
+        <pre class="loot-box__text"><code>{text}</code></pre>
+        <span class="loot-box__copy">
+          <CopyButton
+            text={text}
+            icon="copy"
+            variant="ghost"
+            label={workflow ? `Copy ${path}` : "Copy just the drop"}
+            done={workflow ? "File copied" : "Drop copied"}
+          />
+        </span>
+      </div>
+    </div>
+  ))}
   <div class="loot-box__actions">
     <CopyButton from={twinHref(drop)} icon="sparkles" done="Copied as markdown">
       Copy for AI
     </CopyButton>
-    <DownloadButton href={twinHref(drop)} name={`${drop.id}.md`} />
+    {workflow ? (
+      <DownloadButton href={zipHref(drop)} name={`${drop.id}.zip`} />
+    ) : (
+      <DownloadButton href={twinHref(drop)} name={`${drop.id}.md`} />
+    )}
   </div>
 </section>
 
@@ -103,6 +115,19 @@ const type = DROP_TYPES[drop.data.drop];
 
     .loot-box__loot {
       position: relative;
+    }
+
+    .loot-box__file {
+      display: grid;
+      gap: var(--space-2);
+    }
+
+    /* A workflow file's path, in the code face above its panel. */
+    .loot-box__path {
+      font-family: var(--font-mono);
+      font-size: var(--text-small);
+      line-height: var(--leading-small);
+      color: var(--color-text-muted);
     }
 
     .loot-box__copy {

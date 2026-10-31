@@ -2,7 +2,7 @@
 /**
  * Dawid's tile icon for a rarity tier, shown instead of the pixel gem when RARITY_ICON is "tile"
  * (src/lib/grist.ts). Decorative
- * (a tier name always sits next to it). Legendary and up keep the gem's shine: a light band sweeps
+ * (a tier name always sits next to it). Legendary and Ultimate keep the gem's shine: a light band sweeps
  * across the tiles, clipped to them, and stops under reduced motion.
  */
 import { RARITY_ICON_PATHS, type RarityIconTier } from "./tile-icons";
@@ -15,7 +15,7 @@ interface Props {
 
 const { tier, size = "sm" } = Astro.props;
 const paths = RARITY_ICON_PATHS[tier];
-const shiny = tier === "legendary";
+const shiny = tier === "legendary" || tier === "ultimate";
 // Unique per instance, so every icon on the page clips its own band.
 const clipId = `rarity-icon-${crypto.randomUUID().slice(0, 8)}`;
 ---

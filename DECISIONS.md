@@ -728,3 +728,8 @@ What changed versus the embed, and why:
 
 - RarityLabel draws Dawid's tile icons (TileIcon) instead of the pixel gems while `RARITY_ICON = "tile"` in src/lib/grist.ts; set it to "gem" to go back. Gem.astro and the gem tokens stay.
 - Tile tier names share the icon's hue (`--rarity-*-tile-text`): 4.5:1 against the page and the subtle surface in both themes; icons 3:1. Only legendary's icon and a few text shades moved from Dawid's colours to get there. Legendary keeps the shine.
+
+## Grist: rarity balance and the Ultimate tier (31 Oct 2026)
+
+- New top tier, Ultimate (tile icon only, #e60303, with the shine). An Ultimate is always a Workflow: several skills and a reviewer subagent that hand off to each other, with checkpoints and a sample run. Its loot is a loot/ folder; the page shows each file, Copy for AI copies them all, Download gives a .zip (src/lib/zip.ts, stored, no dependency). Dawid preferred "Workflow" to "Plugin": it says what it is and doesn't tie the drop to one tool. Hooks are optional.
+- Seasons are checked for balance (balanceProblems in src/lib/drops.ts): one Common, Uncommon/Rare/Epic 1 to 3 each, no neighbouring repeats, top tier in slot 8, Legendary at most 2, Ultimate excludes Legendary. Previews warn, production fails. The season plans follow the table in "Grist — rarity balance and Ultimate"; Ultimates in seasons 3 (presales) and 5 (design to code).

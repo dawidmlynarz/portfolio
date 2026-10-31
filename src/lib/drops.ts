@@ -9,6 +9,7 @@ import {
   DROP_INTERVAL_DAYS,
   DROP_TYPES,
   SEASON_SLOTS,
+  RARITIES,
   SEASONS,
   STATUSES,
   seasonName,
@@ -94,6 +95,7 @@ export type Slot =
  */
 export async function getSeasons() {
   const drops = await getDrops();
+  await checkBalance();
   return (Object.keys(SEASONS) as Season[]).map((id) => {
     const season = SEASONS[id];
     const own = drops.filter((d) => d.data.season === id);
@@ -113,6 +115,45 @@ export async function getSeasons() {
   });
 }
 
+/**
+ * Rarity balance, per season, over every slot: the written drop's tier, or the plan's while the slot
+ * is empty. Previews warn; production refuses to build. See DECISIONS.md, "rarity balance".
+ */
+export function balanceProblems(tiers: readonly Rarity[]) {
+  const count = (tier: Rarity) => tiers.filter((t) => t === tier).length;
+  const problems: string[] = [];
+  if (count("common") !== 1) problems.push(`${count("common")} Common (wants exactly 1)`);
+  for (const tier of ["uncommon", "rare", "epic"] as const)
+    if (count(tier) < 1 || count(tier) > 3) problems.push(`${count(tier)} ${tier} (wants 1 to 3)`);
+  tiers.forEach((tier, i) => {
+    if (i > 0 && tier === tiers[i - 1]) problems.push(`slots ${i} and ${i + 1} are both ${tier}`);
+  });
+  const top = Math.max(...tiers.map((t) => RARITIES.indexOf(t)));
+  if (RARITIES.indexOf(tiers.at(-1)!) !== top) problems.push("slot 8 isn't the season's top tier");
+  if (count("legendary") > 2) problems.push(`${count("legendary")} Legendary (wants 2 at most)`);
+  if (count("ultimate") > 1) problems.push(`${count("ultimate")} Ultimate (wants 1 at most)`);
+  if (count("ultimate") && count("legendary")) problems.push("Ultimate and Legendary together");
+  return problems;
+}
+
+let balanceChecked = false;
+async function checkBalance() {
+  if (balanceChecked) return;
+  balanceChecked = true;
+  const all = await getCollection("grist");
+  for (const id of Object.keys(SEASONS) as Season[]) {
+    const tiers = SEASONS[id].plan.map(
+      ([, rarity], i) =>
+        all.find((d) => d.data.season === id && d.data.slot === i + 1)?.data.rarity ?? rarity,
+    );
+    const problems = balanceProblems(tiers);
+    if (!problems.length) continue;
+    const message = `Grist: season ${SEASONS[id].number} is out of balance: ${problems.join("; ")}.`;
+    if (isProduction) throw new Error(message);
+    console.warn(message);
+  }
+}
+
 /** The loot itself: each folder's drop.md, as written. */
 const RAW = import.meta.glob<string>("/src/content/grist/*/drop.md", {
   query: "?raw",
@@ -120,16 +161,53 @@ const RAW = import.meta.glob<string>("/src/content/grist/*/drop.md", {
   eager: true,
 });
 
-export function lootOf(drop: Drop) {
+/** A workflow's loot: every file under its loot/ folder, as written. */
+const LOOT_FILES = import.meta.glob<string>("/src/content/grist/*/loot/**/*", {
+  query: "?raw",
+  import: "default",
+  eager: true,
+});
+
+export interface LootFile {
+  /** Path inside the drop's folder, e.g. "skills/straw-man/SKILL.md". */
+  path: string;
+  text: string;
+}
+
+/**
+ * The loot as files. A workflow's are its loot/ folder, overview (README.md) first, then by path;
+ * every other drop has one file, drop.md.
+ */
+export function lootFilesOf(drop: Drop): LootFile[] {
+  if (drop.data.drop === "workflow") {
+    const prefix = `/src/content/grist/${drop.id}/loot/`;
+    const files = Object.entries(LOOT_FILES)
+      .filter(([path]) => path.startsWith(prefix))
+      .map(([path, text]) => ({ path: path.slice(prefix.length), text: text.trim() }))
+      .sort((a, b) =>
+        a.path === "README.md" ? -1 : b.path === "README.md" ? 1 : a.path.localeCompare(b.path),
+      );
+    if (!files.length) throw new Error(`Grist: workflow ${drop.id} has no files in loot/.`);
+    return files;
+  }
   const text = RAW[`/src/content/grist/${drop.id}/drop.md`];
   if (text === undefined)
     throw new Error(`Grist: ${drop.id} has no drop.md next to its index.mdx.`);
-  return text.trim();
+  return [{ path: "drop.md", text: text.trim() }];
+}
+
+/** The loot as one text: drop.md, or a workflow's files one after another under their paths. */
+export function lootOf(drop: Drop) {
+  const files = lootFilesOf(drop);
+  if (drop.data.drop !== "workflow") return files[0]!.text;
+  return files.map(({ path, text }) => `<!-- file: ${path} -->\n\n${text}`).join("\n\n");
 }
 
 export const dropHref = (drop: Drop) => `/grist/${drop.id}`;
 export const twinHref = (drop: Drop) => `/grist/${drop.id}.md`;
 export const lootHref = (drop: Drop) => `/grist/${drop.id}/drop.md`;
+/** A workflow's files as a folder, zipped (/grist/<slug>.zip). */
+export const zipHref = (drop: Drop) => `/grist/${drop.id}.zip`;
 export const seasonPackHref = (season: Season) => `/grist/season/${SEASONS[season].slug}.md`;
 
 const dayMonth = new Intl.DateTimeFormat("en-GB", { day: "numeric", month: "short" });

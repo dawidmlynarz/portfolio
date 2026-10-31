@@ -6,11 +6,11 @@
  */
 import Gem from "@/components/grist/Gem.astro";
 import Icon from "@/components/grist/Icon.astro";
-import { RARITY_LABELS, type Rarity } from "@/lib/grist";
+import { RARITY_LABELS, type GemRarity } from "@/lib/grist";
 import RarityIcon from "@/components/grist/TileIcon.astro";
 import { RARITY_ICON_TIERS, type RarityIconTier } from "@/components/grist/tile-icons";
 
-const NAMES: Record<RarityIconTier, string> = { ...RARITY_LABELS, ultimate: "Ultimate" };
+const NAMES: Record<RarityIconTier, string> = RARITY_LABELS;
 const EXAMPLES: Record<RarityIconTier, { type: string; title: string; summary: string }> = {
   common: {
     type: "Rule",
@@ -43,7 +43,7 @@ const EXAMPLES: Record<RarityIconTier, { type: string; title: string; summary: s
     summary: "A future tier: the deepest drops, released rarely.",
   },
 };
-const hasGem = (tier: RarityIconTier): tier is Rarity => tier !== "ultimate";
+const hasGem = (tier: RarityIconTier): tier is GemRarity => tier !== "ultimate";
 ---
 
 <div class="rarity-lab">
@@ -59,7 +59,7 @@ const hasGem = (tier: RarityIconTier): tier is Rarity => tier !== "ultimate";
         <div class="rarity-lab__row">
           <h3 class="rarity-lab__tier">
             {NAMES[tier]}
-            {!hasGem(tier) && <span class="rarity-lab__note">future tier</span>}
+            {!hasGem(tier) && <span class="rarity-lab__note">tile only</span>}
           </h3>
           {[false, true].map((tile) => (
             <div class="rarity-lab__cell">

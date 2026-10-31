@@ -1,7 +1,8 @@
 /**
- * Grist (/grist): human-curated loot for AI tools, battle tested by Dawid. Each drop has a type (its format: rule, prompt,
- * checklist, spec, skill) and a rarity (how deep it goes), set separately by hand: a simple
- * checklist can be Common and an advanced one Rare. Seasons group drops by theme.
+ * Grist (/grist): human-curated loot for AI tools, battle tested by Dawid. Each drop has a type (its
+ * format: rule, prompt, checklist, spec, skill, workflow) and a rarity (how deep it goes), set
+ * separately by hand: a simple checklist can be Common and an advanced one Rare. One exception:
+ * an Ultimate is always a workflow. Seasons group drops by theme.
  */
 
 /** Tiers, lowest first. */
@@ -11,7 +12,7 @@
  */
 export const RARITY_ICON: "tile" | "gem" = "tile";
 
-export const RARITIES = ["common", "uncommon", "rare", "epic", "legendary"] as const;
+export const RARITIES = ["common", "uncommon", "rare", "epic", "legendary", "ultimate"] as const;
 export type Rarity = (typeof RARITIES)[number];
 
 export const RARITY_LABELS: Record<Rarity, string> = {
@@ -20,6 +21,7 @@ export const RARITY_LABELS: Record<Rarity, string> = {
   rare: "Rare",
   epic: "Epic",
   legendary: "Legendary",
+  ultimate: "Ultimate",
 };
 
 /**
@@ -50,6 +52,10 @@ export const RARITY_INFO = {
     note: "A whole kit, ready to install: an advanced skill or a full spec, with examples and limits.",
     needs: ["steps", "example", "limits"],
   },
+  ultimate: {
+    note: "A whole workflow: several skills and a reviewer agent that hand off to each other, with checkpoints where you approve and a sample run.",
+    needs: ["steps", "example", "limits"],
+  },
 } as const satisfies Record<
   Rarity,
   { note: string; needs: readonly ("steps" | "example" | "limits")[] }
@@ -65,13 +71,18 @@ export const STATUSES = {
 } as const satisfies Record<string, { label: string; note: string }>;
 export type Status = keyof typeof STATUSES;
 
-/** Drop types: the format of the loot. Any type can be any rarity. */
+/** Drop types: the format of the loot. Any type can be any rarity, except that an Ultimate is always a
+ * workflow (src/content.config.ts). A workflow's loot is a folder of files (loot/), not drop.md. */
 export const DROP_TYPES = {
   rule: { label: "Rule", note: "One line for a system prompt or CLAUDE.md" },
   prompt: { label: "Prompt", note: "A prompt to paste, with blanks to fill" },
   checklist: { label: "Checklist", note: "Checks to review work against" },
   spec: { label: "Spec", note: "A template or a section of a file" },
   skill: { label: "Skill", note: "An agent skill, ready to install" },
+  workflow: {
+    label: "Workflow",
+    note: "Skills and a reviewer agent that hand off to each other, with checkpoints",
+  },
 } as const satisfies Record<string, { label: string; note: string }>;
 export type DropType = keyof typeof DROP_TYPES;
 
@@ -96,7 +107,9 @@ const GEM = [
 ];
 const SPARKLED = GEM.map((row, y) => (y === 0 || y === 6 ? `s${row.slice(1, -1)}s` : row));
 
-export const GEM_PIXELS: Record<Rarity, readonly string[]> = {
+/** Ultimate has no pixel gem: in gem mode it still shows its tile icon (RarityLabel). */
+export type GemRarity = Exclude<Rarity, "ultimate">;
+export const GEM_PIXELS: Record<GemRarity, readonly string[]> = {
   common: GEM,
   uncommon: GEM,
   rare: GEM,
@@ -126,12 +139,12 @@ export const SEASONS = {
     starts: "2026-08-28",
     plan: [
       ["rule", "common"],
-      ["rule", "common"],
-      ["prompt", "uncommon"],
-      ["prompt", "uncommon"],
-      ["checklist", "rare"],
-      ["spec", "epic"],
-      ["spec", "epic"],
+      ["rule", "uncommon"],
+      ["prompt", "rare"],
+      ["prompt", "epic"],
+      ["checklist", "legendary"],
+      ["spec", "uncommon"],
+      ["spec", "rare"],
       ["skill", "legendary"],
     ],
   },
@@ -143,12 +156,12 @@ export const SEASONS = {
     starts: "2026-10-30",
     plan: [
       ["rule", "common"],
-      ["rule", "common"],
-      ["prompt", "uncommon"],
-      ["checklist", "rare"],
+      ["rule", "uncommon"],
       ["prompt", "rare"],
-      ["spec", "epic"],
+      ["checklist", "uncommon"],
+      ["prompt", "epic"],
       ["spec", "rare"],
+      ["spec", "epic"],
       ["skill", "legendary"],
     ],
   },
@@ -162,12 +175,12 @@ export const SEASONS = {
     plan: [
       ["rule", "common"],
       ["prompt", "uncommon"],
-      ["rule", "common"],
-      ["prompt", "uncommon"],
+      ["rule", "rare"],
+      ["prompt", "epic"],
       ["checklist", "rare"],
-      ["spec", "rare"],
+      ["spec", "uncommon"],
       ["spec", "epic"],
-      ["skill", "legendary"],
+      ["workflow", "ultimate"],
     ],
   },
   s04: {
@@ -179,11 +192,11 @@ export const SEASONS = {
     plan: [
       ["rule", "common"],
       ["prompt", "uncommon"],
-      ["rule", "common"],
-      ["spec", "epic"],
+      ["rule", "rare"],
+      ["spec", "uncommon"],
       ["spec", "rare"],
-      ["prompt", "rare"],
-      ["rule", "common"],
+      ["prompt", "epic"],
+      ["rule", "rare"],
       ["skill", "legendary"],
     ],
   },
@@ -197,11 +210,11 @@ export const SEASONS = {
       ["rule", "common"],
       ["checklist", "uncommon"],
       ["spec", "rare"],
+      ["prompt", "epic"],
+      ["rule", "uncommon"],
       ["prompt", "rare"],
-      ["rule", "common"],
-      ["prompt", "uncommon"],
-      ["checklist", "rare"],
-      ["skill", "epic"],
+      ["checklist", "epic"],
+      ["workflow", "ultimate"],
     ],
   },
   s06: {
@@ -212,12 +225,12 @@ export const SEASONS = {
     starts: "2027-07-09",
     plan: [
       ["rule", "common"],
-      ["spec", "epic"],
-      ["rule", "common"],
+      ["spec", "uncommon"],
+      ["rule", "epic"],
       ["spec", "rare"],
-      ["rule", "common"],
+      ["rule", "uncommon"],
       ["spec", "rare"],
-      ["checklist", "common"],
+      ["checklist", "epic"],
       ["skill", "legendary"],
     ],
   },
@@ -229,11 +242,11 @@ export const SEASONS = {
     starts: "2027-09-10",
     plan: [
       ["rule", "common"],
-      ["prompt", "uncommon"],
-      ["rule", "common"],
+      ["prompt", "rare"],
+      ["rule", "uncommon"],
+      ["checklist", "epic"],
       ["checklist", "rare"],
-      ["checklist", "rare"],
-      ["checklist", "rare"],
+      ["checklist", "uncommon"],
       ["spec", "epic"],
       ["skill", "legendary"],
     ],
@@ -246,13 +259,13 @@ export const SEASONS = {
     starts: "2027-11-12",
     plan: [
       ["rule", "common"],
-      ["spec", "rare"],
+      ["spec", "uncommon"],
       ["checklist", "rare"],
-      ["rule", "common"],
+      ["rule", "epic"],
+      ["prompt", "legendary"],
+      ["checklist", "rare"],
       ["prompt", "uncommon"],
-      ["checklist", "uncommon"],
-      ["prompt", "rare"],
-      ["skill", "epic"],
+      ["skill", "legendary"],
     ],
   },
 } as const satisfies Record<

@@ -23,11 +23,15 @@ const { rarity, type, size = "sm", class: className } = Astro.props;
   class:list={[
     "rarity-label",
     `rarity-label--${rarity}`,
-    { "rarity-label--tile": RARITY_ICON === "tile" },
+    { "rarity-label--tile": RARITY_ICON === "tile" || rarity === "ultimate" },
     className,
   ]}
 >
-  {RARITY_ICON === "tile" ? <TileIcon tier={rarity} size={size} /> : <Gem rarity={rarity} />}
+  {RARITY_ICON === "tile" || rarity === "ultimate" ? (
+    <TileIcon tier={rarity} size={size} />
+  ) : (
+    <Gem rarity={rarity} />
+  )}
   <span class:list={["rarity-label__name", { "rarity-label__name--type": type }]}>
     {type ? DROP_TYPES[type].label : RARITY_LABELS[rarity]}
   </span>
@@ -83,6 +87,10 @@ const { rarity, type, size = "sm", class: className } = Astro.props;
 
     .rarity-label--tile.rarity-label--legendary {
       color: var(--rarity-legendary-tile-text);
+    }
+
+    .rarity-label--tile.rarity-label--ultimate {
+      color: var(--rarity-ultimate-tile-text);
     }
   }
 </style>
