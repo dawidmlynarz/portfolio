@@ -723,3 +723,8 @@ What changed versus the embed, and why:
 ## Grist: drop titles in Title Case (31 Oct 2026)
 
 - Drop titles follow the season names: Title Case, small words lowercase unless first or last, hyphenated words capitalise only the first part ("Agent-readable Tokens", "Human-in-the-loop Checkpoints"). Acronyms (AI, UX, QA, SOW) and DESIGN.md stay as they are. The rule is in the grist-entry skill.
+
+## Grist: tile icons replace the pixel gems, gems kept (31 Oct 2026)
+
+- RarityLabel draws Dawid's tile icons (TileIcon) instead of the pixel gems while `RARITY_ICON = "tile"` in src/lib/grist.ts; set it to "gem" to go back. Gem.astro and the gem tokens stay.
+- Tile tier names share the icon's hue (`--rarity-*-tile-text`): 4.5:1 against the page and the subtle surface in both themes; icons 3:1. Only legendary's icon and a few text shades moved from Dawid's colours to get there. Legendary keeps the shine.
