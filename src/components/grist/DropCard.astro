@@ -33,7 +33,12 @@ const shown = drop && derive(drop);
 
 {drop && shown ? (
   <article
-    class:list={["drop-card", "drop-card--drop", className]}
+    class:list={[
+      "drop-card",
+      "drop-card--drop",
+      { "drop-card--foil": shown.rarity === "legendary" || shown.rarity === "mythic" },
+      className,
+    ]}
     style={`--tier: var(--rarity-${shown.rarity}-icon)`}
   >
     <div class="drop-card__inner">
@@ -181,6 +186,60 @@ const shown = drop && derive(drop);
 
     .drop-card:is(:hover, .drop-card--hover) .drop-card__link {
       --underline-size: 100%;
+    }
+
+    /*
+     * Legendary and Mythic: on hover the foil from their icon crosses the whole card, the library's
+     * Legendary card shine (react-cards-opening): a diagonal band, tier-coloured at the edges with a
+     * bright core, easing across, then a rest. Light paints it in the tier colour (white wouldn't
+     * show on a light card); dark adds a white core. Reduced motion: no shine.
+     */
+    .drop-card--foil::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      border-radius: inherit;
+      background: linear-gradient(
+          115deg,
+          transparent 42%,
+          light-dark(
+              color-mix(in oklch, var(--tier) 16%, transparent),
+              color-mix(in oklch, var(--tier) 30%, transparent)
+            )
+            47.5%,
+          light-dark(
+              color-mix(in oklch, var(--tier) 26%, transparent),
+              color-mix(in oklch, var(--color-text) 45%, transparent)
+            )
+            50%,
+          light-dark(
+              color-mix(in oklch, var(--tier) 14%, transparent),
+              color-mix(in oklch, var(--tier) 28%, transparent)
+            )
+            52.5%,
+          transparent 58%
+        )
+        no-repeat 115% 0 / 300% 100%;
+      opacity: 0;
+      pointer-events: none;
+    }
+
+    @media (prefers-reduced-motion: no-preference) {
+      .drop-card--foil:is(:hover, .drop-card--hover)::before {
+        opacity: 1;
+        animation: drop-card-foil var(--duration-shine) var(--ease-in-out-sine) infinite;
+      }
+    }
+
+    @keyframes drop-card-foil {
+      0% {
+        background-position: 115% 0;
+      }
+
+      43%,
+      100% {
+        background-position: -15% 0;
+      }
     }
 
     .drop-card__link:focus-visible {

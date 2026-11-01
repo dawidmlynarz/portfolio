@@ -178,6 +178,7 @@
     --duration-marquee: 40s; /* one full loop of the client logo marquee */
     --duration-marquee-work: 60s; /* one full loop of the case-study covers on /contact */
     --duration-stamp: 24s; /* one turn of the Grist "human curated" stamp */
+    --duration-shine: 2.1s; /* Grist foil: one pass of the shine on Legendary and Mythic, then a rest */
     --duration-quote: 9s; /* how long each /services quote stays before the next one */
     --ease-out-expo: cubic-bezier(0.19, 1, 0.22, 1);
     --duration-page: 700ms; /* ink spread (theme switch); the nav during page changes */
@@ -188,6 +189,7 @@
     --shift-page-out: 2vh; /* page transition: how far the old page lifts */
     --shift-page-in: 6vh; /* page transition: how far below the new page starts */
     --ease-in-out-quart: cubic-bezier(0.77, 0, 0.175, 1);
+    --ease-in-out-sine: cubic-bezier(0.45, 0, 0.55, 1); /* Grist foil shine */
     --z-nav: 100;
 
     /* ---------- Grist (/grist): rarity tiers and the pixel face ----------

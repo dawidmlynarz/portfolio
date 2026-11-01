@@ -2,7 +2,7 @@
 /**
  * Dawid's tile icon for a rarity tier, shown instead of the pixel gem when RARITY_ICON is "tile"
  * (src/lib/grist.ts). Decorative
- * (a tier name always sits next to it). Legendary and Mythic keep the gem's shine: a light band sweeps
+ * (a tier name always sits next to it). Legendary and Mythic have a foil shine: a soft diagonal band sweeps
  * across the tiles, clipped to them, and stops under reduced motion.
  */
 import { RARITY_ICON_PATHS, type RarityIconTier } from "./tile-icons";
@@ -35,7 +35,9 @@ const clipId = `rarity-icon-${crypto.randomUUID().slice(0, 8)}`;
       </clipPath>
       <linearGradient id={`${clipId}-band`} x1="0" x2="1" y1="0" y2="0">
         <stop class="rarity-icon__light" offset="0" stop-opacity="0" />
-        <stop class="rarity-icon__light" offset="0.5" stop-opacity="0.85" />
+        <stop class="rarity-icon__light" offset="0.35" stop-opacity="0.25" />
+        <stop class="rarity-icon__light" offset="0.5" stop-opacity="0.9" />
+        <stop class="rarity-icon__light" offset="0.65" stop-opacity="0.25" />
         <stop class="rarity-icon__light" offset="1" stop-opacity="0" />
       </linearGradient>
     </defs>
@@ -45,14 +47,16 @@ const clipId = `rarity-icon-${crypto.randomUUID().slice(0, 8)}`;
   ))}
   {shiny && (
     <g clip-path={`url(#${clipId})`}>
-      <rect
-        class="rarity-icon__sweep"
-        x="-10"
-        y="-4"
-        width="8"
-        height="32"
-        fill={`url(#${clipId}-band)`}
-      />
+      <g transform="rotate(25 12 12)">
+        <rect
+          class="rarity-icon__sweep"
+          x="-20"
+          y="-12"
+          width="12"
+          height="48"
+          fill={`url(#${clipId}-band)`}
+        />
+      </g>
     </g>
   )}
 </svg>
@@ -112,21 +116,24 @@ const clipId = `rarity-icon-${crypto.randomUUID().slice(0, 8)}`;
 
     @media (prefers-reduced-motion: no-preference) {
       .rarity-icon__sweep {
-        animation: rarity-icon-sweep 2.4s var(--ease-standard) infinite;
+        animation: rarity-icon-sweep var(--duration-shine) var(--ease-in-out-sine) infinite;
       }
     }
 
-    /* Same rhythm as the pixel gem: the band crosses in the first half, then waits off the icon. */
+    /*
+     * The foil from the library's Legendary card: a soft diagonal band with a bright core, easing in
+     * and out as it crosses in the first 43%, then resting off the icon.
+     */
     @keyframes rarity-icon-sweep {
       0% {
         opacity: 1;
         translate: 0 0;
       }
 
-      45%,
+      43%,
       100% {
         opacity: 1;
-        translate: 36px 0;
+        translate: 48px 0;
       }
     }
   }
