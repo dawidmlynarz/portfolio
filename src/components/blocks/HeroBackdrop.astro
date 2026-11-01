@@ -11,12 +11,18 @@
 interface Props {
   /** The page runs under the floating nav (SiteLayout navOverlap): start at the hero's top edge. */
   flush?: boolean;
+  /** Tint the grain and add a faint wash in this colour (a token, e.g. var(--rarity-epic-icon)). */
+  tint?: string;
 }
 
-const { flush = false } = Astro.props;
+const { flush = false, tint } = Astro.props;
 ---
 
-<div class:list={["hero-backdrop", { "hero-backdrop--flush": flush }]} aria-hidden="true"></div>
+<div
+  class:list={["hero-backdrop", { "hero-backdrop--flush": flush, "hero-backdrop--tint": tint }]}
+  style={tint ? `--hero-tint: ${tint}` : undefined}
+  aria-hidden="true"
+></div>
 
 <style>
   @layer components {
@@ -43,6 +49,37 @@ const { flush = false } = Astro.props;
 
     .hero-backdrop--flush {
       --hero-backdrop-offset: 0px;
+    }
+
+    /*
+     * Tinted: the grain becomes a mask over the tint colour (an image can't take a CSS colour, a
+     * mask can), and a faint wash of the same colour sits under it. Both fade out like the grain.
+     */
+    .hero-backdrop--tint {
+      background: linear-gradient(
+        light-dark(
+          color-mix(in srgb, var(--hero-tint) 10%, transparent),
+          color-mix(in srgb, var(--hero-tint) 14%, transparent)
+        ),
+        transparent 70%
+      );
+    }
+
+    .hero-backdrop--tint::after {
+      position: absolute;
+      inset: 0;
+      background-color: var(--hero-tint);
+      content: "";
+      mask-image: var(--texture-grain);
+    }
+
+    /* Preview only: GrainToggle (Grist header) can switch the tint off to compare. */
+    :global(:root[data-grain="neutral"]) .hero-backdrop--tint {
+      background: var(--texture-grain);
+    }
+
+    :global(:root[data-grain="neutral"]) .hero-backdrop--tint::after {
+      display: none;
     }
 
     :global(:root[data-vt]) .hero-backdrop {

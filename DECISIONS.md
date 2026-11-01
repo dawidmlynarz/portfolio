@@ -761,4 +761,11 @@ What changed versus the embed, and why:
 
 - Dawid asked for everything around the drops to read as written by a person, using the case-study rules. The drops themselves (the loot written for AI tools) stay as they are.
 - Rewritten: every hint (all 64 opened "Use it when …, and you get …"), the "Watch for …" lines, aphorisms and "not X, it's Y" contrasts in the Why, a few colon-list summaries, the rarity notes and the Readme. CLAUDE flags stay where the words still aren't Dawid's.
-- Tagline is now "Loot for AI Grinders". The tinted hero grain was tried and reverted.
+- Tagline is now "Loot for AI Grinders". The rarity-tinted hero grain on drop pages was reverted, then brought back the same day: Dawid likes the continuity.
+
+## Rarity-tinted hero grain on drop pages
+
+- `HeroBackdrop` takes an optional `tint` (a token). The grain SVG is a data URL and can't take a CSS colour, so with a tint the grain is used as a mask over a solid fill in the tint colour, and a faint wash (10% light, 14% dark) sits under it. Both fade out like the plain grain.
+- Drop pages pass their rarity colour. Every other page keeps the neutral grain.
+- Cost: one extra masked layer per page, using the same cached SVG. A page only ever has one colour, so more tiers add nothing.
+- For comparing, preview builds show a "Colour grain / Grey grain" switch in the Grist header (GrainToggle, remembered per browser). Production leaves it out. Remove it once the choice is made.

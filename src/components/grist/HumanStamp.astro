@@ -16,7 +16,7 @@ interface Props {
 }
 
 const { size = "lg", words, class: className } = Astro.props;
-const phrase = words ?? (size === "sm" ? "Human curated" : "Human curated · Dawid Młynarz");
+const phrase = words ?? (size === "sm" ? "Human-curated" : "Human-curated · Dawid Młynarz");
 // A long phrase runs round once in larger letters, a short one twice, so both stay readable at
 // phone size.
 const once = phrase.length > 18;
@@ -33,7 +33,7 @@ const pathId = `stamp-ring-${crypto.randomUUID().slice(0, 8)}`;
   class:list={["human-stamp", `human-stamp--${size}`, className]}
   href="/"
   data-no-tear
-  aria-label={`Human curated by ${SITE.name}. Visit the portfolio.`}
+  aria-label={`Human-curated by ${SITE.name}. Visit the portfolio.`}
 >
   <svg class="human-stamp__svg" viewBox="0 0 280 280" aria-hidden="true" focusable="false">
     <defs>
