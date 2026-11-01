@@ -131,8 +131,8 @@ export function balanceProblems(tiers: readonly Rarity[]) {
   const top = Math.max(...tiers.map((t) => RARITIES.indexOf(t)));
   if (RARITIES.indexOf(tiers.at(-1)!) !== top) problems.push("slot 8 isn't the season's top tier");
   if (count("legendary") > 2) problems.push(`${count("legendary")} Legendary (wants 2 at most)`);
-  if (count("ultimate") > 1) problems.push(`${count("ultimate")} Ultimate (wants 1 at most)`);
-  if (count("ultimate") && count("legendary")) problems.push("Ultimate and Legendary together");
+  if (count("mythic") > 1) problems.push(`${count("mythic")} Mythic (wants 1 at most)`);
+  if (count("mythic") && count("legendary")) problems.push("Mythic and Legendary together");
   return problems;
 }
 

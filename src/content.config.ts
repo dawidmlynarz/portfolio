@@ -110,11 +110,11 @@ const grist = defineCollection({
       draft: z.boolean().default(false),
     })
     .superRefine((data, ctx) => {
-      if (data.rarity === "ultimate" && data.drop !== "workflow")
+      if (data.rarity === "mythic" && data.drop !== "workflow")
         ctx.addIssue({
           code: "custom",
           path: ["drop"],
-          message: "An ultimate drop is always a workflow (see DROP_TYPES in src/lib/grist.ts).",
+          message: "A Mythic drop is always a workflow (see DROP_TYPES in src/lib/grist.ts).",
         });
       for (const need of RARITY_INFO[data.rarity].needs) {
         const missing =

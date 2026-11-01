@@ -511,7 +511,7 @@ const GRIST_ICONS: IconName[] = [
             {RARITIES.map((rarity) => (
               <li class="rarity-swatch">
                 <span class="rarity-swatch__gem">
-                  {rarity !== "ultimate" && <Gem rarity={rarity} />}
+                  {rarity !== "mythic" && <Gem rarity={rarity} />}
                   <TileIcon tier={rarity} />
                 </span>
                 <RarityLabel rarity={rarity} />

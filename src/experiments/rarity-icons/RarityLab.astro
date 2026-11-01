@@ -2,7 +2,7 @@
 /**
  * Experiment: today's pixel gems next to Dawid's tile icons, tier by tier, in a light and a dark
  * panel (each panel sets its own color-scheme, so light-dark() tokens resolve per panel). Each tier
- * shows the label as it sits on a card, a mock card, and a close-up. Ultimate has no pixel gem yet.
+ * shows the label as it sits on a card, a mock card, and a close-up. Mythic has no pixel gem yet.
  */
 import Gem from "@/components/grist/Gem.astro";
 import Icon from "@/components/grist/Icon.astro";
@@ -37,13 +37,13 @@ const EXAMPLES: Record<RarityIconTier, { type: string; title: string; summary: s
     title: "Design System for Conversational AI",
     summary: "Plan a design system for conversational AI products.",
   },
-  ultimate: {
+  mythic: {
     type: "Skill",
     title: "An Ultra Rare Drop",
     summary: "A future tier: the deepest drops, released rarely.",
   },
 };
-const hasGem = (tier: RarityIconTier): tier is GemRarity => tier !== "ultimate";
+const hasGem = (tier: RarityIconTier): tier is GemRarity => tier !== "mythic";
 ---
 
 <div class="rarity-lab">

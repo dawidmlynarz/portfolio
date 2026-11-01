@@ -2,7 +2,7 @@
  * Grist (/grist): human-curated loot for AI tools, battle tested by Dawid. Each drop has a type (its
  * format: rule, prompt, checklist, spec, skill, workflow) and a rarity (how deep it goes), set
  * separately by hand: a simple checklist can be Common and an advanced one Rare. One exception:
- * an Ultimate is always a workflow. Seasons group drops by theme.
+ * a Mythic is always a workflow. Seasons group drops by theme.
  */
 
 /** Tiers, lowest first. */
@@ -12,7 +12,7 @@
  */
 export const RARITY_ICON: "tile" | "gem" = "tile";
 
-export const RARITIES = ["common", "uncommon", "rare", "epic", "legendary", "ultimate"] as const;
+export const RARITIES = ["common", "uncommon", "rare", "epic", "legendary", "mythic"] as const;
 export type Rarity = (typeof RARITIES)[number];
 
 export const RARITY_LABELS: Record<Rarity, string> = {
@@ -21,7 +21,7 @@ export const RARITY_LABELS: Record<Rarity, string> = {
   rare: "Rare",
   epic: "Epic",
   legendary: "Legendary",
-  ultimate: "Ultimate",
+  mythic: "Mythic",
 };
 
 /**
@@ -52,7 +52,7 @@ export const RARITY_INFO = {
     note: "A whole kit, ready to install: an advanced skill or a full spec, with examples and limits.",
     needs: ["steps", "example", "limits"],
   },
-  ultimate: {
+  mythic: {
     note: "A whole workflow: several skills and a reviewer agent that hand off to each other, with checkpoints where you approve and a sample run.",
     needs: ["steps", "example", "limits"],
   },
@@ -71,7 +71,7 @@ export const STATUSES = {
 } as const satisfies Record<string, { label: string; note: string }>;
 export type Status = keyof typeof STATUSES;
 
-/** Drop types: the format of the loot. Any type can be any rarity, except that an Ultimate is always a
+/** Drop types: the format of the loot. Any type can be any rarity, except that a Mythic is always a
  * workflow (src/content.config.ts). A workflow's loot is a folder of files (loot/), not drop.md. */
 export const DROP_TYPES = {
   rule: { label: "Rule", note: "One line for a system prompt or CLAUDE.md" },
@@ -107,8 +107,8 @@ const GEM = [
 ];
 const SPARKLED = GEM.map((row, y) => (y === 0 || y === 6 ? `s${row.slice(1, -1)}s` : row));
 
-/** Ultimate has no pixel gem: in gem mode it still shows its tile icon (RarityLabel). */
-export type GemRarity = Exclude<Rarity, "ultimate">;
+/** Mythic has no pixel gem: in gem mode it still shows its tile icon (RarityLabel). */
+export type GemRarity = Exclude<Rarity, "mythic">;
 export const GEM_PIXELS: Record<GemRarity, readonly string[]> = {
   common: GEM,
   uncommon: GEM,
@@ -180,7 +180,7 @@ export const SEASONS = {
       ["spec", "rare"],
       ["prompt", "uncommon"],
       ["skill", "epic"],
-      ["workflow", "ultimate"],
+      ["workflow", "mythic"],
     ],
   },
   s04: {
@@ -214,7 +214,7 @@ export const SEASONS = {
       ["prompt", "uncommon"],
       ["checklist", "rare"],
       ["skill", "epic"],
-      ["workflow", "ultimate"],
+      ["workflow", "mythic"],
     ],
   },
   s06: {

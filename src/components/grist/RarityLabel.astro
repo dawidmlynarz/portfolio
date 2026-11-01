@@ -23,11 +23,11 @@ const { rarity, type, size = "sm", class: className } = Astro.props;
   class:list={[
     "rarity-label",
     `rarity-label--${rarity}`,
-    { "rarity-label--tile": RARITY_ICON === "tile" || rarity === "ultimate" },
+    { "rarity-label--tile": RARITY_ICON === "tile" || rarity === "mythic" },
     className,
   ]}
 >
-  {RARITY_ICON === "tile" || rarity === "ultimate" ? (
+  {RARITY_ICON === "tile" || rarity === "mythic" ? (
     <TileIcon tier={rarity} size={size} />
   ) : (
     <Gem rarity={rarity} />
@@ -89,8 +89,8 @@ const { rarity, type, size = "sm", class: className } = Astro.props;
       color: var(--rarity-legendary-tile-text);
     }
 
-    .rarity-label--tile.rarity-label--ultimate {
-      color: var(--rarity-ultimate-tile-text);
+    .rarity-label--tile.rarity-label--mythic {
+      color: var(--rarity-mythic-tile-text);
     }
   }
 </style>

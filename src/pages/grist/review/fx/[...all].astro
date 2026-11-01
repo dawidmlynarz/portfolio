@@ -1,0 +1,51 @@
+---
+/**
+ * Preview only: the Grist effects playground (src/experiments/grist-fx). Production builds no page
+ * here, and /grist/review is out of the sitemap.
+ */
+import GristLayout from "@/layouts/GristLayout.astro";
+import Container from "@/components/layout/Container.astro";
+import FxLab from "@/experiments/grist-fx/FxLab.astro";
+import { isProduction } from "@/lib/site";
+
+export function getStaticPaths() {
+  return isProduction ? [] : [{ params: { all: undefined } }];
+}
+---
+
+<GristLayout
+  title="Effects playground · Grist"
+  description="Rarity icon auras, card effects and drop frames, to try out."
+  noindex
+>
+  <Container class="fx-page">
+    <header class="fx-page__head">
+      <p class="text-caption fx-page__muted">Preview only</p>
+      <h1>Effects playground</h1>
+      <p class="text-lead fx-page__muted">
+        Auras on the rarity icons, effects on the cards and frames on the drop, tier by tier. Use
+        the theme switch at the top to check light and dark.
+      </p>
+    </header>
+    <FxLab />
+  </Container>
+</GristLayout>
+
+<style>
+  @layer components {
+    .fx-page {
+      display: grid;
+      gap: var(--space-12);
+      padding-block: var(--space-12) var(--space-section-md);
+    }
+
+    .fx-page__head {
+      display: grid;
+      gap: var(--space-3);
+    }
+
+    .fx-page__muted {
+      color: var(--color-text-muted);
+    }
+  }
+</style>

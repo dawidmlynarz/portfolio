@@ -742,3 +742,9 @@ What changed versus the embed, and why:
 - Renamed: Design Tokens Only to Tokens-only Guardrail (says what it is: a rule on the AI); Start at the Drop-off Points to Agent Ideas from Journey Pain Points ("pain points" is the journey-mapping term, and the drop is now context-agnostic). Old slugs aren't redirected: both were unpublished drafts.
 - AI Opportunity Map is tool-agnostic: FigJam was for a follow-up client workshop; a doc table or an AI-drawn artifact works as well.
 - Card rarity icons are 1.5em (RarityLabel size md), matching the drop page.
+- Ultimate is renamed Mythic (1 Nov), the name games use for the tier above Legendary. The key, labels and tokens (--rarity-mythic-*) all follow; the Figma token file needs the same rename.
+
+## Grist: effects playground (1 Nov 2026)
+
+- /grist/review/fx (preview only) tries three things: CSS auras on the rarity icons (glow, twinkles, embers, a Mythic halo; an Off/Subtle/Lively switch), card effects from react-cards-opening, and loot-box frames that evolve by rarity (A: outline ladder, B: gaming-card corners).
+- react-cards-opening is MIT and its effects package runs without React (playEffects on any element, GSAP inside). Its framework-free files are vendored in src/experiments/grist-fx/vendor/rco-effects (licence and source commit in its README), excluded from stylelint and prettier. Its stylesheet is unlayered and namespaced (rco-fx-*); if an effect ships, it moves into src/scripts/motion.ts and its CSS into a layer.
