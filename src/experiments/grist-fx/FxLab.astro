@@ -34,7 +34,7 @@ const MIX: Record<Rarity, readonly string[]> = {
   rare: ["sparks"],
   epic: ["stardust", "aurora"],
   legendary: ["embers", "beams"],
-  mythic: ["flames", "aurora", "embers"],
+  mythic: ["flames", "aurora"],
 };
 ---
 
@@ -81,10 +81,10 @@ const MIX: Record<Rarity, readonly string[]> = {
     <header class="fx-lab__head">
       <h2 id="fx-cards">2. Card effects</h2>
       <p class="fx-lab__muted">
-        From react-cards-opening (MIT): the effects run on one canvas with GSAP, which the site
-        already uses, so I copied the framework-free part in and left React out. Hover or focus a
-        card, or press Play. Lights add up on dark and are painted on light. Reduced motion plays
-        nothing.
+        Quiet versions of the react-cards-opening effects (MIT), on its canvas and GSAP: a dozen or
+        so tiny particles, sized to the card, close to its edge and gone in a second or two. Hover
+        or focus a card, or press Play. Lights add up on dark and are painted on light. Reduced
+        motion plays nothing.
       </p>
       <fieldset class="fx-lab__switch">
         <legend class="text-caption">Effect</legend>
@@ -100,7 +100,7 @@ const MIX: Record<Rarity, readonly string[]> = {
       </fieldset>
       <p class="fx-lab__muted text-small">
         Tier mix: Common nothing · Uncommon Stardust · Rare Sparks · Epic Stardust and Aurora ·
-        Legendary Embers and Beams · Mythic Flame, Aurora and Embers.
+        Legendary Embers and Beams · Mythic Flame and Aurora.
       </p>
       <div class="fx-lab__buttons">
         <button type="button" class="fx-lab__button" data-fx-play-all>
@@ -164,7 +164,8 @@ const MIX: Record<Rarity, readonly string[]> = {
 
 <script>
   import "./vendor/rco-effects/styles.css";
-  import { playEffects, clearEffects, type EffectName } from "./vendor/rco-effects/effects";
+  import { playEffects, clearEffects } from "./vendor/rco-effects/effects";
+  import { SUBTLE } from "./subtle-effects";
 
   const lab = document.querySelector<HTMLElement>(".fx-lab");
 
@@ -194,10 +195,10 @@ const MIX: Record<Rarity, readonly string[]> = {
     return (rgb[0]! + rgb[1]! + rgb[2]!) / 3 < 128;
   }
 
-  function chosen(card: HTMLElement): EffectName[] {
+  function chosen(card: HTMLElement) {
     const pick = lab?.querySelector<HTMLInputElement>('input[name="fx-effect"]:checked')?.value;
     const names = pick === "mix" || !pick ? (card.dataset.mix ?? "").split(" ") : [pick];
-    return names.filter(Boolean) as EffectName[];
+    return names.map((name) => SUBTLE[name]).filter((effect) => effect !== undefined);
   }
 
   /** A fresh layer each time, so a theme switch gets the right blend (a layer keeps its first). */
@@ -213,13 +214,13 @@ const MIX: Record<Rarity, readonly string[]> = {
     layer.className = "rco-fx-layer fx-card__layer";
     layer.setAttribute("aria-hidden", "true");
     // Inline, because the vendored stylesheet is unlayered and would beat a layered rule.
-    layer.style.inset = "calc(-1 * var(--space-12))";
+    layer.style.inset = "calc(-1 * var(--space-6))";
     card.prepend(layer);
     const face = card.querySelector<HTMLElement>(".fx-card__face--open") ?? card;
     const box = face.getBoundingClientRect();
     playEffects(layer, names, {
       at: face,
-      size: Math.min(box.width, 360),
+      size: box.width,
       ratio: box.height / box.width,
       tone: toneOf(card),
       blend: isDark() ? "add" : "normal",
@@ -412,9 +413,9 @@ const MIX: Record<Rarity, readonly string[]> = {
       justify-items: start;
     }
 
-    /* The effects spill a little past the card, under it, and never catch the pointer. */
+    /* In front of the card: the particles are small and stay near its edge. */
     .fx-card :global(.fx-card__layer) {
-      z-index: 0;
+      z-index: 2;
     }
 
     .fx-card__face {

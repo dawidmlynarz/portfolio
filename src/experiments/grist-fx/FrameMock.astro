@@ -4,7 +4,7 @@
  * content inside keeps its padding and stays usable; the "human curated" stamp stays as it is.
  *
  * approach "ladder": the outline itself climbs. Common is today's ink frame. Uncommon colours the
- *   border, Rare adds corner brackets outside it, Epic an inner hairline, Legendary a tier-coloured
+ *   border, Rare adds corner brackets inside it, Epic an inner hairline, Legendary a tier-coloured
  *   shadow and glow, Mythic a border of light that turns.
  * approach "corners": gaming-card corners. The tier icon sits on three corners (the stamp has the
  *   fourth), cut into the border. Higher tiers add the inner hairline, a second outline, the glow and
@@ -57,7 +57,7 @@ const corners = approach === "corners";
   {corners &&
     (["start-start", "end-start", "end-end"] as const).map((corner) => (
       <span class:list={["frame__corner", `frame__corner--${corner}`]} aria-hidden="true">
-        {at("mythic") ? <IconAura tier={tier} size="md" /> : <TileIcon tier={tier} size="md" />}
+        {at("mythic") ? <IconAura tier={tier} size="sm" /> : <TileIcon tier={tier} size="sm" />}
       </span>
     ))}
   <div class="frame__head">
@@ -106,21 +106,22 @@ const corners = approach === "corners";
       border-color: var(--tier);
     }
 
-    /* Corner brackets, just outside the frame: two bars per corner, drawn as gradients. */
+    /* Corner brackets inside the frame, on three corners (the stamp has the fourth). */
     .frame--brackets::before {
-      --arm: var(--space-6);
+      --arm: var(--space-4);
+      --bar: var(--border-width);
 
       content: "";
       position: absolute;
-      inset: calc(-1 * (var(--space-2) + var(--line)));
+      inset: var(--space-1);
       pointer-events: none;
       background:
-        linear-gradient(var(--tier) 0 0) top left / var(--arm) var(--line),
-        linear-gradient(var(--tier) 0 0) top left / var(--line) var(--arm),
-        linear-gradient(var(--tier) 0 0) bottom left / var(--arm) var(--line),
-        linear-gradient(var(--tier) 0 0) bottom left / var(--line) var(--arm),
-        linear-gradient(var(--tier) 0 0) bottom right / var(--arm) var(--line),
-        linear-gradient(var(--tier) 0 0) bottom right / var(--line) var(--arm);
+        linear-gradient(var(--tier) 0 0) top left / var(--arm) var(--bar),
+        linear-gradient(var(--tier) 0 0) top left / var(--bar) var(--arm),
+        linear-gradient(var(--tier) 0 0) bottom left / var(--arm) var(--bar),
+        linear-gradient(var(--tier) 0 0) bottom left / var(--bar) var(--arm),
+        linear-gradient(var(--tier) 0 0) bottom right / var(--arm) var(--bar),
+        linear-gradient(var(--tier) 0 0) bottom right / var(--bar) var(--arm);
       background-repeat: no-repeat;
     }
 
@@ -129,23 +130,23 @@ const corners = approach === "corners";
       content: "";
       position: absolute;
       inset: var(--space-2);
-      border: var(--border-width) solid color-mix(in oklab, var(--tier) 50%, transparent);
+      border: var(--border-width) solid color-mix(in oklab, var(--tier) 30%, transparent);
       pointer-events: none;
     }
 
     /* A second outline outside the first. */
     .frame--double {
-      outline: var(--border-width) solid var(--tier);
+      outline: var(--border-width) solid color-mix(in oklab, var(--tier) 45%, transparent);
       outline-offset: var(--space-1);
     }
 
     .frame--glow {
       box-shadow:
         var(--space-2) var(--space-2) 0 var(--tier),
-        0 0 var(--space-12)
+        0 0 var(--space-4)
           light-dark(
-            color-mix(in oklab, var(--tier) 18%, transparent),
-            color-mix(in oklab, var(--tier) 35%, transparent)
+            color-mix(in oklab, var(--tier) 10%, transparent),
+            color-mix(in oklab, var(--tier) 20%, transparent)
           );
     }
 
@@ -157,8 +158,8 @@ const corners = approach === "corners";
         conic-gradient(
             from var(--frame-turn),
             var(--tier),
-            var(--tier-light) 15%,
-            var(--tier) 30%,
+            var(--tier-light) 8%,
+            var(--tier) 16%,
             var(--tier) 100%
           )
           border-box;
@@ -238,7 +239,7 @@ const corners = approach === "corners";
 
     @media (prefers-reduced-motion: no-preference) {
       .frame--turning {
-        animation: frame-turn 4s linear infinite;
+        animation: frame-turn 8s linear infinite;
       }
     }
 
