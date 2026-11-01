@@ -29,7 +29,8 @@ Human checkpoints is the model for a Common: two short paragraphs, the rule said
 - Aphorisms as the last line of a Why ("Averages hide people.").
 - Triplets everywhere. Keep the item that matters.
 - Claims about "most teams" or "most failures" without his observation or a source.
-- Em dashes, rhetorical questions, bold on every paragraph, closing lines that restate the page.
+- Em dashes, en dashes, colons and semicolons joining clauses. Use full stops and commas (see "Writing in Dawid's voice" in CLAUDE.md).
+- Rhetorical questions, bold on every paragraph, closing lines that restate the page.
 - "Seamless", "leverage", "delve", "robust", "game-changer", "the biggest lever", "the turning point".
 
 ## Before and after
