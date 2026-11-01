@@ -782,3 +782,5 @@ What changed versus the embed, and why:
 - Locked (1 Nov): Foil Card. LootBox now looks like a drop card. It has the card's default 1px outline and large radius, the 70° tier wash and a soft tier shadow, which reads as a glow on dark. There's no foil shine. The loot panel is a frosted inset with its own hairline.
 - Changed again the same evening, from Dawid's Figma (Foundations 164:6254). The box has no tier colour and no shadow: a 1px outline, a large radius and the stamp on its top edge. It leads with the rarity label, then the drop's own name instead of "The drop". Screen readers hear "The drop:" first, and the table of contents still says "The drop". After that comes the type note, the loot, and the same buttons.
 - Long prompts stay fully visible (Dawid's call, after weighing a click-to-reveal). Only Mythic workflows cap each file at about 12 lines with a fade and "Show the whole file". The text stays in the page for search and copy, and without JS nothing is capped.
+
+- Final call (1 Nov): neutral grain everywhere. The tint, its `tint` prop and the preview switch are removed.

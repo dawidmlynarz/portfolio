@@ -12,8 +12,6 @@ import Logo from "@/components/grist/Logo.astro";
 import ReadmeButton from "@/components/grist/ReadmeButton.astro";
 import ReadmePanel from "@/components/grist/ReadmePanel.astro";
 import ThemeToggle from "@/components/blocks/ThemeToggle.astro";
-import GrainToggle from "@/components/grist/GrainToggle.astro";
-import { isProduction } from "@/lib/site";
 import type { ComponentProps } from "astro/types";
 
 type Props = ComponentProps<typeof BaseLayout>;
@@ -31,7 +29,6 @@ type Props = ComponentProps<typeof BaseLayout>;
           <Logo />
         </a>
         <div class="grist__actions">
-          {!isProduction && <GrainToggle />}
           <ReadmeButton panel="readme" />
           <ThemeToggle />
         </div>
