@@ -196,6 +196,7 @@ export default function FxBuilder(props: Slots) {
   const [tier, setTier] = useState<Tier>("legendary");
   const [palette, setPalette] = useState<Palette | null>(null);
   const [copied, setCopied] = useState("");
+  const [pinned, setPinned] = useState(false);
   const probe = useRef<HTMLSpanElement>(null);
   const layers = useRef<HTMLDivElement>(null);
   const subject = useRef<HTMLDivElement>(null);
@@ -285,6 +286,11 @@ export default function FxBuilder(props: Slots) {
     const timer = setInterval(play, Math.max(0.5, look.every) * 1000);
     return () => clearInterval(timer);
   }, [look.trigger, look.every, play]);
+
+  // "Show hover": pins the Grist card's hover state, so it can be judged without the pointer.
+  useEffect(() => {
+    subject.current?.querySelector(".drop-card")?.classList.toggle("drop-card--hover", pinned);
+  }, [pinned, mode, tier, setup.cardStyle]);
 
   // A new tier or mode starts clean.
   useEffect(() => clear, [mode, tier, clear]);
@@ -408,6 +414,17 @@ export default function FxBuilder(props: Slots) {
                   <option value="grist">Grist card</option>
                   <option value="library">Library card (foil on Legendary)</option>
                 </select>
+              </label>
+            )}
+            {mode === "card" && setup.cardStyle === "grist" && (
+              <label className="fxb__field">
+                <span>Show hover</span>
+                <input
+                  type="checkbox"
+                  className="fxb__check"
+                  checked={pinned}
+                  onChange={(e) => setPinned(e.target.checked)}
+                />
               </label>
             )}
             <label className="fxb__field">

@@ -32,7 +32,10 @@ const shown = drop && derive(drop);
 ---
 
 {drop && shown ? (
-  <article class:list={["drop-card", className]}>
+  <article
+    class:list={["drop-card", "drop-card--drop", className]}
+    style={`--tier: var(--rarity-${shown.rarity}-icon)`}
+  >
     <div class="drop-card__inner">
       <div class="drop-card__main">
         <p class="drop-card__rank">
@@ -100,11 +103,38 @@ const shown = drop && derive(drop);
       border: var(--border-width) solid var(--color-border-subtle);
       border-radius: var(--radius-lg);
       background-color: var(--color-bg);
-      transition: border-color var(--duration-fast) var(--ease-standard);
+      transition:
+        border-color var(--duration-fast) var(--ease-standard),
+        box-shadow var(--duration-fast) var(--ease-standard);
     }
 
     .drop-card:hover {
       border-color: var(--color-text);
+    }
+
+    /*
+     * Hover (Dawid's Figma, "cards"): the outline takes the tier colour at 2px (an inset ring on the
+     * 1px border, so nothing shifts), a faint tier wash rises to the bottom right, and a soft shadow
+     * in the tier colour. On dark the wash and shadow are a little stronger, so the shadow reads as a
+     * glow. --hover pins the state (the effects builder).
+     */
+    .drop-card--drop:is(:hover, .drop-card--hover) {
+      border-color: var(--tier);
+      background-image: linear-gradient(
+        70deg,
+        transparent,
+        light-dark(
+          color-mix(in srgb, var(--tier) 8%, transparent),
+          color-mix(in srgb, var(--tier) 12%, transparent)
+        )
+      );
+      box-shadow:
+        inset 0 0 0 var(--border-width) var(--tier),
+        0 var(--space-1) var(--space-2)
+          light-dark(
+            color-mix(in srgb, var(--tier) 25%, transparent),
+            color-mix(in srgb, var(--tier) 40%, transparent)
+          );
     }
 
     .drop-card:has(.drop-card__link:focus-visible) {
@@ -149,7 +179,7 @@ const shown = drop && derive(drop);
       --underline-size: 0%;
     }
 
-    .drop-card:hover .drop-card__link {
+    .drop-card:is(:hover, .drop-card--hover) .drop-card__link {
       --underline-size: 100%;
     }
 

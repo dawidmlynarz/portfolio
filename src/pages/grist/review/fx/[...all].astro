@@ -225,6 +225,13 @@ const cards = RARITIES.map((tier) => ({ tier, drop: all.find((d) => d.data.rarit
       accent-color: var(--color-text);
     }
 
+    :global(.fxb__check) {
+      justify-self: start;
+      inline-size: var(--space-4);
+      block-size: var(--space-4);
+      accent-color: var(--color-text);
+    }
+
     :global(.fxb select) {
       padding: var(--space-1) var(--space-2);
       border: var(--border-width) solid var(--color-border-muted);
