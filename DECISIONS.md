@@ -784,3 +784,9 @@ What changed versus the embed, and why:
 - Long prompts stay fully visible (Dawid's call, after weighing a click-to-reveal). Only Mythic workflows cap each file at about 12 lines with a fade and "Show the whole file". The text stays in the page for search and copy, and without JS nothing is capped.
 
 - Final call (1 Nov): neutral grain everywhere. The tint, its `tint` prop and the preview switch are removed.
+
+## Hover effects on Legendary and Mythic cards (1 Nov)
+
+- Dawid built them in the effects builder and sent the settings. Legendary: flash, shake, beams, embers. Mythic: negative, nova, quake, chroma, comets, flames. They live in `src/scripts/drop-fx.ts` and play on hover with the tier colour, adding up into a glow on dark and painted on light, as the builder's "auto" does.
+- An exception to "motion lives in motion.ts": these are the react-cards-opening effects as Dawid tuned them. `playEffects` needs no React component, but the package imports React (about 3 KB) and GSAP. So it all loads on the first hover of one of these cards, about 46 KB gzipped, and no other page or card pays for it. Not under reduced motion, not on touch screens, and at most once a second per card.
+- The effects play on a fixed layer under every card (z-index -1). On a grid they show in the gaps and never cover the neighbouring cards, and the layer can't widen the page. It is removed when the show ends.
