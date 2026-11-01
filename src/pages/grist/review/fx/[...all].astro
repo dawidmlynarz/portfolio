@@ -161,6 +161,10 @@ const cards = RARITIES.map((tier) => ({ tier, drop: all.find((d) => d.data.rarit
       inline-size: min(100%, 22rem);
     }
 
+    :global(.fxb__slot) {
+      display: contents;
+    }
+
     :global(.fx-page__card) {
       inline-size: 100%;
     }

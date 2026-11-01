@@ -373,7 +373,10 @@ export default function FxBuilder(props: Slots) {
               if (look.trigger === "click") play();
             }}
           >
-            {element}
+            {/* Keyed: Astro's slot wrapper never re-renders, so a new tier needs a new element. */}
+            <div key={`${mode}-${setup.cardStyle}-${tier}`} className="fxb__slot">
+              {element}
+            </div>
           </div>
           <p className="fxb__hint">
             {look.trigger === "hover"
