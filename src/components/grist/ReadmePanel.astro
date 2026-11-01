@@ -35,33 +35,20 @@ const { id } = Astro.props;
       <h3 class="readme__label text-caption">What this is</h3>
       <div class="readme__prose">
         <p>
-          Human-curated loot for your AI tools, battle tested by me. Each drop is a short note on
-          why, plus the thing itself: a rule, a prompt, a checklist, a spec or a skill you can paste
-          into Claude, Cursor or a CLAUDE.md.
+          Stuff I use with AI on real design work: rules, prompts, checklists, specs and skills.
+          Each drop has a short why and the file you paste into Claude, Cursor or a CLAUDE.md.
         </p>
         <p>
-          A season is eight drops, and a new one unlocks every Friday. Locked cards show what’s
-          coming and when.
-        </p>
-        <p>
-          Each drop says where it stands. Tested means I’ve used it on real work. Trying means I’m
-          testing it now, and I’ll update it with what I find.
-        </p>
-        <p>
-          The ideas and the words are mine. Claude helps me format the files. It doesn’t write the
-          ideas or the examples.
-        </p>
-        <p>
-          Every page also comes as plain markdown: add <code>.md</code> to the address.
+          Eight drops a season, one every Friday. Tested means I've used it on real work, Trying
+          means I'm still testing it. The ideas are mine; Claude helps format the files. Add
+          <code>.md</code> to any address for plain markdown.
         </p>
       </div>
     </section>
     <section>
       <h3 class="readme__label text-caption">Rarity</h3>
       <p class="readme__note">
-        Rarity is how deep a drop goes. A short checklist can be Common and a full review checklist
-        Rare. A simple skill starts at Rare, an advanced one is Legendary, and Mythic chains several
-        skills into one workflow.
+        Rarity is how deep a drop goes. Higher tiers take more setup and give you more.
       </p>
       <dl class="readme__tiers">
         {RARITIES.map((rarity) => (

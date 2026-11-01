@@ -33,27 +33,27 @@ export const RARITY_LABELS: Record<Rarity, string> = {
  */
 export const RARITY_INFO = {
   common: {
-    note: "One idea you can use right away: a rule, a short prompt or a three-point checklist.",
+    note: "One idea you can use straight away, like a rule or a short prompt.",
     needs: [],
   },
   uncommon: {
-    note: "A reusable tool with a little setup: a prompt with blanks, a checklist with steps.",
+    note: "Needs a little setup. A prompt with blanks to fill, or a checklist with steps.",
     needs: ["steps"],
   },
   rare: {
-    note: "Goes deeper: a full review checklist, a detailed prompt, a simple skill.",
+    note: "Goes deeper. A full review checklist, a longer prompt or a simple skill.",
     needs: ["steps"],
   },
   epic: {
-    note: "A template or system you fill in, with an example: a spec, a set of prompts, a bigger skill.",
+    note: "A template you fill in, with a worked example. Usually a spec or a bigger skill.",
     needs: ["steps", "example"],
   },
   legendary: {
-    note: "A whole kit, ready to install: an advanced skill or a full spec, with examples and limits.",
+    note: "A whole kit to install, with examples and a note on when not to use it.",
     needs: ["steps", "example", "limits"],
   },
   mythic: {
-    note: "A whole workflow: several skills and a reviewer agent that hand off to each other, with checkpoints where you approve and a sample run.",
+    note: "Several skills and a reviewer agent chained into one workflow. It stops for your approval along the way, and comes with a sample run.",
     needs: ["steps", "example", "limits"],
   },
 } as const satisfies Record<

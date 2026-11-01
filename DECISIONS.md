@@ -756,3 +756,9 @@ What changed versus the embed, and why:
 - The 2px stroke is the 1px border plus a 1px inset ring, so nothing shifts on hover.
 - Dark mode: a 25% shadow vanishes on the dark background, so the wash goes from 8% to 12% and the shadow from 25% to 40%, which reads as a soft glow.
 - `.drop-card--hover` pins the state so the effects builder can show it without the pointer. Locked cards keep their plain hover.
+
+## Grist human-voice pass (1 Nov)
+
+- Dawid asked for everything around the drops to read as written by a person, using the case-study rules. The drops themselves (the loot written for AI tools) stay as they are.
+- Rewritten: every hint (all 64 opened "Use it when …, and you get …"), the "Watch for …" lines, aphorisms and "not X, it's Y" contrasts in the Why, a few colon-list summaries, the rarity notes and the Readme. CLAUDE flags stay where the words still aren't Dawid's.
+- Tagline is now "Loot for AI Grinders". The tinted hero grain was tried and reverted.

@@ -1,7 +1,7 @@
 ---
 title: "Agent Pre-mortem"
 summary: "Find the ways an agent can go wrong before your users do."
-hint: "Use it when a first concept or flow exists, and you get failures ranked by reversibility and likelihood, each with a design response."
+hint: "Run it once a first concept or flow exists. Failures come back ranked by how likely they are and whether they can be undone, each with a design fix."
 season: "s02"
 slot: 6
 drop: "prompt"
@@ -16,6 +16,6 @@ draft: true
 
 {/* CLAUDE: Imported from another AI tool's draft (.claude/skills/grist-entry/drafts.md, season 1 drop 5). The loot is as drafted. The tl;dr, hint and Why aren't Dawid's words yet; status and any source are unconfirmed. */}
 
-We design the happy path. Agents fail by doing the wrong thing confidently, doing too much, or stalling quietly. Listing those early turns them into requirements instead of incidents.
+Designers draw the happy path. Agents go wrong off it: they do the wrong thing with confidence, do too much, or get stuck and say nothing. If you list those early, they become requirements. Later they're incidents.
 
-Watch for generic answers like "the AI might hallucinate". Push back until every failure names one of your actions.
+"The AI might hallucinate" isn't a failure you can design for. Push until each one names a specific action of yours.
