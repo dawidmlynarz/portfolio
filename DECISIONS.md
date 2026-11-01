@@ -773,7 +773,7 @@ What changed versus the embed, and why:
 ## Grist foil on Legendary and Mythic
 
 - The rarity icon's shine now copies the library's Legendary foil (react-cards-opening `rco-shine`): a diagonal band with soft edges and a bright core, `--ease-in-out-sine` over `--duration-shine` (2.1s), crossing in the first 43% and then resting. Before, it was a straight vertical band on the standard ease, which felt mechanical.
-- Hovering a Legendary or Mythic card runs the same foil across the whole card (`.drop-card--foil::before`), in the tier colour. On dark it has a white core. On light it stays in the tier colour, because white wouldn't show on a light card. Reduced motion turns it off.
+- A card-wide foil on hovering Legendary and Mythic cards was tried and removed the same evening: Dawid thought it looked bad. Only the icon shines.
 
 ## "The drop", six explorations (preview only)
 
