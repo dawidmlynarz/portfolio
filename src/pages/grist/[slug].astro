@@ -92,7 +92,7 @@ const jsonLd = {
 <GristLayout title={`${data.title} · Grist`} description={data.summary} type="article" {jsonLd}>
   <link slot="head" rel="alternate" type="text/markdown" href={twinHref(drop)} />
   <div class="hero-backdrop-host">
-    <HeroBackdrop tint={`var(--rarity-${data.rarity}-icon)`} />
+    <HeroBackdrop />
     <Container class="drop">
       <header class="drop__header">
         <nav class="drop__crumbs text-small" aria-label="Breadcrumb">

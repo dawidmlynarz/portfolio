@@ -756,8 +756,3 @@ What changed versus the embed, and why:
 - The 2px stroke is the 1px border plus a 1px inset ring, so nothing shifts on hover.
 - Dark mode: a 25% shadow vanishes on the dark background, so the wash goes from 8% to 12% and the shadow from 25% to 40%, which reads as a soft glow.
 - `.drop-card--hover` pins the state so the effects builder can show it without the pointer. Locked cards keep their plain hover.
-
-## Rarity-tinted hero grain on drop pages
-
-- `HeroBackdrop` takes an optional `tint` (a token). The grain SVG is a data URL and can't take a CSS colour, so with a tint the grain is used as a mask over a solid fill in the tint colour, and a faint wash (10% light, 14% dark) sits under it. Both fade out like the plain grain.
-- Drop pages pass their rarity colour. Every other page keeps the neutral grain.
