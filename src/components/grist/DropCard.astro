@@ -35,9 +35,6 @@ const shown = drop && derive(drop);
   <article
     class:list={["drop-card", "drop-card--drop", className]}
     style={`--tier: var(--rarity-${shown.rarity}-icon)`}
-    data-drop-fx={
-      shown.rarity === "legendary" || shown.rarity === "mythic" ? shown.rarity : undefined
-    }
   >
     <div class="drop-card__inner">
       <div class="drop-card__main">
@@ -97,25 +94,6 @@ const shown = drop && derive(drop);
     </article>
   )
 )}
-
-<script>
-  // Legendary and Mythic cards play Dawid's hover effects (src/scripts/drop-fx.ts). The effects
-  // load the first time one is pointed at. Not under reduced motion, and not on touch screens.
-  const motionOk = matchMedia("(prefers-reduced-motion: no-preference)");
-  const canHover = matchMedia("(hover: hover) and (pointer: fine)");
-  const last = new WeakMap<HTMLElement, number>();
-  document.addEventListener("pointerover", (event) => {
-    if (!motionOk.matches || !canHover.matches) return;
-    const card = (event.target as Element | null)?.closest?.<HTMLElement>("[data-drop-fx]");
-    if (!card || card.contains(event.relatedTarget as Node | null)) return;
-    // Once per entry, and not again within a second.
-    const now = performance.now();
-    if (now - (last.get(card) ?? -Infinity) < 1000) return;
-    last.set(card, now);
-    const tier = card.dataset.dropFx as "legendary" | "mythic";
-    import("@/scripts/drop-fx").then(({ playDropFx }) => playDropFx(card, tier));
-  });
-</script>
 
 <style>
   @layer components {
