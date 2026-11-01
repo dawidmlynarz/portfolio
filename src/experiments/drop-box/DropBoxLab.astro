@@ -1,0 +1,870 @@
+---
+/**
+ * Preview only: six explorations for "The drop", the box that wraps the loot on a drop page
+ * (LootBox). Each one is built for all six rarities from a real drop of that tier, and a picker
+ * shows one tier at a time (Legendary without JS). The current box is shown first for reference.
+ * Everything takes the tier from --tier, like the drop cards, so it works in both themes.
+ */
+import { getCollection } from "astro:content";
+import CopyButton from "@/components/grist/CopyButton.astro";
+import DownloadButton from "@/components/grist/DownloadButton.astro";
+import HumanStamp from "@/components/grist/HumanStamp.astro";
+import RarityLabel from "@/components/grist/RarityLabel.astro";
+import TileIcon from "@/components/grist/TileIcon.astro";
+import ThemeToggle from "@/components/blocks/ThemeToggle.astro";
+import LootBox from "@/components/grist/LootBox.astro";
+import { DROP_TYPES, RARITIES, RARITY_LABELS, type Rarity } from "@/lib/grist";
+import { formatDate, lootFilesOf, publishedOf, twinHref, zipHref } from "@/lib/drops";
+
+const START: Rarity = "legendary";
+const all = await getCollection("grist");
+const byTier = Object.fromEntries(
+  RARITIES.map((tier) => [tier, all.find((drop) => drop.data.rarity === tier)!]),
+) as Record<Rarity, (typeof all)[number]>;
+
+const VARIANTS = [
+  {
+    id: "frame",
+    name: "Tier Frame",
+    note: "Today's box, taken further. The ink border and hard shadow turn the tier colour, and the tile icon sits big in the corner like a gem set in the frame.",
+  },
+  {
+    id: "foil",
+    name: "Foil Card",
+    note: "The drop as the card you just opened. Rounded like the drop cards, the Figma hover wash, and the foil running across it. Legendary and Mythic shine on their own; the rest shine when you point at them.",
+  },
+  {
+    id: "crate",
+    name: "Loot Crate",
+    note: "A lid and a body. The lid is a strip of tier-coloured grain (the same grain as the page header) with the icon and the title; the loot sits underneath, like a crate that's been opened.",
+  },
+  {
+    id: "hud",
+    name: "Game HUD",
+    note: "No full border. Tier corner brackets frame the loot like an item in a game menu, with a mono readout of slot, tier and type along the top.",
+  },
+  {
+    id: "ticket",
+    name: "Drop Ticket",
+    note: "A stub and a ticket. The stub holds the icon, tier, type and drop date; a perforated line with notches tears it from the loot. It stacks on phones.",
+  },
+  {
+    id: "aura",
+    name: "Aura Glass",
+    note: "A quiet glass panel lifted off the page by a soft tier glow behind it. The calmest of the six; Legendary and Mythic glow brighter.",
+  },
+] as const;
+
+const shiny = (tier: Rarity) => tier === "legendary" || tier === "mythic";
+---
+
+<div class="dbx-lab" data-dbx-lab>
+  <div class="dbx-lab__bar">
+    <div class="dbx-lab__tiers" role="group" aria-label="Rarity">
+      {RARITIES.map((tier) => (
+        <button
+          class="dbx-lab__chip"
+          type="button"
+          data-tier={tier}
+          aria-pressed={tier === START ? "true" : "false"}
+        >
+          <TileIcon tier={tier} />
+          {RARITY_LABELS[tier]}
+        </button>
+      ))}
+    </div>
+    <div class="dbx-lab__theme">
+      <span>Light / dark</span>
+      <ThemeToggle />
+    </div>
+  </div>
+
+  <section class="dbx-lab__item" aria-labelledby="dbx-current">
+    <header class="dbx-lab__head">
+      <h2 id="dbx-current" class="dbx-lab__name">
+        <span class="dbx-lab__num">0</span> Today
+      </h2>
+      <p class="dbx-lab__note">The box on the drop pages now, for comparison.</p>
+    </header>
+    {RARITIES.map((tier) => (
+      <div data-show={tier} hidden={tier !== START}>
+        <LootBox drop={byTier[tier]} id={`dbx-now-${tier}`} />
+      </div>
+    ))}
+  </section>
+
+  {VARIANTS.map((variant, index) => (
+    <section class="dbx-lab__item" aria-labelledby={`dbx-${variant.id}`}>
+      <header class="dbx-lab__head">
+        <h2 id={`dbx-${variant.id}`} class="dbx-lab__name">
+          <span class="dbx-lab__num">{index + 1}</span> {variant.name}
+        </h2>
+        <p class="dbx-lab__note">{variant.note}</p>
+      </header>
+      {RARITIES.map((tier) => {
+        const drop = byTier[tier];
+        const files = lootFilesOf(drop).slice(0, 2);
+        const workflow = drop.data.drop === "workflow";
+        const type = DROP_TYPES[drop.data.drop];
+        const id = `dbx-${variant.id}-${tier}`;
+        return (
+          <div data-show={tier} hidden={tier !== START}>
+            <section
+              class:list={["dbx", `dbx--${variant.id}`, { "dbx--shiny": shiny(tier) }]}
+              style={`--tier: var(--rarity-${tier}-icon); --tier-text: var(--rarity-${tier}-tile-text)`}
+              aria-labelledby={id}
+            >
+              {variant.id === "foil" && <span class="dbx__foil" aria-hidden="true" />}
+              {variant.id === "aura" && <span class="dbx__aura" aria-hidden="true" />}
+              {variant.id === "hud" &&
+                ["tl", "tr", "bl", "br"].map((corner) => (
+                  <span class={`dbx__corner dbx__corner--${corner}`} aria-hidden="true" />
+                ))}
+              {(variant.id === "frame" || variant.id === "foil") && (
+                <HumanStamp size="sm" class="dbx__stamp" />
+              )}
+
+              {variant.id === "ticket" && (
+                <aside class="dbx__stub">
+                  <TileIcon tier={tier} size="lg" />
+                  <p class="dbx__stub-tier">{RARITY_LABELS[tier]}</p>
+                  <p class="dbx__stub-meta">
+                    {type.label}
+                    <br />
+                    {formatDate(publishedOf(drop))}
+                  </p>
+                  <HumanStamp size="sm" class="dbx__stub-stamp" />
+                </aside>
+              )}
+
+              <div class="dbx__body">
+                {variant.id === "hud" && (
+                  <p class="dbx__readout" aria-hidden="true">
+                    <span>Loot</span>
+                    <span>{RARITY_LABELS[tier]}</span>
+                    <span>{type.label}</span>
+                    <span>
+                      S{drop.data.season.slice(1)}·{String(drop.data.slot).padStart(2, "0")}
+                    </span>
+                  </p>
+                )}
+
+                {variant.id === "crate" ? (
+                  <div class="dbx__lid">
+                    <TileIcon tier={tier} size="lg" />
+                    <div class="dbx__lid-text">
+                      <h3 class="dbx__title" id={id}>
+                        The drop
+                      </h3>
+                      <p class="dbx__type">
+                        <RarityLabel rarity={tier} type={drop.data.drop} />
+                        <span class="dbx__note">{type.note}</span>
+                      </p>
+                    </div>
+                  </div>
+                ) : (
+                  <div class="dbx__head">
+                    {variant.id === "frame" && (
+                      <span class="dbx__gem">
+                        <TileIcon tier={tier} size="lg" />
+                      </span>
+                    )}
+                    <h3 class="dbx__title" id={id}>
+                      The drop
+                    </h3>
+                    {variant.id !== "ticket" && (
+                      <p class="dbx__type">
+                        <RarityLabel rarity={tier} type={drop.data.drop} size="md" />
+                        <span class="dbx__note">{type.note}</span>
+                      </p>
+                    )}
+                    {variant.id === "ticket" && <p class="dbx__note">{type.note}</p>}
+                  </div>
+                )}
+
+                <div class="dbx__files">
+                  {files.map(({ path, text }) => (
+                    <div class="dbx__file">
+                      {workflow && <p class="dbx__path">{path}</p>}
+                      <div class="dbx__loot">
+                        <pre class="dbx__text"><code>{text}</code></pre>
+                        <span class="dbx__copy">
+                          <CopyButton
+                            text={text}
+                            icon="copy"
+                            variant="ghost"
+                            label="Copy just the drop"
+                            done="Drop copied"
+                          />
+                        </span>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+
+                <div class="dbx__actions">
+                  <CopyButton from={twinHref(drop)} icon="sparkles" done="Copied as markdown">
+                    Copy for AI
+                  </CopyButton>
+                  {workflow ? (
+                    <DownloadButton href={zipHref(drop)} name={`${drop.id}.zip`} />
+                  ) : (
+                    <DownloadButton href={twinHref(drop)} name={`${drop.id}.md`} />
+                  )}
+                </div>
+              </div>
+            </section>
+          </div>
+        );
+      })}
+    </section>
+  ))}
+</div>
+
+<script>
+  const lab = document.querySelector<HTMLElement>("[data-dbx-lab]");
+  if (lab) {
+    const chips = lab.querySelectorAll<HTMLButtonElement>("[data-tier]");
+    const show = (tier: string) => {
+      chips.forEach((chip) =>
+        chip.setAttribute("aria-pressed", String(chip.dataset.tier === tier)),
+      );
+      lab.querySelectorAll<HTMLElement>("[data-show]").forEach((el) => {
+        el.hidden = el.dataset.show !== tier;
+      });
+      try {
+        localStorage.setItem("dbx-tier", tier);
+      } catch {}
+    };
+    chips.forEach((chip) => chip.addEventListener("click", () => show(chip.dataset.tier!)));
+    try {
+      const saved = localStorage.getItem("dbx-tier");
+      if (saved && lab.querySelector(`[data-tier="${saved}"]`)) show(saved);
+    } catch {}
+  }
+</script>
+
+<style>
+  @layer components {
+    /* ---- The lab around the explorations ---- */
+    .dbx-lab {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr);
+      gap: var(--space-16);
+    }
+
+    .dbx-lab__bar {
+      position: sticky;
+      inset-block-start: 0;
+      z-index: 5;
+      display: flex;
+      flex-wrap: wrap;
+      gap: var(--space-3) var(--space-8);
+      align-items: center;
+      justify-content: space-between;
+      padding-block: var(--space-3);
+      border-block-end: var(--border-width) solid var(--color-border-subtle);
+      background-color: var(--color-bg);
+    }
+
+    .dbx-lab__tiers {
+      display: flex;
+      flex-wrap: wrap;
+      gap: var(--space-2);
+    }
+
+    .dbx-lab__chip {
+      display: inline-flex;
+      gap: var(--space-2);
+      align-items: center;
+      padding: var(--space-1) var(--space-3);
+      border: var(--border-width) solid var(--color-border-muted);
+      border-radius: var(--radius-pill);
+      font: inherit;
+      font-size: var(--text-small);
+      line-height: var(--leading-small);
+      color: var(--color-text);
+      background: var(--color-bg);
+      cursor: pointer;
+    }
+
+    .dbx-lab__chip[aria-pressed="true"] {
+      border-color: var(--color-text);
+      box-shadow: inset 0 0 0 var(--border-width) var(--color-text);
+    }
+
+    .dbx-lab__chip:focus-visible {
+      outline: calc(var(--border-width) * 2) solid var(--color-focus);
+      outline-offset: var(--space-1);
+    }
+
+    .dbx-lab__theme {
+      display: flex;
+      gap: var(--space-2);
+      align-items: center;
+      font-size: var(--text-small);
+      color: var(--color-text-muted);
+    }
+
+    .dbx-lab__item {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr);
+      gap: var(--space-8);
+    }
+
+    .dbx-lab__head {
+      display: grid;
+      gap: var(--space-2);
+      max-inline-size: var(--measure);
+    }
+
+    .dbx-lab__name {
+      display: flex;
+      gap: var(--space-3);
+      align-items: baseline;
+      font-size: var(--text-h4);
+      line-height: var(--leading-h4);
+    }
+
+    .dbx-lab__num {
+      font-family: var(--font-mono);
+      font-size: var(--text-small);
+      color: var(--color-text-muted);
+    }
+
+    .dbx-lab__note {
+      font-size: var(--text-small);
+      line-height: var(--leading-small);
+      color: var(--color-text-muted);
+    }
+
+    /* ---- Shared parts of every exploration ---- */
+    .dbx {
+      position: relative;
+      display: grid;
+      grid-template-columns: minmax(0, 1fr);
+      color: var(--color-text);
+    }
+
+    .dbx__body {
+      position: relative;
+      display: grid;
+      gap: var(--space-6);
+      min-inline-size: 0;
+      padding: var(--space-6);
+    }
+
+    .dbx__head {
+      display: grid;
+      gap: var(--space-2);
+    }
+
+    .dbx__title {
+      font-size: var(--text-h3);
+      line-height: var(--leading-h3);
+      letter-spacing: var(--tracking-h3);
+    }
+
+    .dbx__type {
+      display: flex;
+      flex-wrap: wrap;
+      gap: var(--space-1) var(--space-3);
+      align-items: center;
+    }
+
+    .dbx__note {
+      font-size: var(--text-small);
+      line-height: var(--leading-small);
+      color: var(--color-text-muted);
+    }
+
+    .dbx__files {
+      display: grid;
+      gap: var(--space-4);
+    }
+
+    .dbx__file {
+      display: grid;
+      gap: var(--space-2);
+    }
+
+    .dbx__path {
+      font-family: var(--font-mono);
+      font-size: var(--text-small);
+      color: var(--color-text-muted);
+    }
+
+    .dbx__loot {
+      position: relative;
+    }
+
+    .dbx__text {
+      max-block-size: calc(var(--space-24) * 3);
+      overflow: auto;
+      margin: 0;
+      padding: var(--space-4);
+      padding-inline-end: calc(var(--space-10) + var(--space-4));
+      border-radius: var(--radius-sm);
+      font-family: var(--font-mono);
+      font-size: var(--text-small);
+      line-height: var(--leading-small);
+      white-space: pre-wrap;
+      overflow-wrap: anywhere;
+      background-color: var(--color-bg-subtle);
+    }
+
+    .dbx__copy {
+      position: absolute;
+      inset-block-start: var(--space-2);
+      inset-inline-end: var(--space-2);
+    }
+
+    .dbx__actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: var(--space-3);
+    }
+
+    .dbx__stamp {
+      position: absolute;
+      inset-block-start: 0;
+      inset-inline-end: var(--space-6);
+      z-index: 2;
+      translate: 0 -50%;
+    }
+
+    /* ---- 1 Tier Frame ---- */
+    .dbx--frame {
+      border: calc(var(--border-width) * 2) solid var(--tier);
+      background-color: var(--color-bg);
+      box-shadow: var(--space-2) var(--space-2) 0 var(--tier);
+    }
+
+    .dbx--frame .dbx__head {
+      grid-template-columns: auto minmax(0, 1fr);
+      column-gap: var(--space-4);
+      padding-inline-end: calc(var(--space-24) + var(--space-8));
+    }
+
+    .dbx--frame .dbx__gem {
+      display: grid;
+      grid-row: span 2;
+      place-items: center;
+      padding: var(--space-3);
+      border: calc(var(--border-width) * 2) solid var(--tier);
+      background-color: color-mix(in oklch, var(--tier) 10%, var(--color-bg));
+      box-shadow: var(--space-1) var(--space-1) 0 var(--tier);
+    }
+
+    .dbx--frame .dbx__gem :global(.rarity-icon) {
+      inline-size: var(--space-10);
+      block-size: var(--space-10);
+    }
+
+    .dbx--frame .dbx__text {
+      border: var(--border-width) solid color-mix(in oklch, var(--tier) 35%, transparent);
+      border-radius: 0;
+      background-color: color-mix(in oklch, var(--tier) 5%, var(--color-bg-subtle));
+    }
+
+    /* ---- 2 Foil Card ---- */
+    .dbx--foil {
+      overflow: clip;
+      overflow-clip-margin: var(--space-12);
+      border: var(--border-width) solid var(--tier);
+      border-radius: var(--radius-lg);
+      background-color: var(--color-bg);
+      background-image: linear-gradient(
+        70deg,
+        transparent,
+        light-dark(
+          color-mix(in oklch, var(--tier) 10%, transparent),
+          color-mix(in oklch, var(--tier) 16%, transparent)
+        )
+      );
+      box-shadow:
+        inset 0 0 0 var(--border-width) var(--tier),
+        0 var(--space-1) var(--space-4)
+          light-dark(
+            color-mix(in oklch, var(--tier) 25%, transparent),
+            color-mix(in oklch, var(--tier) 40%, transparent)
+          );
+    }
+
+    .dbx--foil .dbx__text {
+      border: var(--border-width) solid var(--color-border-subtle);
+      border-radius: var(--radius-md);
+      background-color: color-mix(in oklch, var(--color-bg) 70%, transparent);
+    }
+
+    .dbx__foil {
+      position: absolute;
+      inset: 0;
+      z-index: 1;
+      border-radius: inherit;
+      background: linear-gradient(
+          115deg,
+          transparent 42%,
+          color-mix(in oklch, var(--tier) 20%, transparent) 47.5%,
+          light-dark(
+              color-mix(in oklch, var(--tier) 30%, transparent),
+              color-mix(in oklch, var(--color-text) 40%, transparent)
+            )
+            50%,
+          color-mix(in oklch, var(--tier) 18%, transparent) 52.5%,
+          transparent 58%
+        )
+        no-repeat 115% 0 / 300% 100%;
+      opacity: 0;
+      pointer-events: none;
+    }
+
+    @media (prefers-reduced-motion: no-preference) {
+      .dbx--foil.dbx--shiny .dbx__foil,
+      .dbx--foil:hover .dbx__foil {
+        opacity: 1;
+        animation: dbx-foil calc(var(--duration-shine) * 1.6) var(--ease-in-out-sine) infinite;
+      }
+    }
+
+    @keyframes dbx-foil {
+      0% {
+        background-position: 115% 0;
+      }
+
+      43%,
+      100% {
+        background-position: -15% 0;
+      }
+    }
+
+    /* ---- 3 Loot Crate ---- */
+    .dbx--crate {
+      border: calc(var(--border-width) * 2) solid var(--color-text);
+      border-radius: var(--radius-md);
+      overflow: clip;
+      background-color: var(--color-bg);
+    }
+
+    .dbx--crate .dbx__body {
+      padding: 0;
+    }
+
+    .dbx--crate .dbx__lid {
+      position: relative;
+      display: flex;
+      gap: var(--space-4);
+      align-items: center;
+      padding: var(--space-6);
+      border-block-end: calc(var(--border-width) * 2) solid var(--color-text);
+      isolation: isolate;
+    }
+
+    /* The page header's grain, recoloured: the grain masks a tier fill, over a tier wash. */
+    .dbx--crate .dbx__lid::before,
+    .dbx--crate .dbx__lid::after {
+      content: "";
+      position: absolute;
+      inset: 0;
+      z-index: -1;
+    }
+
+    .dbx--crate .dbx__lid::before {
+      background: linear-gradient(
+        100deg,
+        color-mix(in oklch, var(--tier) 22%, var(--color-bg)),
+        color-mix(in oklch, var(--tier) 8%, var(--color-bg))
+      );
+    }
+
+    .dbx--crate .dbx__lid::after {
+      background-color: var(--tier);
+      mask-image: var(--texture-grain);
+      opacity: 0.9;
+    }
+
+    .dbx--crate .dbx__lid > :global(.rarity-icon) {
+      inline-size: var(--space-12);
+      block-size: var(--space-12);
+    }
+
+    .dbx--crate .dbx__lid-text {
+      display: grid;
+      gap: var(--space-1);
+    }
+
+    .dbx--crate .dbx__files,
+    .dbx--crate .dbx__actions {
+      padding-inline: var(--space-6);
+    }
+
+    .dbx--crate .dbx__actions {
+      padding-block-end: var(--space-6);
+    }
+
+    .dbx--crate .dbx__note {
+      color: var(--color-text);
+    }
+
+    /* ---- 4 Game HUD ---- */
+    .dbx--hud {
+      background:
+        repeating-linear-gradient(
+          to bottom,
+          transparent 0 var(--space-1),
+          color-mix(in oklch, var(--tier) 4%, transparent) var(--space-1) calc(var(--space-1) * 2)
+        ),
+        color-mix(in oklch, var(--tier) 3%, var(--color-bg));
+    }
+
+    .dbx__corner {
+      position: absolute;
+      inline-size: var(--space-8);
+      block-size: var(--space-8);
+      border: 0 solid var(--tier);
+      pointer-events: none;
+    }
+
+    .dbx__corner--tl {
+      inset-block-start: 0;
+      inset-inline-start: 0;
+      border-block-start-width: calc(var(--border-width) * 3);
+      border-inline-start-width: calc(var(--border-width) * 3);
+    }
+
+    .dbx__corner--tr {
+      inset-block-start: 0;
+      inset-inline-end: 0;
+      border-block-start-width: calc(var(--border-width) * 3);
+      border-inline-end-width: calc(var(--border-width) * 3);
+    }
+
+    .dbx__corner--bl {
+      inset-block-end: 0;
+      inset-inline-start: 0;
+      border-block-end-width: calc(var(--border-width) * 3);
+      border-inline-start-width: calc(var(--border-width) * 3);
+    }
+
+    .dbx__corner--br {
+      inset-block-end: 0;
+      inset-inline-end: 0;
+      border-block-end-width: calc(var(--border-width) * 3);
+      border-inline-end-width: calc(var(--border-width) * 3);
+    }
+
+    .dbx--shiny .dbx__corner {
+      filter: drop-shadow(0 0 var(--space-1) var(--tier));
+    }
+
+    .dbx__readout {
+      display: flex;
+      flex-wrap: wrap;
+      gap: var(--space-1) var(--space-4);
+      padding-block-end: var(--space-3);
+      border-block-end: var(--border-width) dashed color-mix(in oklch, var(--tier) 50%, transparent);
+      font-family: var(--font-mono);
+      font-size: var(--text-caption);
+      line-height: var(--leading-small);
+      letter-spacing: var(--tracking-caption);
+      text-transform: uppercase;
+      color: var(--tier-text);
+    }
+
+    .dbx__readout span + span::before {
+      content: "/";
+      margin-inline-end: var(--space-4);
+      color: var(--color-text-muted);
+    }
+
+    .dbx--hud .dbx__text {
+      border-inline-start: calc(var(--border-width) * 3) solid var(--tier);
+      border-radius: 0;
+    }
+
+    /* ---- 5 Drop Ticket ---- */
+    .dbx--ticket {
+      --notch: var(--space-3);
+
+      grid-template-rows: auto minmax(0, 1fr);
+      border: calc(var(--border-width) * 2) solid var(--color-text);
+      border-radius: var(--radius-md);
+      background-color: var(--color-bg);
+    }
+
+    .dbx__stub {
+      position: relative;
+      display: grid;
+      gap: var(--space-2);
+      justify-items: start;
+      align-content: start;
+      padding: var(--space-6);
+      border-block-end: calc(var(--border-width) * 2) dashed var(--color-text);
+      background: linear-gradient(
+        160deg,
+        color-mix(in oklch, var(--tier) 20%, var(--color-bg)),
+        color-mix(in oklch, var(--tier) 6%, var(--color-bg))
+      );
+      border-start-start-radius: inherit;
+      border-start-end-radius: inherit;
+    }
+
+    /* Notches where the perforation meets the edge, cut in the page's own colour. */
+    .dbx__stub::before,
+    .dbx__stub::after {
+      content: "";
+      position: absolute;
+      inset-block-end: calc(var(--notch) * -1);
+      inline-size: calc(var(--notch) * 2);
+      block-size: calc(var(--notch) * 2);
+      border: calc(var(--border-width) * 2) solid var(--color-text);
+      border-radius: 50%;
+      background-color: var(--color-bg);
+      translate: 0 calc(var(--border-width) * -1);
+    }
+
+    .dbx__stub::before {
+      inset-inline-start: calc(var(--notch) * -1 - var(--border-width) * 2);
+      clip-path: inset(0 0 0 45%);
+    }
+
+    .dbx__stub::after {
+      inset-inline-end: calc(var(--notch) * -1 - var(--border-width) * 2);
+      clip-path: inset(0 45% 0 0);
+    }
+
+    .dbx__stub > :global(.rarity-icon) {
+      inline-size: var(--space-12);
+      block-size: var(--space-12);
+    }
+
+    .dbx__stub-tier {
+      font-size: var(--text-h4);
+      line-height: var(--leading-h4);
+      font-weight: var(--weight-semibold);
+      color: var(--tier-text);
+    }
+
+    .dbx__stub-meta {
+      font-family: var(--font-mono);
+      font-size: var(--text-small);
+      line-height: var(--leading-small);
+      text-transform: uppercase;
+      color: var(--color-text-muted);
+    }
+
+    .dbx__stub-stamp {
+      position: absolute;
+      inset-block-start: var(--space-6);
+      inset-inline-end: var(--space-6);
+    }
+
+    @media (width >= 48em) {
+      .dbx--ticket {
+        grid-template-columns: calc(var(--space-24) * 2) minmax(0, 1fr);
+        grid-template-rows: none;
+      }
+
+      .dbx__stub {
+        border-block-end: 0;
+        border-inline-end: calc(var(--border-width) * 2) dashed var(--color-text);
+        border-start-end-radius: 0;
+        border-end-start-radius: inherit;
+      }
+
+      .dbx__stub::before,
+      .dbx__stub::after {
+        inset-inline: auto calc(var(--notch) * -1);
+        translate: calc(var(--border-width) * -1) 0;
+      }
+
+      .dbx__stub::before {
+        inset-block: calc(var(--notch) * -1 - var(--border-width) * 2) auto;
+        clip-path: inset(45% 0 0);
+      }
+
+      .dbx__stub::after {
+        inset-block: auto calc(var(--notch) * -1 - var(--border-width) * 2);
+        clip-path: inset(0 0 45%);
+      }
+
+      .dbx__stub-stamp {
+        position: static;
+        margin-block-start: var(--space-4);
+      }
+    }
+
+    /* ---- 6 Aura Glass ---- */
+    .dbx--aura {
+      isolation: isolate;
+      border: var(--border-width) solid
+        light-dark(
+          color-mix(in oklch, var(--tier) 30%, var(--color-border-subtle)),
+          color-mix(in oklch, var(--tier) 40%, var(--color-border-subtle))
+        );
+      border-radius: var(--radius-lg);
+      background-color: color-mix(in oklch, var(--color-bg) 82%, transparent);
+      backdrop-filter: blur(var(--blur-menu));
+    }
+
+    .dbx__aura {
+      position: absolute;
+      inset: var(--space-8) 10%;
+      z-index: -1;
+      border-radius: var(--radius-pill);
+      background: conic-gradient(
+        from 200deg,
+        var(--tier),
+        color-mix(in oklch, var(--tier) 40%, var(--color-bg)),
+        var(--tier)
+      );
+      opacity: 0.25;
+      filter: blur(var(--space-16));
+    }
+
+    .dbx--aura.dbx--shiny .dbx__aura {
+      opacity: 0.45;
+    }
+
+    /* A glow reads weaker on a dark page, so it comes up there. */
+    :global(:root[data-theme="dark"]) .dbx__aura {
+      opacity: 0.4;
+    }
+
+    :global(:root[data-theme="dark"]) .dbx--shiny .dbx__aura {
+      opacity: 0.65;
+    }
+
+    .dbx--aura .dbx__text {
+      border-radius: var(--radius-md);
+      background-color: color-mix(in oklch, var(--color-bg-subtle) 80%, transparent);
+    }
+
+    @media (width >= 48em) {
+      .dbx__body {
+        padding: var(--space-8);
+      }
+
+      .dbx__stamp {
+        inset-inline-end: var(--space-8);
+      }
+
+      .dbx--crate .dbx__body {
+        padding: 0;
+      }
+
+      .dbx--crate .dbx__lid {
+        padding: var(--space-6) var(--space-8);
+      }
+
+      .dbx--crate .dbx__files,
+      .dbx--crate .dbx__actions {
+        padding-inline: var(--space-8);
+      }
+
+      .dbx--crate .dbx__actions {
+        padding-block-end: var(--space-8);
+      }
+    }
+  }
+</style>
