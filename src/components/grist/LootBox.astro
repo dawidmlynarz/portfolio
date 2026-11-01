@@ -1,7 +1,9 @@
 ---
 /**
- * The drop itself on an entry page, in the README's box (2px ink border, hard shadow) with the
- * small "human curated" stamp on its corner. The loot text sits as written in drop.md, with a copy
+ * The drop itself on an entry page, drawn as a drop card (Dawid's pick from the six explorations,
+ * "Foil Card", without the shine): the card's own 1px outline and large radius, the tier wash from
+ * the card hover rising to the bottom right, and a soft tier shadow (a glow on dark). The small
+ * "human-curated" stamp sits on its corner. The loot text sits as written in drop.md, with a copy
  * button on its corner for just that text. Below it, the actions for the whole entry: Copy for AI
  * (the markdown twin: brief, why, how to use it and the drop) and Download (the same, as a file).
  * A workflow shows each of its files under its path, each with its own copy button, and Download
@@ -27,7 +29,7 @@ const workflow = drop.data.drop === "workflow";
 const type = DROP_TYPES[drop.data.drop];
 ---
 
-<section class="loot-box" aria-labelledby={id}>
+<section class="loot-box" aria-labelledby={id} style={`--tier: var(--rarity-${rarity}-icon)`}>
   <HumanStamp size="sm" class="loot-box__stamp" />
   <div class="loot-box__head">
     <h2 class="loot-box__title" id={id}>
@@ -75,9 +77,22 @@ const type = DROP_TYPES[drop.data.drop];
       grid-template-columns: minmax(0, 1fr);
       gap: var(--space-6);
       padding: var(--space-6);
-      border: calc(var(--border-width) * 2) solid var(--color-text);
+      border: var(--border-width) solid var(--color-border-subtle);
+      border-radius: var(--radius-lg);
       background-color: var(--color-bg);
-      box-shadow: var(--space-2) var(--space-2) 0 var(--color-text);
+      background-image: linear-gradient(
+        70deg,
+        transparent,
+        light-dark(
+          color-mix(in oklch, var(--tier) 10%, transparent),
+          color-mix(in oklch, var(--tier) 16%, transparent)
+        )
+      );
+      box-shadow: 0 var(--space-1) var(--space-4)
+        light-dark(
+          color-mix(in oklch, var(--tier) 25%, transparent),
+          color-mix(in oklch, var(--tier) 40%, transparent)
+        );
     }
 
     /* Half over the top edge, inside the box's right edge so it never pushes the page wider. */
@@ -142,13 +157,14 @@ const type = DROP_TYPES[drop.data.drop];
       margin: 0;
       padding: var(--space-4);
       padding-inline-end: calc(var(--space-10) + var(--space-4));
-      border-radius: var(--radius-sm);
+      border: var(--border-width) solid var(--color-border-subtle);
+      border-radius: var(--radius-md);
       font-family: var(--font-mono);
       font-size: var(--text-small);
       line-height: var(--leading-small);
       white-space: pre-wrap;
       overflow-wrap: anywhere;
-      background-color: var(--color-bg-subtle);
+      background-color: color-mix(in oklch, var(--color-bg) 70%, transparent);
     }
 
     .loot-box__actions {

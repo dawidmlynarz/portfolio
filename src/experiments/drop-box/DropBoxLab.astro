@@ -84,7 +84,10 @@ const shiny = (tier: Rarity) => tier === "legendary" || tier === "mythic";
       <h2 id="dbx-current" class="dbx-lab__name">
         <span class="dbx-lab__num">0</span> Today
       </h2>
-      <p class="dbx-lab__note">The box on the drop pages now, for comparison.</p>
+      <p class="dbx-lab__note">
+        The box on the drop pages now: Foil Card, locked, without the shine and with the card’s own
+        outline.
+      </p>
     </header>
     {RARITIES.map((tier) => (
       <div data-show={tier} hidden={tier !== START}>

@@ -779,3 +779,4 @@ What changed versus the embed, and why:
 
 - /grist/review/drop shows six directions for the loot box (src/experiments/drop-box), each built from a real drop of the picked tier, with today's LootBox first: Tier Frame, Foil Card, Loot Crate, Game HUD, Drop Ticket, Aura Glass. Dawid picks one, and it replaces LootBox.
 - Found while building it: a long file name in the Download button (and LootBox's auto-sized grid) pushed drop pages wider than a 375px screen. LootBox now uses `minmax(0, 1fr)`, and DownloadButton cuts the name with an ellipsis.
+- Locked (1 Nov): Foil Card. LootBox now looks like a drop card. It has the card's default 1px outline and large radius, the 70° tier wash and a soft tier shadow, which reads as a glow on dark. There's no foil shine. The loot panel is a frosted inset with its own hairline.
