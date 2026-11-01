@@ -25,14 +25,15 @@ const seasons = await getSeasons();
   <section class="front-hero hero-backdrop-host" aria-labelledby="grist-title">
     <HeroBackdrop />
     <Container class="front-hero__head">
-      <div class="front-hero__text">
-        <p class="text-caption front__muted">Loot for AI grinders. Curated by Dawid Młynarz.</p>
-        <h1 id="grist-title" class="front-hero__title">
+      <p class="text-caption front__muted">Loot for AI grinders. Curated by Dawid Młynarz.</p>
+      <div class="front-hero__title" data-hero-wrap>
+        <span class="front-hero__spacer" aria-hidden="true"></span>
+        <HumanStamp class="front-hero__stamp" words="Human-curated loot for AI grinders" />
+        <h1 id="grist-title">
           Your AI is only as good as what you feed it.{" "}
           <span class="front__muted">Here’s human-curated loot, a new drop every Friday.</span>
         </h1>
       </div>
-      <HumanStamp class="front-hero__stamp" words="Human-curated loot for AI grinders" />
     </Container>
   </section>
 
@@ -67,6 +68,45 @@ const seasons = await getSeasons();
   </Container>
 </GristLayout>
 
+<script>
+  // Size the hero's spacer so the badge's bottom lines up with the headline's last line. Changing
+  // the spacer can rewrap the words, so it settles over a few passes.
+  const wrap = document.querySelector<HTMLElement>("[data-hero-wrap]");
+  const spacer = wrap?.querySelector<HTMLElement>(".front-hero__spacer");
+  const stamp = wrap?.querySelector<HTMLElement>(".front-hero__stamp");
+  const title = wrap?.querySelector<HTMLElement>("h1");
+  if (wrap && spacer && stamp && title) {
+    let width = 0;
+    const fit = (force = false) => {
+      // Only a new width (or new fonts) rewraps the words; the spacer's own changes must not
+      // start another round, or two wraps can take turns forever.
+      if (!force && wrap.offsetWidth === width) return;
+      width = wrap.offsetWidth;
+      if (getComputedStyle(spacer).display === "none") return;
+      // Each pass moves the badge down to the last line. Moving it can rewrap the words so the
+      // last line moves too, and at some widths no spacer fits. Then the badge shrinks a few pixels
+      // and tries again; failing that, it keeps the closest fit that doesn't hang below the text.
+      stamp.style.removeProperty("--stamp-size");
+      const natural = stamp.offsetWidth;
+      let best = { size: 0, shrink: 0, off: Infinity };
+      for (const shrink of [0, 8, 16, 24]) {
+        if (shrink) stamp.style.setProperty("--stamp-size", `${natural - shrink}px`);
+        for (let pass = 0; pass < 6; pass += 1) {
+          const off = title.offsetHeight - stamp.offsetHeight - spacer.offsetHeight;
+          if (off >= 0 && off < best.off) best = { size: spacer.offsetHeight, shrink, off };
+          if (Math.abs(off) < 1) return;
+          spacer.style.blockSize = `${Math.max(0, spacer.offsetHeight + off)}px`;
+        }
+      }
+      if (best.shrink) stamp.style.setProperty("--stamp-size", `${natural - best.shrink}px`);
+      else stamp.style.removeProperty("--stamp-size");
+      spacer.style.blockSize = `${best.size}px`;
+    };
+    new ResizeObserver(() => fit()).observe(wrap);
+    document.fonts.ready.then(() => fit(true));
+  }
+</script>
+
 <style>
   @layer components {
     .front-hero {
@@ -74,34 +114,58 @@ const seasons = await getSeasons();
     }
 
     /*
-     * Figma "hero" (157:6128): the caption and headline, with the badge in a column of its own at
-     * the lower right. On phones the badge sits under the headline, pinned to the right.
+     * Figma "hero" (157:6128), with the headline wrapping round the badge as before. Phones: the
+     * headline runs full width and the badge sits under it, pinned right. From 48em the badge
+     * floats at the right and shape-outside makes the float a circle, so the words wrap round it.
+     * A float can't sit at the bottom on its own, so a zero-width float above it (the spacer)
+     * pushes it down. The script below sizes the spacer so the badge's bottom meets the last line;
+     * without it the spacer is 1.5 lines tall.
      */
     .front-hero__head {
-      display: grid;
-      gap: var(--space-4) var(--space-8);
-    }
-
-    .front-hero__text {
       display: grid;
       gap: var(--space-4);
     }
 
     .front-hero__title {
+      display: flex;
+      flex-direction: column;
+    }
+
+    .front-hero__title h1 {
       font-weight: var(--weight-semibold);
     }
 
-    /* Under the head's selector so it beats the badge's own size. */
-    .front-hero__head .front-hero__stamp {
+    .front-hero__spacer {
+      display: none;
+    }
+
+    .front-hero__title .front-hero__stamp {
       --stamp-size: clamp(var(--space-24) + var(--space-6), 16vw, var(--space-24) * 1.875);
 
-      justify-self: end;
+      order: 1;
+      align-self: end;
+      margin-block-start: var(--space-4);
     }
 
     @media (width >= 48em) {
-      .front-hero__head {
-        grid-template-columns: minmax(0, 1fr) auto;
-        align-items: end;
+      .front-hero__title {
+        display: flow-root;
+      }
+
+      .front-hero__spacer {
+        display: block;
+        float: right;
+        inline-size: 0;
+        block-size: calc(1.5 * 1lh);
+        font: var(--weight-semibold) var(--text-h1) / var(--leading-h1) var(--font-heading);
+      }
+
+      .front-hero__title .front-hero__stamp {
+        float: right;
+        clear: right;
+        margin: 0 0 0 var(--space-8);
+        shape-outside: circle(50%);
+        shape-margin: var(--space-8);
       }
     }
 

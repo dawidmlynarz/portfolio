@@ -812,3 +812,10 @@ What changed versus the embed, and why:
 
 - Dawid asked for a standing rule so he doesn't have to explain it again. CLAUDE.md now has "Writing in Dawid's voice (all copy on the site)": start from his words and change as few as possible, use full stops and commas, and avoid colons inside sentences, em and en dashes, semicolons and the usual AI tells. Case studies and the grist-entry `voice.md` point to it.
 - Applied right away. The author note now keeps his sentence ("Enjoy the growing collection of prompts, skills, rules and experiments for designing with AI tools, from figuring out what AI can really do."), with "rules" and "for designing with AI tools" added for search. Share-image alt text, five summaries and hints, and 29 sentences in drop bodies (outside the loot, which is written for AI tools) lose their colons. The italic sample outputs inside drops are left as they are.
+
+## 2026-11-01 · Hero wrap is back, bottom-aligned
+
+- Dawid wanted the earlier front door hero back, with the headline wrapping round the badge (shape-outside), and the badge's bottom level with the last line. Phones still stack the badge under the headline.
+- CSS can't put a float at the bottom, so a small script on the front door sizes the spacer float above the badge from the headline's height, on load, when fonts arrive and when the width changes. At some widths moving the badge rewraps the words and nothing fits, so the badge shrinks by up to 24px until it does. Checked from 768 to 1920px. Without the script the spacer is 1.5 lines tall, as before.
+- The drop page's small badge now grows with the viewport, from 104px on phones to 128px.
+- Author note: "…experiments for product design, from figuring out what it can really do." AI now appears once.
