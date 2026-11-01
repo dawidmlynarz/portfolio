@@ -1,9 +1,10 @@
 ---
 /**
- * The drop itself on an entry page, drawn as a drop card (Dawid's pick from the six explorations,
- * "Foil Card", without the shine): the card's own 1px outline and large radius, the tier wash from
- * the card hover rising to the bottom right, and a soft tier shadow (a glow on dark). The small
- * "human-curated" stamp sits on its corner. The loot text sits as written in drop.md, with a copy
+ * The drop itself on an entry page, from Dawid's Figma ("The drop", Foundations 164:6254): a plain
+ * card (1px outline, large radius, no tier colour or shadow) with the "human-curated" stamp on its
+ * top edge. It leads with the rarity and type, then the drop's own name (screen readers hear
+ * "The drop:" first) and what the type is. Mythic workflows cap each long file at a dozen lines
+ * until it's opened. The loot text sits as written in drop.md, with a copy
  * button on its corner for just that text. Below it, the actions for the whole entry: Copy for AI
  * (the markdown twin: brief, why, how to use it and the drop) and Download (the same, as a file).
  * A workflow shows each of its files under its path, each with its own copy button, and Download
@@ -29,22 +30,24 @@ const workflow = drop.data.drop === "workflow";
 const type = DROP_TYPES[drop.data.drop];
 ---
 
-<section class="loot-box" aria-labelledby={id} style={`--tier: var(--rarity-${rarity}-icon)`}>
+<section class="loot-box" aria-labelledby={id}>
   <HumanStamp size="sm" class="loot-box__stamp" />
   <div class="loot-box__head">
+    <RarityLabel rarity={rarity} type={drop.data.drop} size="md" />
     <h2 class="loot-box__title" id={id}>
-      The drop
+      <span class="visually-hidden">The drop: </span>
+      {drop.data.title}
     </h2>
-    <p class="loot-box__type">
-      <RarityLabel rarity={rarity} type={drop.data.drop} size="md" />
-      <span class="loot-box__note">{type.note}</span>
-    </p>
+    <p class="loot-box__note">{type.note}</p>
   </div>
   {files.map(({ path, text }) => (
     <div class="loot-box__file">
       {workflow && <p class="loot-box__path">{path}</p>}
-      <div class="loot-box__loot">
-        <pre class="loot-box__text"><code>{text}</code></pre>
+      <div class="loot-box__loot" data-loot-cap={workflow ? "" : undefined}>
+        <pre
+          class="loot-box__text"
+          id={workflow ? `${id}-${path.replace(/[^a-z0-9]+/gi, "-")}` : undefined}
+        ><code>{text}</code></pre>
         <span class="loot-box__copy">
           <CopyButton
             text={text}
@@ -54,6 +57,17 @@ const type = DROP_TYPES[drop.data.drop];
             done={workflow ? "File copied" : "Drop copied"}
           />
         </span>
+        {workflow && (
+          <button
+            class="loot-box__more"
+            type="button"
+            aria-expanded="false"
+            aria-controls={`${id}-${path.replace(/[^a-z0-9]+/gi, "-")}`}
+            hidden
+          >
+            Show the whole file
+          </button>
+        )}
       </div>
     </div>
   ))}
@@ -69,6 +83,29 @@ const type = DROP_TYPES[drop.data.drop];
   </div>
 </section>
 
+<script>
+  // Mythic workflows: each long file is capped at about twelve lines until opened. The full text
+  // stays in the page (search engines and the copy buttons get all of it); without JS nothing is
+  // capped.
+  document.querySelectorAll<HTMLElement>("[data-loot-cap]").forEach((loot) => {
+    const text = loot.querySelector<HTMLElement>(".loot-box__text");
+    const more = loot.querySelector<HTMLButtonElement>(".loot-box__more");
+    if (!text || !more) return;
+    loot.dataset.lootCap = "capped";
+    if (text.scrollHeight <= text.clientHeight + 1) {
+      loot.dataset.lootCap = "";
+      return;
+    }
+    more.hidden = false;
+    more.addEventListener("click", () => {
+      const open = more.getAttribute("aria-expanded") !== "true";
+      more.setAttribute("aria-expanded", String(open));
+      more.textContent = open ? "Show less" : "Show the whole file";
+      loot.dataset.lootCap = open ? "open" : "capped";
+    });
+  });
+</script>
+
 <style>
   @layer components {
     .loot-box {
@@ -77,22 +114,9 @@ const type = DROP_TYPES[drop.data.drop];
       grid-template-columns: minmax(0, 1fr);
       gap: var(--space-6);
       padding: var(--space-6);
-      border: var(--border-width) solid var(--color-border-subtle);
+      border: var(--border-width) solid var(--color-border-muted);
       border-radius: var(--radius-lg);
       background-color: var(--color-bg);
-      background-image: linear-gradient(
-        70deg,
-        transparent,
-        light-dark(
-          color-mix(in oklch, var(--tier) 10%, transparent),
-          color-mix(in oklch, var(--tier) 16%, transparent)
-        )
-      );
-      box-shadow: 0 var(--space-1) var(--space-4)
-        light-dark(
-          color-mix(in oklch, var(--tier) 25%, transparent),
-          color-mix(in oklch, var(--tier) 40%, transparent)
-        );
     }
 
     /* Half over the top edge, inside the box's right edge so it never pushes the page wider. */
@@ -108,19 +132,18 @@ const type = DROP_TYPES[drop.data.drop];
       gap: var(--space-2);
     }
 
-    /* Only the title row sits beside the stamp; the rows under it clear the stamp's lower half. */
-    .loot-box__title {
-      padding-inline-end: calc(var(--space-24) + var(--space-12));
-      font-size: var(--text-h3);
-      line-height: var(--leading-h3);
-      letter-spacing: var(--tracking-h3);
+    /* The stamp sits on the top edge; the rarity row keeps clear of its lower half. */
+    .loot-box__head > :global(:first-child) {
+      padding-inline-end: calc(var(--space-24) + var(--space-4));
     }
 
-    .loot-box__type {
-      display: flex;
-      flex-wrap: wrap;
-      align-items: center;
-      gap: var(--space-1) var(--space-3);
+    /* The name starts under the stamp, so it only needs a little room on the right. */
+    .loot-box__title {
+      padding-inline-end: var(--space-12);
+      font-size: var(--text-h4);
+      font-weight: var(--weight-semibold);
+      line-height: var(--leading-h4);
+      letter-spacing: var(--tracking-h4);
     }
 
     .loot-box__note {
@@ -157,14 +180,37 @@ const type = DROP_TYPES[drop.data.drop];
       margin: 0;
       padding: var(--space-4);
       padding-inline-end: calc(var(--space-10) + var(--space-4));
-      border: var(--border-width) solid var(--color-border-subtle);
-      border-radius: var(--radius-md);
+      border-radius: var(--radius-sm);
       font-family: var(--font-mono);
       font-size: var(--text-small);
       line-height: var(--leading-small);
       white-space: pre-wrap;
       overflow-wrap: anywhere;
-      background-color: color-mix(in oklch, var(--color-bg) 70%, transparent);
+      background-color: var(--color-bg-subtle);
+    }
+
+    /* Mythic: a long file shows its first dozen lines and fades out until it's opened. */
+    .loot-box__loot[data-loot-cap="capped"] .loot-box__text {
+      max-block-size: calc(var(--leading-small) * var(--text-small) * 12 + var(--space-8));
+      overflow: hidden;
+      mask-image: linear-gradient(to bottom, var(--color-text) 70%, transparent);
+    }
+
+    .loot-box__more {
+      margin-block-start: var(--space-2);
+      padding: 0;
+      border: 0;
+      font: inherit;
+      font-size: var(--text-small);
+      line-height: var(--leading-small);
+      color: inherit;
+      background: linear-gradient(currentcolor, currentcolor) no-repeat left bottom / 100%
+        var(--border-width);
+      cursor: pointer;
+    }
+
+    .loot-box__more:hover {
+      color: var(--color-text-muted);
     }
 
     .loot-box__actions {
