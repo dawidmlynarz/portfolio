@@ -24,15 +24,14 @@ const seasons = await getSeasons();
   <section class="front-hero hero-backdrop-host" aria-labelledby="grist-title">
     <HeroBackdrop />
     <Container class="front-hero__head">
-      <p class="text-caption front__muted">Loot for AI Grinders</p>
-      <div class="front-hero__title">
-        <span class="front-hero__spacer" aria-hidden="true"></span>
-        <HumanStamp class="front-hero__stamp" words="Human-curated for AI grinders" />
-        <h1 id="grist-title">
+      <div class="front-hero__text">
+        <p class="text-caption front__muted">Loot for AI grinders. Curated by Dawid Młynarz.</p>
+        <h1 id="grist-title" class="front-hero__title">
           Your AI is only as good as what you feed it.{" "}
           <span class="front__muted">Here’s human-curated loot, a new drop every Friday.</span>
         </h1>
       </div>
+      <HumanStamp class="front-hero__stamp" words="Human-curated loot for AI grinders" />
     </Container>
   </section>
 
@@ -72,52 +71,35 @@ const seasons = await getSeasons();
       padding-block: var(--space-section-md);
     }
 
+    /*
+     * Figma "hero" (157:6128): the caption and headline, with the badge in a column of its own at
+     * the lower right. On phones the badge sits under the headline, pinned to the right.
+     */
     .front-hero__head {
+      display: grid;
+      gap: var(--space-4) var(--space-8);
+    }
+
+    .front-hero__text {
       display: grid;
       gap: var(--space-4);
     }
 
-    /*
-     * Phones: the headline runs full width and the badge sits under it, pinned to the right.
-     * From 48em the badge floats at the lower right of the headline and the words wrap round it:
-     * shape-outside makes the float a circle. A zero-width float above it (the spacer, sized in
-     * headline lines) pushes it down, since a float can't sit at the bottom on its own. The title
-     * box is a new formatting context, so the floats stay inside it.
-     */
     .front-hero__title {
-      display: flex;
-      flex-direction: column;
+      font-weight: var(--weight-semibold);
     }
 
-    .front-hero__spacer {
-      display: none;
-    }
+    /* Under the head's selector so it beats the badge's own size. */
+    .front-hero__head .front-hero__stamp {
+      --stamp-size: clamp(var(--space-24) + var(--space-6), 16vw, var(--space-24) * 1.875);
 
-    .front-hero__stamp {
-      order: 1;
-      align-self: end;
-      margin-block-start: var(--space-4);
+      justify-self: end;
     }
 
     @media (width >= 48em) {
-      .front-hero__title {
-        display: flow-root;
-      }
-
-      .front-hero__spacer {
-        display: block;
-        float: right;
-        inline-size: 0;
-        block-size: calc(1.5 * 1lh);
-        font: var(--weight-medium) var(--text-h1) / var(--leading-h1) var(--font-heading);
-      }
-
-      .front-hero__stamp {
-        float: right;
-        clear: right;
-        margin: 0 0 0 var(--space-8);
-        shape-outside: circle(50%);
-        shape-margin: var(--space-8);
+      .front-hero__head {
+        grid-template-columns: minmax(0, 1fr) auto;
+        align-items: end;
       }
     }
 

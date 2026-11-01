@@ -793,3 +793,11 @@ What changed versus the embed, and why:
 - Fonts: Geist 1.9.0 static TTFs (OFL) committed in `src/assets/og/fonts/` with the GPOS table removed. Satori draws glyphs kerned but measures them unkerned, which left visibly wide gaps after words like "Your" and "System". Unkerned, the layout and the drawing agree. Satori can't read woff2 or variable fonts.
 - Text runs are one span per word with a space's width between them, so a line can mix colours. Words are measured with the same font files (fontkitten) before layout: a title steps down from 88px to 76 or 64 only if it would run past two lines, and a summary is cut at a word with an ellipsis when it would run past two.
 - The date from the earlier plan is left out because the template doesn't have one.
+
+## 2026-11-01 · Grist front door hero, badge, logo and footer
+
+- The front door hero follows Dawid's Figma frame (157:6128): the caption reads "Loot for AI grinders. Curated by Dawid Młynarz.", the headline is semibold, and the badge sits in its own column at the lower right (about 180px on desktop) instead of floating inside the headline. On phones it sits under the headline, pinned right.
+- The rotating badge has no outline any more, everywhere it appears. The hero badge reads "Human-curated loot for AI grinders"; at 34 characters it runs round the circle once.
+- The Grist logo uses the Figma `Logo` component (121:178): the dot over the i is now a single slanted block instead of the two-part diamond. The share images use the same artwork.
+- Grist's footer matches the portfolio's: social links and "Dawid Młynarz. All rights reserved", without the closing line and the contact button. The "side quest" credit line and the Footer's `credit` prop are gone.
+- The stamp on the share images keeps "HUMAN CURATED" without a hyphen (Dawid: minor for a preview).

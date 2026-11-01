@@ -1,8 +1,8 @@
 ---
 /**
  * The "human curated" stamp, a spin-text badge: the words run round a circle (fitted to it exactly
- * with textLength) and turn slowly, with the site's mark small in a black disc at the centre and a
- * faint ring outside. No surface of its own on the page; the small one gets the page colour behind
+ * with textLength) and turn slowly, with the site's mark small in a black disc at the centre. No
+ * outline (Dawid, 1 Nov). No surface of its own on the page; the small one gets the page colour behind
  * it, since it sits over the loot box's edge. The whole badge links to the portfolio, with no hover
  * effect. Plain SVG and a CSS turn; reduced motion keeps it still.
  */
@@ -39,7 +39,6 @@ const pathId = `stamp-ring-${crypto.randomUUID().slice(0, 8)}`;
     <defs>
       <path id={pathId} d={ring} />
     </defs>
-    <circle class="human-stamp__rule" cx="140" cy="140" r="130" />
     <g class="human-stamp__spin">
       <text class="human-stamp__words" font-size={FONT_SIZE}>
         <textPath
@@ -94,12 +93,6 @@ const pathId = `stamp-ring-${crypto.randomUUID().slice(0, 8)}`;
       inline-size: 100%;
       block-size: 100%;
       overflow: visible;
-    }
-
-    .human-stamp__rule {
-      fill: none;
-      stroke: var(--color-border-muted);
-      stroke-width: 1;
     }
 
     .human-stamp__words {
