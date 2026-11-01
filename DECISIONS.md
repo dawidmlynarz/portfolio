@@ -785,6 +785,11 @@ What changed versus the embed, and why:
 
 - Final call (1 Nov): neutral grain everywhere. The tint, its `tint` prop and the preview switch are removed.
 
-## Pending: per-drop share images
+## 2026-11-01 · Grist share images from the Figma templates
 
-- Agreed in principle (1 Nov): each drop gets its own 1200×630 Open Graph image, built at build time with Satori and resvg from Dawid's Figma template. It shows the title, rarity colour and icon, type, season and date, is saved at `/grist/<slug>/og.png`, and is passed to BaseLayout's `image` prop. Waiting on the template. Grain has to be baked into a background image, because Satori can't do blend modes or filters.
+- Every drop gets its own 1200×630 Open Graph image at `/grist/<slug>/og.png`, and the front door gets `/grist/og.png`. They follow Dawid's Figma templates (Foundations, "opengraph images", 170:6284): one general, one per rarity.
+- Built at build time in `src/lib/og.ts` with Satori (layout to SVG) and resvg (SVG to PNG), from static endpoints. Nothing runs when a link is shared. Adding a drop adds its image.
+- Colours are read from `tokens.css` (light values), the logo and stamp are the template's own SVGs in `src/assets/og/`, the rarity icons come from `tile-icons.ts`. The tint is the tier colour at 8% (the front door uses `--color-bg-subtle`), with the page grain over it, both fading into the background by 75% down.
+- Fonts: Geist 1.9.0 static TTFs (OFL) committed in `src/assets/og/fonts/` with the GPOS table removed. Satori draws glyphs kerned but measures them unkerned, which left visibly wide gaps after words like "Your" and "System". Unkerned, the layout and the drawing agree. Satori can't read woff2 or variable fonts.
+- Text runs are one span per word with a space's width between them, so a line can mix colours. Words are measured with the same font files (fontkitten) before layout: a title steps down from 88px to 76 or 64 only if it would run past two lines, and a summary is cut at a word with an ellipsis when it would run past two.
+- The date from the earlier plan is left out because the template doesn't have one.

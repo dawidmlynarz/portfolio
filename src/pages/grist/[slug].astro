@@ -45,6 +45,13 @@ const { data } = drop;
 const { Content, headings } = await render(drop);
 const { type, rarity, published } = derive(drop);
 const url = new URL(dropHref(drop), Astro.site).href;
+// Its share image, drawn at build time by ./[slug]/og.png.ts from the Figma template.
+const image = {
+  src: `/grist/${drop.id}/og.png`,
+  width: 1200,
+  height: 630,
+  alt: `${data.title}: a ${rarity} ${type.label.toLowerCase()} on Grist. ${data.summary}`,
+};
 const toc = [
   { slug: "why", text: "Why" },
   ...headings.filter((heading) => heading.depth === 2),
@@ -89,7 +96,13 @@ const jsonLd = {
 };
 ---
 
-<GristLayout title={`${data.title} · Grist`} description={data.summary} type="article" {jsonLd}>
+<GristLayout
+  title={`${data.title} · Grist`}
+  description={data.summary}
+  type="article"
+  {image}
+  {jsonLd}
+>
   <link slot="head" rel="alternate" type="text/markdown" href={twinHref(drop)} />
   <div class="hero-backdrop-host">
     <HeroBackdrop />
