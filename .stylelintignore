@@ -2,4 +2,3 @@ dist
 .astro
 node_modules
 reference
-src/experiments/grist-fx/vendor
