@@ -4,6 +4,7 @@ import Container from "@/components/layout/Container.astro";
 import HeroBackdrop from "@/components/blocks/HeroBackdrop.astro";
 import DropCard from "@/components/grist/DropCard.astro";
 import HumanStamp from "@/components/grist/HumanStamp.astro";
+import AuthorNote from "@/components/grist/AuthorNote.astro";
 import SeasonHeader from "@/components/grist/SeasonHeader.astro";
 import { getSeasons } from "@/lib/drops";
 
@@ -62,6 +63,7 @@ const seasons = await getSeasons();
         )}
       </section>
     ))}
+    <AuthorNote size="lg" class="front__author" />
   </Container>
 </GristLayout>
 
@@ -111,6 +113,11 @@ const seasons = await getSeasons();
       display: grid;
       gap: var(--space-section-sm);
       padding-block-end: var(--space-section-md);
+    }
+
+    .front__author {
+      padding-block-start: var(--space-section-sm);
+      border-block-start: calc(var(--border-width) * 2) solid var(--color-text);
     }
 
     .front__season {

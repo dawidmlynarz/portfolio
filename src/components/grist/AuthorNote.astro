@@ -1,0 +1,120 @@
+---
+/**
+ * Dawid's note on Grist (Figma "author", 176:6325): his photo in a circle beside a short hello,
+ * what Grist is, and a line to the contact page. `md` closes each drop page; `lg` sits above the
+ * footer on the front door, with bigger type and photo. The photo is the home portrait
+ * (src/assets/portrait), resized at build time and cropped to the face in CSS.
+ */
+import { Image } from "astro:assets";
+import Link from "@/components/ui/Link.astro";
+import { portraitPhoto } from "@/lib/portrait";
+import { SITE } from "@/lib/site";
+
+interface Props {
+  size?: "md" | "lg";
+  class?: string;
+}
+
+const { size = "md", class: className } = Astro.props;
+---
+
+<aside class:list={["author-note", `author-note--${size}`, className]} aria-label="About Grist">
+  <span class="author-note__photo">
+    <Image
+      src={portraitPhoto}
+      alt={SITE.name}
+      width={size === "lg" ? 560 : 400}
+      quality={70}
+      loading="lazy"
+      decoding="async"
+    />
+  </span>
+  <p class="author-note__text">
+    <span class="author-note__muted">Howdy!</span> Grist is my side quest in the world of AI: a
+    growing collection of prompts, skills, rules and experiments for designing with AI tools, from
+    figuring out what they can really do.{" "}
+    <span class="author-note__muted">
+      Got a question? <Link href="/contact">Drop me a line</Link>
+    </span>
+  </p>
+</aside>
+
+<style>
+  @layer components {
+    .author-note {
+      --photo-size: var(--space-16);
+
+      display: flex;
+      align-items: start;
+      gap: var(--space-4);
+    }
+
+    .author-note__photo {
+      flex: none;
+      inline-size: var(--photo-size);
+      aspect-ratio: 1;
+      overflow: clip;
+      border-radius: var(--radius-pill);
+      background-color: var(--color-bg-subtle);
+    }
+
+    /* The portrait is a wide shot: cover the circle, then zoom in on the face. */
+    .author-note__photo img {
+      display: block;
+      inline-size: 100%;
+      block-size: 100%;
+      object-fit: cover;
+      object-position: 50% 50%;
+      scale: 1.2;
+      transform-origin: 48% 48%;
+    }
+
+    .author-note__text {
+      max-inline-size: 32em;
+      font: var(--weight-semibold) var(--text-h4) / var(--leading-h4) var(--font-heading);
+      letter-spacing: var(--tracking-h4);
+      color: var(--color-text);
+      text-wrap: pretty;
+    }
+
+    .author-note__muted {
+      color: var(--color-text-muted);
+    }
+
+    .author-note__muted :global(.link) {
+      color: inherit;
+    }
+
+    @media (width >= 48em) {
+      .author-note {
+        --photo-size: var(--space-24);
+
+        gap: var(--space-6);
+      }
+    }
+
+    /* Front door: the photo and type a step up. Phones stack them; wider, the photo sits beside. */
+    .author-note--lg {
+      --photo-size: var(--space-24);
+
+      flex-direction: column;
+    }
+
+    .author-note--lg .author-note__text {
+      max-inline-size: 26em;
+      font-size: var(--text-h3);
+      line-height: var(--leading-h3);
+      letter-spacing: var(--tracking-h3);
+    }
+
+    @media (width >= 48em) {
+      .author-note--lg {
+        --photo-size: calc(var(--space-24) * 1.75);
+
+        flex-direction: row;
+        align-items: center;
+        gap: var(--space-10);
+      }
+    }
+  }
+</style>

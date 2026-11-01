@@ -801,3 +801,9 @@ What changed versus the embed, and why:
 - The Grist logo uses the Figma `Logo` component (121:178): the dot over the i is now a single slanted block instead of the two-part diamond. The share images use the same artwork.
 - Grist's footer matches the portfolio's: social links and "Dawid Młynarz. All rights reserved", without the closing line and the contact button. The "side quest" credit line and the Footer's `credit` prop are gone.
 - The stamp on the share images keeps "HUMAN CURATED" without a hyphen (Dawid: minor for a preview).
+
+## 2026-11-01 · Author note on Grist
+
+- New `AuthorNote` (Figma "author", 176:6325): Dawid's photo in a circle beside "Howdy! Grist is my side quest…" and "Got a question? Drop me a line" (to /contact). `md` replaces the old "side quest" line at the end of each drop page; `lg` (h3 type, a larger photo, stacked on phones) sits above the footer on the front door.
+- The photo is the existing home portrait (`src/assets/portrait/portrait-photo.avif`), resized by Astro at build time (400 or 560px wide WebP) and cropped to the face in CSS, so nothing new is uploaded. Its background is transparent, so the circle shows `--color-bg-subtle` in both themes.
+- Copy, proposed for search: "a growing collection of prompts, skills, rules and experiments for designing with AI tools, from figuring out what they can really do." It names what the drops are and who they're for in words people search for, and keeps Dawid's own ending. Waiting on Dawid's OK.

@@ -54,6 +54,7 @@ import StatusLabel from "@/components/grist/StatusLabel.astro";
 import SeasonHeader from "@/components/grist/SeasonHeader.astro";
 import DropCard from "@/components/grist/DropCard.astro";
 import HumanStamp from "@/components/grist/HumanStamp.astro";
+import AuthorNote from "@/components/grist/AuthorNote.astro";
 import LootBox from "@/components/grist/LootBox.astro";
 import CopyButton from "@/components/grist/CopyButton.astro";
 import { getDrops } from "@/lib/drops";
@@ -547,6 +548,16 @@ const GRIST_ICONS: IconName[] = [
             <HumanStamp size="sm" />
             <NewBadge />
           </div>
+        </Stack>
+
+        <Stack gap="4">
+          <h3>Author note</h3>
+          <p class="muted measure">
+            Dawid's hello with his photo. Medium closes each drop page, large sits above the footer
+            on the front door.
+          </p>
+          <AuthorNote />
+          <AuthorNote size="lg" />
         </Stack>
 
         <Stack gap="4">

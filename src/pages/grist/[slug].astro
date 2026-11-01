@@ -9,6 +9,7 @@ import RarityLabel from "@/components/grist/RarityLabel.astro";
 import StatusLabel from "@/components/grist/StatusLabel.astro";
 import DropCard from "@/components/grist/DropCard.astro";
 import LootBox from "@/components/grist/LootBox.astro";
+import AuthorNote from "@/components/grist/AuthorNote.astro";
 import PermalinkButton from "@/components/grist/PermalinkButton.astro";
 import { seasonName } from "@/lib/grist";
 import { SITE } from "@/lib/site";
@@ -216,10 +217,7 @@ const jsonLd = {
               </ul>
             </section>
           )}
-          <p class="drop__touch">
-            Grist is my side quest. If you have a question about a drop, or one of them hit close to
-            something you’re working on, <Link href="/contact">drop me a line</Link>.
-          </p>
+          <AuthorNote class="drop__touch" />
         </div>
       </div>
     </Container>
@@ -421,8 +419,6 @@ const jsonLd = {
     .drop__touch {
       padding-block-start: var(--space-8);
       border-block-start: calc(var(--border-width) * 2) solid var(--color-text);
-      font: var(--weight-medium) var(--text-h4) / var(--leading-h4) var(--font-heading);
-      letter-spacing: var(--tracking-h4);
     }
 
     @media (width >= 48em) {
