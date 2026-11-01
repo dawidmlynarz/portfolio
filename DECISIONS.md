@@ -784,3 +784,7 @@ What changed versus the embed, and why:
 - Long prompts stay fully visible (Dawid's call, after weighing a click-to-reveal). Only Mythic workflows cap each file at about 12 lines with a fade and "Show the whole file". The text stays in the page for search and copy, and without JS nothing is capped.
 
 - Final call (1 Nov): neutral grain everywhere. The tint, its `tint` prop and the preview switch are removed.
+
+## Pending: per-drop share images
+
+- Agreed in principle (1 Nov): each drop gets its own 1200×630 Open Graph image, built at build time with Satori and resvg from Dawid's Figma template. It shows the title, rarity colour and icon, type, season and date, is saved at `/grist/<slug>/og.png`, and is passed to BaseLayout's `image` prop. Waiting on the template. Grain has to be baked into a background image, because Satori can't do blend modes or filters.
