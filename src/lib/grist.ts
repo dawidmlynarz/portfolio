@@ -153,7 +153,7 @@ export const SEASONS = {
     slug: "designing-agents",
     title: "Designing Agents",
     blurb: 'From "should this be an agent?" to a full review of an agent concept.',
-    starts: "2026-10-30",
+    starts: "2026-11-13",
     plan: [
       ["rule", "common"],
       ["rule", "uncommon"],
@@ -171,7 +171,7 @@ export const SEASONS = {
     title: "Scoping AI Work",
     blurb:
       "Workshops, estimates and statements of work for AI projects, from the first call to a signed scope.",
-    starts: "2027-01-01",
+    starts: "2027-01-15",
     plan: [
       ["rule", "common"],
       ["prompt", "uncommon"],
@@ -188,7 +188,7 @@ export const SEASONS = {
     slug: "ai-design-workspace",
     title: "Your AI Design Workspace",
     blurb: "Set up context, rules and skills once, so AI tools work the way you do.",
-    starts: "2027-03-05",
+    starts: "2027-03-19",
     plan: [
       ["rule", "common"],
       ["prompt", "uncommon"],
@@ -205,7 +205,7 @@ export const SEASONS = {
     slug: "handoff-to-coding-agents",
     title: "Handoff to Coding Agents",
     blurb: "Hand a design to a coding agent and get back a build that matches it.",
-    starts: "2027-05-07",
+    starts: "2027-05-21",
     plan: [
       ["rule", "common"],
       ["checklist", "uncommon"],
@@ -222,7 +222,7 @@ export const SEASONS = {
     slug: "shipping-agents",
     title: "Shipping Agents",
     blurb: "From a reviewed concept to a behaviour spec and an eval kit that tests it.",
-    starts: "2027-07-09",
+    starts: "2027-07-23",
     plan: [
       ["rule", "common"],
       ["rule", "uncommon"],
@@ -239,7 +239,7 @@ export const SEASONS = {
     slug: "trust-and-memory",
     title: "Trust and Memory",
     blurb: "Make an agent's explanations, voice and memory something people can rely on.",
-    starts: "2027-09-10",
+    starts: "2027-09-24",
     plan: [
       ["rule", "common"],
       ["checklist", "rare"],
@@ -256,7 +256,7 @@ export const SEASONS = {
     slug: "critique-with-ai",
     title: "Critique with AI",
     blurb: "Run critiques that end in decisions, with an AI partner that argues fairly.",
-    starts: "2027-11-12",
+    starts: "2027-11-26",
     plan: [
       ["rule", "common"],
       ["rule", "uncommon"],
