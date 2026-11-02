@@ -19,20 +19,20 @@ import {
   dropHref,
   formatDate,
   getBuiltDrops,
+  getDrops,
   isoDate,
   lootOf,
+  seeAlso,
   twinHref,
   type Drop,
 } from "@/lib/drops";
 
 export async function getStaticPaths() {
   const drops = await getBuiltDrops();
+  const listed = await getDrops();
   return drops.map((drop) => ({
     params: { slug: drop.id },
-    props: {
-      drop,
-      related: drop.data.related.flatMap((slug) => drops.find((d) => d.id === slug) ?? []),
-    },
+    props: { drop, related: seeAlso(drop, listed) },
   }));
 }
 

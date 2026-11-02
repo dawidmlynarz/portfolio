@@ -11,12 +11,18 @@ import Logo from "@/components/grist/Logo.astro";
 import AboutButton from "@/components/grist/AboutButton.astro";
 import AboutPanel from "@/components/grist/AboutPanel.astro";
 import ThemeToggle from "@/components/blocks/ThemeToggle.astro";
+import NewBadge from "@/components/grist/NewBadge.astro";
 import type { ComponentProps } from "astro/types";
 
-type Props = ComponentProps<typeof BaseLayout>;
+type Props = ComponentProps<typeof BaseLayout> & {
+  /** Dawid's preview copy of the front door: a Sandbox badge by the logo, which leads back to it. */
+  sandbox?: boolean;
+};
+
+const { sandbox = false, ...props } = Astro.props;
 ---
 
-<BaseLayout {...Astro.props}>
+<BaseLayout {...props}>
   <slot name="head" slot="head" />
   <div class="grist">
     <a class="grist__skip" href="#main" data-no-tear>
@@ -24,9 +30,17 @@ type Props = ComponentProps<typeof BaseLayout>;
     </a>
     <header class="grist__header">
       <Container class="grist__bar">
-        <a class="grist__home" href="/grist" aria-label="Grist, all drops" data-no-tear>
-          <Logo />
-        </a>
+        <div class="grist__brand">
+          <a
+            class="grist__home"
+            href={sandbox ? "/grist/sandbox" : "/grist"}
+            aria-label={sandbox ? "Grist sandbox, every drop" : "Grist, all drops"}
+            data-no-tear
+          >
+            <Logo />
+          </a>
+          {sandbox && <NewBadge label="Sandbox" />}
+        </div>
         <div class="grist__actions">
           <AboutButton panel="about" />
           <ThemeToggle />
@@ -78,6 +92,12 @@ type Props = ComponentProps<typeof BaseLayout>;
       padding-block: var(--space-4);
     }
 
+    .grist__brand {
+      display: flex;
+      align-items: center;
+      gap: var(--space-3);
+    }
+
     .grist__home {
       --underline-size: 0%;
 
@@ -87,7 +107,7 @@ type Props = ComponentProps<typeof BaseLayout>;
     .grist__actions {
       display: flex;
       align-items: center;
-      gap: var(--space-4);
+      gap: var(--space-1);
     }
 
     /* The theme switch as in the site's nav: a round ghost button, no ring, a soft fill on hover. */

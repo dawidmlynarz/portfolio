@@ -39,9 +39,11 @@ const shown = drop && derive(drop);
     <div class="drop-card__inner">
       <div class="drop-card__main">
         <p class="drop-card__rank">
-          <RarityLabel rarity={shown.rarity} type={drop.data.drop} size="md" />
-          {season && <span class="drop-card__season">{SEASONS[drop.data.season].title}</span>}
-          {shown.isNew && <NewBadge />}
+          <span class="drop-card__tags">
+            <RarityLabel rarity={shown.rarity} type={drop.data.drop} size="md" />
+            {season && <span class="drop-card__season">{SEASONS[drop.data.season].title}</span>}
+          </span>
+          {shown.isNew && <NewBadge class="drop-card__new" />}
         </p>
         <Heading class="drop-card__title">
           <a class="drop-card__link" href={dropHref(drop)} data-no-tear>
@@ -157,10 +159,22 @@ const shown = drop && derive(drop);
 
     .drop-card__rank {
       display: flex;
-      flex-wrap: wrap;
       align-items: center;
       gap: var(--space-2) var(--space-3);
       margin-block-end: var(--space-2);
+    }
+
+    /* Rarity and season wrap on their own; New keeps the top right corner. */
+    .drop-card__tags {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: var(--space-2) var(--space-3);
+    }
+
+    .drop-card__rank :global(.drop-card__new) {
+      flex: none;
+      margin-inline-start: auto;
     }
 
     .drop-card__season {

@@ -12,9 +12,11 @@ interface Props {
   season: Season;
   /** Drops unlocked so far. 0: the season hasn't started. */
   unlocked: number;
+  /** Offer the season pack. Off on the sandbox for seasons whose pack isn't built yet. */
+  pack?: boolean;
 }
 
-const { season, unlocked } = Astro.props;
+const { season, unlocked, pack: hasPack = true } = Astro.props;
 const { number, title, blurb } = SEASONS[season];
 const pack = seasonPackHref(season);
 const status =
@@ -35,7 +37,7 @@ const status =
     </h2>
     <p class="season-header__muted">{blurb}</p>
   </div>
-  {unlocked > 0 && <DownloadButton href={pack} name={pack.split("/").at(-1)!} />}
+  {hasPack && unlocked > 0 && <DownloadButton href={pack} name={pack.split("/").at(-1)!} />}
 </header>
 
 <style>

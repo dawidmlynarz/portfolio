@@ -36,12 +36,13 @@ export const publishedOf = ({ data }: Drop) => dropDay(data.season, data.slot);
 const hasDropped = (date: Date) => date.getTime() <= now.getTime();
 
 /**
- * Listed (front door, feeds). Production: drops whose day has come, minus drafts; a static build
- * only knows "now" at build time, so production rebuilds on drop days. Previews are the work in
- * progress, so they list every drop, unlocked, to read the seasons whole before launch.
+ * Listed (front door, feeds, See also): drops whose day has come. A static build only knows "now"
+ * at build time, so production rebuilds on drop days. Production also leaves out drafts. Previews
+ * keep them, so the front door there looks the way it will once they're reviewed. Every drop,
+ * unlocked, is on the sandbox (/grist/sandbox, previews only).
  */
 export const isListed = (drop: Drop) =>
-  !isProduction || (hasDropped(publishedOf(drop)) && !drop.data.draft);
+  hasDropped(publishedOf(drop)) && (!isProduction || !drop.data.draft);
 
 /** Built as pages: the listed ones, plus on previews every draft and future slot, to review them. */
 const isBuilt = (drop: Drop) => !isProduction || isListed(drop);
@@ -91,10 +92,11 @@ export type Slot =
  * Every season with all eight slots, battle-pass style: listed drops fill their slot, the rest
  * stay locked. `open` is false until a season's first drop (or, on previews, its first draft); the
  * front door shows those as a short teaser instead of eight locked cards. Seasons with no listed
- * drops at all are left out of `drops` (season packs, llms.txt).
+ * drops at all are left out of `drops` (season packs, llms.txt). `all` fills every slot that has a
+ * drop written, dropped or not, for the sandbox.
  */
-export async function getSeasons() {
-  const drops = await getDrops();
+export async function getSeasons({ all = false } = {}) {
+  const drops = all ? await getBuiltDrops() : await getDrops();
   await checkBalance();
   return (Object.keys(SEASONS) as Season[]).map((id) => {
     const season = SEASONS[id];
@@ -201,6 +203,34 @@ export function lootOf(drop: Drop) {
   const files = lootFilesOf(drop);
   if (drop.data.drop !== "workflow") return files[0]!.text;
   return files.map(({ path, text }) => `<!-- file: ${path} -->\n\n${text}`).join("\n\n");
+}
+
+/** How many cards See also shows on a drop page. */
+const SEE_ALSO = 4;
+
+/**
+ * See also, for every drop: Dawid's picks (`related`) first, then the nearest drops in the same
+ * season, then drops of the same type from other seasons, then the newest. Only listed drops, so
+ * every card leads to a live page.
+ */
+export function seeAlso(drop: Drop, listed: Drop[]) {
+  const others = listed.filter((d) => d.id !== drop.id);
+  const picked: Drop[] = [];
+  const add = (d?: Drop) => {
+    if (d && !picked.includes(d) && picked.length < SEE_ALSO) picked.push(d);
+  };
+  drop.data.related.forEach((slug) => add(others.find((d) => d.id === slug)));
+  others
+    .filter((d) => d.data.season === drop.data.season)
+    .sort(
+      (a, b) =>
+        Math.abs(a.data.slot - drop.data.slot) - Math.abs(b.data.slot - drop.data.slot) ||
+        b.data.slot - a.data.slot,
+    )
+    .forEach(add);
+  others.filter((d) => d.data.drop === drop.data.drop).forEach(add);
+  [...others].reverse().forEach(add);
+  return picked;
 }
 
 export const dropHref = (drop: Drop) => `/grist/${drop.id}`;

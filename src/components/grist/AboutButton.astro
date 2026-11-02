@@ -1,8 +1,7 @@
 ---
 /**
  * Opens the About side sheet (AboutPanel), a native popover, so it needs no script. An info icon
- * and "About", drawn as the site's default link (hairline underline under the word) since it sits
- * in the header next to the logo.
+ * in the same round ghost button as the theme switch next to it, with no label on screen.
  */
 import Icon from "./Icon.astro";
 
@@ -15,37 +14,41 @@ interface Props {
 const { panel, class: className } = Astro.props;
 ---
 
-<button class:list={["about-link", className]} type="button" popovertarget={panel}>
-  <Icon name="info" />
-  <span class="about-link__label">About</span>
+<button
+  class:list={["about-button", className]}
+  type="button"
+  popovertarget={panel}
+  title="About Grist"
+>
+  <Icon name="info" class="about-button__icon" />
+  <span class="visually-hidden">About Grist</span>
 </button>
 
 <style>
   @layer components {
-    .about-link {
-      display: inline-flex;
-      align-items: center;
-      gap: var(--space-1);
+    /* Matches the theme switch in the Grist header (GristLayout): round, no ring, a soft fill on hover. */
+    .about-button {
+      display: grid;
+      flex-shrink: 0;
+      place-items: center;
+      inline-size: var(--space-10);
+      block-size: var(--space-10);
       padding: 0;
       border: 0;
-      font: inherit;
-      font-size: var(--text-small);
-      line-height: var(--leading-small);
-      color: inherit;
-      background: none;
+      border-radius: var(--radius-pill);
+      color: var(--color-text);
+      background: transparent;
       cursor: pointer;
-      transition: color var(--duration-fast) var(--ease-standard);
+      transition: background-color var(--duration-fast) var(--ease-standard);
     }
 
-    /* The <a> underline from base.css, under the word only. */
-    .about-link__label {
-      background: linear-gradient(currentcolor, currentcolor) no-repeat left bottom / 100%
-        var(--border-width);
+    .about-button:hover {
+      background-color: var(--color-bg-subtle);
     }
 
-    /* Like every text link on Grist: the underline stays and the ink softens (GristLayout). */
-    .about-link:hover {
-      color: var(--color-text-muted);
+    .about-button :global(.about-button__icon) {
+      inline-size: 1.125em;
+      block-size: 1.125em;
     }
   }
 </style>
