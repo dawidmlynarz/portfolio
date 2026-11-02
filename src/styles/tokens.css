@@ -177,6 +177,8 @@
     --duration-zoom: 800ms; /* case-study cover zoom on hover */
     --duration-marquee: 40s; /* one full loop of the client logo marquee */
     --duration-marquee-work: 60s; /* one full loop of the case-study covers on /contact */
+    --duration-stamp: 24s; /* one turn of the Grist "human curated" stamp */
+    --duration-shine: 2.1s; /* Grist foil: one pass of the shine on Legendary and Mythic, then a rest */
     --duration-quote: 9s; /* how long each /services quote stays before the next one */
     --ease-out-expo: cubic-bezier(0.19, 1, 0.22, 1);
     --duration-page: 700ms; /* ink spread (theme switch); the nav during page changes */
@@ -187,7 +189,54 @@
     --shift-page-out: 2vh; /* page transition: how far the old page lifts */
     --shift-page-in: 6vh; /* page transition: how far below the new page starts */
     --ease-in-out-quart: cubic-bezier(0.77, 0, 0.175, 1);
+    --ease-in-out-sine: cubic-bezier(0.45, 0, 0.55, 1); /* Grist foil shine */
     --z-nav: 100;
+
+    /* ---------- Grist (/grist): rarity tiers and the pixel face ----------
+       Figma collection "Grist". Only what the site system has no equivalent for.
+         fill   the gem body
+         shade  the gem's facet lines, deep enough to read as depth; its dark facets mix fill and shade
+         light  the gem's lit facets and sparkles
+         text   tier names: a deep shade on light, the light shade on dark, so both pass 4.5:1
+       On dark the outline matches the page, so the gem's own colours draw its edge: every fill
+       and shade there reaches 3:1 against the page (rare, epic and the uncommon shade lift). */
+    --rarity-common-fill: #9aa0a6;
+    --rarity-common-shade: #5f6368;
+    --rarity-common-light: #c4c7ca;
+    --rarity-common-text: light-dark(#5f6368, var(--rarity-common-light));
+    --rarity-uncommon-fill: #22a04b;
+    --rarity-uncommon-shade: light-dark(#0e5f2b, #136f33);
+    --rarity-uncommon-light: #4ade80;
+    --rarity-uncommon-text: light-dark(#157a38, var(--rarity-uncommon-light));
+    --rarity-rare-fill: light-dark(#2b6fe0, #3b82f6);
+    --rarity-rare-shade: light-dark(#17418f, #235dc0);
+    --rarity-rare-light: #60a5fa;
+    --rarity-rare-text: light-dark(#1f5bc4, var(--rarity-rare-light));
+    --rarity-epic-fill: light-dark(#8a3fe0, #a366f0);
+    --rarity-epic-shade: light-dark(#4f1f8f, #7e39d0);
+    --rarity-epic-light: #c084fc;
+    --rarity-epic-text: light-dark(#7330c4, var(--rarity-epic-light));
+    --rarity-legendary-fill: #e3a008;
+    --rarity-legendary-shade: #8f6400;
+    --rarity-legendary-light: #fbbf24;
+    --rarity-legendary-text: light-dark(#8f6400, var(--rarity-legendary-light));
+    /* Tile icons (TileIcon, RARITY_ICON "tile"): Dawid's colours, adjusted only where needed so
+       every icon keeps 3:1 and every tier name 4.5:1 against the page and the subtle surface, in
+       both themes. Text shares the icon's hue. Mythic is a future tier. */
+    --rarity-common-icon: #5f6367;
+    --rarity-common-tile-text: light-dark(#5f6367, #7a7f84);
+    --rarity-uncommon-icon: #179441;
+    --rarity-uncommon-tile-text: light-dark(#148038, #179441);
+    --rarity-rare-icon: #1f75ff;
+    --rarity-rare-tile-text: light-dark(#0364ff, #27f);
+    --rarity-epic-icon: #9a4df3;
+    --rarity-epic-tile-text: light-dark(#9341f2, #9f57f4);
+    --rarity-legendary-icon: light-dark(#df6f00, #fb7d00);
+    --rarity-legendary-tile-text: light-dark(#b15800, #fb7d00);
+    --rarity-mythic-icon: #e60303;
+    --rarity-mythic-tile-text: light-dark(#d40000, #ff3b3b);
+    /* The hidden [?] tile on locked slots: the common gem's light grey, quieter than any tier. */
+    --rarity-hidden-icon: var(--rarity-common-fill);
     --shadow-panel: 0 24px 64px -24px light-dark(rgb(0 0 0 / 28%), rgb(0 0 0 / 80%));
     /* Space above content on pages that don't run under the floating nav (SiteLayout) */
     --nav-clearance: calc(var(--space-4) + var(--space-12) + var(--space-8));

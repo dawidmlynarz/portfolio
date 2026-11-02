@@ -1,0 +1,13 @@
+---
+/** Copies the drop's canonical URL. Icon only. */
+import CopyButton from "./CopyButton.astro";
+
+interface Props {
+  /** Absolute URL to copy. */
+  url: string;
+}
+
+const { url } = Astro.props;
+---
+
+<CopyButton text={url} icon="link" label="Copy link to this drop" done="Link copied" />

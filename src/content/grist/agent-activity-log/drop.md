@@ -1,0 +1,6 @@
+- [ ] Each line says what changed, in plain words.
+- [ ] Each line links to the thing it changed.
+- [ ] Lines are grouped by task, newest first.
+- [ ] Failed and skipped steps are shown, not hidden.
+- [ ] Anything that can still be undone has an Undo next to it.
+- [ ] Nobody needs to know the agent's internals to read it.

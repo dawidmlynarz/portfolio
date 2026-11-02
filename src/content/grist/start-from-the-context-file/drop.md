@@ -1,0 +1,1 @@
+Before starting any task, read the project's context file. If it's missing, or doesn't cover the product, the people or the constraints this task depends on, say so and ask before you start. Don't fill the gap from general knowledge.

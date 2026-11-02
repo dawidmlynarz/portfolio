@@ -1,0 +1,23 @@
+---
+import GristLayout from "@/layouts/GristLayout.astro";
+import FrontDoor from "@/components/grist/FrontDoor.astro";
+import { getSeasons } from "@/lib/drops";
+
+// Seasons that haven't started stay off the front door. Newest first: the running season sits
+// under the next drop badge. The sandbox keeps them in number order.
+const seasons = (await getSeasons()).filter((season) => season.open).reverse();
+---
+
+<GristLayout
+  title="Grist: human-curated loot for your AI tools"
+  description="Rules, prompts, checklists and skills for your AI tools, from Dawid Młynarz's product design work. A new drop every Friday."
+  image={{
+    src: "/grist/og.png",
+    width: 1200,
+    height: 630,
+    alt: "Grist. Your AI is only as good as what you feed it. Here’s human-curated loot, a new drop every Friday.",
+  }}
+>
+  <link slot="head" rel="alternate" type="text/plain" href="/llms.txt" title="Grist for LLMs" />
+  <FrontDoor seasons={seasons} />
+</GristLayout>

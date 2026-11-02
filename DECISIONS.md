@@ -2,6 +2,51 @@
 
 Non-obvious choices, newest first. One entry per decision: what, why, and what it rules out.
 
+## 2026-10-30 · Grist: rarity by hand, no quest types
+
+Dawid's call: each quest's rarity is set by hand in frontmatter (`rarity`), and level-ups are only a changelog that never changes it, so Next rank is gone. Quest types (side quest, demo, deep dive, kit) are removed. "Side quest" is now a status next to Fresh and Battle-tested. Tiles and quest pages show the status and the date side by side.
+
+## 2026-10-30 · Grist review round 2: one quest tile, site text styles only
+
+Grist text uses only the site's text styles:
+
+- Labels use `.text-caption`.
+- Every meta line next to a gem (tier, status, type, dates, quest log) uses the small style, so they all match.
+- The definition uses `.text-lead`.
+- Links on quest pages use the default link style.
+
+`QuestCard` replaces `QuestRow` and is the only quest tile. It sizes itself with a container query: it stacks when narrow and becomes a row at 48rem and wider. The front door, See also and `/grist/layouts` all use it. `/grist/layouts` is a preview-only page with six layout options, and production redirects it to /grist. The Legendary gem keeps only the sweep, and its sparkles stay still.
+
+## 2026-10-30 · Grist review round 1
+
+Dawid's review changed these:
+
+- The front door uses the site `Hero` (the grain backdrop and a two-tone headline through the new `titleMuted` prop), with README as its action.
+- The big logo, the quest and volume counts and the "Vol." labels are gone. Volumes show as plain category titles, and the Quest log says Category.
+- Silkscreen is removed. Tier names and New use the caption face.
+- The simple footer puts "Grist is a side quest from Dawid Młynarz." in place of the name on the copyright line, and the icon credit is gone.
+- The six draft quests carry made-up types, start dates and level-ups (each marked TEST DATA), so previews show every rarity. Production never lists drafts.
+- Gem clip ids are now unique per instance. A shared id pointed at the clip inside the hidden README popover, which left the Legendary sweep unclipped.
+
+## 2026-10-30 · Grist MVP: pages, quests and markdown twins
+
+`/grist` and `/grist/<slug>` use `GristLayout`, which has a slim header and the `Footer` simple variant, and does not load the motion module. Quests are MDX in `src/content/grist/`. Rarity, version, date labels, New and Next rank are derived in `src/lib/quests.ts`; none of them are stored. `order` only breaks ties between quests that start on the same day. Production lists published quests whose `started` date has passed, and previews list everything. Each quest has a markdown twin at `/grist/<slug>.md`, generated at build with MDX comments stripped. README is a native popover, so it needs no script. Permalink copies the URL and shows a status toast.
+
+Launch content: Human checkpoints uses Dawid's text from the mockups. The other six are drafts written from the backlog lines, marked `draft: true` with an MDX comment saying so, until Dawid rewrites them. Every `started` date is a placeholder (the build day) until launch. Counters, RSS, `llms.txt`, OG images and the demo are not built yet.
+
+## 2026-10-30 · Grist buttons: one text style, icon hover on Download
+
+README and Download use the button's own text style, the same as Get in touch. They no longer use the pixel face or mono. The download count sits in a filled circle on the inverse surface, which turns into a pill as the number grows. There is no separator. Download skips the row tear: `Button` takes `hover="icon"`, which gives a text button the icon buttons' hover. Its arrow-down drops out through the bottom edge and comes back in from the top, the Back to top motion reversed.
+
+## 2026-10-30 · Grist foundations
+
+First step of Grist (`/grist`), the side quest of short "quests" on agentic UX and AI-ready design systems.
+
+- **Only rarity is new.** Each tier has `--rarity-*-fill`, `-shade` and `-light` (Figma collection "Grist"), plus `--rarity-*-text` for tier names: the Figma text shade on light, the light shade on dark, so both pass 4.5:1. The shade draws the gem's facet lines; for Uncommon, Rare and Epic it is darker than the text shade (Dawid's call) so the lines read as depth. (The Silkscreen pixel face was dropped on Dawid's review: Grist uses the site's own type.) Everything else is existing tokens and components.
+- **Gems** follow Dawid's reference: a cut gem with a flat table, a girdle line and shaded facets, drawn from pixel maps in `src/lib/grist.ts` at 2px per pixel (26px wide). The outline is the ink (white in dark mode) so gems keep their edge. Common to Rare share the shape; Epic adds sparkles; Legendary adds a crown, twinkling sparkles and a light sweep, all off under reduced motion. Tier names always sit next to a gem, so colour is never the only signal.
+- **One logo:** the wordmark in the text colour, with no rarity colour on the dot.
+- **Buttons are the site's pill.** Pixel icons looked off inside pills, so `Button` gained three line icons in its own style (`info`, `download`, `link`), placed before the label; arrows still follow it and are the only icons that nudge on hover. (Later Grist dropped Pixelarticons for line icons in the same style; the gems are its only pixel art.)
+
 ## 2026-10-30 · Native scrolling (Lenis removed)
 
 Lenis eased every wheel and trackpad scroll toward its target, so the page trailed the hand, even at `lerp` 0.16, and felt delayed on every page. Scrolling is native again: instant, about 15 KB less JS, and the platform's own momentum and keyboard behaviour. All scroll-driven motion (reveals, the About story, the Services timeline, cover parallax, the contents mini map) still runs on GSAP ScrollTrigger, which works on native scroll. In-page anchor jumps still glide through CSS `scroll-behavior: smooth`, which reduced motion turns off. This supersedes the Lenis notes in earlier entries (the `lerp` tuning, "stays in step with Lenis", `data-lenis-prevent`, now removed).
@@ -599,3 +644,270 @@ What changed versus the embed, and why:
 ## 2026-11-02 · No prices on the plans
 
 **Plans end in "Book a call" only.** Dawid asked to remove the prices from the /services plans. Each plan keeps its label, name, promise, list and button; the price and the terms line under it are gone, and so is the rate maths in `src/lib/plans.ts`, `formatPrice` and the `priceSpecification` in the `OfferCatalog` structured data (so search engines don't show a price the page doesn't). The old rate and prices are in git history before this change.
+
+## Grist: human-written loot for AI tools (30 Oct 2026)
+
+- Grist is now "human-written loot for your AI tools". Quests, statuses (Side quest, Fresh, Battle-tested), level-ups, versions, the quest log, volumes, the download count and the layouts test page are gone.
+- Each entry is a folder (`src/content/grist/<slug>/`): `index.mdx` holds the note, `drop.md` the loot. The drop type sets the rarity (rule Common, prompt Uncommon, checklist Rare, spec Epic, skill Legendary), so rarity isn't stored and can't drift.
+- Seasons replace volumes (three planned, eight drops each). Each season has a pack at `/grist/season-<n>.md`.
+- Sightings (product, date, one line) replace level-ups. They are evidence and move `dateModified`; they don't change the rarity.
+- AI feeds: `/grist/<slug>.md` (whole entry), `/grist/<slug>/drop.md` (loot only), `/llms.txt`, `/grist/llms-full.txt`.
+- The "human curated" stamp turns with a plain CSS animation (`--duration-stamp`), not GSAP: it's a decorative loop like the gem sweep, needs no scroll or timeline, and stands still under reduced motion.
+- Front door uses the two-up grid from the six layout options.
+
+## Grist: battle-pass seasons, no sightings (30 Oct 2026)
+
+- Seasons are battle passes: the front door shows all eight slots of a started season, and a slot unlocks on its drop day, every other Friday. The drop day comes from the season start and the entry's `slot`, so it isn't stored. Locked slots show the planned type and date; the next one is outlined; a missed one says it's late instead of hiding.
+- Each season ends on its Skill (Legendary), then takes a two-week break. Unstarted seasons show only their header and start date.
+- Sightings are gone: drops are Dawid's own, with no references to other products.
+- Next to the gem only the deliverable shows ("Checklist"), in semibold. The gem and colour carry the rarity.
+- The stamp reads HUMAN CURATED twice round, around the nav's mark in a black disc (`MARK_PATH` in src/lib/site.ts, shared with Nav).
+- The Readme moved to the Grist header as a link-style button; the front door hero follows Work and Services (caption, long two-tone headline), stamp on the right.
+- A static build only unlocks on rebuild, so production needs a scheduled build on drop days.
+
+## Grist: credential badge, drop anatomy by rarity, demo seasons (30 Oct 2026)
+
+- The stamp is a spin-text badge after Dawid's Framer reference: words fitted to a circle with textLength, a faint outer ring, the nav mark small in a black disc, no surface of its own (the small one gets the page colour, as it sits over the loot box edge). It links to the portfolio and has no hover effect.
+- Rarer drops carry more: every drop has `useWhen` and `outcome`; Prompt and up add `steps`; Spec and up an `## Example` in the body (`example: true`); Skill adds `limits`. The schema enforces it per type (DROP_TYPES.needs). The markdown twin follows the same order, so an agent gets brief, why, how to use it, the drop and its limits.
+- Copy for AI and Download moved into the loot box; the raw drop has its own copy icon on the code panel; the permalink sits alone at the end of the meta row.
+- Lists respect drop days on previews too, so the battle pass shows as it stands; future and draft drops still get pages on previews for review.
+- Demo schedule: season 1 complete, season 2 three drops in. `starts` in SEASONS must be reset before launch.
+- Shiki is off (`markdown.syntaxHighlight: false`): code blocks only appear in Grist examples and take the site's plain code panel in both themes.
+
+## Grist: badge floats in the headline, one hint (30 Oct 2026)
+
+- The front door badge floats at the lower right of the headline from 48em with `shape-outside: circle()`, so the words wrap round it. On phones it sits under the headline, pinned right. A zero-width float sized in headline lines (`lh`) pushes it down, since floats can't anchor to the bottom.
+- `useWhen` and `outcome` merged into one `hint` sentence under the tl;dr (when to use it, what you get).
+- Season packs are named after the season: `/grist/season/<slug>.md` (agentic-ux.md).
+
+## Grist: rarity is set per drop (31 Oct 2026)
+
+- Rarity no longer follows the type. Each drop sets `rarity` by hand for how deep it goes: a short checklist can be Common and a full review checklist Rare; a simple skill Rare and an advanced one Legendary. The season plan lists `[type, rarity]` pairs so locked cards still show both.
+- What a drop must carry now follows rarity (RARITY_INFO.needs): steps from Uncommon, an `## Example` from Epic, limits at Legendary. The Readme lists the five rarities with what to expect in each, so the call stays anchored.
+
+## Grist: Tested and Trying, the voice guide and the grist-entry skill (31 Oct 2026)
+
+- Every drop has `status`: Tested (used on real work) or Trying (curated or new to Dawid), shown next to the date with an icon. Trying drops can credit where the idea came from in `source`, one sentence in his words; guides and research yes, products no. Rare now describes depth only, so a Trying drop can be Rare.
+- Production builds fail when a built drop still has a `CLAUDE:` or `TEST DATA` note (`assertWritten` in lib/drops.ts). Previews don't check, so drafts stay reviewable.
+- `.claude/skills/grist-entry/` holds the workflow (SKILL.md), the voice guide (voice.md, mirrors the "Grist — voice and tone" doc) and another tool's 96 raw drafts as a backlog (drafts.md, not Dawid's words, ignored by Prettier).
+- Parked: Ultra rare, payments, twice-weekly drops and the drop → skill tree → season hierarchy. Revisit if an audience appears.
+
+## Grist: eight seasons drafted, weekly drops, Learned from (31 Oct 2026)
+
+- Drops land every Friday (DROP_INTERVAL_DAYS 7), a week off between seasons. Posting frequency isn't a ranking factor; launching with a full season and a steady weekly drop gets pages indexed and brings people back, and keeps the eight seasons to about 14 months.
+- All eight seasons are in the repo as drafts, imported from another AI tool's drafts (`drafts.md`) by a one-off script: loot as drafted, tl;dr, hint and Why marked `CLAUDE:` until Dawid rewrites them. Order: AI-ready design system, Designing agents (Human checkpoints in slot 1), AI design workspace, Handoff, Prototyping, Shipping agents, Trust and memory, Critique. Four earlier placeholders (undo windows, show the plan first, activity log, handoff to a human) fill gaps in Shipping agents and Trust and memory; the other eight were deleted.
+- Drafts are never published, so there's nothing to remove before launch: approving a drop (rewrite, drop the note, drop `draft`) queues it for its slot's Friday.
+- `/grist/review` lists every drop on previews only (no route in production, out of the sitemap).
+- `learnedFrom` (title, optional url, up to three) replaces `source`: shown under the Why, in the markdown twin and as `isBasedOn` in the JSON-LD. Only sources Dawid has read; the ones in the drafts are unverified.
+
+## Grist: real workflows lead, Scoping AI work season (31 Oct 2026)
+
+- Dawid's own workflows (from an overview of his work Claude account) replace generic drafts wherever they overlap: the token pipeline, design system open items and a design system for agents in season 1; the agentic opportunity map, starting where people drop off and the assistant concept sprint in Designing agents; rebuilding a prototype in your system in Handoff; the two-pass UX audit in Critique. Clients are anonymised. The presales playbook and the Anvil knowledge are his own.
+- New season 3, Scoping AI work (strawman workshop, estimates, SOW review). Prototyping with coding agents is parked to keep eight seasons; its drafts stay in drafts.md.
+- Dawid's picks are back: Agent-readable tokens (replaces Name by job), Write the don'ts down (replaces Ask before assuming), Visible reasoning (replaces The two-sentence why).
+- New drafts mark every fact Claude couldn't confirm with [YOU], and invented examples are labelled as illustrations.
+
+## Grist: previews unlock every drop (31 Oct 2026)
+
+- Preview builds list all 64 drops on the front door, in their seasons, with no locked cards, so Dawid can read the seasons whole before launch. Production is unchanged: a drop unlocks on its Friday and drafts stay out, so the locked cards appear once drops go live.
+
+## Grist: Title Case season names, "human-curated" (31 Oct 2026)
+
+- Season titles are Title Case ("The AI-ready Design System"). One helper, `seasonName`, prints "Season 1 – The AI-ready Design System" for breadcrumbs and markdown; files lead with "Grist // Season 1 – …".
+- Grist never says "human-written". The line is "Human-curated loot for your AI tools, battle tested by Dawid Młynarz"; each drop's markdown says "Curated by".
+
+## Grist: headline audit, industry names first (31 Oct 2026)
+
+- Every drop title was checked against the name the industry already uses (design system audit, pre-mortem, work breakdown, design QA, devil's advocate, AI disclosure, usage guidelines). 41 of 64 renamed; slugs follow the titles (nothing was live yet). Coined names stay only where they name something new, or where Dawid picked them (Agent-readable tokens, Visible reasoning, Write the don'ts down). The full table is in the "Grist — headline audit" doc.
+
+## Grist: tile icon experiment (31 Oct 2026)
+
+- Dawid's tile icons (rounded diamond tiles, plus an Ultimate tier) live in src/experiments/rarity-icons and on the preview-only page /grist/review/rarity, next to the pixel gems in light and dark. Their colours are new `--rarity-*-icon` tokens; legendary deepens on light (#c86400) so every icon keeps 3:1. Legendary keeps the shine sweep. Nothing on the live Grist uses them yet.
+
+## Grist: drop titles in Title Case (31 Oct 2026)
+
+- Drop titles follow the season names: Title Case, small words lowercase unless first or last, hyphenated words capitalise only the first part ("Agent-readable Tokens", "Human-in-the-loop Checkpoints"). Acronyms (AI, UX, QA, SOW) and DESIGN.md stay as they are. The rule is in the grist-entry skill.
+
+## Grist: tile icons replace the pixel gems, gems kept (31 Oct 2026)
+
+- RarityLabel draws Dawid's tile icons (TileIcon) instead of the pixel gems while `RARITY_ICON = "tile"` in src/lib/grist.ts; set it to "gem" to go back. Gem.astro and the gem tokens stay.
+- Tile tier names share the icon's hue (`--rarity-*-tile-text`): 4.5:1 against the page and the subtle surface in both themes; icons 3:1. Only legendary's icon and a few text shades moved from Dawid's colours to get there. Legendary keeps the shine.
+
+## Grist: rarity balance and the Ultimate tier (31 Oct 2026)
+
+- New top tier, Ultimate (tile icon only, #e60303, with the shine). An Ultimate is always a Workflow: several skills and a reviewer subagent that hand off to each other, with checkpoints and a sample run. Its loot is a loot/ folder; the page shows each file, Copy for AI copies them all, Download gives a .zip (src/lib/zip.ts, stored, no dependency). Dawid preferred "Workflow" to "Plugin": it says what it is and doesn't tie the drop to one tool. Hooks are optional.
+- Seasons are checked for balance (balanceProblems in src/lib/drops.ts): one Common, Uncommon/Rare/Epic 1 to 3 each, no neighbouring repeats, top tier in slot 8, Legendary at most 2, Ultimate excludes Legendary. Previews warn, production fails. The season plans follow the table in "Grist — rarity balance and Ultimate"; Ultimates in seasons 3 (presales) and 5 (design to code).
+- Drops re-tiered to that table (approved by Dawid, 31 Oct). Nine Commons became Uncommon by gaining steps and a small template in their loot; Reuse Before Create folded into Build One Component at a Time, and List Assumptions and Exclusions into Design Work Breakdown (their slugs are gone, not redirected: both were unpublished drafts). Every added step, example or limit carries a CLAUDE note until Dawid confirms it. Season plans in src/lib/grist.ts now mirror the written drops, so the plan only matters for empty slots.
+- The two Ultimates are drafted as workflows: Presales Workflow (s03, four skills plus an estimate-reviewer agent) and Design-to-code Workflow (s05, two skills, a design-qa agent and an optional PreToolUse hook that blocks raw colour values; sample run is the Anvil UI rebuild). Both are drafts with CLAUDE notes and [YOU] gaps. Zip entries now carry a fixed 1 Jan 1980 date (the zero date was invalid and showed as 1980-00-00).
+
+## Grist: less project context, clearer titles (31 Oct 2026)
+
+- Drops say what Dawid did in one short, generic line ("I write estimates this way", "on one project"), not which client, industry or employer. Readers come for the loot; a generic line keeps the "battle tested" claim without the detail. His own products (Anvil UI, the token plugin) stay named. Illustrated examples may still use an industry, because they're made up and make the loot concrete.
+- Renamed: Design Tokens Only to Tokens-only Guardrail (says what it is: a rule on the AI); Start at the Drop-off Points to Agent Ideas from Journey Pain Points ("pain points" is the journey-mapping term, and the drop is now context-agnostic). Old slugs aren't redirected: both were unpublished drafts.
+- AI Opportunity Map is tool-agnostic: FigJam was for a follow-up client workshop; a doc table or an AI-drawn artifact works as well.
+- Card rarity icons are 1.5em (RarityLabel size md), matching the drop page.
+- Ultimate is renamed Mythic (1 Nov), the name games use for the tier above Legendary. The key, labels and tokens (--rarity-mythic-*) all follow; the Figma token file needs the same rename.
+
+## Grist: effects playground (1 Nov 2026)
+
+- /grist/review/fx (preview only) tries three things: CSS auras on the rarity icons (glow, twinkles, embers, a Mythic halo; an Off/Subtle/Lively switch), card effects from react-cards-opening, and loot-box frames that evolve by rarity (A: outline ladder, B: gaming-card corners).
+- react-cards-opening is MIT and its effects package runs without React (playEffects on any element, GSAP inside). Its framework-free files are vendored in src/experiments/grist-fx/vendor/rco-effects (licence and source commit in its README), excluded from stylelint and prettier. Its stylesheet is unlayered and namespaced (rco-fx-*); if an effect ships, it moves into src/scripts/motion.ts and its CSS into a layer.
+- Replaced (1 Nov): Dawid wanted the library itself, not my versions. The playground is now an effects builder: react-cards-opening installed from npm as it ships (ui, core, effects), in one React island (@astrojs/react, limited to src/experiments/**/*.tsx; client:only). One card or rarity icon at a time, per-tier controls (trigger, effects, delay, size, strength, density, colour, blend, layer), Grist's card or the library's card. Grist's DropCard and TileIcon are rendered by Astro and passed in as slots. Settings sit in localStorage and copy out as JSON for wiring into the real components. My auras, effect copies, vendored files and frame mocks are gone; the drop frame waits for Dawid's design. The library's stylesheet is unlayered and only loads on this preview page.
+
+## Grist card hover from Figma (Foundations 152:6044)
+
+- Unlocked drop cards take Dawid's hover from Figma: tier-colour stroke, a 70° tier wash, a tier drop shadow and an underlined title. Spacing, type and colours stay as the component had them.
+- The 2px stroke is the 1px border plus a 1px inset ring, so nothing shifts on hover.
+- Dark mode: a 25% shadow vanishes on the dark background, so the wash goes from 8% to 12% and the shadow from 25% to 40%, which reads as a soft glow.
+- `.drop-card--hover` pins the state so the effects builder can show it without the pointer. Locked cards keep their plain hover.
+
+## Grist human-voice pass (1 Nov)
+
+- Dawid asked for everything around the drops to read as written by a person, using the case-study rules. The drops themselves (the loot written for AI tools) stay as they are.
+- Rewritten: every hint (all 64 opened "Use it when …, and you get …"), the "Watch for …" lines, aphorisms and "not X, it's Y" contrasts in the Why, a few colon-list summaries, the rarity notes and the Readme. CLAUDE flags stay where the words still aren't Dawid's.
+- Tagline is now "Loot for AI Grinders". The rarity-tinted hero grain on drop pages was reverted, then brought back the same day: Dawid likes the continuity.
+
+## Rarity-tinted hero grain on drop pages
+
+- `HeroBackdrop` takes an optional `tint` (a token). The grain SVG is a data URL and can't take a CSS colour, so with a tint the grain is used as a mask over a solid fill in the tint colour, and a faint wash (10% light, 14% dark) sits under it. Both fade out like the plain grain.
+- Drop pages pass their rarity colour. Every other page keeps the neutral grain.
+- Cost: one extra masked layer per page, using the same cached SVG. A page only ever has one colour, so more tiers add nothing.
+- For comparing, preview builds show a "Colour grain / Grey grain" switch in the Grist header (GrainToggle, remembered per browser). Production leaves it out. Remove it once the choice is made.
+
+## Grist foil on Legendary and Mythic
+
+- The rarity icon's shine now copies the library's Legendary foil (react-cards-opening `rco-shine`): a diagonal band with soft edges and a bright core, `--ease-in-out-sine` over `--duration-shine` (2.1s), crossing in the first 43% and then resting. Before, it was a straight vertical band on the standard ease, which felt mechanical.
+- A card-wide foil on hovering Legendary and Mythic cards was tried and removed the same evening: Dawid thought it looked bad. Only the icon shines.
+
+## "The drop", six explorations (preview only)
+
+- /grist/review/drop shows six directions for the loot box (src/experiments/drop-box), each built from a real drop of the picked tier, with today's LootBox first: Tier Frame, Foil Card, Loot Crate, Game HUD, Drop Ticket, Aura Glass. Dawid picks one, and it replaces LootBox.
+- Found while building it: a long file name in the Download button (and LootBox's auto-sized grid) pushed drop pages wider than a 375px screen. LootBox now uses `minmax(0, 1fr)`, and DownloadButton cuts the name with an ellipsis.
+- Locked (1 Nov): Foil Card. LootBox now looks like a drop card. It has the card's default 1px outline and large radius, the 70° tier wash and a soft tier shadow, which reads as a glow on dark. There's no foil shine. The loot panel is a frosted inset with its own hairline.
+- Changed again the same evening, from Dawid's Figma (Foundations 164:6254). The box has no tier colour and no shadow: a 1px outline, a large radius and the stamp on its top edge. It leads with the rarity label, then the drop's own name instead of "The drop". Screen readers hear "The drop:" first, and the table of contents still says "The drop". After that comes the type note, the loot, and the same buttons.
+- Long prompts stay fully visible (Dawid's call, after weighing a click-to-reveal). Only Mythic workflows cap each file at about 12 lines with a fade and "Show the whole file". The text stays in the page for search and copy, and without JS nothing is capped.
+
+- Final call (1 Nov): neutral grain everywhere. The tint, its `tint` prop and the preview switch are removed.
+
+## 2026-11-01 · Grist share images from the Figma templates
+
+- Every drop gets its own 1200×630 Open Graph image at `/grist/<slug>/og.png`, and the front door gets `/grist/og.png`. They follow Dawid's Figma templates (Foundations, "opengraph images", 170:6284): one general, one per rarity.
+- Built at build time in `src/lib/og.ts` with Satori (layout to SVG) and resvg (SVG to PNG), from static endpoints. Nothing runs when a link is shared. Adding a drop adds its image.
+- Colours are read from `tokens.css` (light values), the logo and stamp are the template's own SVGs in `src/assets/og/`, the rarity icons come from `tile-icons.ts`. The tint is the tier colour at 8% (the front door uses `--color-bg-subtle`), with the page grain over it, both fading into the background by 75% down.
+- Fonts: Geist 1.9.0 static TTFs (OFL) committed in `src/assets/og/fonts/` with the GPOS table removed. Satori draws glyphs kerned but measures them unkerned, which left visibly wide gaps after words like "Your" and "System". Unkerned, the layout and the drawing agree. Satori can't read woff2 or variable fonts.
+- Text runs are one span per word with a space's width between them, so a line can mix colours. Words are measured with the same font files (fontkitten) before layout: a title steps down from 88px to 76 or 64 only if it would run past two lines, and a summary is cut at a word with an ellipsis when it would run past two.
+- The date from the earlier plan is left out because the template doesn't have one.
+
+## 2026-11-01 · Grist front door hero, badge, logo and footer
+
+- The front door hero follows Dawid's Figma frame (157:6128): the caption reads "Loot for AI grinders. Curated by Dawid Młynarz.", the headline is semibold, and the badge sits in its own column at the lower right (about 180px on desktop) instead of floating inside the headline. On phones it sits under the headline, pinned right.
+- The rotating badge has no outline any more, everywhere it appears. The hero badge reads "Human-curated loot for AI grinders"; at 34 characters it runs round the circle once.
+- The Grist logo uses the Figma `Logo` component (121:178): the dot over the i is now a single slanted block instead of the two-part diamond. The share images use the same artwork.
+- Grist's footer matches the portfolio's: social links and "Dawid Młynarz. All rights reserved", without the closing line and the contact button. The "side quest" credit line and the Footer's `credit` prop are gone.
+- The stamp on the share images keeps "HUMAN CURATED" without a hyphen (Dawid: minor for a preview).
+
+## 2026-11-01 · Author note on Grist
+
+- New `AuthorNote` (Figma "author", 176:6325): Dawid's photo in a circle beside "Howdy! Grist is my side quest…" and "Got a question? Drop me a line" (to /contact). `md` replaces the old "side quest" line at the end of each drop page; `lg` (h3 type, a larger photo, stacked on phones) sits above the footer on the front door.
+- The photo is the existing home portrait (`src/assets/portrait/portrait-photo.avif`), resized by Astro at build time (400 or 560px wide WebP) and cropped to the face in CSS, so nothing new is uploaded. Its background is transparent, so the circle shows `--color-bg-subtle` in both themes.
+- Copy, proposed for search: "a growing collection of prompts, skills, rules and experiments for designing with AI tools, from figuring out what they can really do." It names what the drops are and who they're for in words people search for, and keeps Dawid's own ending. Waiting on Dawid's OK.
+
+## 2026-11-01 · One voice rule for all site copy
+
+- Dawid asked for a standing rule so he doesn't have to explain it again. CLAUDE.md now has "Writing in Dawid's voice (all copy on the site)": start from his words and change as few as possible, use full stops and commas, and avoid colons inside sentences, em and en dashes, semicolons and the usual AI tells. Case studies and the grist-entry `voice.md` point to it.
+- Applied right away. The author note now keeps his sentence ("Enjoy the growing collection of prompts, skills, rules and experiments for designing with AI tools, from figuring out what AI can really do."), with "rules" and "for designing with AI tools" added for search. Share-image alt text, five summaries and hints, and 29 sentences in drop bodies (outside the loot, which is written for AI tools) lose their colons. The italic sample outputs inside drops are left as they are.
+
+## 2026-11-01 · Hero wrap is back, bottom-aligned
+
+- Dawid wanted the earlier front door hero back, with the headline wrapping round the badge (shape-outside), and the badge's bottom level with the last line. Phones still stack the badge under the headline.
+- CSS can't put a float at the bottom, so a small script on the front door sizes the spacer float above the badge from the headline's height, on load, when fonts arrive and when the width changes. At some widths moving the badge rewraps the words and nothing fits, so the badge shrinks by up to 24px until it does. Checked from 768 to 1920px. Without the script the spacer is 1.5 lines tall, as before.
+- The drop page's small badge now grows with the viewport, from 104px on phones to 128px.
+- Author note: "…experiments for product design, from figuring out what it can really do." AI now appears once.
+
+## 2026-11-02 · Embers on hover, bigger hero badge, more room on drops
+
+- Legendary and Mythic cards play embers on hover, from Dawid's builder settings (embers only, 80% of the card's width, strength 0.75, density 0.35, tier colour, in front). `src/scripts/drop-fx.ts` loads the effects library the first time one of these cards is pointed at. The embers play on a layer fixed over the whole viewport, just under the nav, so they rise over neighbouring cards without being clipped. Once per hover, not within a second of the last. Nothing plays with reduced motion or on touch screens. The builder's "every" only applies to its loop trigger, so it isn't used here.
+- Front door badge: 20% bigger on desktop (up to 216px, 19.2vw); phones unchanged.
+- Drop page: 64px between its parts from tablets up (48px on phones), a deeper header and more room under headings and the tl;dr.
+- Author note photo: the About page's portrait (the Mindblown hero's resting face and hair), flattened into one square `src/assets/portrait/portrait-about.webp` (600px, 38 KB) and resized again at build time to 200 or 340px.
+
+## 2026-11-02 · Hover embers removed; readme panel explorations
+
+- The hover embers on Legendary and Mythic cards didn't work for Dawid either. They're gone (`drop-fx.ts` deleted), and the cards are back to the Figma hover.
+- `/grist/review/readme` (preview only): six layouts for the readme panel, each a real popover with no script (CSS tabs, `details` accordion). All of them use the drop card's surface (1px subtle border, large radius) over the open menu's glass (`--color-glass`, `--blur-menu`, `--color-scrim` backdrop, `--shadow-panel`), and put "Why this exists" before the rarities. The layouts are: card, side sheet, drawer, tabs, loot table and drop-down. Phones get bottom sheets. The rarity legend is shown as a list, a ladder, an accordion, a map-key grid, a what-you-get table or a depth meter. The page also compares names for the header button. The recommendation is an info icon with "About".
+- New `info` icon in `Icon.astro`.
+
+## Grist About side sheet (2 Nov)
+
+- Dawid picked layout 2 from the readme playground (`/grist/review/readme`, preview only). The header link is now "About" with an info icon. Readme read like a developer file, and About says what you get. Components renamed to `AboutButton` and `AboutPanel`.
+- One native popover, two shapes. Phones get a bottom sheet (85svh, slides up). From 48em it's a full-height sheet at the right (28rem, slides in from the right). Opening and closing use the same transition (`translate` plus `display`/`overlay` allow-discrete, `@starting-style` for the entry), so it leaves the way it came. With reduced motion it simply appears.
+- Copy starts with Dawid's Howdy line, word for word. The rest of "Why this exists" is two short paragraphs in his voice. The rarity intro uses the same prose style, and the ladder's dashed rung stops at Mythic.
+
+## Grist front door, sandbox and See also (2 Nov)
+
+- About is now an icon button (info), styled like the theme switch and sitting next to it. The label is for screen readers only. The line under "About Grist" in the sheet is gone.
+- Previews now list drops by their drop day, like production, but keep drafts in. So the preview front door shows the real state today (Season 1 complete, Season 2 with one drop out). Production still hides drafts, so Season 1 needs its drafts reviewed before it looks the same live.
+- `/grist/sandbox` (previews only, noindex) is a copy of the front door with every written drop unlocked, for Dawid to click through. The header shows the New badge reading "Sandbox" next to the logo, and the logo leads back to the sandbox. The front door markup moved into `FrontDoor.astro` so both pages share it.
+- See also on every drop: Dawid's `related` picks first, then the nearest drops in the same season, then the same type from other seasons, then the newest. Four cards, listed drops only, so every card leads to a live page.
+- The New badge sits in the card's top right corner instead of next to the rarity.
+
+## Grist front door, round two (2 Nov)
+
+- The front door only shows seasons that have started. The sandbox still shows all eight.
+- A season pack is offered once all eight drops are out (front door and sandbox).
+- The eyebrow is "Loot for AI grinders." with the New badge before it reading "Next drop: Nov 6, 2026". The day comes from the schedule (`nextDropDay`, the earliest slot in any season still to come) and is set at build time, so it moves on with each rebuild. Past the last scheduled slot the badge goes away.
+- The next locked card looks like the other locked cards (dashed), with "Next drop" in its top right corner like New.
+- Every date on Grist uses one format with the year, "Nov 6, 2026" (`formatDate` in `src/lib/drops.ts`): cards, locked cards, drop pages, season headers and the next drop badge.
+- The front door lists seasons newest first, so the running season sits right under the next drop badge. Slots inside a season stay 1 to 8. The sandbox keeps seasons in number order for reading the whole plan.
+
+## Grist drops: installable skills, bundled references, sample runs (2 Nov)
+
+From the market comparison (Claude Doc "Grist drops vs the market").
+
+- Skills download as a .zip like workflows. The folder is named after the `name` in SKILL.md, so it drops straight into `.claude/skills/`. A line under the buttons says where it goes. A one-file skill's drop.md becomes SKILL.md in the zip.
+- Any drop can have a `loot/` folder now, not just workflows. A skill's entry file is SKILL.md, a workflow's README.md. Agent UX Review uses it to ship the Agent Use Case Check and a checkpoint review as `references/`, so it works on its own.
+- Optional sample runs: `output.md` next to index.mdx plus `sampleInput` in the frontmatter shows a "What you get" panel under the drop. Production refuses a drop whose output still has a `CLAUDE:` note, same as the body. The first four (Component Usage Guidelines, Design System Audit, Agent Pre-mortem, Agent UX Review) are Claude's runs, flagged for Dawid to replace or confirm.
+- Dawid's review of the doc (2 Nov). Every Epic, Legendary and Mythic drop is Tested. S1·6 is now a prompt, Token Description Lint (same slug). S2·2 is a prompt, retitled Find Agent Ideas from User Journey Pain Points. S1·4 shows a filled-in DESIGN.md for this site as its sample. S1·8 ships `references/agent-components.md` and a sample report. S2·7 keeps a "You" part for people in each stage and adds a prompt for what an AI tool can draft. All new text is Claude's and flagged with `CLAUDE:` notes.
+- While a season runs, its header shows the pack locked (dashed pill with a lock, like a locked card), a pip per slot filling as drops land, and "The season pack unlocks on" the last drop day. Dawid chose this over a page per season (2 Nov). Season pages can come once there are three or more finished seasons.
+
+## Grist: the DTCG Token Exporter plugin ships with Design Token Pipeline (2 Nov)
+
+- Dawid's Figma plugin lives in `src/content/grist/design-token-pipeline/loot/figma-plugin/`. The only company trace was the plugin id, now `dtcg-token-exporter-mlynarz`. The plugin window has a "Made by Dawid Młynarz" link to mlynarz.com, opened through `figma.openExternal` (the plugin keeps no network access). The README was rewritten short and plain, with neutral example tokens.
+- Files under a drop's `loot/figma-plugin/` ship in the .zip only. They aren't shown on the page or put in the markdown twin and llms files, so 500 lines of plugin code don't flood the copy for AI. A drop with a plugin downloads as a .zip and its card shows "Plugin included" with a Figma icon in the top right corner, next to New.
+- The plugin has a Format choice. W3C DTCG (default) wraps each token as `$value`, `$type` and `$description` (from the Figma variable description), with hex colours and "16px" dimensions, the forms Style Dictionary 4 reads with `usesDtcg`. Plain values keeps the original shape. Tested with a mocked Figma API and a Style Dictionary 4 build, not yet inside Figma.
+
+## Grist Seasons 1 and 2 cleared for launch (2 Nov)
+
+- Dawid confirmed the notes and sample runs. Every Season 1 and 2 drop is out of draft except AI Opportunity Map (rebuilt today, waiting for his read) and AI Assistant Design Sprint (two [YOU] gaps). A production build (`CF_PAGES_BRANCH=main`) passes and lists Season 1 and Human-in-the-loop Checkpoints.
+- AI Opportunity Map now follows the structure of his real FigJam board: a journey table, an agent table under it (leverage, agent's role, user's role, sample exchange, friction addressed, watch for) and an entry point comparison. No client content is used, and the board stays out of the repo.
+- The board was client work about ticket buying, so the ticket-buying illustrations (Opportunity Map, Agent UX Review and its sample run, a component name in Design to Code Handoff) were swapped for grocery and restaurant examples.
+
+## Grist season header from Dawid's design, hidden rarity on locked cards (2 Nov)
+
+- The season header follows Dawid's Figma frame "season header" (Foundations, node 193:3484). Top row: an hourglass (running) or crown (complete) with "Season N", and on the right "n/8 drops" or "Complete" plus a reveal strip, one tile per slot. A slot shows its tier's tile once its drop is out and the hidden [?] tile until then. Below: the title and the blurb, with the pack on the right (under it on phones). The pack is a dashed pill at 50% opacity with a lock until all eight drops are out, then the usual download button. It replaces the pip row from earlier today.
+- Mapped to site tokens. Figma's "h2" there is 28px, so the title uses the site's h3 size in semibold (the site h2 is 56px on desktop). The blurb is the lead style, muted. Hourglass and crown were added to Grist's line icons (Lucide shapes) instead of using Figma's exports.
+- The hidden [?] tile is Dawid's icon from the reveal strip, scaled to the 24px tile grid, as `tier="hidden"` on TileIcon, in `--rarity-hidden-icon` (the common gem's light grey). Every locked card uses it and names only the drop type, so the tier stays a surprise until drop day. Add `rarity/hidden-icon` to the Figma Grist collection to match.
+- The pack file stays `<season>.md` for now. The Figma frame says `.zip`; switching season packs to zips would be its own change.
+- AI Assistant Design Sprint: Dawid's note (2 Nov) that it was a synthetic sprint run by an agent, with lots of human input because the agent can't assume much. The loot now starts with ground rules for the agent: don't assume, ask when context is missing, mark anything inferred as "assumed". Still a draft until he confirms the rest.
+- Locked cards tease what's coming, like a battle pass (Dawid, 2 Nov). A slot whose drop is written and reviewed (out of draft, no `CLAUDE:` or `TEST DATA` note) shows its title and one-liner behind a lock, with the hidden [?] tile and the type. It isn't a link, and the Why, loot and samples stay off the site until drop day. Drafts and unwritten slots still say "Locked". Only the title and summary go public early, and a visible title is a promise, so rename with care.
+- The season header's reveal strip and count follow the real schedule everywhere, the sandbox included (`tiers` from `getSeasons`), so the sandbox header matches the front door while its cards still show every drop. The front door shows only started seasons: the complete ones and the one in progress.
+
+## Grist share images on previews, Seasons 1 and 2 ready (2 Nov)
+
+- Share image URLs are absolute, and they used the live site's address everywhere, so a branch link pointed at an image that only exists once the page is live. Previews now point `og:image` at their own deployment (`CF_PAGES_URL`, set by Cloudflare Pages). Production keeps www.mlynarz.com. Canonical URLs don't change.
+- Images rebuild from each drop's title and summary on every build, so the renamed drops (Token Description Lint, Find Agent Ideas from User Journey Pain Points) already show their new names. Two summaries were cut off with an ellipsis on the card, so they're shorter now (AI Assistant Design Sprint, AI Opportunity Map). The front door uses Dawid's "opengraph-general" frame as it is.
+- Dawid moved every Season 1 and 2 drop to ready. AI Opportunity Map and AI Assistant Design Sprint lost `draft` and their `CLAUDE:` notes. Production still only builds pages and images for drops whose day has come.
+
+## Grist: silent launch this week, drops from Nov 13 (2 Nov)
+
+- Dawid's call: a silent launch this week with Season 1 only, then weekly drops and X marketing from next week. Season 2 now starts Friday Nov 13, 2026, and every later season moves two weeks to keep the same gaps. Season 1 keeps its dates. Production shows Season 1 complete with its pack, and "Next drop: Nov 13, 2026".
+- The sandbox (`/grist/sandbox`) and review queue stay preview-only, so they never ship on mlynarz.com. Every branch preview on Cloudflare Pages still builds them from the same drafts in the repo.
+
+## Grist as a Claude Code plugin marketplace (2 Nov)
+
+- The site hosts the marketplace itself, so there is no separate GitHub repo and the portfolio repo stays private. People run `/plugin marketplace add https://www.mlynarz.com/grist/marketplace.json`, then `/plugin install <slug>@grist`. This needs Claude Code 2.1.224 or later.
+- Only skills and workflows become plugins, since those install as they are. Rules, prompts, checklists and specs stay on the drop pages.
+- The catalog lists the same drops as the front door (`getDrops`), so drafts and drops whose day hasn't come stay out. Production rebuilds on drop days add new plugins.
+- Each plugin is a zip at `/grist/plugins/<slug>.zip`, pinned in the catalog by its SHA-256. No `version` is set, so Claude Code takes the version from the digest and people get an update whenever a drop's files change. The zip writer uses fixed dates, so an unchanged drop keeps its digest.
+- A skill goes in as `skills/<name>/`. A workflow's `skills/` and `agents/` go in as they are. The optional raw value hook in Design to Code Workflow ships as a file but isn't switched on, because its README calls it optional.
+- Previews point their catalog at their own deployment (`CF_PAGES_URL`), so a preview can be tested on its own.

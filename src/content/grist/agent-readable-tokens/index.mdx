@@ -1,0 +1,19 @@
+---
+title: "Token Description Lint"
+summary: "Check your token names and descriptions the way a coding agent reads them."
+hint: "For any system coding agents build from. They pick the wrong colour or size a lot less often."
+steps:
+  - "Paste the prompt with your token file, or the semantic tokens and their descriptions."
+  - "Fix what it flags. Use Token Description Writer for the tokens with no description."
+  - "Run it again after every batch of new tokens."
+season: "s01"
+slot: 6
+drop: "prompt"
+rarity: "uncommon"
+status: "tested"
+related: [write-the-donts-down]
+---
+
+Other designers have been flagging this one online. An agent picks the wrong token when all it has is a name. Reading `blue-500`, it has to guess what the colour is for. Reading `color-text-link`, with a line saying it's for links in running text, it mostly doesn't.
+
+So every semantic token gets its purpose written down. Primitives like `blue-500` don't need one, because components shouldn't use them anyway.

@@ -4,12 +4,19 @@ import type { HTMLAttributes } from "astro/types";
 interface Props extends Omit<HTMLAttributes<"button">, "class" | "type"> {
   /** Renders an <a> when set, otherwise a <button>. */
   href?: string;
+  /** Links only: download the target instead of opening it, under this file name. */
+  download?: string;
   type?: "button" | "submit" | "reset";
   variant?: "primary" | "secondary" | "ghost";
   /** sm: menu contact · md: default · lg: footer email */
   size?: "sm" | "md" | "lg";
-  /** arrow: after the label (calls to action) · arrow-left: carousel back · arrow-up: Back to top */
-  icon?: "arrow" | "arrow-left" | "arrow-up";
+  /**
+   * After the label: arrow (calls to action) · arrow-left (carousel back) · arrow-up (Back to top).
+   * Before the label: arrow-down (downloads) · info · link · copy · sparkles (anything for AI tools).
+   */
+  icon?: "arrow" | "arrow-left" | "arrow-up" | "arrow-down" | "info" | "link" | "copy" | "sparkles";
+  /** Text buttons only. tear: the row tear (default) · icon: no tear, the icon moves as on icon buttons. */
+  hover?: "tear" | "icon";
   /** Makes an icon-only button: the icon is all that shows and this is its accessible name. */
   label?: string;
   class?: string;
@@ -21,16 +28,19 @@ const {
   variant = "primary",
   size = "md",
   icon,
+  hover = "tear",
   label,
   class: className,
   ...attrs
 } = Astro.props;
 const iconOnly = Boolean(label && icon);
+const iconHover = iconOnly || hover === "icon";
 const classes = [
   "button",
   `button--${variant}`,
   `button--${size}`,
   iconOnly && "button--icon",
+  iconHover && "button--icon-hover",
   className,
 ];
 const content = iconOnly ? "" : await Astro.slots.render("default");
@@ -38,10 +48,19 @@ const ICONS = {
   arrow: "M5 12h14M13 6l6 6-6 6",
   "arrow-left": "M19 12H5M11 6l-6 6 6 6",
   "arrow-up": "M12 19V5M5 12l7-7 7 7",
+  info: "M12 21a9 9 0 1 0 0-18 9 9 0 0 0 0 18ZM12 11v5M12 7.5h.01",
+  "arrow-down": "M12 5v14M5 12l7 7 7-7",
+  copy: "M10 8h9a1 1 0 0 1 1 1v10a1 1 0 0 1-1 1h-9a1 1 0 0 1-1-1V9a1 1 0 0 1 1-1ZM5 16a1 1 0 0 1-1-1V5a1 1 0 0 1 1-1h9a1 1 0 0 1 1 1",
+  link: "M10 14a4 4 0 0 0 5.66 0l3-3a4 4 0 0 0-5.66-5.66l-1 1M14 10a4 4 0 0 0-5.66 0l-3 3a4 4 0 0 0 5.66 5.66l1-1",
+  // Lucide "sparkles" (ISC).
+  sparkles:
+    "M9.94 15.5A2 2 0 0 0 8.5 14.06l-6.14-1.58a.5.5 0 0 1 0-.96L8.5 9.94A2 2 0 0 0 9.94 8.5l1.58-6.14a.5.5 0 0 1 .96 0l1.58 6.14a2 2 0 0 0 1.44 1.44l6.14 1.58a.5.5 0 0 1 0 .96l-6.14 1.58a2 2 0 0 0-1.44 1.44l-1.58 6.14a.5.5 0 0 1-.96 0ZM20 3v4M22 5h-4M4 17v2M5 18H3",
 };
+// Arrows point onward, so they follow the label; the rest name the action, so they lead.
+const leading = Boolean(icon && !["arrow", "arrow-left", "arrow-up"].includes(icon));
 // The face is the button at rest. Text buttons add two copies in the hover colours for the row
-// tear (top and bottom rows, middle row); icon buttons animate the icon instead.
-const layers = iconOnly ? ["face"] : ["face", "outer", "middle"];
+// tear (top and bottom rows, middle row); icon-hover buttons animate the icon instead.
+const layers = iconHover ? ["face"] : ["face", "outer", "middle"];
 ---
 
 {(() => {
@@ -53,8 +72,17 @@ const layers = iconOnly ? ["face"] : ["face", "outer", "middle"];
       ]}
       aria-hidden={layer === "face" ? undefined : "true"}
     >
+      {leading && icon && (
+        <svg
+          class:list={["button__icon", `button__icon--${icon}`]}
+          viewBox="0 0 24 24"
+          aria-hidden="true"
+        >
+          <path d={ICONS[icon]} />
+        </svg>
+      )}
       {content && <span set:html={content} />}
-      {icon && (
+      {!leading && icon && (
         <svg
           class:list={["button__icon", `button__icon--${icon}`]}
           viewBox="0 0 24 24"
@@ -88,8 +116,8 @@ const layers = iconOnly ? ["face"] : ["face", "outer", "middle"];
      * One button family, black and white. The anchor or button is a one-cell grid: the face is the
      * button at rest, and text buttons stack two copies of it in the hover colours in the same cell.
      * Hover is the links' row tear, scaled up: the copies arrive as three rows that jolt sideways
-     * for a few frames, then lock together as the inverted button. Icon buttons skip the tear and
-     * move their icon the way it points. Reduced motion (reset.css) keeps only the end state.
+     * for a few frames, then lock together as the inverted button. Icon buttons (and text buttons
+     * with hover="icon") skip the tear and move their icon the way it points. Reduced motion (reset.css) keeps only the end state.
      */
     .button {
       --button-pad: var(--space-3) var(--space-6);
@@ -212,7 +240,7 @@ const layers = iconOnly ? ["face"] : ["face", "outer", "middle"];
     /* ---------- Text buttons: the row tear ----------
        The copies stand in for the face, as the link tear hides the real text while it runs.
        After the tear the top copy stays whole and the middle copy hides, so no seams show. */
-    .button:not(:disabled, .button--icon):is(:hover, :focus-visible) .button__face {
+    .button:not(:disabled, .button--icon-hover):is(:hover, :focus-visible) .button__face {
       opacity: 0;
     }
 
@@ -225,7 +253,8 @@ const layers = iconOnly ? ["face"] : ["face", "outer", "middle"];
       animation: button-tear-middle var(--duration-tear) steps(1, end);
     }
 
-    .button:not(:disabled, .button--icon):is(:hover, :focus-visible) .button__icon {
+    .button:not(:disabled, .button--icon-hover):is(:hover, :focus-visible)
+      :is(.button__icon--arrow, .button__icon--arrow-left, .button__icon--arrow-up) {
       translate: var(--space-1) 0;
     }
 
@@ -279,22 +308,26 @@ const layers = iconOnly ? ["face"] : ["face", "outer", "middle"];
 
     /* ---------- Icon buttons: same colours, the icon goes where it points ----------
        The arrow leaves through the edge it points at and comes back in from the opposite one. */
-    .button--icon:not(:disabled):is(:hover, :focus-visible) .button__face {
+    .button--icon-hover:not(:disabled):is(:hover, :focus-visible) .button__face {
       color: var(--hot-fg);
       background-color: var(--hot-bg);
       box-shadow: inset 0 0 0 var(--border-width) var(--hot-ring);
     }
 
-    .button--icon:not(:disabled):is(:hover, :focus-visible) .button__icon--arrow {
+    .button--icon-hover:not(:disabled):is(:hover, :focus-visible) .button__icon--arrow {
       animation: button-icon-right 560ms;
     }
 
-    .button--icon:not(:disabled):is(:hover, :focus-visible) .button__icon--arrow-left {
+    .button--icon-hover:not(:disabled):is(:hover, :focus-visible) .button__icon--arrow-left {
       animation: button-icon-left 560ms;
     }
 
-    .button--icon:not(:disabled):is(:hover, :focus-visible) .button__icon--arrow-up {
+    .button--icon-hover:not(:disabled):is(:hover, :focus-visible) .button__icon--arrow-up {
       animation: button-icon-up 560ms;
+    }
+
+    .button--icon-hover:not(:disabled):is(:hover, :focus-visible) .button__icon--arrow-down {
+      animation: button-icon-down 560ms;
     }
 
     @keyframes button-icon-right {
@@ -349,6 +382,26 @@ const layers = iconOnly ? ["face"] : ["face", "outer", "middle"];
 
       41% {
         translate: 0 200%;
+        animation-timing-function: var(--ease-out-expo);
+      }
+
+      100% {
+        translate: 0 0;
+      }
+    }
+
+    @keyframes button-icon-down {
+      0% {
+        translate: 0 0;
+        animation-timing-function: var(--ease-standard);
+      }
+
+      40% {
+        translate: 0 200%;
+      }
+
+      41% {
+        translate: 0 -200%;
         animation-timing-function: var(--ease-out-expo);
       }
 

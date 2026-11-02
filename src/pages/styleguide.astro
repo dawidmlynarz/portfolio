@@ -40,6 +40,25 @@ import NextUp from "@/components/content/NextUp.astro";
 import CaseStudyToc from "@/components/content/CaseStudyToc.astro";
 import { getPagedWork } from "@/lib/work";
 import LockPanel from "@/components/blocks/LockPanel.astro";
+import Gem from "@/components/grist/Gem.astro";
+import TileIcon from "@/components/grist/TileIcon.astro";
+import Icon, { type IconName } from "@/components/grist/Icon.astro";
+import Logo from "@/components/grist/Logo.astro";
+import RarityLabel from "@/components/grist/RarityLabel.astro";
+import AboutButton from "@/components/grist/AboutButton.astro";
+import AboutPanel from "@/components/grist/AboutPanel.astro";
+import DownloadButton from "@/components/grist/DownloadButton.astro";
+import PermalinkButton from "@/components/grist/PermalinkButton.astro";
+import NewBadge from "@/components/grist/NewBadge.astro";
+import StatusLabel from "@/components/grist/StatusLabel.astro";
+import SeasonHeader from "@/components/grist/SeasonHeader.astro";
+import DropCard from "@/components/grist/DropCard.astro";
+import HumanStamp from "@/components/grist/HumanStamp.astro";
+import AuthorNote from "@/components/grist/AuthorNote.astro";
+import LootBox from "@/components/grist/LootBox.astro";
+import CopyButton from "@/components/grist/CopyButton.astro";
+import { getBuiltDrops, getDrops, hasPlugin } from "@/lib/drops";
+import { RARITIES } from "@/lib/grist";
 import { getEntry } from "astro:content";
 import { COLOR_ROLES, SPACE } from "@/lib/tokens";
 import { SERVICES } from "@/lib/services";
@@ -62,9 +81,13 @@ const STYLEGUIDE_SECTIONS = [
   ["shape-title", "Shape & depth"],
   ["layout-title", "Layout"],
   ["components-title", "Components"],
+  ["grist-title", "Grist"],
   ["blocks-title", "Blocks"],
 ].map(([slug, text]) => ({ depth: 2, slug: slug!, text: text! }));
 const nextUpSample = (await getPagedWork()).slice(0, 3);
+const sampleDrops = await getDrops();
+const pluginDrop = (await getBuiltDrops()).find(hasPlugin);
+const sampleLoot = sampleDrops.find((d) => d.data.drop === "checklist") ?? sampleDrops[0];
 
 const TYPE_ROLES = [
   { role: "display", className: "text-display", sample: "hello@mlynarz.com" },
@@ -109,8 +132,19 @@ const SECTIONS = [
   ["shape", "Shape & depth"],
   ["layout", "Layout"],
   ["components", "Components"],
+  ["grist", "Grist"],
   ["blocks", "Blocks"],
 ] as const;
+
+/** Grist's line icons for meta lines, in the site's icon style. */
+const GRIST_ICONS: IconName[] = [
+  "lock",
+  "calendar",
+  "arrow-left",
+  "close",
+  "circle-check",
+  "flask",
+];
 ---
 
 <SiteLayout title="Styleguide" description="Tokens and components of mlynarz.com." noindex>
@@ -455,6 +489,201 @@ const SECTIONS = [
     </Container>
   </Section>
 
+  <Section id="grist" aria-labelledby="grist-title" tone="subtle">
+    <Container>
+      <Stack gap="12">
+        <Stack gap="4">
+          <h2 id="grist-title">Grist</h2>
+          <p class="muted measure">
+            The layer under <code>/grist</code>. It uses the site tokens and components, and adds
+            only the rarity colours, a few line icons, the pixel gems, the stamp and the logo.
+          </p>
+        </Stack>
+
+        <Stack gap="4">
+          <h3>Rarity</h3>
+          <p class="muted measure">
+            Each tier has a fill, a shade and a light. The gem uses all three; tier names use the
+            shade on light and the light on dark. Epic adds sparkles; Legendary adds a crown and a
+            light band that crosses the gem (reduced motion stops it). Rarity is set per drop, by
+            how deep it goes. Beside each gem, the tile icon that replaces it while RARITY_ICON is
+            "tile"; tier names then share the icon's hue (the labels below show the active style).
+          </p>
+          <Grid min="10rem" gap="6" as="ul" class="plain-list">
+            {RARITIES.map((rarity) => (
+              <li class="rarity-swatch">
+                <span class="rarity-swatch__gem">
+                  {rarity !== "mythic" && <Gem rarity={rarity} />}
+                  <TileIcon tier={rarity} />
+                </span>
+                <RarityLabel rarity={rarity} />
+                <span class="rarity-swatch__chips">
+                  {(["fill", "shade", "light"] as const).map((role) => (
+                    <span
+                      class="swatch__chip rarity-swatch__chip"
+                      style={`--swatch: var(--rarity-${rarity}-${role})`}
+                      title={`--rarity-${rarity}-${role}`}
+                    />
+                  ))}
+                </span>
+              </li>
+            ))}
+          </Grid>
+        </Stack>
+
+        <Stack gap="4">
+          <h3>Logo</h3>
+          <div class="row">
+            <Logo />
+          </div>
+        </Stack>
+
+        <Stack gap="4">
+          <h3>Human-curated stamp and New</h3>
+          <p class="muted measure">
+            The stamp turns once every 24 seconds and stands still with reduced motion. Large in the
+            front door hero, small on each drop. New marks drops from the last week, in the card's
+            top right corner. The same badge says Sandbox next to the logo on the sandbox front
+            door.
+          </p>
+          <div class="row">
+            <HumanStamp />
+            <HumanStamp size="sm" />
+            <NewBadge />
+            <NewBadge label="Sandbox" />
+          </div>
+        </Stack>
+
+        <Stack gap="4">
+          <h3>Author note</h3>
+          <p class="muted measure">
+            Dawid's hello with his photo. Medium closes each drop page, large sits above the footer
+            on the front door.
+          </p>
+          <AuthorNote />
+          <AuthorNote size="lg" />
+        </Stack>
+
+        <Stack gap="4">
+          <h3>Status</h3>
+          <p class="muted measure">
+            Next to the date on every drop: Tested when Dawid has used it on real work, Trying when
+            he's testing it now.
+          </p>
+          <div class="row">
+            <StatusLabel status="tested" />
+            <StatusLabel status="trying" />
+          </div>
+        </Stack>
+
+        <Stack gap="4">
+          <h3>Season and drop tile</h3>
+          <p class="muted measure">
+            One tile everywhere drops are listed. It reads its own width: from 48rem it lays out as
+            a row with the date on the right, narrower it stacks. Seasons are battle passes: slots
+            not yet dropped show locked, the next one marked in its corner, a missed one as late.
+            The season header shows a tile per slot, the hidden [?] tile until that drop is out, and
+            keeps the pack locked until all eight have landed. Locked tiles hide the tier the same
+            way and name only the type. A reviewed drop waiting for its day also shows its title and
+            one-liner, still locked. A drop that ships a Figma plugin says so in the corner.
+          </p>
+          <SeasonHeader season="s01" tiers={["common", "rare", "uncommon"]} />
+          {sampleDrops[0] && <DropCard drop={sampleDrops[0]} />}
+          <div class="grist-tiles">
+            {sampleDrops.slice(1, 4).map((drop) => (
+              <DropCard drop={drop} season />
+            ))}
+            {pluginDrop && <DropCard drop={pluginDrop} />}
+            <DropCard
+              locked={{ type: "spec", rarity: "epic", date: new Date("2027-01-22"), next: true }}
+            />
+            <DropCard
+              locked={{
+                type: "skill",
+                rarity: "legendary",
+                date: new Date("2027-02-05"),
+                teaser: {
+                  title: "Agent UX Review",
+                  summary:
+                    "A full review of an agent concept, from whether it should exist to where it stops and asks.",
+                },
+              }}
+            />
+            <DropCard
+              locked={{ type: "rule", rarity: "common", date: new Date("2026-10-16"), late: true }}
+            />
+          </div>
+          <SeasonHeader
+            season="s02"
+            tiers={["uncommon", "common", "rare", "epic", "uncommon", "rare", "epic", "legendary"]}
+          />
+          <SeasonHeader season="s03" tiers={[]} />
+        </Stack>
+
+        {sampleLoot && (
+          <Stack gap="4">
+            <h3>Loot box</h3>
+            <div class="grist-loot">
+              <LootBox drop={sampleLoot} id="sg-drop" />
+            </div>
+          </Stack>
+        )}
+
+        <Stack gap="4">
+          <h3>Line icons</h3>
+          <ul class="row plain-list grist-icons" role="list">
+            {GRIST_ICONS.map((name) => (
+              <li class="grist-icons__item">
+                <Icon name={name} />
+                <code>{name}</code>
+              </li>
+            ))}
+          </ul>
+          <p class="text-small">Size lg (1.25em), for the date, the status and the back arrow:</p>
+          <ul class="row plain-list grist-icons" role="list">
+            {GRIST_ICONS.map((name) => (
+              <li class="grist-icons__item">
+                <Icon name={name} size="lg" />
+                <code>{name}</code>
+              </li>
+            ))}
+          </ul>
+        </Stack>
+
+        <Stack gap="4">
+          <h3>Buttons</h3>
+          <p class="muted measure">
+            About (info icon) opens the side sheet from a link-style button in the Grist header.
+            Then the site's secondary pill with its own line icons: Copy for AI (sparkles; fetches
+            the markdown twin), the ghost copy icon on the loot box's corner (just the drop's text),
+            Download (on hover the arrow drops out and back in, no tear), Permalink and Get in
+            touch.
+          </p>
+          <div class="row">
+            <AboutButton panel="about-demo" />
+            <AboutPanel id="about-demo" />
+            <CopyButton text="Copied from the styleguide" icon="sparkles">
+              Copy for AI
+            </CopyButton>
+            <CopyButton
+              text="Copied from the styleguide"
+              variant="ghost"
+              label="Copy just the drop"
+            />
+            <DownloadButton
+              href="/grist/human-in-the-loop-checkpoints.md"
+              name="human-in-the-loop-checkpoints.md"
+            />
+            <PermalinkButton url="https://www.mlynarz.com/grist/human-in-the-loop-checkpoints" />
+            <Button href="/contact" variant="secondary" icon="arrow">
+              Get in touch
+            </Button>
+          </div>
+        </Stack>
+      </Stack>
+    </Container>
+  </Section>
+
   <Section id="blocks" aria-labelledby="blocks-title" tone="subtle" space="sm">
     <Container>
       <Stack gap="4">
@@ -716,6 +945,58 @@ const SECTIONS = [
       padding-block: var(--space-4);
       border: var(--border-width) dashed var(--color-border-muted);
       border-radius: var(--radius-md);
+    }
+
+    .rarity-swatch {
+      display: grid;
+      align-content: start;
+      justify-items: start;
+      gap: var(--space-3);
+    }
+
+    /* Tall enough for the crowned Legendary gem, so every tier's label lines up. */
+    .rarity-swatch__gem {
+      display: flex;
+      gap: var(--space-2);
+      align-items: end;
+      min-block-size: var(--space-6);
+      zoom: 3;
+    }
+
+    .rarity-swatch__chips {
+      display: flex;
+      gap: var(--space-1);
+    }
+
+    .rarity-swatch__chip {
+      inline-size: var(--space-8);
+      block-size: var(--space-8);
+    }
+
+    .grist-tiles {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(min(100%, 18rem), 1fr));
+      gap: var(--space-4);
+    }
+
+    .grist-loot {
+      max-inline-size: var(--measure);
+      padding-block-start: var(--space-12);
+    }
+
+    .grist-icons {
+      gap: var(--space-6);
+    }
+
+    .grist-icons__item {
+      display: grid;
+      justify-items: center;
+      gap: var(--space-2);
+      font-size: var(--text-h3);
+    }
+
+    .grist-icons__item code {
+      font-size: var(--text-caption);
     }
   }
 </style>

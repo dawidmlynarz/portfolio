@@ -5,3 +5,4 @@ package-lock.json
 reference
 .generated
 .wrangler
+.claude/skills/grist-entry/drafts.md

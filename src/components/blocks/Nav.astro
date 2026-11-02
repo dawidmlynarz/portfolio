@@ -17,7 +17,7 @@
  */
 import ThemeToggle from "@/components/blocks/ThemeToggle.astro";
 import Link from "@/components/ui/Link.astro";
-import { MENU_SOCIAL_LINKS, NAV_LINKS, SITE } from "@/lib/site";
+import { MARK_PATH, MENU_SOCIAL_LINKS, NAV_LINKS, SITE } from "@/lib/site";
 
 const path = Astro.url.pathname.replace(/\.html$/, "");
 const isHome = path === "/" || path === "/index";
@@ -38,7 +38,7 @@ const menu = [{ href: "/", label: "Home" }, ...NAV_LINKS];
           <span class="nav__mark" aria-hidden="true">
             {["base", "outer", "middle"].map((part) => (
               <svg class={`nav__mark-svg nav__mark-svg--${part}`} viewBox="0 0 32 24">
-                <path d="M23.84 0 15.99 7.94 8.15 0 0 17.69h9.1l1.01-2.21L16 24l5.87-8.52 1.06 2.21H32z" />
+                <path d={MARK_PATH} />
               </svg>
             ))}
           </span>

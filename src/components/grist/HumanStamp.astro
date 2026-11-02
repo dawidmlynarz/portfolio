@@ -1,0 +1,142 @@
+---
+/**
+ * The "human curated" stamp, a spin-text badge: the words run round a circle (fitted to it exactly
+ * with textLength) and turn slowly, with the site's mark small in a black disc at the centre. No
+ * outline (Dawid, 1 Nov). No surface of its own on the page; the small one gets the page colour behind
+ * it, since it sits over the loot box's edge. The whole badge links to the portfolio, with no hover
+ * effect. Plain SVG and a CSS turn; reduced motion keeps it still.
+ */
+import { MARK_PATH, SITE } from "@/lib/site";
+
+interface Props {
+  size?: "sm" | "lg";
+  /** One phrase, run round the circle (twice if it is short). */
+  words?: string;
+  class?: string;
+}
+
+const { size = "lg", words, class: className } = Astro.props;
+const phrase = words ?? (size === "sm" ? "Human-curated" : "Human-curated · Dawid Młynarz");
+// A long phrase runs round once in larger letters, a short one twice, so both stay readable at
+// phone size.
+const once = phrase.length > 18;
+const WORDS = once ? `${phrase} • ` : `${phrase} • ${phrase} • `;
+const FONT_SIZE = once || size === "sm" ? 22 : 16;
+// The trailing space is a no-break space, or SVG drops it and the loop's seam closes up.
+// Text circle radius in the 280-unit box; textLength stretches the words to close the loop.
+const R = 100;
+const ring = `M ${140 - R},140 a ${R},${R} 0 1,1 ${2 * R},0 a ${R},${R} 0 1,1 -${2 * R},0`;
+const pathId = `stamp-ring-${crypto.randomUUID().slice(0, 8)}`;
+---
+
+<a
+  class:list={["human-stamp", `human-stamp--${size}`, className]}
+  href="/"
+  data-no-tear
+  aria-label={`Human-curated by ${SITE.name}. Visit the portfolio.`}
+>
+  <svg class="human-stamp__svg" viewBox="0 0 280 280" aria-hidden="true" focusable="false">
+    <defs>
+      <path id={pathId} d={ring} />
+    </defs>
+    <g class="human-stamp__spin">
+      <text class="human-stamp__words" font-size={FONT_SIZE}>
+        <textPath
+          href={`#${pathId}`}
+          textLength={(2 * Math.PI * R).toFixed(2)}
+          lengthAdjust="spacing"
+        >
+          {WORDS.toUpperCase().replace(/ $/, "\u00a0")}
+        </textPath>
+      </text>
+    </g>
+  </svg>
+  <span class="human-stamp__core" aria-hidden="true">
+    <svg viewBox="0 0 32 24" focusable="false">
+      <path d={MARK_PATH} />
+    </svg>
+  </span>
+</a>
+
+<style>
+  @layer components {
+    /* Large: scales with the viewport, from 7.5rem on phones to 15rem. */
+    .human-stamp {
+      --stamp-size: clamp(var(--space-24) + var(--space-6), 24vw, var(--space-24) * 2.5);
+      --underline-size: 0%;
+
+      display: inline-grid;
+      flex: none;
+      place-items: center;
+      inline-size: var(--stamp-size);
+      aspect-ratio: 1;
+      border-radius: var(--radius-pill);
+      color: var(--color-text);
+    }
+
+    /* Small: 104px on phones, growing with the viewport to 128px, so the words stay readable. */
+    .human-stamp--sm {
+      --stamp-size: clamp(
+        var(--space-24) + var(--space-2),
+        var(--space-24) + 3vw,
+        var(--space-24) + var(--space-8)
+      );
+
+      background-color: var(--color-bg);
+    }
+
+    .human-stamp:focus-visible {
+      outline-offset: var(--space-1);
+    }
+
+    .human-stamp__svg,
+    .human-stamp__core {
+      grid-area: 1 / 1;
+    }
+
+    .human-stamp__svg {
+      inline-size: 100%;
+      block-size: 100%;
+      overflow: visible;
+    }
+
+    .human-stamp__words {
+      font-family: var(--font-body);
+      font-weight: var(--weight-semibold);
+      fill: currentcolor;
+    }
+
+    .human-stamp__spin {
+      transform-origin: center;
+      transform-box: view-box;
+    }
+
+    /* The nav's mark: a black disc (white in dark mode) with the M in the page colour. */
+    .human-stamp__core {
+      display: grid;
+      place-items: center;
+      inline-size: 32%;
+      aspect-ratio: 1;
+      border-radius: var(--radius-pill);
+      background-color: var(--color-text);
+    }
+
+    .human-stamp__core svg {
+      inline-size: 46%;
+      block-size: auto;
+      fill: var(--color-bg);
+    }
+
+    @media (prefers-reduced-motion: no-preference) {
+      .human-stamp__spin {
+        animation: human-stamp-turn var(--duration-stamp) linear infinite;
+      }
+    }
+
+    @keyframes human-stamp-turn {
+      to {
+        rotate: 1turn;
+      }
+    }
+  }
+</style>

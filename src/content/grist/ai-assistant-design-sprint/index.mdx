@@ -1,0 +1,31 @@
+---
+title: "AI Assistant Design Sprint"
+summary: "A synthetic sprint, run by an agent, that takes a chat assistant from idea to a clickable prototype."
+hint: "For when a client wants an AI assistant and nothing exists yet. Before any model work, you have an audit, a journey, an interaction spec and a prototype."
+example: true
+season: "s02"
+slot: 7
+drop: "spec"
+rarity: "epic"
+status: "tested"
+steps:
+  - "Agree the sprint plan with the client up front."
+  - "Paste the ground rules into your agent first, so it asks instead of assuming."
+  - "Run the stages in order. Do the part marked You yourself, then paste the stage's prompt."
+  - "Paste each stage's output into the next prompt, and end on the prototype review with decisions written down."
+related: [agent-use-case-check, agent-ux-review]
+---
+
+It was actually a synthetic sprint, run by an agent as if it was a real activity. It went from an audit of competing assistants to a journey map, an interaction spec and a clickable prototype with a scripted main flow.
+
+The effort was lots of human input to make it work, since the agent can't assume too much. So the loot starts with a guardrail. The agent doesn't assume, and when it lacks context it always asks.
+
+## Example
+
+An illustration of one stage in the interaction spec, for a hotel booking assistant:
+
+- **Stage:** choosing dates
+- **Says:** "Which nights are you looking at? I can show what's free around them too."
+- **Shows:** a date picker and three nearby date options with prices
+- **Does:** holds nothing until the person picks a room
+- **Never:** books, or charges, without a final confirmation

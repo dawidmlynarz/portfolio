@@ -1,0 +1,26 @@
+---
+title: "Agent Behaviour Spec"
+summary: "The design doc for how an agent behaves, written so designers, engineers and the prompt all read the same thing."
+hint: "For when an agent concept is about to be built. One document says what the agent may do and when it has to ask."
+season: "s06"
+slot: 3
+drop: "spec"
+rarity: "epic"
+status: "tested"
+steps:
+  - 'Fill every section; write "none" rather than leaving one blank.'
+  - "Review it with engineering before anyone writes the prompt."
+  - "Version it. Every change in behaviour starts as a change here."
+example: true
+draft: true
+---
+
+{/* CLAUDE: Imported from another AI tool's draft (.claude/skills/grist-entry/drafts.md, season 4 drop 3). The loot is as drafted. The tl;dr, hint and Why aren't Dawid's words yet; status and any source are unconfirmed. */}
+
+Most agents behave the way their system prompt says, and nobody designed the system prompt. With a spec, behaviour gets decided and reviewed like any other design work, and the prompt is written from it.
+
+"Be careful with payments" is a hope. Write each boundary so a test could catch it being broken.
+
+## Example
+
+Here's the _Checkpoints_ section for a group-travel agent. _Asks before: paying, cancelling a booking, emailing anyone outside the team. Acts and reports: searching, holding seats for up to 24 hours, drafting messages. Silence on a checkpoint means nothing happens._

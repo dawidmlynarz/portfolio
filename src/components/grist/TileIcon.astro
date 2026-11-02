@@ -1,0 +1,145 @@
+---
+/**
+ * Dawid's tile icon for a rarity tier, shown instead of the pixel gem when RARITY_ICON is "tile"
+ * (src/lib/grist.ts), and the hidden [?] tile for a tier that hasn't dropped yet. Decorative
+ * (a tier name always sits next to it). Legendary and Mythic have a foil shine: a soft diagonal band sweeps
+ * across the tiles, clipped to them, and stops under reduced motion.
+ */
+import { HIDDEN_ICON_PATHS, RARITY_ICON_PATHS, type RarityIconTier } from "./tile-icons";
+
+interface Props {
+  /** hidden: the [?] tile, the rarity kept back until the drop lands */
+  tier: RarityIconTier | "hidden";
+  /** sm: 1.25em, beside a label, like the meta icons · md: 1.5em, on the drop page · lg: a close-up */
+  size?: "sm" | "md" | "lg";
+}
+
+const { tier, size = "sm" } = Astro.props;
+const paths = tier === "hidden" ? HIDDEN_ICON_PATHS : RARITY_ICON_PATHS[tier];
+const shiny = tier === "legendary" || tier === "mythic";
+// Unique per instance, so every icon on the page clips its own band.
+const clipId = `rarity-icon-${crypto.randomUUID().slice(0, 8)}`;
+---
+
+<svg
+  class:list={["rarity-icon", `rarity-icon--${tier}`, `rarity-icon--${size}`]}
+  viewBox="0 0 24 24"
+  aria-hidden="true"
+  focusable="false"
+>
+  {shiny && (
+    <defs>
+      <clipPath id={clipId}>
+        {paths.map((d) => (
+          <path d={d} />
+        ))}
+      </clipPath>
+      <linearGradient id={`${clipId}-band`} x1="0" x2="1" y1="0" y2="0">
+        <stop class="rarity-icon__light" offset="0" stop-opacity="0" />
+        <stop class="rarity-icon__light" offset="0.35" stop-opacity="0.25" />
+        <stop class="rarity-icon__light" offset="0.5" stop-opacity="0.9" />
+        <stop class="rarity-icon__light" offset="0.65" stop-opacity="0.25" />
+        <stop class="rarity-icon__light" offset="1" stop-opacity="0" />
+      </linearGradient>
+    </defs>
+  )}
+  {paths.map((d) => (
+    <path d={d} />
+  ))}
+  {shiny && (
+    <g clip-path={`url(#${clipId})`}>
+      <g transform="rotate(25 12 12)">
+        <rect
+          class="rarity-icon__sweep"
+          x="-20"
+          y="-12"
+          width="12"
+          height="48"
+          fill={`url(#${clipId}-band)`}
+        />
+      </g>
+    </g>
+  )}
+</svg>
+
+<style>
+  @layer components {
+    .rarity-icon {
+      flex: none;
+      fill: var(--rarity-common-icon);
+      overflow: visible;
+    }
+
+    .rarity-icon--sm {
+      inline-size: 1.25em;
+      block-size: 1.25em;
+    }
+
+    .rarity-icon--md {
+      inline-size: 1.5em;
+      block-size: 1.5em;
+    }
+
+    .rarity-icon--lg {
+      inline-size: var(--space-16);
+      block-size: var(--space-16);
+    }
+
+    .rarity-icon--uncommon {
+      fill: var(--rarity-uncommon-icon);
+    }
+
+    .rarity-icon--rare {
+      fill: var(--rarity-rare-icon);
+    }
+
+    .rarity-icon--epic {
+      fill: var(--rarity-epic-icon);
+    }
+
+    .rarity-icon--legendary {
+      fill: var(--rarity-legendary-icon);
+    }
+
+    .rarity-icon--mythic {
+      fill: var(--rarity-mythic-icon);
+    }
+
+    .rarity-icon--hidden {
+      fill: var(--rarity-hidden-icon);
+    }
+
+    /* The page's whitest ink in either theme, as on the pixel gem's highlight. */
+    .rarity-icon__light {
+      stop-color: light-dark(var(--color-bg), var(--color-text));
+    }
+
+    .rarity-icon__sweep {
+      opacity: 0;
+      transform-box: view-box;
+    }
+
+    @media (prefers-reduced-motion: no-preference) {
+      .rarity-icon__sweep {
+        animation: rarity-icon-sweep var(--duration-shine) var(--ease-in-out-sine) infinite;
+      }
+    }
+
+    /*
+     * The foil from the library's Legendary card: a soft diagonal band with a bright core, easing in
+     * and out as it crosses in the first 43%, then resting off the icon.
+     */
+    @keyframes rarity-icon-sweep {
+      0% {
+        opacity: 1;
+        translate: 0 0;
+      }
+
+      43%,
+      100% {
+        opacity: 1;
+        translate: 48px 0;
+      }
+    }
+  }
+</style>

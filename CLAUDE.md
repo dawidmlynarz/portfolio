@@ -15,13 +15,31 @@ Replacing a Webflow site with a clean, Webflow-agnostic build. Keep the `/work/<
 8. **Accessibility:** visible focus (`--color-focus`), semantic HTML, respect `prefers-reduced-motion` (including the liquid reveal and link underline).
 9. **Performance:** no framework JS by default; hydrate islands lazily (`client:visible`). Motion lives in one module, `src/scripts/motion.ts` (GSAP); scrolling stays native. Keep it lean, and make sure everything it animates is complete without it (no JS, reduced motion).
 
+## Writing in Dawid's voice (all copy on the site)
+
+Applies to every word a visitor reads: page and UI copy, case studies, Grist (except the loot text written for AI tools), alt text, meta descriptions and share images. Dawid has asked for this many times; follow it without being reminded.
+
+- **Start from his words.** When he gives text, keep it. Change as few words as possible, and when a change helps (clarity, SEO), work the words into his own sentence instead of rebuilding it. Show the change next to his original.
+- **Punctuation: full stops and commas.** Split a long sentence into two instead of joining clauses.
+  - No colons inside a sentence ("Grist is X: a Y"). A colon is fine only as a label in UI ("Season 1:") or before a code block.
+  - No em dashes (—) and no en dashes (–) as dashes. A number range may keep the en dash already in the design.
+  - No semicolons.
+  - Hyphens only inside compound words ("human-curated", "one-line"), never as punctuation.
+- **Sound like a person talking.** First person, plain verbs, short and long sentences mixed, a little uneven. Contractions are fine.
+- **Avoid AI tells:** "not X, it's Y" and "X instead of Y" punchlines, tidy triplets everywhere, aphorisms as the last line, rhetorical questions, bold on every paragraph, takeaways that restate the page, and the words "seamless", "leverage", "delve", "robust", "game-changer", "the turning point", "the biggest lever".
+- **Before shipping any copy,** reread it for `:` `—` `–` `;` and the words above, and fix them.
+
 ## Writing case studies
 
 - Write only what Dawid did, in his voice (first person, plain, like the NerdWallet and BeatStars pages). Facts come from him; anything not from him is flagged before it ships.
 - Numbers: never invent one silently. If Dawid asks for an estimate, label it "(estimate)" on the page and note it in a one-line MDX comment.
-- Make it read as written by a person: varied sentence length, plain verbs, specific details, a little unevenness. Avoid AI tells: "not X, it's Y" contrasts, tidy triplets everywhere, "the turning point", "the biggest lever", "game-changer", "seamless", "leverage", "delve", "robust", em dashes, rhetorical questions, bold on every paragraph, and takeaways that restate the page.
+- Follow "Writing in Dawid's voice" above, with specific details from the work.
 - `<Metrics>` takes at most three numbers.
 - A `<Quote>` sits between two paragraphs of text, never right before or after a `Figure`, `Video`, `BeforeAfter` or `ImageGrid`.
+
+## Writing Grist drops
+
+Use the `grist-entry` skill (`.claude/skills/grist-entry/`) and its `voice.md`, on top of "Writing in Dawid's voice". Dawid writes the Why; Claude formats and flags what it added with a `CLAUDE:` comment, which production builds refuse to publish. Every drop says `status: tested` or `trying`.
 
 ## Commands
 

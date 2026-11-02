@@ -1,0 +1,54 @@
+---
+/**
+ * Preview only: six layouts for the readme panel (src/experiments/readme-panel). Production builds
+ * no page here, and /grist/review is out of the sitemap.
+ */
+import GristLayout from "@/layouts/GristLayout.astro";
+import Container from "@/components/layout/Container.astro";
+import ReadmeLab from "@/experiments/readme-panel/ReadmeLab.astro";
+import { isProduction } from "@/lib/site";
+
+export function getStaticPaths() {
+  return isProduction ? [] : [{ params: { all: undefined } }];
+}
+---
+
+<GristLayout
+  title="The readme, six ways · Grist"
+  description="Six layouts for the panel that explains Grist and its rarities."
+  noindex
+>
+  <Container class="rdx-page">
+    <header class="rdx-page__head">
+      <p class="text-caption rdx-page__muted">Preview only</p>
+      <h1>The readme, six ways</h1>
+      <p class="text-lead rdx-page__muted">
+        Each one has the drop card's outline over the portfolio menu's frosted glass, with why this
+        exists first and the rarities second. They differ in where the panel opens and how the
+        rarities are shown.
+      </p>
+    </header>
+    <ReadmeLab />
+  </Container>
+</GristLayout>
+
+<style>
+  @layer components {
+    .rdx-page {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr);
+      gap: var(--space-12);
+      padding-block: var(--space-12) var(--space-section-md);
+    }
+
+    .rdx-page__head {
+      display: grid;
+      gap: var(--space-3);
+      max-inline-size: var(--measure);
+    }
+
+    .rdx-page__muted {
+      color: var(--color-text-muted);
+    }
+  }
+</style>

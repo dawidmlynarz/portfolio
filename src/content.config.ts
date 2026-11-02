@@ -2,6 +2,7 @@ import { defineCollection, reference } from "astro:content";
 import { glob } from "astro/loaders";
 import { z } from "astro/zod";
 import { CLIENTS, type Client } from "./lib/clients";
+import { DROP_TYPES, RARITIES, RARITY_INFO, SEASONS, STATUSES } from "./lib/grist";
 
 /**
  * Case studies: one folder per case study, src/content/work/<slug>/index.mdx, with its images
@@ -62,4 +63,76 @@ const work = defineCollection({
     }),
 });
 
-export const collections = { work };
+/**
+ * Grist drops: one folder per drop, src/content/grist/<slug>/, holding index.mdx (the note, in
+ * Dawid's words) and drop.md (the loot itself, served raw at /grist/<slug>/drop.md). The drop type
+ * is its format, the rarity how deep it goes, and the season slot sets the drop day (src/lib/grist.ts).
+ */
+const keys = <T extends Record<string, unknown>>(object: T) =>
+  Object.keys(object) as [Extract<keyof T, string>, ...Extract<keyof T, string>[]];
+
+const grist = defineCollection({
+  loader: glob({
+    pattern: "*/index.mdx",
+    base: "./src/content/grist",
+    generateId: ({ entry }) => entry.split("/")[0]!,
+  }),
+  schema: z
+    .object({
+      title: z.string(),
+      /** One sentence: the card line, the tl;dr and the meta description. */
+      summary: z.string(),
+      /** One sentence at the top: when to use it and what you get. */
+      hint: z.string(),
+      /** How to use it, step by step. Prompt and up. */
+      steps: z.array(z.string()).default([]),
+      /** The body has a "## Example" section. Spec and up. */
+      example: z.boolean().default(false),
+      /** One line: when not to use it. Skill only. */
+      limits: z.string().optional(),
+      season: z.enum(keys(SEASONS)),
+      drop: z.enum(keys(DROP_TYPES)),
+      /** Set by hand: how deep the drop goes (RARITY_INFO). */
+      rarity: z.enum(RARITIES),
+      /** Used on real work, or something Dawid is trying (STATUSES). */
+      status: z.enum(keys(STATUSES)),
+      /** Where Dawid learned it: guides, reports, research he has read (up to three). Shown as
+       * "Learned from" under the Why. Publishers are fine to name; product recommendations aren't. */
+      learnedFrom: z
+        .array(z.object({ title: z.string(), url: z.url().optional() }))
+        .max(3)
+        .default([]),
+      /** Its place in the season, 1 to 8. The slot sets the drop day (src/lib/grist.ts). */
+      slot: z.number().int().min(1).max(8),
+      /** The input a sample run used, in one line. Goes with output.md (the run's result). */
+      sampleInput: z.string().optional(),
+      /** Slugs for See also. */
+      related: z.array(z.string()).default([]),
+      /** Drafts show on preview builds only. */
+      draft: z.boolean().default(false),
+    })
+    .superRefine((data, ctx) => {
+      if (data.rarity === "mythic" && data.drop !== "workflow")
+        ctx.addIssue({
+          code: "custom",
+          path: ["drop"],
+          message: "A Mythic drop is always a workflow (see DROP_TYPES in src/lib/grist.ts).",
+        });
+      for (const need of RARITY_INFO[data.rarity].needs) {
+        const missing =
+          need === "steps"
+            ? data.steps.length === 0
+            : need === "example"
+              ? !data.example
+              : !data.limits;
+        if (missing)
+          ctx.addIssue({
+            code: "custom",
+            path: [need],
+            message: `A ${data.rarity} drop needs \`${need}\` (see RARITY_INFO in src/lib/grist.ts).`,
+          });
+      }
+    }),
+});
+
+export const collections = { work, grist };

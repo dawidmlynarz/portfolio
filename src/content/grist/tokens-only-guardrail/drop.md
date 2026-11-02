@@ -1,0 +1,1 @@
+When writing UI, use the design system's tokens for every colour, spacing, size, radius, shadow and font. Never write a raw value (hex, px, rem) if a token exists. If no token fits, stop and tell me which value you need instead of inventing one.

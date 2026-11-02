@@ -1,0 +1,26 @@
+---
+title: "Design System for Conversational AI"
+summary: "Plan a design system for conversational AI products, with agent components first and names that match the code."
+hint: "For starting a design system for an AI product, or checking the one you have. It plans the components, pages and variable groups, and lists the gaps."
+season: "s01"
+slot: 8
+drop: "skill"
+rarity: "legendary"
+status: "tested"
+steps:
+  - "Download the .zip and unzip it into your AI tool's skills folder. It holds `SKILL.md` and a list of agent components with their states."
+  - "Give it the product's agent surfaces, current screens and the code library you use."
+  - "Review the inventory before building anything; cut what the product doesn't need yet."
+example: true
+limits: "If the product has no chat, assistant or agent surfaces, start with Design system audit instead."
+related: [design-system-audit, component-usage-guidelines]
+sampleInput: "Run on a hotel booking assistant, a chat surface with a React component library already in use."
+---
+
+I built [Anvil UI](/work/zazmic-anvil-ui), a design system for conversational AI agents, in four weeks. A few choices did most of the work. Agent components lived on their own page, apart from the global ones. Every component page opened with a short description. Colour variables were grouped by category and named exactly like the component library the developers used, so Figma and code read the same. And anything new that came out of client prototypes was flagged as a candidate, never added straight in.
+
+It ended up as a GitHub repo with Storybook, a browsable catalogue of every component in code. If I did it again, I'd start with only the components the first product ships, and add the rest when a second product asks for them.
+
+## Example
+
+Here's an illustration for a booking assistant. The inventory starts with Message (agent), Plan card (agent), Approval (agent), Offer card (global card variant), Date picker (global).

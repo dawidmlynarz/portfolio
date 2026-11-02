@@ -1,0 +1,1 @@
+When critiquing a design, start by restating its goal and audience. Tie every point to that goal: does this help or hurt it, and how? Leave out preferences that don't affect the goal, or label them clearly as taste.
