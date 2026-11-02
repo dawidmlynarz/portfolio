@@ -2,13 +2,13 @@
 
 Non-obvious choices, newest first. One entry per decision: what, why, and what it rules out.
 
-## 2026-11-02 · Portfolio links to Grist, Grist type matches the site
+## 2026-11-02 · Headings are semibold, Grist shows the coming season
 
-**Two links, no new components.** Home closes with a "Side quest" section built from `SectionIntro` and a `Button`, worded from the Grist hero and author note (a placeholder until Dawid's design for it). On Grist, the name in the simple footer links back to the portfolio home, since the Grist header logo stays on /grist. Grist was tried in the main menu and taken out at Dawid's request.
+**Every heading is semibold (600), on the portfolio and Grist.** Grist headings were semibold while the portfolio's were medium (500), so the two looked different. Dawid preferred the heavier weight, so a new semantic token `--weight-heading` (semibold) now sets h1 to h4, display, the big numbers, the menu links and every heading-sized line. The type table in `tokens.css` says 600. Figma `mlynarz.com — Foundations` needs the same change. Small labels stay on their own weights.
 
 **The coming season shows before its first drop.** /grist listed only seasons with a drop out, so between seasons the hero teased "Next drop" while the season it belonged to was hidden. The front door now also shows the season holding the next drop day, with its eight locked cards and the first one marked Next drop. Later seasons stay hidden.
 
-**Grist headings use the site's heading weight (500).** Grist already shared every token, font and size with the portfolio, but its hero title, season titles, author note, About title and loot box title were set to semibold (600), so the type looked heavier than the rest of the site. They now use `--weight-medium` like every portfolio heading. Semibold stays only on small labels (the rarity type name and the human stamp), as it does on the portfolio (callouts, quotes, bold text).
+**No portfolio link to Grist yet.** A nav item, a home section and a footer link back from Grist were tried and taken out. Dawid will design the home section.
 
 ## 2026-10-30 · Grist: rarity by hand, no quest types
 
