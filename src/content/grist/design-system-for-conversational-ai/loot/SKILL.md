@@ -15,7 +15,7 @@ Ask for anything missing before you start. Never invent components the product d
 
 ## Step 1: Inventory
 
-List the components the work actually needs. Split them into global (button, input, card) and agent-specific (message, tool call, plan, approval, citation, streaming state, error and retry, handoff to a person).
+List the components the work actually needs. Split them into global (button, input, card) and agent-specific. Check the agent-specific ones against `references/agent-components.md`, and leave out any the product doesn't need.
 
 ## Step 2: Structure
 
@@ -27,7 +27,7 @@ Propose variable groups by category (colour, type, space, radius, motion), named
 
 ## Step 4: States
 
-For each agent component, list its states: idle, thinking, streaming, done, error, cancelled, waiting for approval.
+For each agent component, list its states. Start from the states in `references/agent-components.md` and drop the ones it never reaches.
 
 ## Step 5: Intake rule
 

@@ -1,22 +1,21 @@
 ---
-title: "Agent-readable Tokens"
-summary: "Design tokens named and documented so coding agents use them correctly."
+title: "Token Description Lint"
+summary: "Check your token names and descriptions the way a coding agent reads them."
 hint: "For any system coding agents build from. They pick the wrong colour or size a lot less often."
 steps:
-  - "List your semantic tokens, the ones components use. Leave the primitives out."
-  - "Draft a one-line purpose for each with Token Description Writer, then fix the ones it gets wrong."
-  - "Put the descriptions where the agent reads them: the $description field in your token file, or your DESIGN.md."
-  - "Paste the rule into your CLAUDE.md or rules file."
+  - "Paste the prompt with your token file, or the semantic tokens and their descriptions."
+  - "Fix what it flags. Use Token Description Writer for the tokens with no description."
+  - "Run it again after every batch of new tokens."
 season: "s01"
 slot: 6
-drop: "rule"
+drop: "prompt"
 rarity: "uncommon"
 status: "tested"
 related: [write-the-donts-down]
 draft: true
 ---
 
-{/* CLAUDE: steps added for the Uncommon tier. Confirm or rewrite. */}
+{/* CLAUDE: turned from a rule into a lint prompt at Dawid's request (2 Nov). Title, summary, steps and loot are Claude's. The Why below is unchanged. Confirm or rewrite. */}
 
 Other designers have been flagging this one online. An agent picks the wrong token when all it has is a name. Reading `blue-500`, it has to guess what the colour is for. Reading `color-text-link`, with a line saying it's for links in running text, it mostly doesn't.
 
