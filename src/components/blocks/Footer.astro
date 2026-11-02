@@ -56,7 +56,8 @@ const endings = ["AI product", "design system", "product team"];
       </ul>
       <p class="footer__legal">
         <span>
-          {SITE.name}. All rights reserved © 2011 – {year}
+          {simple ? <Link href="/">{SITE.name}</Link> : SITE.name}. All rights reserved © 2011 –{" "}
+          {year}
         </span>
         <Link href="/privacy">Privacy policy</Link>
       </p>

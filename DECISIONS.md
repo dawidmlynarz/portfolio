@@ -2,6 +2,10 @@
 
 Non-obvious choices, newest first. One entry per decision: what, why, and what it rules out.
 
+## 2026-11-02 · Portfolio links to Grist
+
+**Three links, no new components.** Grist joins the primary nav between About and Contact (the menu, and the bar without JS). Home closes with a "Side quest" section built from `SectionIntro` and a `Button`, worded from the Grist hero and author note. On Grist, the name in the simple footer links back to the portfolio home, since the Grist header logo stays on /grist. Rules out a separate Grist teaser card or a badge in the nav until Grist needs more weight.
+
 ## 2026-10-30 · Grist: rarity by hand, no quest types
 
 Dawid's call: each quest's rarity is set by hand in frontmatter (`rarity`), and level-ups are only a changelog that never changes it, so Next rank is gone. Quest types (side quest, demo, deep dive, kit) are removed. "Side quest" is now a status next to Fresh and Battle-tested. Tiles and quest pages show the status and the date side by side.
