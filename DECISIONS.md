@@ -877,3 +877,12 @@ From the market comparison (Claude Doc "Grist drops vs the market").
 - Dawid confirmed the notes and sample runs. Every Season 1 and 2 drop is out of draft except AI Opportunity Map (rebuilt today, waiting for his read) and AI Assistant Design Sprint (two [YOU] gaps). A production build (`CF_PAGES_BRANCH=main`) passes and lists Season 1 and Human-in-the-loop Checkpoints.
 - AI Opportunity Map now follows the structure of his real FigJam board: a journey table, an agent table under it (leverage, agent's role, user's role, sample exchange, friction addressed, watch for) and an entry point comparison. No client content is used, and the board stays out of the repo.
 - The board was client work about ticket buying, so the ticket-buying illustrations (Opportunity Map, Agent UX Review and its sample run, a component name in Design to Code Handoff) were swapped for grocery and restaurant examples.
+
+## Grist as a Claude Code plugin marketplace (2 Nov)
+
+- The site hosts the marketplace itself, so there is no separate GitHub repo and the portfolio repo stays private. People run `/plugin marketplace add https://www.mlynarz.com/grist/marketplace.json`, then `/plugin install <slug>@grist`. This needs Claude Code 2.1.224 or later.
+- Only skills and workflows become plugins, since those install as they are. Rules, prompts, checklists and specs stay on the drop pages.
+- The catalog lists the same drops as the front door (`getDrops`), so drafts and drops whose day hasn't come stay out. Production rebuilds on drop days add new plugins.
+- Each plugin is a zip at `/grist/plugins/<slug>.zip`, pinned in the catalog by its SHA-256. No `version` is set, so Claude Code takes the version from the digest and people get an update whenever a drop's files change. The zip writer uses fixed dates, so an unchanged drop keeps its digest.
+- A skill goes in as `skills/<name>/`. A workflow's `skills/` and `agents/` go in as they are. The optional raw value hook in Design to Code Workflow ships as a file but isn't switched on, because its README calls it optional.
+- Previews point their catalog at their own deployment (`CF_PAGES_URL`), so a preview can be tested on its own.

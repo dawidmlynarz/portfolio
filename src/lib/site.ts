@@ -1,4 +1,4 @@
-import { CF_PAGES_BRANCH, CF_WEB_ANALYTICS_TOKEN } from "astro:env/server";
+import { CF_PAGES_BRANCH, CF_PAGES_URL, CF_WEB_ANALYTICS_TOKEN } from "astro:env/server";
 
 export const SITE = {
   name: "Dawid Młynarz",
@@ -64,6 +64,14 @@ export const NAV_LINKS = [
 export const PRODUCTION_BRANCH = "main";
 
 export const isProduction = CF_PAGES_BRANCH === PRODUCTION_BRANCH;
+
+/**
+ * Absolute base for links that must work from outside the site, like the Grist plugin marketplace.
+ * Production uses the site; a preview uses its own deployment URL, so its catalog leads to its own
+ * zips (whose digests match).
+ */
+export const siteBase = (site: URL | undefined) =>
+  new URL(!isProduction && CF_PAGES_URL ? CF_PAGES_URL : (site ?? "https://www.mlynarz.com"));
 
 /** Cloudflare Web Analytics runs on production only, and only when a token is set. */
 export const webAnalyticsToken = isProduction ? CF_WEB_ANALYTICS_TOKEN : undefined;

@@ -42,6 +42,9 @@ export default defineConfig({
     schema: {
       // Set by Cloudflare Pages at build time. Only the production branch is indexable.
       CF_PAGES_BRANCH: envField.string({ context: "server", access: "public", optional: true }),
+      // Set by Cloudflare Pages: this deployment's own URL. Previews point the Grist plugin
+      // marketplace at their own zips with it (siteBase in src/lib/site.ts).
+      CF_PAGES_URL: envField.string({ context: "server", access: "public", optional: true }),
       // Cloudflare Web Analytics site token. Production only; no cookies, no consent banner needed.
       CF_WEB_ANALYTICS_TOKEN: envField.string({
         context: "server",
