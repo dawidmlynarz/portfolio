@@ -1,25 +1,39 @@
 # AI opportunity map
 
-Journey: [name] · Audience: [who] · Data: [analytics, research]
+Journey: [name] · Persona: [who, and what they're trying to get done] · Evidence: [analytics, research, support tickets]
+Hypothesis to prove: [one sentence]
 
-## Columns, one per stage
+## 1. Journey table
 
-Stage · What people do · Pain points (evidence) · Data the product has
+One column per stage. Rows:
 
-## Rows, per stage
+- User goal
+- Emotional state: one word, then positive, neutral or strained
+- Representative thought, in their words
+- Key actions
+- What's working well
+- Friction observed, with the evidence
+- Touchpoints and channels
 
-- Suggest: what an agent could recommend
-- Do: what an agent could do for them
-- Check: what an agent could catch before it's a problem
+## 2. Agent table
 
-## Score each idea, 1 to 3
+The same stages, one column each. Rows:
 
-- Value: how much it helps at this stage
-- Reversibility: 3 is easy to undo, 1 can't be undone
-- Data readiness: 3 means the data exists and is reachable, 1 means it doesn't exist yet
+- AI leverage: low, moderate, high or highest
+- Agent's role: what it does at this stage
+- User's role: what stays with the person
+- Sample exchange: two or three lines of the conversation
+- Friction addressed: which friction from the journey table it removes
+- Watch for: the trade-off or risk
+
+## 3. Where the agent lives
+
+Compare the entry points you'd consider, such as an embedded chat widget, a persistent side panel or inline suggestions.
+
+Pattern · Persistence across steps · Screen space it costs · Best fit and trade-off
 
 ## Pick the first release (MVP)
 
-- Start at the stage with the biggest pain points
-- Take ideas that score 7 or more; anything with reversibility 1 needs a human checkpoint
+- Start at the stage with the highest leverage and the clearest friction
+- Anything that spends money or can't be undone stays with the person, or gets a checkpoint
 - Everything else goes in a Later column, with the reason

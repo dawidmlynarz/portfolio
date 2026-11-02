@@ -13,11 +13,8 @@ steps:
   - "Read the report, cut anything you disagree with, and share it."
 example: true
 limits: "For a chat feature that only answers questions and never acts, use Season 8's trust drops instead. After launch, use real data, not a review."
-draft: true
-sampleInput: "Run on a brief for a ticket-buying assistant, with its four actions and the current flow. Trimmed to the verdict, issues and action map."
+sampleInput: "Run on a brief for a restaurant booking assistant, with its four actions and the current flow. Trimmed to the verdict, issues and action map."
 ---
-
-{/* CLAUDE: Imported from another AI tool's draft (.claude/skills/grist-entry/drafts.md, season 1 drop 8). The loot is as drafted, now a folder: references/agent-use-case-check.md is a copy of S2·3, and references/checkpoint-review.md was written by Claude from the Human-in-the-loop Checkpoints note and the skill's guardrails, because the skill called a "checkpoint review" that didn't exist. output.md is a sample run Claude did on the ticket-buying example. Replace it with one of your own runs, or confirm it. The tl;dr, hint and Why aren't Dawid's words yet; status and any source are unconfirmed. */}
 
 Run this season's drops in order and you've done a design review. As a skill, your AI tool runs the whole thing from a brief, and you spend your time on the calls that need judgement.
 
@@ -25,4 +22,4 @@ A vague brief gets a vague review. If there's no list of actions, the skill asks
 
 ## Example
 
-For a ticket-buying assistant, the report's verdict reads _Build discovery as an assistant; let the agent act only to hold seats. Purchases stay with the person._ Issue 1 is the purchase buried in a four-step plan (severity high), fixed with a separate checkpoint.
+For a restaurant booking assistant, the report's verdict reads _Build discovery as an assistant, and let the agent act only to hold a table. Paying the deposit stays with the person._ Issue 1 is the deposit buried in a four-step plan (severity high), fixed with a separate checkpoint.
