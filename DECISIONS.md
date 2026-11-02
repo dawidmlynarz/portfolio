@@ -2,6 +2,10 @@
 
 Non-obvious choices, newest first. One entry per decision: what, why, and what it rules out.
 
+## 2026-11-02 · Weekly drop rebuild
+
+Grist unlocks a drop by comparing its day with the build time, so production needs a build every Friday. A GitHub Action calls a Cloudflare Pages deploy hook at 05:07 UTC on Fridays (drops unlock at 00:00 UTC, so they are live by early morning in Europe). Chosen over a daily build because every drop, New badge and Next drop date changes on a Friday, and over a Cloudflare Worker cron because it needs no second project. Each run re-enables its own schedule, since GitHub turns schedules off in public repos after 60 days without commits. Scheduled workflows only run from the default branch, so that has to be `main`. If drops ever move off Fridays, change the cron with `DROP_INTERVAL_DAYS` and the season starts.
+
 ## 2026-10-26 · Work tiles cropped to 4:3
 
 Every case-study cover in the work grid is cropped to 4:3 (`object-fit: cover`, centred), so tiles of different widths read as one set. This replaces "covers keep their original ratio" from v2 revision 2. The case-study page still shows the cover uncropped. If a cover crops badly, set a per-entry focal point (an `object-position` field in the schema) rather than changing the ratio.

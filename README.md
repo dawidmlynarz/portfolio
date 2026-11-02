@@ -46,3 +46,16 @@ Workers & Pages → Create → Pages → Connect to Git → this repo.
 | Env var `NODE_VERSION` | `22`            |
 
 Every other branch gets a preview URL, which is `noindex` (see `DECISIONS.md`).
+
+## Weekly drop rebuild
+
+Grist drops unlock on Fridays, but the site is static, so a drop only goes live when `main` rebuilds. `.github/workflows/drop-day.yml` asks Cloudflare for a production build every Friday at 05:07 UTC. Pushing to `main` rebuilds too, so this only matters on weeks without a push.
+
+One-time setup:
+
+1. Cloudflare dashboard, Workers & Pages, the project, Settings, Builds, Deploy hooks, Add deploy hook. Name it `Drop day`, branch `main`, Save, then copy the URL.
+2. GitHub repo, Settings, Secrets and variables, Actions, New repository secret. Name `CLOUDFLARE_DEPLOY_HOOK`, value the URL from step 1.
+3. GitHub repo, Settings, General, Default branch must be `main`. Scheduled workflows only run from the default branch.
+4. Actions tab, Drop day rebuild, Run workflow, to test it. A new production deployment shows up in Cloudflare within a few seconds.
+
+The hook URL is the only credential. Anyone with it can start a build, so keep it in the secret. If it leaks, delete the hook in Cloudflare and make a new one.
