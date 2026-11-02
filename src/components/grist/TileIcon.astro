@@ -1,20 +1,21 @@
 ---
 /**
  * Dawid's tile icon for a rarity tier, shown instead of the pixel gem when RARITY_ICON is "tile"
- * (src/lib/grist.ts). Decorative
+ * (src/lib/grist.ts), and the hidden [?] tile for a tier that hasn't dropped yet. Decorative
  * (a tier name always sits next to it). Legendary and Mythic have a foil shine: a soft diagonal band sweeps
  * across the tiles, clipped to them, and stops under reduced motion.
  */
-import { RARITY_ICON_PATHS, type RarityIconTier } from "./tile-icons";
+import { HIDDEN_ICON_PATHS, RARITY_ICON_PATHS, type RarityIconTier } from "./tile-icons";
 
 interface Props {
-  tier: RarityIconTier;
+  /** hidden: the [?] tile, the rarity kept back until the drop lands */
+  tier: RarityIconTier | "hidden";
   /** sm: 1.25em, beside a label, like the meta icons · md: 1.5em, on the drop page · lg: a close-up */
   size?: "sm" | "md" | "lg";
 }
 
 const { tier, size = "sm" } = Astro.props;
-const paths = RARITY_ICON_PATHS[tier];
+const paths = tier === "hidden" ? HIDDEN_ICON_PATHS : RARITY_ICON_PATHS[tier];
 const shiny = tier === "legendary" || tier === "mythic";
 // Unique per instance, so every icon on the page clips its own band.
 const clipId = `rarity-icon-${crypto.randomUUID().slice(0, 8)}`;
@@ -102,6 +103,10 @@ const clipId = `rarity-icon-${crypto.randomUUID().slice(0, 8)}`;
 
     .rarity-icon--mythic {
       fill: var(--rarity-mythic-icon);
+    }
+
+    .rarity-icon--hidden {
+      fill: var(--rarity-hidden-icon);
     }
 
     /* The page's whitest ink in either theme, as on the pixel gem's highlight. */

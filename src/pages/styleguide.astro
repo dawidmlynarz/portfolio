@@ -582,10 +582,11 @@ const GRIST_ICONS: IconName[] = [
             One tile everywhere drops are listed. It reads its own width: from 48rem it lays out as
             a row with the date on the right, narrower it stacks. Seasons are battle passes: slots
             not yet dropped show locked, the next one marked in its corner, a missed one as late.
-            While a season runs, its header shows the pack locked with a pip per slot. A drop that
-            ships a Figma plugin says so in the corner.
+            The season header shows a tile per slot, the hidden [?] tile until that drop is out, and
+            keeps the pack locked until all eight have landed. Locked tiles hide the tier the same
+            way and name only the type. A drop that ships a Figma plugin says so in the corner.
           </p>
-          <SeasonHeader season="s01" unlocked={3} pack={false} />
+          <SeasonHeader season="s01" tiers={["common", "rare", "uncommon"]} />
           {sampleDrops[0] && <DropCard drop={sampleDrops[0]} />}
           <div class="grist-tiles">
             {sampleDrops.slice(1, 4).map((drop) => (
@@ -602,7 +603,11 @@ const GRIST_ICONS: IconName[] = [
               locked={{ type: "rule", rarity: "common", date: new Date("2026-10-16"), late: true }}
             />
           </div>
-          <SeasonHeader season="s03" unlocked={0} />
+          <SeasonHeader
+            season="s02"
+            tiers={["uncommon", "common", "rare", "epic", "uncommon", "rare", "epic", "legendary"]}
+          />
+          <SeasonHeader season="s03" tiers={[]} />
         </Stack>
 
         {sampleLoot && (

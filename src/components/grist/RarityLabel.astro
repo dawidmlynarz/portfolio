@@ -3,6 +3,7 @@
  * The tier's icon plus a name, in the small text style and the tier's text colour. The icon is the
  * tile icon or the pixel gem (RARITY_ICON in src/lib/grist.ts); each has its own text colours.
  * Given a drop type it names the type only ("Checklist"), in semibold: icon and colour say the tier.
+ * Hidden (locked slots): the [?] tile and the type in the muted colour, so the tier stays a surprise.
  */
 import Gem from "./Gem.astro";
 import TileIcon from "./TileIcon.astro";
@@ -13,21 +14,25 @@ interface Props {
   type?: DropType;
   /** md: a larger icon (1.5em), for cards and the drop page, where the tier should stand out */
   size?: "sm" | "md";
+  /** Keep the tier back: the [?] tile instead of the tier's icon and colour. */
+  hidden?: boolean;
   class?: string;
 }
 
-const { rarity, type, size = "sm", class: className } = Astro.props;
+const { rarity, type, size = "sm", hidden = false, class: className } = Astro.props;
 ---
 
 <span
   class:list={[
     "rarity-label",
-    `rarity-label--${rarity}`,
-    { "rarity-label--tile": RARITY_ICON === "tile" || rarity === "mythic" },
+    hidden ? "rarity-label--hidden" : `rarity-label--${rarity}`,
+    { "rarity-label--tile": !hidden && (RARITY_ICON === "tile" || rarity === "mythic") },
     className,
   ]}
 >
-  {RARITY_ICON === "tile" || rarity === "mythic" ? (
+  {hidden ? (
+    <TileIcon tier="hidden" size={size} />
+  ) : RARITY_ICON === "tile" || rarity === "mythic" ? (
     <TileIcon tier={rarity} size={size} />
   ) : (
     <Gem rarity={rarity} />
@@ -46,6 +51,10 @@ const { rarity, type, size = "sm", class: className } = Astro.props;
       font-size: var(--text-small);
       line-height: var(--leading-small);
       color: var(--rarity-common-text);
+    }
+
+    .rarity-label--hidden {
+      color: var(--color-text-muted);
     }
 
     .rarity-label__name--type {

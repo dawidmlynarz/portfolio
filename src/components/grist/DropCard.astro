@@ -84,7 +84,7 @@ const plugin = drop && hasPlugin(drop);
       <div class="drop-card__inner">
         <div class="drop-card__main">
           <p class="drop-card__rank">
-            <RarityLabel rarity={locked.rarity} type={locked.type} size="md" />
+            <RarityLabel rarity={locked.rarity} type={locked.type} size="md" hidden />
             {locked.next && <span class="drop-card__next text-caption">Next drop</span>}
           </p>
           <Heading class="drop-card__title drop-card__title--locked">
