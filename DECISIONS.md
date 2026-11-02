@@ -2,9 +2,11 @@
 
 Non-obvious choices, newest first. One entry per decision: what, why, and what it rules out.
 
-## 2026-11-02 · Portfolio links to Grist
+## 2026-11-02 · Portfolio links to Grist, Grist type matches the site
 
-**Three links, no new components.** Grist joins the primary nav between About and Contact (the menu, and the bar without JS). Home closes with a "Side quest" section built from `SectionIntro` and a `Button`, worded from the Grist hero and author note. On Grist, the name in the simple footer links back to the portfolio home, since the Grist header logo stays on /grist. Rules out a separate Grist teaser card or a badge in the nav until Grist needs more weight.
+**Two links, no new components.** Home closes with a "Side quest" section built from `SectionIntro` and a `Button`, worded from the Grist hero and author note (a placeholder until Dawid's design for it). On Grist, the name in the simple footer links back to the portfolio home, since the Grist header logo stays on /grist. Grist was tried in the main menu and taken out at Dawid's request.
+
+**Grist headings use the site's heading weight (500).** Grist already shared every token, font and size with the portfolio, but its hero title, season titles, author note, About title and loot box title were set to semibold (600), so the type looked heavier than the rest of the site. They now use `--weight-medium` like every portfolio heading. Semibold stays only on small labels (the rarity type name and the human stamp), as it does on the portfolio (callouts, quotes, bold text).
 
 ## 2026-10-30 · Grist: rarity by hand, no quest types
 
