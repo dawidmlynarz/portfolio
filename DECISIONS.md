@@ -641,6 +641,10 @@ What changed versus the embed, and why:
 
 **Menu links stay at h2.** A separate menu-link size was tried and dropped; the open panel's gap between the links and the social row is now `--space-4`.
 
+## 2026-11-02 · No prices on the plans
+
+**Plans end in "Book a call" only.** Dawid asked to remove the prices from the /services plans. Each plan keeps its label, name, promise, list and button; the price and the terms line under it are gone, and so is the rate maths in `src/lib/plans.ts`, `formatPrice` and the `priceSpecification` in the `OfferCatalog` structured data (so search engines don't show a price the page doesn't). The old rate and prices are in git history before this change.
+
 ## Grist: human-written loot for AI tools (30 Oct 2026)
 
 - Grist is now "human-written loot for your AI tools". Quests, statuses (Side quest, Fresh, Battle-tested), level-ups, versions, the quest log, volumes, the download count and the layouts test page are gone.
@@ -893,3 +897,8 @@ From the market comparison (Claude Doc "Grist drops vs the market").
 - Share image URLs are absolute, and they used the live site's address everywhere, so a branch link pointed at an image that only exists once the page is live. Previews now point `og:image` at their own deployment (`CF_PAGES_URL`, set by Cloudflare Pages). Production keeps www.mlynarz.com. Canonical URLs don't change.
 - Images rebuild from each drop's title and summary on every build, so the renamed drops (Token Description Lint, Find Agent Ideas from User Journey Pain Points) already show their new names. Two summaries were cut off with an ellipsis on the card, so they're shorter now (AI Assistant Design Sprint, AI Opportunity Map). The front door uses Dawid's "opengraph-general" frame as it is.
 - Dawid moved every Season 1 and 2 drop to ready. AI Opportunity Map and AI Assistant Design Sprint lost `draft` and their `CLAUDE:` notes. Production still only builds pages and images for drops whose day has come.
+
+## Grist: silent launch this week, drops from Nov 13 (2 Nov)
+
+- Dawid's call: a silent launch this week with Season 1 only, then weekly drops and X marketing from next week. Season 2 now starts Friday Nov 13, 2026, and every later season moves two weeks to keep the same gaps. Season 1 keeps its dates. Production shows Season 1 complete with its pack, and "Next drop: Nov 13, 2026".
+- The sandbox (`/grist/sandbox`) and review queue stay preview-only, so they never ship on mlynarz.com. Every branch preview on Cloudflare Pages still builds them from the same drafts in the repo.
