@@ -1,7 +1,7 @@
 ---
 /**
- * The Grist front door: the hero with the badge, every season (open ones as their eight slots,
- * the rest as a teaser) and Dawid's note. /grist shows the drops that are out. Dawid's sandbox
+ * The Grist front door: the hero with the badge and the next drop day, the seasons as their eight
+ * slots, and Dawid's note. /grist shows the seasons that have started and the drops that are out. Dawid's sandbox
  * (/grist/sandbox, previews only) passes every season with every written drop unlocked.
  */
 import Container from "@/components/layout/Container.astro";
@@ -10,22 +10,27 @@ import DropCard from "./DropCard.astro";
 import HumanStamp from "./HumanStamp.astro";
 import AuthorNote from "./AuthorNote.astro";
 import SeasonHeader from "./SeasonHeader.astro";
-import type { Season } from "@/lib/grist";
-import type { getSeasons } from "@/lib/drops";
+import NewBadge from "./NewBadge.astro";
+import { SEASON_SLOTS, type Season } from "@/lib/grist";
+import { formatDayYear, nextDropDay, type getSeasons } from "@/lib/drops";
 
 interface Props {
   seasons: Awaited<ReturnType<typeof getSeasons>>;
-  /** Seasons whose pack is built. Leave out when every season with drops has one. */
+  /** Seasons that offer their pack. Left out: the ones with all eight drops out. */
   packs?: Set<Season>;
 }
 
 const { seasons, packs } = Astro.props;
+const next = nextDropDay();
 ---
 
 <section class="front-hero hero-backdrop-host" aria-labelledby="grist-title">
   <HeroBackdrop />
   <Container class="front-hero__head">
-    <p class="text-caption front__muted">Loot for AI grinders. Curated by Dawid Młynarz.</p>
+    <p class="front-hero__eyebrow text-caption front__muted">
+      {next && <NewBadge label={`Next drop on ${formatDayYear(next)}`} />}
+      Loot for AI grinders.
+    </p>
     <div class="front-hero__title" data-hero-wrap>
       <span class="front-hero__spacer" aria-hidden="true"></span>
       <HumanStamp class="front-hero__stamp" words="Human-curated loot for AI grinders" />
@@ -43,7 +48,7 @@ const { seasons, packs } = Astro.props;
       <SeasonHeader
         season={season.id}
         unlocked={season.drops.length}
-        pack={!packs || packs.has(season.id)}
+        pack={packs ? packs.has(season.id) : season.drops.length >= SEASON_SLOTS}
       />
       {season.open && (
         <ul class="front__grid" role="list">
@@ -170,6 +175,13 @@ const { seasons, packs } = Astro.props;
         shape-outside: circle(50%);
         shape-margin: var(--space-8);
       }
+    }
+
+    .front-hero__eyebrow {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: var(--space-2) var(--space-3);
     }
 
     .front__muted {

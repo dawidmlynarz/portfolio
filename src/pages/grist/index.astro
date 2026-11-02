@@ -3,7 +3,8 @@ import GristLayout from "@/layouts/GristLayout.astro";
 import FrontDoor from "@/components/grist/FrontDoor.astro";
 import { getSeasons } from "@/lib/drops";
 
-const seasons = await getSeasons();
+// Seasons that haven't started stay off the front door.
+const seasons = (await getSeasons()).filter((season) => season.open);
 ---
 
 <GristLayout

@@ -846,3 +846,10 @@ What changed versus the embed, and why:
 - `/grist/sandbox` (previews only, noindex) is a copy of the front door with every written drop unlocked, for Dawid to click through. The header shows the New badge reading "Sandbox" next to the logo, and the logo leads back to the sandbox. The front door markup moved into `FrontDoor.astro` so both pages share it.
 - See also on every drop: Dawid's `related` picks first, then the nearest drops in the same season, then the same type from other seasons, then the newest. Four cards, listed drops only, so every card leads to a live page.
 - The New badge sits in the card's top right corner instead of next to the rarity.
+
+## Grist front door, round two (2 Nov)
+
+- The front door only shows seasons that have started. The sandbox still shows all eight.
+- A season pack is offered once all eight drops are out (front door and sandbox).
+- The eyebrow is "Loot for AI grinders." with the New badge before it reading "Next drop on 6 Nov, 2026". The day comes from the schedule (`nextDropDay`, the earliest slot in any season still to come) and is set at build time, so it moves on with each rebuild. Past the last scheduled slot the badge goes away.
+- The next locked card looks like the other locked cards (dashed), with "Next drop" in its top right corner like New.

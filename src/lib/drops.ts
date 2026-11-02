@@ -205,6 +205,14 @@ export function lootOf(drop: Drop) {
   return files.map(({ path, text }) => `<!-- file: ${path} -->\n\n${text}`).join("\n\n");
 }
 
+/** The next drop day on the schedule, in any season, or undefined once the last season is out. */
+export function nextDropDay() {
+  const days = (Object.keys(SEASONS) as Season[]).flatMap((id) =>
+    Array.from({ length: SEASON_SLOTS }, (_, i) => dropDay(id, i + 1)),
+  );
+  return days.filter((day) => !hasDropped(day)).sort((a, b) => a.getTime() - b.getTime())[0];
+}
+
 /** How many cards See also shows on a drop page. */
 const SEE_ALSO = 4;
 
@@ -248,6 +256,8 @@ const dayMonthYear = new Intl.DateTimeFormat("en-GB", {
 });
 export const formatDay = (date: Date) => dayMonth.format(date);
 export const formatDate = (date: Date) => dayMonthYear.format(date);
+/** "26 Nov, 2026", for the next drop badge. */
+export const formatDayYear = (date: Date) => `${formatDay(date)}, ${date.getFullYear()}`;
 export const isoDate = (date: Date) => date.toISOString().slice(0, 10);
 
 export function derive(drop: Drop) {

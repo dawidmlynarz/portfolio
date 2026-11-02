@@ -6,7 +6,8 @@
  * The whole tile is the link's hit area.
  *
  * Locked variant (battle pass): a slot whose drop day hasn't come. Dashed border, the planned
- * gem faded, no title, and the day it unlocks. The next one to unlock says so.
+ * gem faded, no title, and the day it unlocks. The next one to unlock says so in its top right
+ * corner.
  */
 import NewBadge from "./NewBadge.astro";
 import RarityLabel from "./RarityLabel.astro";
@@ -239,15 +240,6 @@ const shown = drop && derive(drop);
       opacity: 0.45;
     }
 
-    .drop-card--next {
-      border-style: solid;
-      border-color: var(--color-text);
-    }
-
-    .drop-card--next:hover {
-      border-color: var(--color-text);
-    }
-
     .drop-card__title--locked {
       display: inline-flex;
       align-items: center;
@@ -255,7 +247,10 @@ const shown = drop && derive(drop);
       color: var(--color-text-muted);
     }
 
+    /* Next drop: a locked card like the rest, with the label in the top right corner. */
     .drop-card__next {
+      flex: none;
+      margin-inline-start: auto;
       padding-inline: var(--space-1) calc(var(--space-1) - var(--tracking-caption));
       border: var(--border-width) solid currentcolor;
       border-radius: var(--radius-sm);

@@ -8,15 +8,18 @@ import GristLayout from "@/layouts/GristLayout.astro";
 import FrontDoor from "@/components/grist/FrontDoor.astro";
 import { getSeasons } from "@/lib/drops";
 import { isProduction } from "@/lib/site";
+import { SEASON_SLOTS } from "@/lib/grist";
 
 export function getStaticPaths() {
   return isProduction ? [] : [{ params: { all: undefined } }];
 }
 
 const seasons = await getSeasons({ all: true });
-// Season packs are built from the drops that are out, so only those seasons offer one here.
+// A season's pack is offered once all eight of its drops are really out, as on the front door.
 const packs = new Set(
-  (await getSeasons()).filter((season) => season.drops.length > 0).map((season) => season.id),
+  (await getSeasons())
+    .filter((season) => season.drops.length >= SEASON_SLOTS)
+    .map((season) => season.id),
 );
 ---
 
