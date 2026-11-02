@@ -1,14 +1,14 @@
 ---
 /**
  * Plans, never a row of pricing cards. The featured plan (the retainer) leads as a wide tinted
- * panel: what it is and its price on the left, the list of what's included and the button on the
- * right (stacked on small screens). The others follow side by side from 48em, as open blocks
- * under a rule, each said in one paragraph. Prices are always one step smaller than the plan's
- * name. Every plan ends in "Book a call"; the featured one gets the primary button.
+ * panel: what it is on the left, the list of what's included and the button on the right
+ * (stacked on small screens). The others follow side by side from 48em, as open blocks under a
+ * rule, each said in one paragraph. No prices: every plan ends in "Book a call"; the featured one
+ * gets the primary button.
  * Data: src/lib/plans.ts.
  */
 import Button from "@/components/ui/Button.astro";
-import { formatPrice, type Plan } from "@/lib/plans";
+import type { Plan } from "@/lib/plans";
 import { BOOKING_HREF } from "@/lib/site";
 
 interface Props {
@@ -29,7 +29,7 @@ const ordered = [...plans].sort(
 
 <ul class="plans" role="list" id={id}>
   {ordered.map((plan) => {
-    const { title, label, promise, price, terms, includes, featured } = plan;
+    const { title, label, promise, includes, featured } = plan;
     return (
       <li
         class:list={["plans__plan", featured && "plans__plan--featured"]}
@@ -40,10 +40,6 @@ const ordered = [...plans].sort(
           <p class="text-caption plans__label">{label}</p>
           <Heading class="plans__title">{title}</Heading>
           <p class="plans__promise">{promise}</p>
-          <p class="plans__price">
-            <span class="plans__amount">{price ? formatPrice(price) : "Let’s talk"}</span>
-            <span class="text-small plans__terms">{terms}</span>
-          </p>
         </div>
         <div class="plans__body">
           {includes && includes.length > 0 && (
@@ -104,8 +100,7 @@ const ordered = [...plans].sort(
     }
 
     .plans__label,
-    .plans__promise,
-    .plans__terms {
+    .plans__promise {
       color: var(--color-text-muted);
     }
 
@@ -116,18 +111,6 @@ const ordered = [...plans].sort(
 
     .plans__promise {
       max-inline-size: var(--measure-lead);
-    }
-
-    .plans__price {
-      display: grid;
-      gap: var(--space-1);
-      padding-block-start: var(--space-2);
-    }
-
-    /* One step under the title. */
-    .plans__amount {
-      font: var(--weight-medium) var(--text-h3) / var(--leading-h3) var(--font-heading);
-      letter-spacing: var(--tracking-h3);
     }
 
     .plans__includes {
