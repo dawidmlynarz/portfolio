@@ -2,6 +2,10 @@
 
 Non-obvious choices, newest first. One entry per decision: what, why, and what it rules out.
 
+## 2026-11-02 · Weekly drop rebuild
+
+Grist unlocks a drop by comparing its day with the build time, so production needs a build every Friday. A GitHub Action calls a Cloudflare Pages deploy hook at 05:07 UTC on Fridays (drops unlock at 00:00 UTC, so they are live by early morning in Europe). Chosen over a daily build because every drop, New badge and Next drop date changes on a Friday, and over a Cloudflare Worker cron because it needs no second project. Each run re-enables its own schedule, since GitHub turns schedules off in public repos after 60 days without commits. Scheduled workflows only run from the default branch, so that has to be `main`. If drops ever move off Fridays, change the cron with `DROP_INTERVAL_DAYS` and the season starts.
+
 ## 2026-11-02 · One heading weight, Grist shows the coming season
 
 **Every heading is medium (500), on the portfolio and Grist.** Grist headings were semibold while the portfolio's were medium, so the two looked different. A semantic token `--weight-heading` now sets h1 to h4, display, the big numbers, the menu links and every heading-sized line on both. Semibold was tried site-wide and Dawid went back to 500. Small labels stay on their own weights.

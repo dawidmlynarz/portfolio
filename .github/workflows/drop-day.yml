@@ -1,0 +1,46 @@
+# Grist drops unlock on Fridays (00:00 UTC), but the site is static, so a drop only
+# goes live when production rebuilds. This pings the Cloudflare Pages deploy hook for
+# `main` every Friday morning. Setup: README, "Weekly drop rebuild".
+name: Drop day rebuild
+
+on:
+  schedule:
+    # 05:07 UTC on Fridays: 6:07 in Warsaw in winter, 7:07 in summer. Off the full hour,
+    # when GitHub's scheduler is busiest and runs start late.
+    - cron: "7 5 * * 5"
+  # "Run workflow" button on the Actions tab, to rebuild by hand.
+  workflow_dispatch:
+
+permissions:
+  actions: write
+
+concurrency:
+  group: drop-day
+  cancel-in-progress: false
+
+jobs:
+  rebuild:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Trigger the Cloudflare Pages build
+        env:
+          DEPLOY_HOOK: ${{ secrets.CLOUDFLARE_DEPLOY_HOOK }}
+        run: |
+          if [ -z "$DEPLOY_HOOK" ]; then
+            echo "::error::The CLOUDFLARE_DEPLOY_HOOK secret is missing. See README, Weekly drop rebuild."
+            exit 1
+          fi
+          curl --fail-with-body --silent --show-error --retry 3 --retry-all-errors \
+            -X POST "$DEPLOY_HOOK"
+          echo
+          echo "Cloudflare accepted the build. It shows under Workers & Pages, the project, Deployments."
+
+      # GitHub turns off schedules in public repos after 60 days without commits, and drops
+      # are written ahead, so quiet stretches are normal. Re-enabling it each run keeps it on.
+      - name: Keep the schedule on
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh api -X PUT "repos/${{ github.repository }}/actions/workflows/drop-day.yml/enable" \
+            || echo "::warning::Could not re-enable the schedule. The rebuild above still ran."
