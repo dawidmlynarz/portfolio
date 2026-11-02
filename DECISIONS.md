@@ -911,3 +911,9 @@ From the market comparison (Claude Doc "Grist drops vs the market").
 - Each plugin is a zip at `/grist/plugins/<slug>.zip`, pinned in the catalog by its SHA-256. No `version` is set, so Claude Code takes the version from the digest and people get an update whenever a drop's files change. The zip writer uses fixed dates, so an unchanged drop keeps its digest.
 - A skill goes in as `skills/<name>/`. A workflow's `skills/` and `agents/` go in as they are. The optional raw value hook in Design to Code Workflow ships as a file but isn't switched on, because its README calls it optional.
 - Previews point their catalog at their own deployment (`CF_PAGES_URL`), so a preview can be tested on its own.
+
+## Grist licences (2 Nov)
+
+- Dawid chose CC BY 4.0 for drops (skills, workflows, prompts, rules, notes) and MIT for code (the DTCG Token Exporter Figma plugin). CC BY lets people use and adapt drops at work as long as they credit him. NonCommercial was left out because most readers use drops at their jobs, and CC0 would drop the credit. Creative Commons advises against CC for software, hence MIT for code.
+- Only drops are licensed. The rest of mlynarz.com (case studies, Grist's design, its name and gems) stays all rights reserved, and the repo stays private.
+- `DROP_LICENSE` and `CODE_LICENSE` live in `src/lib/drops.ts`. Every drop .zip and plugin zip carries a generated `LICENSE.md` (not shown on the page or in the markdown), marketplace entries and plugin.json set `license: "CC-BY-4.0"`, and the plugin folder has its own MIT `LICENSE`. The About panel says it in one line. Adding the licence file changed every plugin digest once, so installed plugins see one update.

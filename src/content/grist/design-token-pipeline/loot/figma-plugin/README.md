@@ -81,3 +81,7 @@ Pick a format before you export. Both keep the same layers and references.
 - To get final values instead of references, change `return "{" + refPath + "}";` in `resolveValue` to call `resolveValue` again on the target.
 - To rename the `primitives` layer, change `GLOBAL_LAYER_NAME` in `exportTokens`.
 - If you have two kinds of modes, like Light and Dark plus Compact and Comfortable, each mode becomes its own theme. Mixing them (Light and Compact) isn't supported yet.
+
+## License
+
+MIT, see `LICENSE`.

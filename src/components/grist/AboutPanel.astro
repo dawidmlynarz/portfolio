@@ -10,6 +10,7 @@
 import Icon from "./Icon.astro";
 import TileIcon from "./TileIcon.astro";
 import { RARITIES, RARITY_INFO, RARITY_LABELS } from "@/lib/grist";
+import { CODE_LICENSE, DROP_LICENSE } from "@/lib/drops";
 
 interface Props {
   id: string;
@@ -50,6 +51,17 @@ const { id } = Astro.props;
           Tested means I've used it on real work. Trying means I'm still finding out. The ideas are
           mine, and Claude helps me format the files. Add <code>.md</code> to any address if you'd
           rather read plain markdown.
+        </p>
+        <p>
+          Use any drop as you like, at work too, just credit me. Drops are
+          <a href={DROP_LICENSE.href} rel="license">
+            {DROP_LICENSE.name}
+          </a>{" "}
+          and plugin code is
+          <a href={CODE_LICENSE.href} rel="license">
+            {CODE_LICENSE.name}
+          </a>
+          .
         </p>
       </div>
     </section>
