@@ -2,9 +2,11 @@
 /**
  * A season's heading on the front door: number and battle-pass progress, title and one line on the
  * theme, with its season pack (every unlocked drop in one markdown file) on the right, over a 2px
- * rule. A season that hasn't started says when it does instead.
+ * rule. A season that hasn't started says when it does instead. While a season runs, the pack shows
+ * locked, with a pip per slot filling as drops land and the day it unlocks (the last drop day).
  */
 import DownloadButton from "./DownloadButton.astro";
+import Icon from "./Icon.astro";
 import { SEASON_SLOTS, SEASONS, type Season } from "@/lib/grist";
 import { dropDay, formatDate, seasonPackHref } from "@/lib/drops";
 
@@ -37,7 +39,34 @@ const status =
     </h2>
     <p class="season-header__muted">{blurb}</p>
   </div>
-  {hasPack && unlocked > 0 && <DownloadButton href={pack} name={pack.split("/").at(-1)!} />}
+  {hasPack && unlocked > 0 ? (
+    <DownloadButton href={pack} name={pack.split("/").at(-1)!} />
+  ) : (
+    unlocked > 0 &&
+    unlocked < SEASON_SLOTS && (
+      <div class="season-header__pack">
+        <p class="season-header__locked">
+          <Icon name="lock" />
+          <span>{pack.split("/").at(-1)}</span>
+        </p>
+        <p class="season-header__progress text-small">
+          <span class="season-header__pips" aria-hidden="true">
+            {Array.from({ length: SEASON_SLOTS }, (_, i) => (
+              <span
+                class:list={["season-header__pip", { "season-header__pip--on": i < unlocked }]}
+              />
+            ))}
+          </span>
+          <span>
+            The season pack unlocks on{" "}
+            <time datetime={dropDay(season, SEASON_SLOTS).toISOString().slice(0, 10)}>
+              {formatDate(dropDay(season, SEASON_SLOTS))}
+            </time>
+          </span>
+        </p>
+      </div>
+    )
+  )}
 </header>
 
 <style>
@@ -61,6 +90,49 @@ const status =
       font-size: var(--text-h3);
       line-height: var(--leading-h3);
       letter-spacing: var(--tracking-h3);
+    }
+
+    .season-header__pack {
+      display: grid;
+      justify-items: start;
+      gap: var(--space-2);
+    }
+
+    /* The pack, locked: the download button's shape, dashed like a locked card. */
+    .season-header__locked {
+      display: inline-flex;
+      align-items: center;
+      gap: var(--space-2);
+      max-inline-size: 100%;
+      padding: var(--space-2) var(--space-4);
+      border: var(--border-width) dashed var(--color-border-muted);
+      border-radius: var(--radius-pill);
+      color: var(--color-text-muted);
+    }
+
+    .season-header__progress {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: var(--space-2) var(--space-3);
+      color: var(--color-text-muted);
+    }
+
+    .season-header__pips {
+      display: inline-flex;
+      gap: var(--space-1);
+    }
+
+    .season-header__pip {
+      inline-size: var(--space-2);
+      block-size: var(--space-2);
+      border: var(--border-width) solid var(--color-border-muted);
+      border-radius: var(--radius-pill);
+    }
+
+    .season-header__pip--on {
+      border-color: var(--color-text);
+      background-color: var(--color-text);
     }
 
     .season-header__muted {
