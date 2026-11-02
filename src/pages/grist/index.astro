@@ -1,11 +1,19 @@
 ---
 import GristLayout from "@/layouts/GristLayout.astro";
 import FrontDoor from "@/components/grist/FrontDoor.astro";
-import { getSeasons } from "@/lib/drops";
+import { getSeasons, nextDropDay } from "@/lib/drops";
 
-// Seasons that haven't started stay off the front door. Newest first: the running season sits
-// under the next drop badge. The sandbox keeps them in number order.
-const seasons = (await getSeasons()).filter((season) => season.open).reverse();
+// Started seasons, plus the one that holds the next drop, so the day the hero badge teases is a
+// locked card marked next. Later seasons stay off the front door. Newest first: the coming or
+// running season sits under the next drop badge. The sandbox keeps them in number order.
+const next = nextDropDay()?.getTime();
+const seasons = (await getSeasons())
+  .map((season) => ({
+    ...season,
+    open: season.open || season.slots.some((slot) => slot.date.getTime() === next),
+  }))
+  .filter((season) => season.open)
+  .reverse();
 ---
 
 <GristLayout
