@@ -902,3 +902,12 @@ From the market comparison (Claude Doc "Grist drops vs the market").
 
 - Dawid's call: a silent launch this week with Season 1 only, then weekly drops and X marketing from next week. Season 2 now starts Friday Nov 13, 2026, and every later season moves two weeks to keep the same gaps. Season 1 keeps its dates. Production shows Season 1 complete with its pack, and "Next drop: Nov 13, 2026".
 - The sandbox (`/grist/sandbox`) and review queue stay preview-only, so they never ship on mlynarz.com. Every branch preview on Cloudflare Pages still builds them from the same drafts in the repo.
+
+## Grist as a Claude Code plugin marketplace (2 Nov)
+
+- The site hosts the marketplace itself, so there is no separate GitHub repo and the portfolio repo stays private. People run `/plugin marketplace add https://www.mlynarz.com/grist/marketplace.json`, then `/plugin install <slug>@grist`. This needs Claude Code 2.1.224 or later.
+- Only skills and workflows become plugins, since those install as they are. Rules, prompts, checklists and specs stay on the drop pages.
+- The catalog lists the same drops as the front door (`getDrops`), so drafts and drops whose day hasn't come stay out. Production rebuilds on drop days add new plugins.
+- Each plugin is a zip at `/grist/plugins/<slug>.zip`, pinned in the catalog by its SHA-256. No `version` is set, so Claude Code takes the version from the digest and people get an update whenever a drop's files change. The zip writer uses fixed dates, so an unchanged drop keeps its digest.
+- A skill goes in as `skills/<name>/`. A workflow's `skills/` and `agents/` go in as they are. The optional raw value hook in Design to Code Workflow ships as a file but isn't switched on, because its README calls it optional.
+- Previews point their catalog at their own deployment (`CF_PAGES_URL`), so a preview can be tested on its own.

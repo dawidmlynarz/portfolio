@@ -71,6 +71,14 @@ export const isProduction = CF_PAGES_BRANCH === PRODUCTION_BRANCH;
  */
 export const assetOrigin = !isProduction && CF_PAGES_URL ? CF_PAGES_URL : undefined;
 
+/**
+ * Absolute base for links that must work from outside the site, like the Grist plugin marketplace.
+ * Production uses the site. A preview uses its own deployment, so its catalog leads to its own zips
+ * (whose digests match).
+ */
+export const siteBase = (site: URL | undefined) =>
+  new URL(assetOrigin ?? site ?? "https://www.mlynarz.com");
+
 /** Cloudflare Web Analytics runs on production only, and only when a token is set. */
 export const webAnalyticsToken = isProduction ? CF_WEB_ANALYTICS_TOKEN : undefined;
 
