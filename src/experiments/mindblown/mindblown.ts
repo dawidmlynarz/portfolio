@@ -1263,7 +1263,12 @@ export function init(root: HTMLElement): () => void {
     offscreen = !entry!.isIntersecting;
     root.toggleAttribute("data-mindblown-offscreen", offscreen);
     if (offscreen) {
-      held = (ctx.getTweens() as gsap.core.Animation[]).filter((t) => !t.paused() && t.isActive());
+      /* Skip zero-length tweens. The context keeps the finished intro `from` tweens (head rise, note
+         pop) as 0s entries that still report active, and pausing then resuming one replays its
+         start values, which dropped the head 40% after scrolling away and back. */
+      held = (ctx.getTweens() as gsap.core.Animation[]).filter(
+        (t) => !t.paused() && t.isActive() && t.duration() > 0,
+      );
       for (const t of held) t.pause();
     } else {
       for (const t of held) t.resume();
