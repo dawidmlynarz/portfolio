@@ -12,7 +12,7 @@ import AuthorNote from "./AuthorNote.astro";
 import SeasonHeader from "./SeasonHeader.astro";
 import NewBadge from "./NewBadge.astro";
 import { SEASON_SLOTS, type Season } from "@/lib/grist";
-import { derive, formatDate, nextDropDay, type getSeasons } from "@/lib/drops";
+import { formatDate, nextDropDay, type getSeasons } from "@/lib/drops";
 
 interface Props {
   seasons: Awaited<ReturnType<typeof getSeasons>>;
@@ -47,7 +47,7 @@ const next = nextDropDay();
     <section class="front__season" aria-labelledby={season.id}>
       <SeasonHeader
         season={season.id}
-        tiers={season.slots.map((slot) => (slot.drop ? derive(slot.drop).rarity : null))}
+        tiers={season.tiers}
         pack={packs ? packs.has(season.id) : season.drops.length >= SEASON_SLOTS}
       />
       {season.open && (
@@ -64,6 +64,7 @@ const next = nextDropDay();
                     date: slot.date,
                     next: slot.next,
                     late: slot.late,
+                    teaser: slot.teaser,
                   }}
                 />
               )}

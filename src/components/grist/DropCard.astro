@@ -6,8 +6,9 @@
  * The whole tile is the link's hit area. New sits in the top right corner, and a drop that ships a
  * Figma plugin says "Plugin included" there too.
  *
- * Locked variant (battle pass): a slot whose drop day hasn't come. Dashed border, the planned
- * gem faded, no title, and the day it unlocks. The next one to unlock says so in its top right
+ * Locked variant (battle pass): a slot whose drop day hasn't come. Dashed border, the hidden [?]
+ * tile and the type, and the day it unlocks. A reviewed drop shows its title and one-liner behind a
+ * lock (a teaser), never a link. An unwritten or draft slot just says Locked. The next one to unlock says so in its top right
  * corner.
  */
 import NewBadge from "./NewBadge.astro";
@@ -20,7 +21,15 @@ import { derive, dropHref, formatDate, hasPlugin, isoDate, type Drop } from "@/l
 interface Props {
   drop?: Drop;
   /** A locked slot instead of a drop. */
-  locked?: { type: DropType; rarity: Rarity; date: Date; next?: boolean; late?: boolean };
+  locked?: {
+    type: DropType;
+    rarity: Rarity;
+    date: Date;
+    next?: boolean;
+    late?: boolean;
+    /** A reviewed drop waiting for its day: title and one-liner shown, still locked. */
+    teaser?: { title: string; summary: string };
+  };
   /** Heading level of the title in this page's outline. */
   level?: 2 | 3 | 4;
   /** Show the season (for lists that don't group by it). */
@@ -88,13 +97,15 @@ const plugin = drop && hasPlugin(drop);
             {locked.next && <span class="drop-card__next text-caption">Next drop</span>}
           </p>
           <Heading class="drop-card__title drop-card__title--locked">
-            <Icon name="lock" />
-            Locked
+            <Icon name="lock" label={locked.teaser ? "Locked:" : undefined} />
+            {locked.teaser ? locked.teaser.title : "Locked"}
           </Heading>
           <p class="drop-card__summary">
-            {locked.late
-              ? "Running late. It drops as soon as it’s ready."
-              : `A ${DROP_TYPES[locked.type].label.toLowerCase()} unlocks on drop day.`}
+            {locked.teaser
+              ? locked.teaser.summary
+              : locked.late
+                ? "Running late. It drops as soon as it’s ready."
+                : `A ${DROP_TYPES[locked.type].label.toLowerCase()} unlocks on drop day.`}
           </p>
         </div>
         <ul class="drop-card__meta" role="list">
@@ -266,11 +277,17 @@ const plugin = drop && hasPlugin(drop);
       opacity: 0.45;
     }
 
+    /* The lock sits on the first line when a teaser title wraps. */
     .drop-card__title--locked {
-      display: inline-flex;
-      align-items: center;
+      display: flex;
+      align-items: flex-start;
       gap: var(--space-2);
       color: var(--color-text-muted);
+    }
+
+    .drop-card__title--locked :global(.icon) {
+      /* As tall as a line, so the drawing centres on it (the viewBox keeps its shape). */
+      block-size: calc(var(--leading-h4) * 1em);
     }
 
     /* Next drop: a locked card like the rest, with the label in the top right corner. */

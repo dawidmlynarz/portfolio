@@ -584,7 +584,8 @@ const GRIST_ICONS: IconName[] = [
             not yet dropped show locked, the next one marked in its corner, a missed one as late.
             The season header shows a tile per slot, the hidden [?] tile until that drop is out, and
             keeps the pack locked until all eight have landed. Locked tiles hide the tier the same
-            way and name only the type. A drop that ships a Figma plugin says so in the corner.
+            way and name only the type. A reviewed drop waiting for its day also shows its title and
+            one-liner, still locked. A drop that ships a Figma plugin says so in the corner.
           </p>
           <SeasonHeader season="s01" tiers={["common", "rare", "uncommon"]} />
           {sampleDrops[0] && <DropCard drop={sampleDrops[0]} />}
@@ -597,7 +598,16 @@ const GRIST_ICONS: IconName[] = [
               locked={{ type: "spec", rarity: "epic", date: new Date("2027-01-22"), next: true }}
             />
             <DropCard
-              locked={{ type: "skill", rarity: "legendary", date: new Date("2027-02-05") }}
+              locked={{
+                type: "skill",
+                rarity: "legendary",
+                date: new Date("2027-02-05"),
+                teaser: {
+                  title: "Agent UX Review",
+                  summary:
+                    "A full review of an agent concept, from whether it should exist to where it stops and asks.",
+                },
+              }}
             />
             <DropCard
               locked={{ type: "rule", rarity: "common", date: new Date("2026-10-16"), late: true }}
