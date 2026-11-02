@@ -595,3 +595,7 @@ What changed versus the embed, and why:
 **Lead Product Designer everywhere but the case studies.** The site title, descriptions, structured data (`jobTitle`) and page copy now say Lead Product Designer; case studies keep the job titles Dawid held. The retainer keeps the name Embedded Design Lead and now says "2–3 days a week" in its terms, so $8,300 does not read as full time. The price is still worked out from two days a week.
 
 **Menu links stay at h2.** A separate menu-link size was tried and dropped; the open panel's gap between the links and the social row is now `--space-4`.
+
+## 2026-11-02 · No prices on the plans
+
+**Plans end in "Book a call" only.** Dawid asked to remove the prices from the /services plans. Each plan keeps its label, name, promise, list and button; the price and the terms line under it are gone, and so is the rate maths in `src/lib/plans.ts`, `formatPrice` and the `priceSpecification` in the `OfferCatalog` structured data (so search engines don't show a price the page doesn't). The old rate and prices are in git history before this change.
