@@ -8,6 +8,8 @@ Non-obvious choices, newest first. One entry per decision: what, why, and what i
 
 **The coming season shows before its first drop.** /grist listed only seasons with a drop out, so between seasons the hero teased "Next drop" while the season it belonged to was hidden. The front door now also shows the season holding the next drop day, with its eight locked cards and the first one marked Next drop. Later seasons stay hidden.
 
+**Season order follows the drops.** Until the coming season's first drop is out, the front door lists seasons in number order (Season 1, then Season 2). From that Friday on, the newest season goes first. Dawid asked for Season 1 first until Season 2 starts.
+
 **No portfolio link to Grist yet.** A nav item, a home section and a footer link back from Grist were tried and taken out. Dawid will design the home section.
 
 ## 2026-10-30 · Grist: rarity by hand, no quest types
