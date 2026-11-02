@@ -1,4 +1,4 @@
-import { CF_PAGES_BRANCH, CF_WEB_ANALYTICS_TOKEN } from "astro:env/server";
+import { CF_PAGES_BRANCH, CF_PAGES_URL, CF_WEB_ANALYTICS_TOKEN } from "astro:env/server";
 
 export const SITE = {
   name: "Dawid Młynarz",
@@ -64,6 +64,12 @@ export const NAV_LINKS = [
 export const PRODUCTION_BRANCH = "main";
 
 export const isProduction = CF_PAGES_BRANCH === PRODUCTION_BRANCH;
+
+/**
+ * Where share images are fetched from. Production: the site. A preview: its own deployment, since
+ * the images for unreleased pages don't exist on the live site yet.
+ */
+export const assetOrigin = !isProduction && CF_PAGES_URL ? CF_PAGES_URL : undefined;
 
 /** Cloudflare Web Analytics runs on production only, and only when a token is set. */
 export const webAnalyticsToken = isProduction ? CF_WEB_ANALYTICS_TOKEN : undefined;
