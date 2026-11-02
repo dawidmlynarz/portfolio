@@ -826,3 +826,9 @@ What changed versus the embed, and why:
 - Front door badge: 20% bigger on desktop (up to 216px, 19.2vw); phones unchanged.
 - Drop page: 64px between its parts from tablets up (48px on phones), a deeper header and more room under headings and the tl;dr.
 - Author note photo: the About page's portrait (the Mindblown hero's resting face and hair), flattened into one square `src/assets/portrait/portrait-about.webp` (600px, 38 KB) and resized again at build time to 200 or 340px.
+
+## 2026-11-02 · Hover embers removed; readme panel explorations
+
+- The hover embers on Legendary and Mythic cards didn't work for Dawid either. They're gone (`drop-fx.ts` deleted), and the cards are back to the Figma hover.
+- `/grist/review/readme` (preview only): six layouts for the readme panel, each a real popover with no script (CSS tabs, `details` accordion). All of them use the drop card's surface (1px subtle border, large radius) over the open menu's glass (`--color-glass`, `--blur-menu`, `--color-scrim` backdrop, `--shadow-panel`), and put "Why this exists" before the rarities. The layouts are: card, side sheet, drawer, tabs, loot table and drop-down. Phones get bottom sheets. The rarity legend is shown as a list, a ladder, an accordion, a map-key grid, a what-you-get table or a depth meter. The page also compares names for the header button. The recommendation is an info icon with "About".
+- New `info` icon in `Icon.astro`.
