@@ -1,23 +1,15 @@
 ---
-import { CLIENTS, nextLogoId, type Client } from "@/lib/clients";
+import ClientLogo from "@/components/ui/ClientLogo.astro";
+import { WORKED_WITH, type Client } from "@/lib/clients";
 
 /**
- * Client logos. The SVGs in src/assets/clients share a 48px-tall artboard, so they read at an even
- * size. They are inlined with black → currentColor, so they follow the surrounding text colour
- * (white is only used inside their masks and clip paths and stays as is). Mask and clip ids get a
- * unique suffix so several sets on one page stay valid.
+ * Client logos (each one a `ClientLogo`, in the text colour).
  *
- * Variants: a wrapping row (default), spread across the width, or a marquee (Home, above the
- * footer): an endless, full-width loop. The marquee renders the list twice (the copy hidden from
+ * Variants: a wrapping row (default), spread across the width, or a marquee (Home, between the
+ * hero and About): an endless, full-width loop. The marquee renders the list twice (the copy hidden from
  * assistive tech) and slides it by one copy, pure CSS. It pauses on hover; with reduced motion it
  * is a static, centred row.
  */
-const files = import.meta.glob<string>("/src/assets/clients/*.svg", {
-  query: "?raw",
-  import: "default",
-  eager: true,
-});
-
 interface Props {
   clients?: Client[];
   /** Accessible name for the list. */
@@ -30,26 +22,12 @@ interface Props {
 }
 
 const {
-  clients = Object.keys(CLIENTS) as Client[],
+  clients = WORKED_WITH,
   label = "Companies I have worked with",
   spread = false,
   marquee = false,
   class: className,
 } = Astro.props;
-
-const themed = (svg: string, name: string, suffix: number) =>
-  svg
-    .replace(/<\?xml[^>]*>/, "")
-    .replace(/fill="(black|#000|#000000)"/gi, 'fill="currentColor"')
-    .replace(/\bid="([^"]+)"/g, `id="$1-${suffix}"`)
-    .replace(/url\(#([^)]+)\)/g, `url(#$1-${suffix})`)
-    .replace(/<svg\b/, `<svg role="img" aria-label="${name}" focusable="false"`);
-
-const logosFor = () =>
-  clients
-    .map((key) => ({ key, name: CLIENTS[key], svg: files[`/src/assets/clients/${key}.svg`] }))
-    .filter((logo): logo is typeof logo & { svg: string } => Boolean(logo.svg))
-    .map((logo) => ({ ...logo, svg: themed(logo.svg, logo.name, nextLogoId()) }));
 ---
 
 {marquee ? (
@@ -62,9 +40,9 @@ const logosFor = () =>
           aria-label={copy === 0 ? label : undefined}
           aria-hidden={copy === 1 ? "true" : undefined}
         >
-          {logosFor().map(({ key, svg }) => (
+          {clients.map((key) => (
             <li class="client-logos__item" data-client={key}>
-              <Fragment set:html={svg} />
+              <ClientLogo client={key} />
             </li>
           ))}
         </ul>
@@ -77,9 +55,9 @@ const logosFor = () =>
     role="list"
     aria-label={label}
   >
-    {logosFor().map(({ key, svg }) => (
+    {clients.map((key) => (
       <li class="client-logos__item" data-client={key}>
-        <Fragment set:html={svg} />
+        <ClientLogo client={key} />
       </li>
     ))}
   </ul>

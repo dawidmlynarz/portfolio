@@ -1,0 +1,57 @@
+---
+/**
+ * What a drop gives back: one real run, shown under the drop on its page. The line on top says
+ * what it was run on (`sampleInput`); the result is output.md as written, in a quiet panel so it
+ * doesn't read as the loot itself. Shown only when a drop has an output.md.
+ */
+interface Props {
+  input: string;
+  text: string;
+  /** Id of the heading, for the page's table of contents. */
+  id?: string;
+}
+
+const { input, text, id = "what-you-get" } = Astro.props;
+---
+
+<section class="sample-run" aria-labelledby={id}>
+  <h2 class="sample-run__heading" id={id}>
+    What you get
+  </h2>
+  <p class="sample-run__input">{input}</p>
+  <pre class="sample-run__text"><code>{text}</code></pre>
+</section>
+
+<style>
+  @layer components {
+    .sample-run {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr);
+      gap: var(--space-4);
+    }
+
+    /* Same as the drop page's section headings. */
+    .sample-run__heading {
+      margin-block-end: var(--space-2);
+      font: var(--weight-medium) var(--text-h3) / var(--leading-h3) var(--font-heading);
+      letter-spacing: var(--tracking-h3);
+    }
+
+    .sample-run__input {
+      max-inline-size: var(--measure);
+      color: var(--color-text-muted);
+    }
+
+    .sample-run__text {
+      margin: 0;
+      padding: var(--space-6);
+      overflow-x: auto;
+      border-radius: var(--radius-lg);
+      font-size: var(--text-small);
+      line-height: var(--leading-small);
+      white-space: pre-wrap;
+      color: var(--color-text);
+      background-color: var(--color-bg-subtle);
+    }
+  }
+</style>

@@ -1,0 +1,165 @@
+---
+/**
+ * Case-study covers drifting sideways in an endless loop (/contact, after the email): a reminder
+ * of the work, one click from each case study. Inspired by alexandre-araujo.com/contact.
+ *
+ * Every cover is cropped to 4:3, as on the work cards, with no caption. Built like the ClientLogos
+ * marquee: the list twice (the copy hidden from assistive tech and out of the tab order), slid by
+ * one copy in CSS. It stops while a cover is hovered or has focus, and that cover rises by
+ * --work-marquee-lift (0 by default; /contact lifts it so more of it shows above the screen edge).
+ * Reduced motion: a still row you can scroll sideways.
+ */
+import { Image } from "astro:assets";
+import { getPagedWork, workHref, type Work } from "@/lib/work";
+
+interface Props {
+  entries?: Work[];
+  /** Accessible name for the list. */
+  label?: string;
+  class?: string;
+}
+
+const {
+  entries = await getPagedWork(),
+  label = "Selected case studies",
+  class: className,
+} = Astro.props;
+---
+
+<div class:list={["work-marquee", className]}>
+  <div class="work-marquee__track">
+    {[0, 1].map((copy) => (
+      <ul
+        class="work-marquee__list"
+        role="list"
+        aria-label={copy === 0 ? label : undefined}
+        aria-hidden={copy === 1 ? "true" : undefined}
+      >
+        {entries.map((entry) => (
+          <li class="work-marquee__item">
+            <a
+              class="work-marquee__link"
+              href={workHref(entry)}
+              tabindex={copy === 1 ? -1 : undefined}
+              data-no-tear
+            >
+              <span class="work-marquee__frame">
+                <Image
+                  class="work-marquee__cover"
+                  src={entry.data.cover}
+                  alt=""
+                  widths={[480, 800].filter((w) => w <= entry.data.cover.width)}
+                  sizes="(min-width: 48em) 22rem, 14rem"
+                  format="avif"
+                />
+              </span>
+              <span class="visually-hidden">
+                {entry.data.company}: {entry.data.title}
+              </span>
+            </a>
+          </li>
+        ))}
+      </ul>
+    ))}
+  </div>
+</div>
+
+<style>
+  @layer components {
+    .work-marquee {
+      --work-marquee-gap: var(--space-4);
+
+      padding-block-start: var(--work-marquee-lift, 0); /* room for a lifted cover */
+      overflow: hidden;
+    }
+
+    .work-marquee__track {
+      display: flex;
+      inline-size: max-content;
+      animation: work-marquee var(--duration-marquee-work) linear infinite;
+    }
+
+    .work-marquee:has(.work-marquee__link:hover) .work-marquee__track,
+    .work-marquee:focus-within .work-marquee__track {
+      animation-play-state: paused;
+    }
+
+    .work-marquee__list {
+      display: flex;
+      gap: var(--work-marquee-gap);
+      padding: 0 var(--work-marquee-gap) 0 0;
+    }
+
+    .work-marquee__item {
+      flex-shrink: 0;
+      inline-size: var(--work-marquee-size, 22rem);
+    }
+
+    .work-marquee__link {
+      --underline-size: 0%;
+
+      display: block;
+      transition: translate var(--duration-link) var(--ease-out-expo);
+    }
+
+    .work-marquee__link:hover,
+    .work-marquee__link:focus-visible {
+      --underline-size: 0%;
+
+      translate: 0 calc(-1 * var(--work-marquee-lift, 0));
+    }
+
+    /* 4:3, centred, like the work cards. */
+    .work-marquee__frame {
+      display: block;
+      aspect-ratio: 4 / 3;
+      overflow: clip;
+      border-radius: var(--radius-md);
+      background-color: var(--color-bg-subtle);
+    }
+
+    .work-marquee__cover {
+      inline-size: 100%;
+      block-size: 100%;
+      object-fit: cover;
+    }
+
+    @keyframes work-marquee {
+      to {
+        translate: -50% 0;
+      }
+    }
+
+    /* Reduced motion: one still row that scrolls sideways. */
+    @media (prefers-reduced-motion: reduce) {
+      .work-marquee {
+        overflow-x: auto;
+        scroll-snap-type: x proximity;
+      }
+
+      .work-marquee__track {
+        padding-inline-start: var(--gutter);
+        animation: none;
+      }
+
+      .work-marquee__list[aria-hidden="true"] {
+        display: none;
+      }
+
+      .work-marquee__item {
+        scroll-snap-align: start;
+        scroll-margin-inline-start: var(--gutter);
+      }
+    }
+
+    @media (width < 48em) {
+      .work-marquee {
+        --work-marquee-gap: var(--space-3);
+      }
+
+      .work-marquee__item {
+        inline-size: var(--work-marquee-size, 14rem);
+      }
+    }
+  }
+</style>

@@ -1,0 +1,37 @@
+---
+title: "Rebuild a Prototype in Your System"
+summary: "Have a coding agent rebuild a working prototype with your design system, one component at a time."
+hint: "For a proof of concept that works but looks nothing like your product. The agent follows a rebuild plan, and anything the system lacks is flagged as a candidate."
+example: true
+season: "s05"
+slot: 4
+drop: "prompt"
+rarity: "epic"
+status: "tested"
+steps:
+  - "Run the audit prompt against the prototype's code and screens."
+  - "Review the mapping before any code changes."
+  - "Rebuild in a separate copy of the code (a sandbox), smallest shared components first."
+  - "Flag every component built locally as a candidate for the system."
+related: [build-one-component-at-a-time, handoff-spec-for-coding-agents]
+draft: true
+---
+
+{/* CLAUDE: the example rows are an illustration I wrote for the Epic tier. Replace them with real rows from the Anvil rebuild. Confirm or rewrite. */}
+
+{/* CLAUDE: Drafted by Claude from the overview of Dawid's real work (Zazmic account, 31 Oct). Clients anonymised. The loot is my first pass at his workflow; the Why is reconstructed from notes. Fill every [YOU] gap, check the facts, confirm status. */}
+
+I've rebuilt a working AI proof of concept with [Anvil UI](/work/zazmic-anvil-ui), the design system for AI agents I built, this way. I worked in a separate copy of the code (a sandbox) so nothing shipped by accident, starting from an audit brief for the coding agent (Claude Code) before any code changed. On other prototypes, components the design system didn't have were built locally and flagged as possible additions to it. [YOU: what the agent got wrong most.]
+
+## Example
+
+An illustration of the first rows of the audit table, from a chat prototype rebuilt with Anvil UI:
+
+```
+Screen | Component     | System match  | Action
+Chat   | Message input | Exact match   | Swap in the system's input
+Chat   | Tool call row | Needs variant | Add a compact variant
+Chat   | Source chips  | Missing       | Build locally, flag for the system
+```
+
+[YOU: the real first rows from the Anvil rebuild, and what the agent got wrong most.]

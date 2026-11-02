@@ -61,6 +61,16 @@ export default {
   },
   overrides: [
     {
+      // Experiments (CLAUDE.md rule 6) map theme colours and type to site tokens, but keep their
+      // own illustration colours and layout values. Layers, BEM and the primitive ban still apply.
+      files: ["src/experiments/**"],
+      rules: {
+        "color-no-hex": null,
+        "function-disallowed-list": null,
+        "declaration-property-unit-disallowed-list": null,
+      },
+    },
+    {
       files: ["src/styles/tokens.css"],
       rules: {
         "color-no-hex": null,

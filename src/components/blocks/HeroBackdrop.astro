@@ -1,0 +1,52 @@
+---
+/**
+ * The hero grain: fine noise at the top of the page that fades out over the first screen. Put it
+ * first inside the hero; the hero gets `hero-backdrop-host` from here (position and stacking).
+ * It is grain only, no fill, so the page background shows through it.
+ *
+ * Page transitions: while one runs (html[data-vt], BaseLayout) the grain is named, so it is left
+ * out of the page images that fade and rise and simply stays put at the top (base.css). A
+ * transition name must be unique, so use one per page.
+ */
+interface Props {
+  /** The page runs under the floating nav (SiteLayout navOverlap): start at the hero's top edge. */
+  flush?: boolean;
+}
+
+const { flush = false } = Astro.props;
+---
+
+<div class:list={["hero-backdrop", { "hero-backdrop--flush": flush }]} aria-hidden="true"></div>
+
+<style>
+  @layer components {
+    :global(.hero-backdrop-host) {
+      position: relative;
+      isolation: isolate;
+    }
+
+    .hero-backdrop {
+      --hero-backdrop-offset: var(--nav-clearance);
+
+      position: absolute;
+      inset-inline: 0;
+      inset-block-start: calc(-1 * var(--hero-backdrop-offset));
+      z-index: -1;
+      block-size: calc(min(100%, 100svh) + var(--hero-backdrop-offset));
+      background: var(--texture-grain);
+
+      /* Masks only read alpha: any opaque colour works. */
+      mask-image: linear-gradient(to bottom, var(--color-text), transparent 90%);
+      pointer-events: none;
+      will-change: transform;
+    }
+
+    .hero-backdrop--flush {
+      --hero-backdrop-offset: 0px;
+    }
+
+    :global(:root[data-vt]) .hero-backdrop {
+      view-transition-name: hero-backdrop;
+    }
+  }
+</style>

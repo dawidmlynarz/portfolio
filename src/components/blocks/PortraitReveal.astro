@@ -1,0 +1,194 @@
+---
+/**
+ * PortraitReveal: the portrait hero. The top image (the photo) is a real responsive <img>; once JS
+ * runs, a canvas fades in over it and a glitch reveals up to four layers below it, picked at
+ * random (each layer can be weighted, so one can be rare). At rest two tracking bands roll down
+ * the picture; the pointer is interference that tears the rows open around it.
+ *
+ * All images must be transparent cutouts with identical framing. They stay transparent, so
+ * whatever is behind (the hero's grain) shows around the figure in light and dark. A
+ * layer can have a dark-theme variant. Behaviour lives in src/scripts/portrait-reveal.ts and
+ * reveal-glitch.ts.
+ *
+ * Reduced motion: no rolling bands, hiccups or tearing; a clean band at the pointer only.
+ * No JS or no WebGL: the top image alone.
+ */
+import { Image, getImage } from "astro:assets";
+
+interface Layer {
+  light: ImageMetadata;
+  /** Variant for the dark theme (same framing). */
+  dark?: ImageMetadata;
+  /** Relative chance of being picked (default 1). */
+  weight?: number;
+}
+
+interface Props {
+  /** What shows before and without the reveal. */
+  top: ImageMetadata;
+  /** Revealed under the top, 1–4. The first loads with the canvas, the rest once it is idle. */
+  layers: Layer[];
+  /** Describes the top image. */
+  alt: string;
+  /** Part of the image always kept in frame: [x0, x1, y0, y1], 0–1. */
+  face?: [number, number, number, number];
+  /** image: the box takes the image's aspect ratio · fill: fills its parent (full-bleed heroes). */
+  fit?: "image" | "fill";
+  loading?: "eager" | "lazy";
+  sizes?: string;
+  class?: string;
+}
+
+const {
+  top,
+  layers,
+  alt,
+  face = [0.27, 0.71, 0.04, 0.86],
+  fit = "image",
+  loading = "eager",
+  sizes = "(min-width: 62em) 50vw, 100vw",
+  class: className,
+} = Astro.props;
+
+const WIDTHS = [480, 800, 1200, 1600, 2400];
+const widthsFor = (img: ImageMetadata) => {
+  const fits = WIDTHS.filter((w) => w < img.width);
+  return [...fits, img.width];
+};
+
+// The top is the LCP and stays sharp; the layers only show through the moving glitch, so they take
+// a lower quality (about half the bytes, no visible difference at 100%).
+const TOP_QUALITY = 65;
+const LAYER_QUALITY = 55;
+
+// Same widths for every layer, so the canvas can pick a matching set.
+const sourcesFor = async (img: ImageMetadata, quality: number) =>
+  Promise.all(
+    widthsFor(img).map(async (w) => ({
+      url: (await getImage({ src: img, width: w, format: "avif", quality })).src,
+      w,
+    })),
+  );
+
+const [topSources, layerSources] = await Promise.all([
+  sourcesFor(top, TOP_QUALITY),
+  Promise.all(
+    layers.slice(0, 4).map(async (layer) => ({
+      light: await sourcesFor(layer.light, LAYER_QUALITY),
+      dark: layer.dark && (await sourcesFor(layer.dark, LAYER_QUALITY)),
+      weight: layer.weight ?? 1,
+    })),
+  ),
+]);
+const config = { face };
+
+// Page-load fade: the image marks the portrait as shown as soon as it has loaded, without waiting
+// for the module scripts (which would push LCP back). portrait-reveal.ts does the same as a fallback.
+const markShown = "this.parentNode.dataset.shown=''";
+
+// The static <img> and the canvas share this crop: cover, positioned on the face centre.
+const objectPosition = `${((face[0] + face[1]) / 2) * 100}% ${((face[2] + face[3]) / 2) * 100}%`;
+---
+
+<portrait-reveal
+  class:list={["portrait-reveal", `portrait-reveal--${fit}`, className]}
+  data-config={JSON.stringify(config)}
+  data-top={JSON.stringify(topSources)}
+  data-layers={JSON.stringify(layerSources)}
+  data-ratio={top.width / top.height}
+  style={`--portrait-reveal-ratio: ${top.width} / ${top.height}`}
+>
+  <Image
+    class="portrait-reveal__image"
+    src={top}
+    alt={alt}
+    widths={widthsFor(top)}
+    sizes={sizes}
+    format="avif"
+    quality={TOP_QUALITY}
+    loading={loading}
+    fetchpriority={loading === "eager" ? "high" : undefined}
+    style={`object-position: ${objectPosition}`}
+    onload={markShown}
+  />
+  <canvas class="portrait-reveal__canvas" aria-hidden="true"></canvas>
+</portrait-reveal>
+
+<script>
+  import "@/scripts/portrait-reveal";
+</script>
+
+<style>
+  @layer components {
+    .portrait-reveal {
+      position: relative;
+      display: block;
+      overflow: hidden;
+    }
+
+    .portrait-reveal--image {
+      aspect-ratio: var(--portrait-reveal-ratio);
+    }
+
+    /* Narrow screens: a square box crops the cutout's empty sides so the face reads larger.
+       The canvas framing keeps the face in frame at any aspect ratio. */
+    @media (width < 48em) {
+      .portrait-reveal--image {
+        aspect-ratio: 1;
+      }
+    }
+
+    .portrait-reveal--fill {
+      inline-size: 100%;
+      block-size: 100%;
+    }
+
+    .portrait-reveal__image,
+    .portrait-reveal__canvas {
+      position: absolute;
+      inset: 0;
+      inline-size: 100%;
+      block-size: 100%;
+    }
+
+    .portrait-reveal__image {
+      object-fit: cover;
+    }
+
+    .portrait-reveal__canvas {
+      /* Read by the script: the resolved page background, which picks light or dark layers. */
+      color: var(--color-bg);
+      pointer-events: none;
+      opacity: 0;
+      transition: opacity var(--duration-reveal) var(--ease-standard);
+    }
+
+    [data-ready] > .portrait-reveal__canvas {
+      opacity: 1;
+    }
+
+    /* The canvas paints both layers itself, so once it has faded in the static image is hidden.
+       Left underneath, it would show through the layers' soft, semi-transparent edges (the hair). */
+    [data-ready] > .portrait-reveal__image {
+      visibility: hidden;
+      transition: visibility 0s var(--duration-reveal);
+    }
+
+    /* Motion layer: the portrait fades in from 0 to 100% once its image has decoded
+       (data-shown, set by the image's onload or portrait-reveal.ts). Failsafe: visible after 3s regardless. */
+    :global(.motion) .portrait-reveal {
+      transition: opacity var(--duration-fade) var(--ease-standard);
+    }
+
+    :global(.motion) .portrait-reveal:not([data-shown]) {
+      opacity: 0;
+      animation: portrait-reveal-failsafe 0s 3s forwards;
+    }
+
+    @keyframes portrait-reveal-failsafe {
+      to {
+        opacity: 1;
+      }
+    }
+  }
+</style>

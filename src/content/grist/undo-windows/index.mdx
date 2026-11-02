@@ -1,0 +1,24 @@
+---
+title: "Undo Windows"
+summary: "Let people take back what an agent just did, for a little while."
+hint: "For agents that change data without asking first. Each of those actions gets a timed way back."
+steps:
+  - "List every action the agent takes without asking."
+  - "Mark which ones can be reversed. Anything that can't goes behind a confirmation instead."
+  - "Show the undo next to the result, with the time left, and add it to the activity log."
+season: "s06"
+slot: 5
+drop: "rule"
+rarity: "uncommon"
+status: "tested"
+related: [human-in-the-loop-checkpoints, agent-activity-log]
+draft: true
+---
+
+{/* CLAUDE: steps and the undo message added for the Uncommon tier. Confirm or rewrite. */}
+
+{/* TEST DATA: a draft by Claude for the season demo. The note, the brief and the drop are placeholders. Rewrite or delete before publishing. */}
+
+If the agent doesn’t ask before every step, people need a way back. An undo window is the cheap way to give them one. The action goes through, and for a little while one click reverses it.
+
+Put the undo right where the result appears, with the time left on it. Nobody finds an undo hidden in a menu.

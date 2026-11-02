@@ -1,0 +1,470 @@
+---
+/**
+ * Link lab: an audit of today's link styles, then six hover options drawn from the glitch reveal
+ * (rows, sideways tears, colour split, a rolling band, a signal settling), each shown in every role a
+ * link plays on the site. A private playground (/playground/links), not linked anywhere.
+ * Behaviour: link-lab.ts (tap to replay, the "settle" text effect, the reduced-motion preview).
+ *
+ * Isolated experiment (CLAUDE.md rule 6): classes live under .link-lab / .lab-link and read only
+ * semantic site tokens.
+ */
+import Link from "@/components/ui/Link.astro";
+import Button from "@/components/ui/Button.astro";
+import LabLink, { type Option } from "./LabLink.astro";
+
+const OPTIONS: { option: Option; name: string; note: string; fit: string }[] = [
+  {
+    option: "current",
+    name: "No effect",
+    note: "The plain hairline with no hover effect, for comparison. (Before this change the line thickened on hover.)",
+    fit: "CSS only · wraps fine",
+  },
+  {
+    option: "band",
+    name: "Tracking band",
+    note: "An inverted scan band rolls down through the word in steps, like a mistracked tape, and lands on the baseline as the underline.",
+    fit: "CSS only · best on short links",
+  },
+  {
+    option: "tear",
+    name: "Row tear",
+    note: "A hiccup. The word splits into three rows that jolt sideways for a few frames, then snaps back clean.",
+    fit: "CSS only · single-line links",
+  },
+  {
+    option: "split",
+    name: "Colour split",
+    note: "The glitch's colour split in black and white: two grey ghosts pull apart, jitter and settle back into the word.",
+    fit: "CSS only · wraps fine, safe in paragraphs",
+  },
+  {
+    option: "settle",
+    name: "Signal settle",
+    note: "The letters come in as noise and lock in from left to right, the way the portrait settles into a clean view when you hold still.",
+    fit: "Needs a little JS · single-line links",
+  },
+  {
+    option: "rows",
+    name: "Rows open",
+    note: "The loud one. The inverse surface opens behind the link in scan lines with a ragged edge, then closes into a solid block.",
+    fit: "CSS only · short links, nav, cards",
+  },
+  {
+    option: "snap",
+    name: "Torn underline",
+    note: "The quiet one. The hairline breaks into three pieces that jump out of line for a couple of frames, then lock into one thick line.",
+    fit: "CSS only · wraps fine, safe in paragraphs",
+  },
+];
+
+const AUDIT = [
+  {
+    name: "Text link",
+    where:
+      "Case-study text, About, Services “See it in”, “Services in detail”, the About story link, footer social, case-study project link",
+    hover: "Hairline thickens to 3 px",
+  },
+  {
+    name: "Action link with arrow",
+    where: "Home hero: About me, Contact",
+    hover: "Hairline thickens, arrow slides right",
+  },
+  {
+    name: "Quiet link",
+    where: "Styleguide only",
+    hover: "Line grows from the left, retracts to the right",
+  },
+  {
+    name: "Work card title",
+    where: "Home and Work grids",
+    hover: "Line grows from the left on tile hover (snaps back), cover zooms",
+  },
+  {
+    name: "Next project",
+    where: "End of every case study",
+    hover: "Line grows from the left, retracts to the right, no zoom",
+  },
+  {
+    name: "Menu links",
+    where: "Open nav menu",
+    hover: "Other links dim; the current page has a dot",
+  },
+  {
+    name: "Logo",
+    where: "Nav",
+    hover: "The mark rolls up and is replaced",
+  },
+  {
+    name: "Bar links",
+    where: "Nav without JavaScript only",
+    hover: "Grey pill behind the text",
+  },
+  {
+    name: "Email pill",
+    where: "Footer",
+    hover: "Arrow slides right, nothing else",
+  },
+  {
+    name: "Menu contact pill",
+    where: "Open nav menu",
+    hover: "No hover state",
+  },
+  {
+    name: "Primary button",
+    where: "View all work, Start a conversation, 404",
+    hover: "No visible change (brand and brand-strong are the same ink)",
+  },
+  {
+    name: "Secondary and ghost buttons, Back to top",
+    where: "Styleguide, every page (Back to top)",
+    hover: "Grey background",
+  },
+];
+---
+
+<div class="link-lab" data-link-lab>
+  <section class="link-lab__section" aria-labelledby="audit-title">
+    <div class="link-lab__intro">
+      <p class="text-caption link-lab__muted">01 · Audit</p>
+      <h2 id="audit-title">Twelve hover behaviours today</h2>
+      <p class="link-lab__muted">
+        Every place a link or button reacts to the pointer, as the site stands on main.
+      </p>
+    </div>
+
+    <div class="link-lab__table-wrap">
+      <table class="link-lab__table">
+        <thead>
+          <tr>
+            <th scope="col">Style</th>
+            <th scope="col">Where</th>
+            <th scope="col">Hover</th>
+          </tr>
+        </thead>
+        <tbody>
+          {AUDIT.map(({ name, where, hover }) => (
+            <tr>
+              <th scope="row">{name}</th>
+              <td>{where}</td>
+              <td>{hover}</td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
+
+    <div class="link-lab__live">
+      <p class="text-caption link-lab__muted">The current components, live</p>
+      <div class="link-lab__row">
+        <Link href="#audit-title">Text link</Link>
+        <Link href="#audit-title" variant="quiet">
+          Quiet link
+        </Link>
+        <Link href="#audit-title" icon="arrow">
+          Action link
+        </Link>
+        <Link href="https://www.figma.com">External</Link>
+        <Button href="#audit-title" size="sm">
+          Primary
+        </Button>
+        <Button href="#audit-title" size="sm" variant="secondary">
+          Secondary
+        </Button>
+      </div>
+    </div>
+
+    <div class="link-lab__findings">
+      <h3>What doesn’t line up</h3>
+      <ul>
+        <li>
+          The same “line draws in” idea runs two ways: work cards snap back, Next project retracts
+          to the right.
+        </li>
+        <li>
+          Standalone calls to action look different everywhere. The hero links have arrows,
+          “Services in detail” and the About story link are plain text links, “View all work” is a
+          button, and the footer email and menu contact are pills that don’t share a hover.
+        </li>
+        <li>
+          The primary button has no visible hover since the site went black and white, and the menu
+          contact pill has none at all.
+        </li>
+        <li>
+          Footer social links are underlined at rest while the nav, which plays the same role, is
+          quiet.
+        </li>
+        <li>
+          The ↗ for external links only comes from the Link component, so the five external links in
+          case studies don’t get it.
+        </li>
+      </ul>
+
+      <h3>Proposal: three link roles, one hover</h3>
+      <ol>
+        <li>
+          <strong>Text link</strong>, inside a sentence: hairline at rest. Case studies, About,
+          Services.
+        </li>
+        <li>
+          <strong>Action link</strong>, standing alone: hairline and an arrow. Hero links, “Services
+          in detail”, the About story link, “View all work”.
+        </li>
+        <li>
+          <strong>Quiet link</strong>, in a list or on a card: no line at rest. Nav, menu, card
+          titles, Next project, footer social.
+        </li>
+      </ol>
+      <p>
+        All three share the hover you pick below. Pills (footer email, menu contact, Back to top)
+        become Buttons, which get their own hover in the same language. The logo roll stays as the
+        one brand moment.
+      </p>
+    </div>
+  </section>
+
+  <section class="link-lab__section" aria-labelledby="options-title">
+    <div class="link-lab__intro">
+      <p class="text-caption link-lab__muted">02 · Options</p>
+      <h2 id="options-title">Six hovers from the glitch</h2>
+      <p class="link-lab__muted">
+        Each option in every role: a link in a sentence, two action links, a nav row, a card (hover
+        the whole card) and the inverse surface. Hover, tab through, or tap on a phone to replay.
+        Switch the theme with the toggle in the nav.
+      </p>
+      <label class="link-lab__switch">
+        <input type="checkbox" data-reduced-switch />
+        Preview reduced motion
+      </label>
+    </div>
+
+    <div class="link-lab__options">
+      {OPTIONS.map(({ option, name, note, fit }, i) => (
+        <article class:list={["link-lab__option", option === "current" && "link-lab__option--ref"]}>
+          <header class="link-lab__head">
+            <p class="text-caption link-lab__muted">
+              {option === "current" ? "Reference" : `Option ${i}`} · {fit}
+            </p>
+            <h3>{name}</h3>
+            <p class="text-small link-lab__muted">{note}</p>
+          </header>
+
+          <p class="link-lab__text">
+            Read how the <LabLink option={option} text="Newsweek design system" /> came together, or
+            start with <LabLink option={option} text="the work" />.
+          </p>
+
+          <p class="link-lab__row">
+            <LabLink option={option} role="action" text="About me" />
+            <LabLink option={option} role="action" text="Services in detail" />
+          </p>
+
+          <ul class="link-lab__nav" role="list">
+            {["Work", "Services", "About"].map((label) => (
+              <li>
+                <LabLink option={option} role="quiet" text={label} />
+              </li>
+            ))}
+          </ul>
+
+          <div class="link-lab__card link-lab__trigger">
+            <div class="link-lab__cover" />
+            <p class="text-caption link-lab__muted">Design system · 2024</p>
+            <h4>
+              <LabLink option={option} role="quiet" text="Pantheon" />
+            </h4>
+          </div>
+
+          <div class="link-lab__inverse">
+            <p class="text-small">
+              Fifteen years of products, <LabLink option={option} text="told by outcomes" />.
+            </p>
+            <LabLink option={option} role="action" text="Contact" />
+          </div>
+        </article>
+      ))}
+    </div>
+  </section>
+</div>
+
+<script>
+  import "./link-lab.ts";
+</script>
+
+<style>
+  @layer components {
+    .link-lab {
+      display: grid;
+      gap: var(--space-section-lg);
+    }
+
+    /* Reduced-motion preview: the same rule reset.css applies for the OS setting. */
+    .link-lab[data-reduced] :global(*),
+    .link-lab[data-reduced] :global(*::before),
+    .link-lab[data-reduced] :global(*::after) {
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.01ms !important;
+      transition-delay: 0ms !important;
+    }
+
+    .link-lab__section {
+      display: grid;
+      gap: var(--space-10);
+    }
+
+    .link-lab__intro {
+      display: grid;
+      gap: var(--space-3);
+      max-inline-size: var(--measure);
+    }
+
+    .link-lab__muted {
+      color: var(--color-text-muted);
+    }
+
+    .link-lab__table-wrap {
+      overflow-x: auto;
+    }
+
+    .link-lab__table {
+      inline-size: 100%;
+      min-inline-size: 40rem;
+      border-collapse: collapse;
+      font-size: var(--text-small);
+      line-height: var(--leading-small);
+      text-align: start;
+    }
+
+    .link-lab__table :is(th, td) {
+      padding: var(--space-3) var(--space-4) var(--space-3) 0;
+      border-block-end: var(--border-width) solid var(--color-border-subtle);
+      text-align: start;
+      vertical-align: top;
+    }
+
+    .link-lab__table thead th {
+      font: var(--weight-medium) var(--text-caption) / var(--leading-caption) var(--font-mono);
+      letter-spacing: var(--tracking-caption);
+      text-transform: uppercase;
+      color: var(--color-text-muted);
+    }
+
+    .link-lab__table tbody th {
+      font-weight: var(--weight-medium);
+      white-space: nowrap;
+    }
+
+    .link-lab__table td {
+      color: var(--color-text-muted);
+    }
+
+    .link-lab__live {
+      display: grid;
+      gap: var(--space-4);
+    }
+
+    .link-lab__row {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: var(--space-3) var(--space-6);
+    }
+
+    .link-lab__findings {
+      display: grid;
+      gap: var(--space-4);
+      max-inline-size: var(--measure);
+    }
+
+    .link-lab__findings :is(ul, ol) {
+      display: grid;
+      gap: var(--space-3);
+      padding-inline-start: var(--space-6);
+    }
+
+    .link-lab__findings h3:not(:first-child) {
+      margin-block-start: var(--space-6);
+    }
+
+    .link-lab__switch {
+      display: inline-flex;
+      align-items: center;
+      gap: var(--space-2);
+      font-size: var(--text-small);
+      cursor: pointer;
+    }
+
+    .link-lab__switch input {
+      accent-color: var(--color-text);
+    }
+
+    .link-lab__options {
+      display: grid;
+      gap: var(--space-6);
+    }
+
+    @media (width >= 62em) {
+      .link-lab__options {
+        grid-template-columns: 1fr 1fr;
+      }
+    }
+
+    .link-lab__option {
+      display: grid;
+      gap: var(--space-6);
+      align-content: start;
+      padding: var(--space-6);
+      border: var(--border-width) solid var(--color-border-subtle);
+      border-radius: var(--radius-lg);
+    }
+
+    .link-lab__option--ref {
+      background-color: var(--color-bg-subtle);
+    }
+
+    .link-lab__head {
+      display: grid;
+      gap: var(--space-2);
+    }
+
+    .link-lab__text {
+      max-inline-size: 32em;
+    }
+
+    .link-lab__nav {
+      display: flex;
+      gap: var(--space-6);
+      padding: 0;
+      font-size: var(--text-small);
+      font-weight: var(--weight-medium);
+    }
+
+    .link-lab__card {
+      display: grid;
+      gap: var(--space-2);
+      cursor: pointer;
+    }
+
+    .link-lab__cover {
+      aspect-ratio: 3 / 1;
+      margin-block-end: var(--space-2);
+      border-radius: var(--radius-md);
+      background-color: var(--color-border-subtle);
+      transition: scale var(--duration-zoom) var(--ease-out-expo);
+    }
+
+    .link-lab__card:hover .link-lab__cover {
+      scale: 1.02;
+    }
+
+    .link-lab__inverse {
+      display: grid;
+      gap: var(--space-3);
+      justify-items: start;
+      padding: var(--space-6);
+      border-radius: var(--radius-md);
+      color: var(--color-on-inverse);
+      background-color: var(--color-inverse-bg);
+    }
+  }
+</style>

@@ -10,23 +10,87 @@ import Link from "@/components/ui/Link.astro";
 import Button from "@/components/ui/Button.astro";
 import Tag from "@/components/ui/Tag.astro";
 import Figure from "@/components/ui/Figure.astro";
+import Video from "@/components/ui/Video.astro";
+import VideoTabs from "@/components/content/VideoTabs.astro";
+import BeforeAfter from "@/components/ui/BeforeAfter.astro";
 import Hero from "@/components/blocks/Hero.astro";
-import LiquidReveal from "@/components/blocks/LiquidReveal.astro";
+import PortraitReveal from "@/components/blocks/PortraitReveal.astro";
 import WorkGrid from "@/components/blocks/WorkGrid.astro";
 import Metrics from "@/components/content/Metrics.astro";
 import SectionIntro from "@/components/blocks/SectionIntro.astro";
 import Services from "@/components/blocks/Services.astro";
+import Plans from "@/components/blocks/Plans.astro";
+import Testimonials from "@/components/blocks/Testimonials.astro";
+import Process from "@/components/blocks/Process.astro";
+import Beliefs from "@/components/blocks/Beliefs.astro";
+import Quote from "@/components/content/Quote.astro";
 import StoryIntro from "@/components/blocks/StoryIntro.astro";
+import CareerTimeline from "@/components/blocks/CareerTimeline.astro";
+import InlineImage from "@/components/ui/InlineImage.astro";
+import YouTube from "@/components/ui/YouTube.astro";
+import { CAREER } from "@/lib/career";
+import youtubeSample from "@/assets/about/video-css-peeper.jpg";
+import portraitSample from "@/assets/about/tadzik.jpg";
+import gifSample from "@/assets/about/gifs/gandalf.webp?url";
+import gifSampleStill from "@/assets/about/gifs/gandalf-still.webp?url";
 import ClientLogos from "@/components/blocks/ClientLogos.astro";
+import WorkMarquee from "@/components/blocks/WorkMarquee.astro";
+import ClientLogo from "@/components/ui/ClientLogo.astro";
+import NextUp from "@/components/content/NextUp.astro";
+import CaseStudyToc from "@/components/content/CaseStudyToc.astro";
+import { getPagedWork } from "@/lib/work";
+import LockPanel from "@/components/blocks/LockPanel.astro";
+import Gem from "@/components/grist/Gem.astro";
+import TileIcon from "@/components/grist/TileIcon.astro";
+import Icon, { type IconName } from "@/components/grist/Icon.astro";
+import Logo from "@/components/grist/Logo.astro";
+import RarityLabel from "@/components/grist/RarityLabel.astro";
+import AboutButton from "@/components/grist/AboutButton.astro";
+import AboutPanel from "@/components/grist/AboutPanel.astro";
+import DownloadButton from "@/components/grist/DownloadButton.astro";
+import PermalinkButton from "@/components/grist/PermalinkButton.astro";
+import NewBadge from "@/components/grist/NewBadge.astro";
+import StatusLabel from "@/components/grist/StatusLabel.astro";
+import SeasonHeader from "@/components/grist/SeasonHeader.astro";
+import DropCard from "@/components/grist/DropCard.astro";
+import HumanStamp from "@/components/grist/HumanStamp.astro";
+import AuthorNote from "@/components/grist/AuthorNote.astro";
+import LootBox from "@/components/grist/LootBox.astro";
+import CopyButton from "@/components/grist/CopyButton.astro";
+import { getBuiltDrops, getDrops, hasPlugin } from "@/lib/drops";
+import { RARITIES } from "@/lib/grist";
 import { getEntry } from "astro:content";
 import { COLOR_ROLES, SPACE } from "@/lib/tokens";
 import { SERVICES } from "@/lib/services";
-import portraitPhoto from "@/assets/portrait/portrait-photo.avif";
-import portraitClay from "@/assets/portrait/portrait-clay.avif";
-import portraitClayDark from "@/assets/portrait/portrait-clay-dark.avif";
+import { PLANS } from "@/lib/plans";
+import { TESTIMONIALS } from "@/lib/testimonials";
+import { STEPS, BELIEFS } from "@/lib/process";
+import { PORTRAIT_LAYERS, portraitPhoto } from "@/lib/portrait";
 import figureSample from "@/assets/placeholders/figure-sample.jpg";
+import diagramSample from "@/content/work/zazmic-anvil-ui/anvil-levels.avif";
+import videoSample from "@/assets/placeholders/video-sample.mp4";
+import videoSamplePoster from "@/assets/placeholders/video-sample-poster.jpg";
+import compareBefore from "@/content/work/csspeeper/csspeeper-before.avif";
+import compareAfter from "@/content/work/csspeeper/csspeeper-after.avif";
+
+// Contents mini map (right edge, from 62em) over this page's own sections, as on case studies.
+const STYLEGUIDE_SECTIONS = [
+  ["color-title", "Color"],
+  ["type-title", "Typography"],
+  ["space-title", "Spacing"],
+  ["shape-title", "Shape & depth"],
+  ["layout-title", "Layout"],
+  ["components-title", "Components"],
+  ["grist-title", "Grist"],
+  ["blocks-title", "Blocks"],
+].map(([slug, text]) => ({ depth: 2, slug: slug!, text: text! }));
+const nextUpSample = (await getPagedWork()).slice(0, 3);
+const sampleDrops = await getDrops();
+const pluginDrop = (await getBuiltDrops()).find(hasPlugin);
+const sampleLoot = sampleDrops.find((d) => d.data.drop === "checklist") ?? sampleDrops[0];
 
 const TYPE_ROLES = [
+  { role: "display", className: "text-display", sample: "hello@mlynarz.com" },
   { role: "h1", tag: "h1", sample: "Designing calm products" },
   { role: "h2", tag: "h2", sample: "Research that changes the roadmap" },
   { role: "h3", tag: "h3", sample: "From insight to interface" },
@@ -52,7 +116,7 @@ const TYPE_ROLES = [
 
 const sampleWork = (
   await Promise.all(
-    ["newsweek-ai-experience", "newsweek-design-system", "nerdwallet", "xwp"].map((slug) =>
+    ["newsweek-design-system", "nerdwallet", "xwp", "pantheon"].map((slug) =>
       getEntry("work", slug),
     ),
   )
@@ -68,8 +132,19 @@ const SECTIONS = [
   ["shape", "Shape & depth"],
   ["layout", "Layout"],
   ["components", "Components"],
+  ["grist", "Grist"],
   ["blocks", "Blocks"],
 ] as const;
+
+/** Grist's line icons for meta lines, in the site's icon style. */
+const GRIST_ICONS: IconName[] = [
+  "lock",
+  "calendar",
+  "arrow-left",
+  "close",
+  "circle-check",
+  "flask",
+];
 ---
 
 <SiteLayout title="Styleguide" description="Tokens and components of mlynarz.com." noindex>
@@ -225,13 +300,18 @@ const SECTIONS = [
         <Stack gap="4">
           <h3>Link</h3>
           <p class="measure">
-            Every plain <a href="#components">link in text</a> has the animated underline by
-            default. The{" "}
+            Every plain <a href="#components">link in text</a> has a hairline underline and tears
+            into three rows for a moment on hover. The{" "}
             <Link href="#components" variant="quiet">
               quiet variant
             </Link>{" "}
             shows it only on hover. External links get an arrow:{" "}
-            <Link href="https://www.figma.com">Figma</Link>.
+            <Link href="https://www.figma.com">Figma</Link>. A call to action can take a forward
+            arrow:{" "}
+            <Link href="#components" icon="arrow">
+              Contact
+            </Link>
+            .
           </p>
         </Stack>
 
@@ -251,6 +331,18 @@ const SECTIONS = [
             <Button href="#components" variant="secondary">
               As a link
             </Button>
+          </div>
+          <div class="row">
+            <Button href="#components" size="lg" icon="arrow">
+              hello@mlynarz.com
+            </Button>
+            <Button href="#components" icon="arrow">
+              With arrow
+            </Button>
+            <Button href="#components" variant="secondary" icon="arrow-up" label="Back to top" />
+            <Button variant="secondary" icon="arrow-left" label="Previous" />
+            <Button variant="ghost" icon="arrow" label="Ghost icon button" />
+            <Button href="#components" icon="arrow" label="Next" />
           </div>
         </Stack>
 
@@ -275,6 +367,318 @@ const SECTIONS = [
             alt="Placeholder layout: a page with a heading, two text lines and three cards."
             caption="Figure with a caption. Images go through astro:assets and require alt text."
           />
+          <Figure
+            src={diagramSample}
+            alt="The building blocks of Anvil UI as line icons: atoms, molecules, organisms, templates and the Agent Builder."
+            width="content"
+            variant="diagram"
+            caption="Diagram variant: a transparent line drawing at the text width, no card. Inverted in the dark theme."
+          />
+          <Figure
+            alt="Figma library structure: foundations feeding the marketing and product libraries."
+            caption="Placeholder variant: leave out src while the image is being made. Previews only; production skips it."
+          />
+        </Stack>
+
+        <Stack gap="4">
+          <h3>Video</h3>
+          <p class="muted measure">
+            Muted looping clips for case studies. They load nothing until needed and play only while
+            half of the video is on screen. The button in the corner pauses and plays. With reduced
+            motion, or without JS, the native controls show and nothing autoplays. Pass an AV1 MP4
+            as <code>av1</code> and an H.264 MP4 as <code>src</code>, plus a poster.
+          </p>
+          <Video
+            src={videoSample}
+            poster={videoSamplePoster}
+            label="Sample clip: the Anvil UI Showroom assistant answering in a side panel."
+            caption="Video with a poster and a caption."
+          />
+          <Video
+            label="A screen recording of the booking flow."
+            caption="Placeholder variant: leave out src while the recording is being made. Previews only; production skips it."
+          />
+        </Stack>
+
+        <Stack gap="4">
+          <h3>YouTube</h3>
+          <p class="muted measure">
+            A YouTube video that loads nothing from YouTube until it is played: a local poster and a
+            play button, then the youtube-nocookie player on click. Without JS it links to the
+            video.
+          </p>
+          <div class="measure">
+            <YouTube
+              id="Ibm2SO8XvA4"
+              title="Getting started with CSS Peeper"
+              poster={youtubeSample}
+            />
+          </div>
+        </Stack>
+
+        <Stack gap="4">
+          <h3>InlineImage</h3>
+          <p class="measure text-lead">
+            A small picture inside a sentence, like this one{" "}
+            <InlineImage src={youtubeSample} alt="CSS Peeper inspecting colours and fonts." />, a
+            portrait one <InlineImage src={portraitSample} alt="Tadzik the dog." shape="portrait" />{" "}
+            or a GIF{" "}
+            <InlineImage src={gifSample} still={gifSampleStill} alt="GIF: Gandalf dancing." />,
+            sized in em so it follows the text. Hover zooms it well past the line; with reduced
+            motion a GIF shows a still frame.
+          </p>
+        </Stack>
+
+        <Stack gap="4">
+          <h3>VideoTabs</h3>
+          <p class="muted measure">
+            Several clips in one frame with a tab for each, so a case study can show a lot without
+            getting longer. Only the chosen clip shows and loads; switching starts it from the
+            beginning. Arrow keys move between tabs. Without JS every clip shows in turn, captioned
+            with its tab name.
+          </p>
+          <VideoTabs
+            label="Sample flows"
+            items={[
+              {
+                tab: "First flow",
+                src: videoSample,
+                poster: videoSamplePoster,
+                label: "Sample clip: the Anvil UI Showroom assistant answering in a side panel.",
+                caption: "Each tab can have its own one-line caption.",
+              },
+              {
+                tab: "Second flow",
+                src: videoSample,
+                poster: videoSamplePoster,
+                label: "The same sample clip, as a second tab.",
+              },
+            ]}
+          />
+        </Stack>
+
+        <Stack gap="4">
+          <h3>BeforeAfter</h3>
+          <p class="muted measure">
+            Two images of the same size stacked on top of each other. Drag anywhere on it, or swipe
+            sideways on a phone, to move the handle; the arrow keys work once the handle has focus.
+            Vertical swipes still scroll the page. Labels default to Before and After.
+          </p>
+          <BeforeAfter
+            before={compareBefore}
+            after={compareAfter}
+            beforeAlt="CSS Peeper in 2016: Colors, Inspector and Assets panels."
+            afterAlt="CSS Peeper in 2025: the same panels redesigned."
+            caption="BeforeAfter with the default labels."
+          />
+        </Stack>
+
+        <Stack gap="4">
+          <h3>LockPanel</h3>
+          <p class="muted measure">
+            The password panel on a locked case study (<code>protected: true</code>), over the
+            blurred page. It posts to the case study's URL, where the Pages Function checks the
+            password. A wrong one brings it back in the error state with one sideways jolt.
+          </p>
+          <div class="row">
+            <LockPanel action="#components" company="Pantheon" headingLevel={3} />
+            <LockPanel action="#components" company="Pantheon" headingLevel={3} error />
+          </div>
+        </Stack>
+      </Stack>
+    </Container>
+  </Section>
+
+  <Section id="grist" aria-labelledby="grist-title" tone="subtle">
+    <Container>
+      <Stack gap="12">
+        <Stack gap="4">
+          <h2 id="grist-title">Grist</h2>
+          <p class="muted measure">
+            The layer under <code>/grist</code>. It uses the site tokens and components, and adds
+            only the rarity colours, a few line icons, the pixel gems, the stamp and the logo.
+          </p>
+        </Stack>
+
+        <Stack gap="4">
+          <h3>Rarity</h3>
+          <p class="muted measure">
+            Each tier has a fill, a shade and a light. The gem uses all three; tier names use the
+            shade on light and the light on dark. Epic adds sparkles; Legendary adds a crown and a
+            light band that crosses the gem (reduced motion stops it). Rarity is set per drop, by
+            how deep it goes. Beside each gem, the tile icon that replaces it while RARITY_ICON is
+            "tile"; tier names then share the icon's hue (the labels below show the active style).
+          </p>
+          <Grid min="10rem" gap="6" as="ul" class="plain-list">
+            {RARITIES.map((rarity) => (
+              <li class="rarity-swatch">
+                <span class="rarity-swatch__gem">
+                  {rarity !== "mythic" && <Gem rarity={rarity} />}
+                  <TileIcon tier={rarity} />
+                </span>
+                <RarityLabel rarity={rarity} />
+                <span class="rarity-swatch__chips">
+                  {(["fill", "shade", "light"] as const).map((role) => (
+                    <span
+                      class="swatch__chip rarity-swatch__chip"
+                      style={`--swatch: var(--rarity-${rarity}-${role})`}
+                      title={`--rarity-${rarity}-${role}`}
+                    />
+                  ))}
+                </span>
+              </li>
+            ))}
+          </Grid>
+        </Stack>
+
+        <Stack gap="4">
+          <h3>Logo</h3>
+          <div class="row">
+            <Logo />
+          </div>
+        </Stack>
+
+        <Stack gap="4">
+          <h3>Human-curated stamp and New</h3>
+          <p class="muted measure">
+            The stamp turns once every 24 seconds and stands still with reduced motion. Large in the
+            front door hero, small on each drop. New marks drops from the last week, in the card's
+            top right corner. The same badge says Sandbox next to the logo on the sandbox front
+            door.
+          </p>
+          <div class="row">
+            <HumanStamp />
+            <HumanStamp size="sm" />
+            <NewBadge />
+            <NewBadge label="Sandbox" />
+          </div>
+        </Stack>
+
+        <Stack gap="4">
+          <h3>Author note</h3>
+          <p class="muted measure">
+            Dawid's hello with his photo. Medium closes each drop page, large sits above the footer
+            on the front door.
+          </p>
+          <AuthorNote />
+          <AuthorNote size="lg" />
+        </Stack>
+
+        <Stack gap="4">
+          <h3>Status</h3>
+          <p class="muted measure">
+            Next to the date on every drop: Tested when Dawid has used it on real work, Trying when
+            he's testing it now.
+          </p>
+          <div class="row">
+            <StatusLabel status="tested" />
+            <StatusLabel status="trying" />
+          </div>
+        </Stack>
+
+        <Stack gap="4">
+          <h3>Season and drop tile</h3>
+          <p class="muted measure">
+            One tile everywhere drops are listed. It reads its own width: from 48rem it lays out as
+            a row with the date on the right, narrower it stacks. Seasons are battle passes: slots
+            not yet dropped show locked, the next one marked in its corner, a missed one as late.
+            The season header shows a tile per slot, the hidden [?] tile until that drop is out, and
+            keeps the pack locked until all eight have landed. Locked tiles hide the tier the same
+            way and name only the type. A reviewed drop waiting for its day also shows its title and
+            one-liner, still locked. A drop that ships a Figma plugin says so in the corner.
+          </p>
+          <SeasonHeader season="s01" tiers={["common", "rare", "uncommon"]} />
+          {sampleDrops[0] && <DropCard drop={sampleDrops[0]} />}
+          <div class="grist-tiles">
+            {sampleDrops.slice(1, 4).map((drop) => (
+              <DropCard drop={drop} season />
+            ))}
+            {pluginDrop && <DropCard drop={pluginDrop} />}
+            <DropCard
+              locked={{ type: "spec", rarity: "epic", date: new Date("2027-01-22"), next: true }}
+            />
+            <DropCard
+              locked={{
+                type: "skill",
+                rarity: "legendary",
+                date: new Date("2027-02-05"),
+                teaser: {
+                  title: "Agent UX Review",
+                  summary:
+                    "A full review of an agent concept, from whether it should exist to where it stops and asks.",
+                },
+              }}
+            />
+            <DropCard
+              locked={{ type: "rule", rarity: "common", date: new Date("2026-10-16"), late: true }}
+            />
+          </div>
+          <SeasonHeader
+            season="s02"
+            tiers={["uncommon", "common", "rare", "epic", "uncommon", "rare", "epic", "legendary"]}
+          />
+          <SeasonHeader season="s03" tiers={[]} />
+        </Stack>
+
+        {sampleLoot && (
+          <Stack gap="4">
+            <h3>Loot box</h3>
+            <div class="grist-loot">
+              <LootBox drop={sampleLoot} id="sg-drop" />
+            </div>
+          </Stack>
+        )}
+
+        <Stack gap="4">
+          <h3>Line icons</h3>
+          <ul class="row plain-list grist-icons" role="list">
+            {GRIST_ICONS.map((name) => (
+              <li class="grist-icons__item">
+                <Icon name={name} />
+                <code>{name}</code>
+              </li>
+            ))}
+          </ul>
+          <p class="text-small">Size lg (1.25em), for the date, the status and the back arrow:</p>
+          <ul class="row plain-list grist-icons" role="list">
+            {GRIST_ICONS.map((name) => (
+              <li class="grist-icons__item">
+                <Icon name={name} size="lg" />
+                <code>{name}</code>
+              </li>
+            ))}
+          </ul>
+        </Stack>
+
+        <Stack gap="4">
+          <h3>Buttons</h3>
+          <p class="muted measure">
+            About (info icon) opens the side sheet from a link-style button in the Grist header.
+            Then the site's secondary pill with its own line icons: Copy for AI (sparkles; fetches
+            the markdown twin), the ghost copy icon on the loot box's corner (just the drop's text),
+            Download (on hover the arrow drops out and back in, no tear), Permalink and Get in
+            touch.
+          </p>
+          <div class="row">
+            <AboutButton panel="about-demo" />
+            <AboutPanel id="about-demo" />
+            <CopyButton text="Copied from the styleguide" icon="sparkles">
+              Copy for AI
+            </CopyButton>
+            <CopyButton
+              text="Copied from the styleguide"
+              variant="ghost"
+              label="Copy just the drop"
+            />
+            <DownloadButton
+              href="/grist/human-in-the-loop-checkpoints.md"
+              name="human-in-the-loop-checkpoints.md"
+            />
+            <PermalinkButton url="https://www.mlynarz.com/grist/human-in-the-loop-checkpoints" />
+            <Button href="/contact" variant="secondary" icon="arrow">
+              Get in touch
+            </Button>
+          </div>
         </Stack>
       </Stack>
     </Container>
@@ -285,10 +689,14 @@ const SECTIONS = [
       <Stack gap="4">
         <h2 id="blocks-title">Blocks</h2>
         <p class="muted measure">
-          Nav and Footer frame this page. Below: the split Hero with the LiquidReveal. At rest the
-          liquid orbits the face; point at the portrait and it is pulled towards the cursor (tap on
-          touch). With reduced motion it only appears while pointing, without orbit or wobble. In
-          the dark theme the clay switches to its black variant (clayDark).
+          Nav and Footer frame this page. Below: the split Hero with the PortraitReveal, on the hero
+          grain (HeroBackdrop: fine noise that fades out over the first screen and stays put during
+          page transitions; also on Home, About, Services, Work and case studies, one per page). At
+          rest two tracking bands roll down the portrait like a mistracked tape; point at it (tap on
+          touch) and the rows tear open around the cursor, harder the faster it moves. Each band
+          reveals one of the layers under the photo (marble or iridescent; the two bands always show
+          one of each), picked at random; marble switches variants with the theme. With reduced
+          motion there is no rolling or tearing, only a clean band at the pointer.
         </p>
       </Stack>
     </Container>
@@ -304,12 +712,11 @@ const SECTIONS = [
         About me
       </Button>
     </Fragment>
-    <LiquidReveal
+    <PortraitReveal
       slot="media"
-      photo={portraitPhoto}
-      clay={portraitClay}
-      clayDark={portraitClayDark}
-      alt="Portrait of Dawid Młynarz as a white clay sculpture"
+      top={portraitPhoto}
+      layers={PORTRAIT_LAYERS}
+      alt="Portrait of Dawid Młynarz"
       loading="lazy"
     />
   </Hero>
@@ -317,10 +724,16 @@ const SECTIONS = [
     <Container>
       <Stack gap="6">
         <h3 class="text-caption muted">
-          WorkGrid of WorkCards · four-tile rhythm on desktop, staggered pairs on tablet, one column
-          on mobile · a tile without a page has no link (XWP)
+          WorkGrid of WorkCards (Home) · titles and up to three tags · four-tile rhythm on desktop,
+          staggered pairs on tablet, one column on mobile · a tile without a page (`page: false`)
+          has no link
         </h3>
         <WorkGrid entries={sampleWork} />
+        <h3 class="text-caption muted">
+          WorkGrid layout="index" · ruled WorkCard rows (Work page): cover left, summary cut to four
+          lines, first three tags and "+N more"
+        </h3>
+        <WorkGrid entries={sampleWork} layout="index" />
       </Stack>
     </Container>
   </Section>
@@ -338,14 +751,53 @@ const SECTIONS = [
         <Services headingLevel={4} services={[sampleService]} />
         <h3 class="text-caption muted">Services · detailed (/services), adds deliverables</h3>
         <Services headingLevel={4} services={[sampleService]} variant="detailed" />
+        <h3 class="text-caption muted">
+          Plans · featured plan with a primary button, the others with a secondary one (/services)
+        </h3>
+        <Plans headingLevel={4} plans={PLANS} anchors={false} />
+        <h3 class="text-caption muted">
+          Testimonials · one quote at a time, ghost arrows (/services)
+        </h3>
+        <Testimonials testimonials={TESTIMONIALS} label="Testimonials sample" />
+        <h3 class="text-caption muted">
+          Quote · md (case studies) and lg (the /services carousel)
+        </h3>
+        <Quote author="Name" role="Role, Company">
+          A short quote in the case-study size.
+        </Quote>
+        <Quote size="lg" author="Name" role="Role, Company">
+          The same quote, carousel size.
+        </Quote>
+        <h3 class="text-caption muted">
+          Process · steps on a line that draws itself as it scrolls (/services)
+        </h3>
+        <Process steps={STEPS.slice(0, 3)} headingLevel={4} />
+        <h3 class="text-caption muted">Beliefs · numbered two-tone statements (/services)</h3>
+        <Beliefs beliefs={BELIEFS.slice(0, 2)} />
+        <h3 class="text-caption muted">SectionIntro · with a lead paragraph</h3>
+        <SectionIntro
+          label="Label"
+          title="Two-tone title"
+          titleMuted="with a lead."
+          lead="An optional lead paragraph under the title, at most the reading measure wide."
+        />
         <h3 class="text-caption muted">ClientLogos · row (About) and spread; marquee below</h3>
         <ClientLogos />
         <ClientLogos spread />
-        <h3 class="text-caption muted">Metrics · numbers inside case studies</h3>
+        <h3 class="text-caption muted">
+          ClientLogo · one logo in the text colour (case-study header, sized by its parent)
+        </h3>
+        <p class="styleguide__client-logo">
+          <ClientLogo client="pantheon" />
+        </p>
+        <h3 class="text-caption muted">
+          Metrics · up to three numbers inside case studies, content width by default, top-aligned
+        </h3>
         <Metrics
           items={[
             { value: "80%", label: "Higher click-through rate" },
             { value: "30%", label: "Lower bounce rate" },
+            { value: "+60", label: "Team eNPS, with a label long enough to wrap onto two lines" },
           ]}
         />
       </Stack>
@@ -354,16 +806,44 @@ const SECTIONS = [
   <Section aria-label="Client logo marquee" space="sm">
     <ClientLogos marquee />
   </Section>
+  <Section aria-label="Case-study cover marquee (Contact)" space="sm">
+    <WorkMarquee />
+  </Section>
   <StoryIntro
-    label="StoryIntro · inverse hand-off statement"
-    text="With the motion layer on, the panel grows from an inset card to full bleed and the words light up as you scroll. Without it, or with reduced motion, the full statement simply shows."
+    label="StoryIntro · statement"
+    text="The words light up as you scroll. Without the motion layer, or with reduced motion, the full statement simply shows."
   />
+  <StoryIntro
+    label="StoryIntro · paragraphs"
+    paragraphs={[
+      [
+        "The longer variant, used on About: up to three paragraphs at reading size, with ",
+        { text: "links", href: "#blocks" },
+        " and small pictures ",
+        { image: youtubeSample, alt: "CSS Peeper inspecting colours and fonts." },
+        " that light up with the words around them.",
+      ],
+    ]}
+  />
+  <Section aria-label="Career timeline" space="sm">
+    <Container>
+      <CareerTimeline roles={CAREER.slice(0, 4)} />
+    </Container>
+  </Section>
+  <NextUp entries={nextUpSample} />
+  <CaseStudyToc headings={STYLEGUIDE_SECTIONS} body="main" />
 </SiteLayout>
 
 <style>
   @layer components {
     .muted {
       color: var(--color-text-muted);
+    }
+
+    .styleguide__client-logo :global(svg) {
+      display: block;
+      inline-size: auto;
+      block-size: var(--space-12);
     }
 
     .measure {
@@ -465,6 +945,58 @@ const SECTIONS = [
       padding-block: var(--space-4);
       border: var(--border-width) dashed var(--color-border-muted);
       border-radius: var(--radius-md);
+    }
+
+    .rarity-swatch {
+      display: grid;
+      align-content: start;
+      justify-items: start;
+      gap: var(--space-3);
+    }
+
+    /* Tall enough for the crowned Legendary gem, so every tier's label lines up. */
+    .rarity-swatch__gem {
+      display: flex;
+      gap: var(--space-2);
+      align-items: end;
+      min-block-size: var(--space-6);
+      zoom: 3;
+    }
+
+    .rarity-swatch__chips {
+      display: flex;
+      gap: var(--space-1);
+    }
+
+    .rarity-swatch__chip {
+      inline-size: var(--space-8);
+      block-size: var(--space-8);
+    }
+
+    .grist-tiles {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(min(100%, 18rem), 1fr));
+      gap: var(--space-4);
+    }
+
+    .grist-loot {
+      max-inline-size: var(--measure);
+      padding-block-start: var(--space-12);
+    }
+
+    .grist-icons {
+      gap: var(--space-6);
+    }
+
+    .grist-icons__item {
+      display: grid;
+      justify-items: center;
+      gap: var(--space-2);
+      font-size: var(--text-h3);
+    }
+
+    .grist-icons__item code {
+      font-size: var(--text-caption);
     }
   }
 </style>

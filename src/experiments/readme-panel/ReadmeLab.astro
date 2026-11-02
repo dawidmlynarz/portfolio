@@ -1,0 +1,926 @@
+---
+/**
+ * Preview only: six layouts for Grist's readme panel, each a real popover (Escape and a click
+ * outside close it, focus goes back to the button). All of them use the drop card's surface
+ * (1px subtle border, large radius) with the portfolio's open-menu glass behind the content
+ * (--color-glass and --blur-menu over a --color-scrim backdrop), and all put "Why this exists"
+ * first and the rarities second. They differ in where the panel sits and how the rarity legend is
+ * drawn. No script: tabs and accordions are plain HTML.
+ */
+import Icon from "@/components/grist/Icon.astro";
+import RarityLabel from "@/components/grist/RarityLabel.astro";
+import TileIcon from "@/components/grist/TileIcon.astro";
+import ThemeToggle from "@/components/blocks/ThemeToggle.astro";
+import { RARITIES, RARITY_INFO, RARITY_LABELS } from "@/lib/grist";
+
+const VARIANTS = [
+  {
+    id: "card",
+    name: "1 · Card",
+    where: "Centred, like today",
+    legend: "List with notes",
+    note: "Today's panel in the drop card's clothes. One column, Why first, then each rarity with its icon and one line. The safest change.",
+  },
+  {
+    id: "sheet",
+    name: "2 · Side sheet",
+    where: "Slides in from the right; a bottom sheet on phones",
+    legend: "Tier ladder",
+    note: "Full height beside the page, so the cards stay in view while you read. The rarities climb a ladder from Common to Mythic, joined by a line.",
+  },
+  {
+    id: "drawer",
+    name: "3 · Drawer",
+    where: "Rises from the bottom on every screen",
+    legend: "Accordion",
+    note: "Thumb-friendly on phones. Each rarity is a row you open for its line, so the six fit on one screen and you read only the one you care about.",
+  },
+  {
+    id: "tabs",
+    name: "4 · Tabs",
+    where: "Centred, two tabs",
+    legend: "Legend grid",
+    note: "Why and Rarities as two tabs, so neither scrolls. The legend is a grid of six tiles, like the key on a map.",
+  },
+  {
+    id: "table",
+    name: "5 · Loot table",
+    where: "Wide and centred",
+    legend: "What you get, tier by tier",
+    note: "Why as a short intro, then a loot table that ticks off what each tier includes (steps, example, when not to use it, sample run). On phones each row lists its items instead.",
+  },
+  {
+    id: "pop",
+    name: "6 · Drop-down",
+    where: "Hangs under the header button; a sheet on phones",
+    legend: "Depth meter",
+    note: "Feels like a menu, not a page. Compact, with a six-step meter beside each tier that fills as the drops get deeper.",
+  },
+] as const;
+
+const why = [
+  "Stuff I use with AI on real design work, like rules, prompts, checklists, specs and skills. Each drop has a short why and the file you paste into Claude, Cursor or a CLAUDE.md.",
+  "Eight drops a season, one every Friday. Tested means I've used it on real work, and Trying means I'm still testing it. The ideas are mine, and Claude helps format the files. Add .md to any address for plain markdown.",
+];
+const rarityIntro =
+  "Rarity is how deep a drop goes. Higher tiers take more setup and give you more.";
+
+const INCLUDES = [
+  { key: "idea", label: "The idea" },
+  { key: "steps", label: "Steps" },
+  { key: "example", label: "Example" },
+  { key: "limits", label: "When not to use it" },
+  { key: "run", label: "Sample run" },
+] as const;
+const has = (tier: (typeof RARITIES)[number], key: (typeof INCLUDES)[number]["key"]) =>
+  key === "idea" ||
+  (key === "run"
+    ? tier === "mythic"
+    : (RARITY_INFO[tier].needs as readonly string[]).includes(key));
+
+const NAMES = [
+  {
+    label: "Readme",
+    icon: false,
+    note: "Today. Fits the AI crowd, but says little to everyone else.",
+  },
+  { label: "Info", icon: true, note: "Short and known, but vague about what's inside." },
+  { label: "Help", icon: true, note: "Sounds like support. Nobody needs help reading a card." },
+  { label: "About", icon: true, note: "Covers the why and the key. My pick." },
+  { label: "How it works", icon: true, note: "Most explicit, but long for the header on phones." },
+];
+---
+
+<div class="rdx">
+  <div class="rdx__bar">
+    <span class="text-caption rdx__muted">Theme</span>
+    <ThemeToggle />
+  </div>
+
+  <section class="rdx__block" aria-labelledby="rdx-names">
+    <h2 id="rdx-names">What to call it</h2>
+    <p class="rdx__muted">
+      The header button, five ways. The info icon tells people it's about the site, not a drop.
+    </p>
+    <ul class="rdx__names" role="list">
+      {NAMES.map(({ label, icon, note }) => (
+        <li>
+          <span class="rdx__name">
+            {icon && <Icon name="info" />}
+            {label}
+          </span>
+          <span class="rdx__muted text-small">{note}</span>
+        </li>
+      ))}
+    </ul>
+  </section>
+
+  <section class="rdx__block" aria-labelledby="rdx-layouts">
+    <h2 id="rdx-layouts">Six layouts</h2>
+    <p class="rdx__muted">Open each one. They work with a keyboard and on phones.</p>
+    <ul class="rdx__grid" role="list">
+      {VARIANTS.map((v) => (
+        <li class="rdx__card">
+          <h3 class="rdx__card-title">{v.name}</h3>
+          <dl class="rdx__facts text-small">
+            <div>
+              <dt>Where</dt>
+              <dd>{v.where}</dd>
+            </div>
+            <div>
+              <dt>Rarities as</dt>
+              <dd>{v.legend}</dd>
+            </div>
+          </dl>
+          <p class="rdx__muted text-small">{v.note}</p>
+          <button class="rdx__open" type="button" popovertarget={`rdl-${v.id}`}>
+            <Icon name="info" />
+            Open
+          </button>
+        </li>
+      ))}
+    </ul>
+  </section>
+</div>
+
+{VARIANTS.map((v) => (
+  <div
+    class:list={["rdl", `rdl--${v.id}`]}
+    id={`rdl-${v.id}`}
+    popover
+    aria-labelledby={`rdl-${v.id}-title`}
+  >
+    {v.id === "drawer" && <span class="rdl__grip" aria-hidden="true" />}
+    <div class="rdl__head">
+      <h2 class="rdl__title" id={`rdl-${v.id}-title`}>
+        <Icon name="info" />
+        About Grist
+      </h2>
+      <button
+        class="rdl__close"
+        type="button"
+        popovertarget={`rdl-${v.id}`}
+        popovertargetaction="hide"
+        aria-label="Close"
+      >
+        <Icon name="close" />
+      </button>
+    </div>
+
+    {v.id === "tabs" ? (
+      <div class="rdl__tabs">
+        <div class="rdl__tablist" role="radiogroup" aria-label="Section">
+          <label>
+            <input type="radio" name="rdl-tab" value="why" checked />
+            Why this exists
+          </label>
+          <label>
+            <input type="radio" name="rdl-tab" value="tiers" />
+            Rarities
+          </label>
+        </div>
+        <section class="rdl__section rdl__tab rdl__tab--why">
+          <div class="rdl__prose">
+            {why.map((p) => (
+              <p>{p}</p>
+            ))}
+          </div>
+        </section>
+        <section class="rdl__section rdl__tab rdl__tab--tiers">
+          <p class="rdl__intro">{rarityIntro}</p>
+          <ul class="rdl__legend" role="list">
+            {RARITIES.map((tier) => (
+              <li class="rdl__key" style={`--tier: var(--rarity-${tier}-icon)`}>
+                <TileIcon tier={tier} size="md" />
+                <strong>{RARITY_LABELS[tier]}</strong>
+                <span>{RARITY_INFO[tier].note}</span>
+              </li>
+            ))}
+          </ul>
+        </section>
+      </div>
+    ) : (
+      <div class="rdl__body">
+        <section class="rdl__section">
+          <h3 class="rdl__label text-caption">Why this exists</h3>
+          <div class="rdl__prose">
+            {why.map((p) => (
+              <p>{p}</p>
+            ))}
+          </div>
+        </section>
+        <section class="rdl__section">
+          <h3 class="rdl__label text-caption">Rarities</h3>
+          <p class="rdl__intro">{rarityIntro}</p>
+
+          {v.id === "card" && (
+            <dl class="rdl__list">
+              {RARITIES.map((tier) => (
+                <div>
+                  <dt>
+                    <RarityLabel rarity={tier} />
+                  </dt>
+                  <dd>{RARITY_INFO[tier].note}</dd>
+                </div>
+              ))}
+            </dl>
+          )}
+
+          {v.id === "sheet" && (
+            <ol class="rdl__ladder" role="list">
+              {RARITIES.map((tier) => (
+                <li style={`--tier: var(--rarity-${tier}-icon)`}>
+                  <span class="rdl__node">
+                    <TileIcon tier={tier} size="md" />
+                  </span>
+                  <span class="rdl__step">
+                    <strong>{RARITY_LABELS[tier]}</strong>
+                    <span>{RARITY_INFO[tier].note}</span>
+                  </span>
+                </li>
+              ))}
+            </ol>
+          )}
+
+          {v.id === "drawer" && (
+            <div class="rdl__accordion">
+              {RARITIES.map((tier, i) => (
+                <details name="rdl-tier" open={i === 0}>
+                  <summary>
+                    <RarityLabel rarity={tier} />
+                    <svg class="rdl__chev" viewBox="0 0 24 24" aria-hidden="true">
+                      <path d="m6 9 6 6 6-6" />
+                    </svg>
+                  </summary>
+                  <p>{RARITY_INFO[tier].note}</p>
+                </details>
+              ))}
+            </div>
+          )}
+
+          {v.id === "table" && (
+            <div class="rdl__table" role="table" aria-label="What each rarity includes">
+              <div class="rdl__row rdl__row--head" role="row">
+                <span role="columnheader">Rarity</span>
+                {INCLUDES.map(({ label }) => (
+                  <span role="columnheader">{label}</span>
+                ))}
+              </div>
+              {RARITIES.map((tier) => (
+                <div class="rdl__row" role="row" style={`--tier: var(--rarity-${tier}-icon)`}>
+                  <span role="rowheader">
+                    <RarityLabel rarity={tier} />
+                  </span>
+                  {INCLUDES.map(({ key, label }) => (
+                    <span
+                      role="cell"
+                      class:list={["rdl__cell", { "rdl__cell--yes": has(tier, key) }]}
+                    >
+                      {has(tier, key) ? (
+                        <>
+                          <svg class="rdl__tick" viewBox="0 0 24 24" aria-hidden="true">
+                            <path d="m5 12 5 5 9-10" />
+                          </svg>
+                          <span class="rdl__cell-label">{label}</span>
+                          <span class="visually-hidden">Yes</span>
+                        </>
+                      ) : (
+                        <span class="visually-hidden">No</span>
+                      )}
+                    </span>
+                  ))}
+                </div>
+              ))}
+            </div>
+          )}
+
+          {v.id === "pop" && (
+            <ul class="rdl__meters" role="list">
+              {RARITIES.map((tier, i) => (
+                <li style={`--tier: var(--rarity-${tier}-icon)`}>
+                  <RarityLabel rarity={tier} />
+                  <span
+                    class="rdl__meter"
+                    role="img"
+                    aria-label={`Depth ${i + 1} of ${RARITIES.length}`}
+                  >
+                    {RARITIES.map((_, j) => (
+                      <span class:list={{ "rdl__pip--on": j <= i }} />
+                    ))}
+                  </span>
+                  <span class="rdl__meter-note">{RARITY_INFO[tier].note}</span>
+                </li>
+              ))}
+            </ul>
+          )}
+        </section>
+      </div>
+    )}
+  </div>
+))}
+
+<style>
+  @layer components {
+    /* ---------- The playground ---------- */
+    .rdx {
+      display: grid;
+      gap: var(--space-12);
+    }
+
+    .rdx__bar {
+      display: flex;
+      align-items: center;
+      gap: var(--space-3);
+    }
+
+    .rdx__muted {
+      color: var(--color-text-muted);
+    }
+
+    .rdx__block {
+      display: grid;
+      gap: var(--space-4);
+    }
+
+    .rdx__block h2 {
+      font-size: var(--text-h3);
+      line-height: var(--leading-h3);
+      letter-spacing: var(--tracking-h3);
+    }
+
+    .rdx__names {
+      display: grid;
+      gap: var(--space-3);
+      padding: 0;
+    }
+
+    .rdx__names li {
+      display: grid;
+      gap: var(--space-1);
+    }
+
+    .rdx__name {
+      display: inline-flex;
+      align-items: center;
+      gap: var(--space-2);
+      inline-size: max-content;
+      padding: var(--space-2) var(--space-3);
+      border: var(--border-width) solid var(--color-border-subtle);
+      border-radius: var(--radius-pill);
+      font-size: var(--text-small);
+    }
+
+    .rdx__grid {
+      display: grid;
+      gap: var(--space-4);
+      padding: 0;
+    }
+
+    .rdx__card {
+      display: grid;
+      align-content: start;
+      gap: var(--space-3);
+      padding: var(--space-6);
+      border: var(--border-width) solid var(--color-border-subtle);
+      border-radius: var(--radius-lg);
+      background-color: var(--color-bg);
+    }
+
+    .rdx__card-title {
+      font-size: var(--text-h4);
+      line-height: var(--leading-h4);
+      font-weight: var(--weight-semibold);
+    }
+
+    .rdx__facts {
+      display: grid;
+      gap: var(--space-1);
+    }
+
+    .rdx__facts div {
+      display: flex;
+      gap: var(--space-2);
+    }
+
+    .rdx__facts dt {
+      color: var(--color-text-muted);
+    }
+
+    .rdx__open {
+      display: inline-flex;
+      align-items: center;
+      justify-self: start;
+      gap: var(--space-2);
+      margin-block-start: var(--space-2);
+      padding: var(--space-2) var(--space-4);
+      border: var(--border-width) solid var(--color-text);
+      border-radius: var(--radius-pill);
+      font: inherit;
+      font-size: var(--text-small);
+      color: var(--color-bg);
+      background-color: var(--color-text);
+      cursor: pointer;
+    }
+
+    @media (width >= 48em) {
+      .rdx__names {
+        grid-template-columns: repeat(auto-fill, minmax(12rem, 1fr));
+      }
+
+      .rdx__grid {
+        grid-template-columns: repeat(auto-fill, minmax(18rem, 1fr));
+      }
+    }
+
+    /* ---------- The panels: the drop card's surface over the open menu's glass ---------- */
+    .rdl {
+      inline-size: min(100% - 2 * var(--gutter), 42rem);
+      max-block-size: calc(100svh - 2 * var(--space-6));
+      margin: auto;
+      padding: var(--space-6);
+      overflow: auto;
+      border: var(--border-width) solid var(--color-border-subtle);
+      border-radius: var(--radius-lg);
+      color: var(--color-text);
+      background-color: var(--color-glass);
+      backdrop-filter: blur(var(--blur-menu));
+      box-shadow: var(--shadow-panel);
+      overscroll-behavior: contain;
+    }
+
+    .rdl::backdrop {
+      background-color: var(--color-scrim);
+    }
+
+    .rdl__head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: var(--space-4);
+      padding-block-end: var(--space-4);
+      border-block-end: var(--border-width) solid var(--color-border-subtle);
+    }
+
+    .rdl__title {
+      display: inline-flex;
+      align-items: center;
+      gap: var(--space-2);
+      font-size: var(--text-h4);
+      line-height: var(--leading-h4);
+      letter-spacing: var(--tracking-h4);
+      font-weight: var(--weight-semibold);
+    }
+
+    .rdl__close {
+      display: grid;
+      place-items: center;
+      inline-size: var(--space-10);
+      block-size: var(--space-10);
+      margin: calc(var(--space-2) * -1);
+      padding: 0;
+      border: 0;
+      border-radius: var(--radius-pill);
+      font-size: var(--text-lead);
+      color: inherit;
+      background: none;
+      cursor: pointer;
+    }
+
+    .rdl__close:hover {
+      background-color: var(--color-bg-subtle);
+    }
+
+    .rdl__body {
+      display: grid;
+      gap: var(--space-8);
+      padding-block-start: var(--space-6);
+    }
+
+    .rdl__section {
+      display: grid;
+      align-content: start;
+      gap: var(--space-4);
+    }
+
+    .rdl__label {
+      color: var(--color-text-muted);
+    }
+
+    .rdl__prose {
+      display: grid;
+      gap: var(--space-3);
+    }
+
+    .rdl__intro {
+      font-size: var(--text-small);
+      line-height: var(--leading-small);
+      color: var(--color-text-muted);
+    }
+
+    /* 1 · Card: a plain list */
+    .rdl__list {
+      display: grid;
+      gap: var(--space-4);
+      font-size: var(--text-small);
+      line-height: var(--leading-small);
+    }
+
+    .rdl__list div {
+      display: grid;
+      gap: var(--space-1);
+    }
+
+    .rdl__list dd {
+      color: var(--color-text-muted);
+    }
+
+    /* 2 · Side sheet: full height at the right; a bottom sheet on phones */
+    .rdl--sheet {
+      inline-size: min(100%, 28rem);
+      block-size: 100svh;
+      max-block-size: none;
+      margin: 0 0 0 auto;
+      border-radius: var(--radius-lg) 0 0 var(--radius-lg);
+    }
+
+    .rdl__ladder {
+      position: relative;
+      display: grid;
+      gap: var(--space-4);
+      padding: 0;
+    }
+
+    /* The rung line, behind the icons. */
+    .rdl__ladder::before {
+      content: "";
+      position: absolute;
+      inset-block: var(--space-4);
+      inset-inline-start: calc(var(--space-6) - var(--border-width) / 2);
+      border-inline-start: var(--border-width) dashed var(--color-border-muted);
+    }
+
+    .rdl__ladder li {
+      position: relative;
+      display: flex;
+      align-items: start;
+      gap: var(--space-4);
+      font-size: var(--text-small);
+      line-height: var(--leading-small);
+    }
+
+    .rdl__node {
+      display: grid;
+      flex: none;
+      place-items: center;
+      inline-size: var(--space-12);
+      block-size: var(--space-12);
+      border: var(--border-width) solid var(--color-border-subtle);
+      border-radius: var(--radius-pill);
+      background-color: var(--color-bg);
+    }
+
+    .rdl__step {
+      display: grid;
+      gap: var(--space-1);
+      padding-block-start: var(--space-1);
+    }
+
+    .rdl__step strong {
+      color: var(--tier);
+    }
+
+    .rdl__step span {
+      color: var(--color-text-muted);
+    }
+
+    /* 3 · Drawer: from the bottom, a grip on top, an accordion of tiers */
+    .rdl--drawer {
+      margin-block-end: 0;
+      border-end-start-radius: 0;
+      border-end-end-radius: 0;
+      border-block-end: 0;
+    }
+
+    .rdl__grip {
+      display: block;
+      inline-size: var(--space-10);
+      block-size: var(--space-1);
+      margin: calc(var(--space-2) * -1) auto var(--space-4);
+      border-radius: var(--radius-pill);
+      background-color: var(--color-border-muted);
+    }
+
+    .rdl__accordion {
+      display: grid;
+      border-block-start: var(--border-width) solid var(--color-border-subtle);
+    }
+
+    .rdl__accordion details {
+      border-block-end: var(--border-width) solid var(--color-border-subtle);
+    }
+
+    .rdl__accordion summary {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      min-block-size: var(--space-12);
+      list-style: none;
+      cursor: pointer;
+    }
+
+    .rdl__accordion summary::-webkit-details-marker {
+      display: none;
+    }
+
+    .rdl__chev {
+      inline-size: var(--space-4);
+      block-size: var(--space-4);
+      fill: none;
+      stroke: currentcolor;
+      stroke-width: 1.75;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+      transition: rotate var(--duration-fast) var(--ease-standard);
+    }
+
+    .rdl__accordion details[open] .rdl__chev {
+      rotate: 180deg;
+    }
+
+    .rdl__accordion details p {
+      padding-block-end: var(--space-4);
+      font-size: var(--text-small);
+      line-height: var(--leading-small);
+      color: var(--color-text-muted);
+    }
+
+    /* 4 · Tabs: a segmented switch, then one section at a time; the legend as a map key */
+    .rdl__tabs {
+      display: grid;
+      gap: var(--space-6);
+      padding-block-start: var(--space-6);
+    }
+
+    .rdl__tablist {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      padding: var(--space-1);
+      border-radius: var(--radius-pill);
+      background-color: var(--color-bg-subtle);
+    }
+
+    .rdl__tablist label {
+      display: grid;
+      place-items: center;
+      min-block-size: var(--space-10);
+      border-radius: var(--radius-pill);
+      font-size: var(--text-small);
+      cursor: pointer;
+    }
+
+    .rdl__tablist input {
+      position: absolute;
+      opacity: 0;
+    }
+
+    .rdl__tablist label:has(:checked) {
+      background-color: var(--color-bg);
+      box-shadow: var(--shadow-bar);
+    }
+
+    .rdl__tablist label:has(:focus-visible) {
+      outline: calc(var(--border-width) * 2) solid var(--color-focus);
+    }
+
+    .rdl__tab {
+      display: none;
+    }
+
+    .rdl__tabs:has([value="why"]:checked) .rdl__tab--why,
+    .rdl__tabs:has([value="tiers"]:checked) .rdl__tab--tiers {
+      display: grid;
+    }
+
+    .rdl__legend {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: var(--space-3);
+      padding: 0;
+    }
+
+    .rdl__key {
+      display: grid;
+      align-content: start;
+      gap: var(--space-2);
+      padding: var(--space-4);
+      border: var(--border-width) solid var(--color-border-subtle);
+      border-radius: var(--radius-md);
+      font-size: var(--text-small);
+      line-height: var(--leading-small);
+      background-color: var(--color-bg);
+    }
+
+    .rdl__key strong {
+      color: var(--tier);
+    }
+
+    .rdl__key span {
+      color: var(--color-text-muted);
+    }
+
+    /* 5 · Loot table: ticks per tier; rows of items on phones */
+    .rdl--table {
+      inline-size: min(100% - 2 * var(--gutter), 56rem);
+    }
+
+    .rdl__table {
+      display: grid;
+      font-size: var(--text-small);
+      line-height: var(--leading-small);
+    }
+
+    .rdl__row {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: var(--space-2);
+      padding-block: var(--space-3);
+      border-block-end: var(--border-width) solid var(--color-border-subtle);
+    }
+
+    .rdl__row--head {
+      display: none;
+    }
+
+    .rdl__row > span:not([role="rowheader"]) {
+      display: none;
+    }
+
+    .rdl__row > span.rdl__cell--yes {
+      display: inline-flex;
+    }
+
+    .rdl__cell {
+      align-items: center;
+      gap: var(--space-2);
+      color: var(--color-text-muted);
+    }
+
+    .rdl__tick {
+      flex: none;
+      inline-size: var(--space-4);
+      block-size: var(--space-4);
+      fill: none;
+      stroke: var(--tier);
+      stroke-width: 2.25;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+    }
+
+    @media (width < 48em) {
+      /* Phones: the tier, then its items as a wrapped list. */
+      .rdl__row {
+        grid-template-columns: repeat(auto-fill, minmax(8rem, 1fr));
+      }
+
+      .rdl__row > [role="rowheader"] {
+        grid-column: 1 / -1;
+      }
+    }
+
+    @media (width >= 48em) {
+      .rdl__row {
+        grid-template-columns: 9rem repeat(5, 1fr);
+        align-items: center;
+      }
+
+      .rdl__row--head {
+        display: grid;
+        color: var(--color-text-muted);
+      }
+
+      .rdl__row > span:not([role="rowheader"]) {
+        display: inline-flex;
+      }
+
+      .rdl__cell,
+      .rdl__row--head > span + span {
+        justify-content: center;
+        text-align: center;
+      }
+
+      .rdl__cell-label {
+        position: absolute;
+        clip-path: inset(50%);
+      }
+    }
+
+    /* 6 · Drop-down: hangs under the header on wide screens */
+    .rdl--pop {
+      inline-size: min(100% - 2 * var(--gutter), 26rem);
+    }
+
+    .rdl__meters {
+      display: grid;
+      gap: var(--space-4);
+      padding: 0;
+    }
+
+    .rdl__meters li {
+      display: grid;
+      grid-template-columns: 1fr auto;
+      align-items: center;
+      gap: var(--space-1) var(--space-4);
+      font-size: var(--text-small);
+      line-height: var(--leading-small);
+    }
+
+    .rdl__meter {
+      display: flex;
+      gap: var(--space-1);
+    }
+
+    .rdl__meter span {
+      inline-size: var(--space-3);
+      block-size: var(--space-2);
+      border-radius: var(--radius-pill);
+      background-color: var(--color-border-subtle);
+    }
+
+    .rdl__meter .rdl__pip--on {
+      background-color: var(--tier);
+    }
+
+    .rdl__meter-note {
+      grid-column: 1 / -1;
+      color: var(--color-text-muted);
+    }
+
+    @media (width >= 48em) {
+      .rdl {
+        padding: var(--space-8);
+      }
+
+      /* Card and drop-down: Why beside the rarities is too much for one card; they stack. */
+      .rdl--table .rdl__body {
+        gap: var(--space-10);
+      }
+
+      .rdl--pop {
+        margin: calc(var(--space-16) + var(--space-2)) var(--gutter) auto auto;
+        max-block-size: calc(100svh - var(--space-24));
+        padding: var(--space-6);
+      }
+
+      .rdl--drawer {
+        inline-size: min(100% - 2 * var(--gutter), 40rem);
+      }
+    }
+
+    @media (width < 48em) {
+      /* Phones: the side sheet and the drop-down become bottom sheets. */
+      .rdl--sheet,
+      .rdl--pop,
+      .rdl--drawer {
+        inline-size: 100%;
+        block-size: auto;
+        max-block-size: 85svh;
+        margin: auto 0 0;
+        border-radius: var(--radius-lg) var(--radius-lg) 0 0;
+        border-block-end: 0;
+      }
+
+      .rdl {
+        padding: var(--space-6) var(--gutter);
+      }
+    }
+
+    /* Panels slide or fade in; reduced motion just shows them. */
+    @media (prefers-reduced-motion: no-preference) {
+      .rdl {
+        transition:
+          opacity var(--duration-fast) var(--ease-standard),
+          translate var(--duration-page) var(--ease-out-expo),
+          display var(--duration-page) allow-discrete,
+          overlay var(--duration-page) allow-discrete;
+        opacity: 0;
+        translate: 0 var(--space-4);
+      }
+
+      .rdl:popover-open {
+        opacity: 1;
+        translate: 0;
+      }
+
+      .rdl--sheet {
+        translate: var(--space-8) 0;
+      }
+
+      @starting-style {
+        .rdl:popover-open {
+          opacity: 0;
+          translate: 0 var(--space-4);
+        }
+      }
+    }
+  }
+</style>

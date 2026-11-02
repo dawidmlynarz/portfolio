@@ -1,0 +1,54 @@
+---
+/**
+ * Opens the About side sheet (AboutPanel), a native popover, so it needs no script. An info icon
+ * in the same round ghost button as the theme switch next to it, with no label on screen.
+ */
+import Icon from "./Icon.astro";
+
+interface Props {
+  /** id of the AboutPanel it opens. */
+  panel: string;
+  class?: string;
+}
+
+const { panel, class: className } = Astro.props;
+---
+
+<button
+  class:list={["about-button", className]}
+  type="button"
+  popovertarget={panel}
+  title="About Grist"
+>
+  <Icon name="info" class="about-button__icon" />
+  <span class="visually-hidden">About Grist</span>
+</button>
+
+<style>
+  @layer components {
+    /* Matches the theme switch in the Grist header (GristLayout): round, no ring, a soft fill on hover. */
+    .about-button {
+      display: grid;
+      flex-shrink: 0;
+      place-items: center;
+      inline-size: var(--space-10);
+      block-size: var(--space-10);
+      padding: 0;
+      border: 0;
+      border-radius: var(--radius-pill);
+      color: var(--color-text);
+      background: transparent;
+      cursor: pointer;
+      transition: background-color var(--duration-fast) var(--ease-standard);
+    }
+
+    .about-button:hover {
+      background-color: var(--color-bg-subtle);
+    }
+
+    .about-button :global(.about-button__icon) {
+      inline-size: 1.125em;
+      block-size: 1.125em;
+    }
+  }
+</style>

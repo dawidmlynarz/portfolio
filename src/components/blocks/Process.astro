@@ -1,0 +1,141 @@
+---
+/**
+ * How a project runs, as numbered steps on one vertical line: a node per step, then its title
+ * and a sentence or two. From 62em the title and text sit side by side, as in the Services rows.
+ * The line is drawn as one segment per step, from node to node. The motion layer draws it down
+ * the page as it scrolls and settles each node as the line
+ * reaches it; without it (no JS, reduced motion) the line and every node are simply there.
+ * Data: src/lib/process.ts.
+ */
+import type { Step } from "@/lib/process";
+
+interface Props {
+  steps: Step[];
+  headingLevel?: 2 | 3 | 4;
+}
+
+const { steps, headingLevel = 3 } = Astro.props;
+const Heading = `h${headingLevel}` as const;
+---
+
+<div class="process" data-process>
+  <ol class="process__steps" role="list">
+    {steps.map(({ title, text }, index) => (
+      <li class="process__step" data-process-step>
+        {index < steps.length - 1 && (
+          <span class="process__segment" aria-hidden="true" data-process-segment />
+        )}
+        <span class="process__node" aria-hidden="true" data-process-node></span>
+        <span class="text-caption process__index" aria-hidden="true" data-process-fade>
+          {String(index + 1).padStart(2, "0")}
+        </span>
+        <div class="process__body">
+          <Heading class="process__title" data-process-fade>
+            {title}
+          </Heading>
+          <p class="process__text" data-process-fade>
+            {text}
+          </p>
+        </div>
+      </li>
+    ))}
+  </ol>
+</div>
+
+<style>
+  @layer components {
+    /* The rail is one column as wide as a node; the line runs down its centre. */
+    .process {
+      --process-node: var(--space-4);
+      --process-rail: var(--space-8);
+
+      position: relative;
+    }
+
+    .process__steps {
+      display: grid;
+      padding: 0;
+    }
+
+    /* The line, one segment per step: from this node's centre to the next one's. */
+    .process__segment {
+      position: absolute;
+      inset-block-start: calc(var(--space-10) + var(--process-node) / 2);
+      inset-inline-start: calc(var(--process-rail) / 2);
+      inline-size: var(--border-width);
+      block-size: 100%;
+      background-color: var(--color-text);
+      transform-origin: top;
+      translate: -50% 0;
+    }
+
+    .process__step {
+      position: relative;
+      display: grid;
+      grid-template-columns: var(--process-rail) 1fr;
+      gap: var(--space-2) var(--space-6);
+      padding-block: var(--space-10);
+    }
+
+    .process__node {
+      position: relative;
+      grid-row: 1 / span 2;
+      justify-self: center;
+      inline-size: var(--process-node);
+      block-size: var(--process-node);
+      border: var(--border-width) solid var(--color-text);
+      border-radius: var(--radius-pill);
+      background-color: var(--color-bg);
+    }
+
+    /* A filled centre, so each node reads as a point on the plan rather than a bullet. */
+    .process__node::after {
+      position: absolute;
+      inset: 25%;
+      border-radius: inherit;
+      background-color: var(--color-text);
+      content: "";
+    }
+
+    .process__index {
+      color: var(--color-text-muted);
+    }
+
+    .process__body {
+      display: grid;
+      gap: var(--space-3);
+      grid-column: 2;
+      max-inline-size: var(--measure);
+    }
+
+    .process__title {
+      font: var(--weight-medium) var(--text-h3) / var(--leading-h3) var(--font-heading);
+      letter-spacing: var(--tracking-h3);
+    }
+
+    .process__text {
+      color: var(--color-text-muted);
+    }
+
+    @media (width >= 62em) {
+      .process__step {
+        grid-template-columns: var(--process-rail) var(--space-16) 5fr 6fr;
+        column-gap: var(--space-8);
+        align-items: start;
+      }
+
+      .process__node {
+        grid-row: auto;
+      }
+
+      .process__body {
+        display: contents;
+      }
+
+      .process__title,
+      .process__text {
+        grid-column: auto;
+      }
+    }
+  }
+</style>

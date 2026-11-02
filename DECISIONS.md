@@ -6,6 +6,313 @@ Non-obvious choices, newest first. One entry per decision: what, why, and what i
 
 Grist unlocks a drop by comparing its day with the build time, so production needs a build every Friday. A GitHub Action calls a Cloudflare Pages deploy hook at 05:07 UTC on Fridays (drops unlock at 00:00 UTC, so they are live by early morning in Europe). Chosen over a daily build because every drop, New badge and Next drop date changes on a Friday, and over a Cloudflare Worker cron because it needs no second project. Each run re-enables its own schedule, since GitHub turns schedules off in public repos after 60 days without commits. Scheduled workflows only run from the default branch, so that has to be `main`. If drops ever move off Fridays, change the cron with `DROP_INTERVAL_DAYS` and the season starts.
 
+## 2026-10-30 · Grist: rarity by hand, no quest types
+
+Dawid's call: each quest's rarity is set by hand in frontmatter (`rarity`), and level-ups are only a changelog that never changes it, so Next rank is gone. Quest types (side quest, demo, deep dive, kit) are removed. "Side quest" is now a status next to Fresh and Battle-tested. Tiles and quest pages show the status and the date side by side.
+
+## 2026-10-30 · Grist review round 2: one quest tile, site text styles only
+
+Grist text uses only the site's text styles:
+
+- Labels use `.text-caption`.
+- Every meta line next to a gem (tier, status, type, dates, quest log) uses the small style, so they all match.
+- The definition uses `.text-lead`.
+- Links on quest pages use the default link style.
+
+`QuestCard` replaces `QuestRow` and is the only quest tile. It sizes itself with a container query: it stacks when narrow and becomes a row at 48rem and wider. The front door, See also and `/grist/layouts` all use it. `/grist/layouts` is a preview-only page with six layout options, and production redirects it to /grist. The Legendary gem keeps only the sweep, and its sparkles stay still.
+
+## 2026-10-30 · Grist review round 1
+
+Dawid's review changed these:
+
+- The front door uses the site `Hero` (the grain backdrop and a two-tone headline through the new `titleMuted` prop), with README as its action.
+- The big logo, the quest and volume counts and the "Vol." labels are gone. Volumes show as plain category titles, and the Quest log says Category.
+- Silkscreen is removed. Tier names and New use the caption face.
+- The simple footer puts "Grist is a side quest from Dawid Młynarz." in place of the name on the copyright line, and the icon credit is gone.
+- The six draft quests carry made-up types, start dates and level-ups (each marked TEST DATA), so previews show every rarity. Production never lists drafts.
+- Gem clip ids are now unique per instance. A shared id pointed at the clip inside the hidden README popover, which left the Legendary sweep unclipped.
+
+## 2026-10-30 · Grist MVP: pages, quests and markdown twins
+
+`/grist` and `/grist/<slug>` use `GristLayout`, which has a slim header and the `Footer` simple variant, and does not load the motion module. Quests are MDX in `src/content/grist/`. Rarity, version, date labels, New and Next rank are derived in `src/lib/quests.ts`; none of them are stored. `order` only breaks ties between quests that start on the same day. Production lists published quests whose `started` date has passed, and previews list everything. Each quest has a markdown twin at `/grist/<slug>.md`, generated at build with MDX comments stripped. README is a native popover, so it needs no script. Permalink copies the URL and shows a status toast.
+
+Launch content: Human checkpoints uses Dawid's text from the mockups. The other six are drafts written from the backlog lines, marked `draft: true` with an MDX comment saying so, until Dawid rewrites them. Every `started` date is a placeholder (the build day) until launch. Counters, RSS, `llms.txt`, OG images and the demo are not built yet.
+
+## 2026-10-30 · Grist buttons: one text style, icon hover on Download
+
+README and Download use the button's own text style, the same as Get in touch. They no longer use the pixel face or mono. The download count sits in a filled circle on the inverse surface, which turns into a pill as the number grows. There is no separator. Download skips the row tear: `Button` takes `hover="icon"`, which gives a text button the icon buttons' hover. Its arrow-down drops out through the bottom edge and comes back in from the top, the Back to top motion reversed.
+
+## 2026-10-30 · Grist foundations
+
+First step of Grist (`/grist`), the side quest of short "quests" on agentic UX and AI-ready design systems.
+
+- **Only rarity is new.** Each tier has `--rarity-*-fill`, `-shade` and `-light` (Figma collection "Grist"), plus `--rarity-*-text` for tier names: the Figma text shade on light, the light shade on dark, so both pass 4.5:1. The shade draws the gem's facet lines; for Uncommon, Rare and Epic it is darker than the text shade (Dawid's call) so the lines read as depth. (The Silkscreen pixel face was dropped on Dawid's review: Grist uses the site's own type.) Everything else is existing tokens and components.
+- **Gems** follow Dawid's reference: a cut gem with a flat table, a girdle line and shaded facets, drawn from pixel maps in `src/lib/grist.ts` at 2px per pixel (26px wide). The outline is the ink (white in dark mode) so gems keep their edge. Common to Rare share the shape; Epic adds sparkles; Legendary adds a crown, twinkling sparkles and a light sweep, all off under reduced motion. Tier names always sit next to a gem, so colour is never the only signal.
+- **One logo:** the wordmark in the text colour, with no rarity colour on the dot.
+- **Buttons are the site's pill.** Pixel icons looked off inside pills, so `Button` gained three line icons in its own style (`info`, `download`, `link`), placed before the label; arrows still follow it and are the only icons that nudge on hover. (Later Grist dropped Pixelarticons for line icons in the same style; the gems are its only pixel art.)
+
+## 2026-10-30 · Native scrolling (Lenis removed)
+
+Lenis eased every wheel and trackpad scroll toward its target, so the page trailed the hand, even at `lerp` 0.16, and felt delayed on every page. Scrolling is native again: instant, about 15 KB less JS, and the platform's own momentum and keyboard behaviour. All scroll-driven motion (reveals, the About story, the Services timeline, cover parallax, the contents mini map) still runs on GSAP ScrollTrigger, which works on native scroll. In-page anchor jumps still glide through CSS `scroll-behavior: smooth`, which reduced motion turns off. This supersedes the Lenis notes in earlier entries (the `lerp` tuning, "stays in step with Lenis", `data-lenis-prevent`, now removed).
+
+## 2026-10-30 · About: story, career timeline, videos
+
+**Two statements, one component.** Home keeps its summary word for word (Dawid's call: it works as a summary there); About opens under the ribbon with a longer three-paragraph story. Both use StoryIntro's `paragraphs` variant at heading size, with small inline pictures and GIFs (InlineImage) that zoom 3–5× on hover so you can see what's in them. Dawid's portrait stays out of both, since the hero already shows him. Copy lives in `src/lib/story.ts`. The old photo grid and "Personal life" section are folded into the About story.
+
+**GIFs are self-hosted animated WebP with a still frame.** Dawid picked them; converted at 320–400px (55–470 KB, lazy). Each picture sits right before the words it illustrates. With reduced motion a `<picture>` source swaps in a still frame, so nothing animates.
+
+**Career timeline reuses the Services steps.** The time machine (a sticky year line, plus a horizontal variant) was dropped: the line didn't read as tied to the entries. Now it's the Process pattern: one vertical line, a node per role, years and time there to the left of the node, title, company and text to the right. It reuses the `data-process` motion hooks, so `motion.ts` draws it the same way. No logos, no location, no university. Consulting and CSS Peeper sit near the top with a "fractional" badge, since they run next to the main job. Each picture in the story text is kept on one line with the word after it (`.story__pair`), so it never ends a line on its own. Data in `src/lib/career.ts` (CV and LinkedIn; LinkedIn wins where they differ).
+
+**Inline GIFs load last.** Measured on a throttled phone, the GIFs were most of the extra weight on Home and About (about 1.2 MB on About) and they competed with the hero portrait for bandwidth. They're now resized to about 200px with every other frame dropped on the long ones (zoomed they show at most about 220px), and each one loads as its still frame. The motion layer swaps in the animation after the page `load` event. With reduced motion or no JS the still frame stays, which also replaces the old `<picture>` media switch. Inline photos are served at 240/480px instead of up to 960px.
+
+**YouTube loads on click.** `YouTube.astro` shows a local copy of the thumbnail and loads the youtube-nocookie player only when played; without JS it is a link. No third-party requests on page load.
+
+## 2026-10-29 · Structured data on Services, Work and Contact
+
+- **/services** lists the three services as schema.org `Service` nodes (from `src/lib/services.ts`), each with its on-page anchor and Dawid as provider, plus breadcrumbs.
+- **/work** is a `CollectionPage` whose `ItemList` holds only public case studies; locked ones are noindex, so listing them would point Google at pages it can't index.
+- **/contact** is a `ContactPage` about the Person node, plus breadcrumbs.
+- **`jobTitle` stays "Senior Product Designer".** Dawid positions himself as a senior or lead product designer for hire, not as a freelancer, so the data says the role, not the contract type.
+
+## 2026-10-29 · Contact page; every call to action leads to it
+
+- **New `/contact` page** at Dawid's request: "Got a project in mind? Let's talk." and the email as a link at a new display size (`--text-display`, 56 → 128, with `--leading-display` and `--tracking-display`; add them to the Figma Foundations file too), then the case-study carousel. It breaks after the @ on narrow screens rather than shrinking the email below h1. Round 2 (Dawid's mock-up): the services list, the Write/Copy buttons and the carousel caption were removed; the title and lead are narrower.
+- **Round 3: one screen, no footer.** `/contact` uses SiteLayout `fit`: no footer or back-to-top, and the page is exactly the viewport tall, so there is nothing to scroll. The case-study row takes the room left under the email and its covers are sized so about two thirds of each shows, the rest running off the bottom edge (container query units). A hard scroll lock was ruled out: on very short screens (around 1440×700) the page scrolls a little instead of hiding content.
+- **Round 4: a simpler hover and a one-line email.** The magnet pull and the "View project" pill are gone. A hovered cover stops the row and rises until nine tenths of it shows (`--work-marquee-lift`, CSS only, so motion.ts has nothing for it); the covers are sized so the lifted one still fits under the email. `--text-display` is the one exception to the type scale: sized to the content width (the email is about 8.6em wide) so it always sits on one line, at most 128px and at most 14svh.
+- **`WorkMarquee` (new block):** case-study covers drifting sideways, all cropped 4:3 like the work cards, no captions (round 2), after alexandre-araujo.com/contact. Built like the ClientLogos marquee; pauses on hover and focus; reduced motion gives a still row that scrolls sideways.
+- **Every email CTA goes to `/contact`:** the Home hero, the footer ("Get in touch"), Services' "Start a conversation". The footer's closing line and button are hidden on `/contact` itself (`footerCta={false}`). Mailto links stay where the email is information rather than a CTA: the privacy page and the locked case-study panel (which pre-fills a subject).
+- **Social links:** Behance and Instagram added (footer, structured data). The open menu shows LinkedIn, Dribbble and Instagram in place of the email button, in the footer's link style, and Contact is the last menu link. The open panel's inset went from 4 to 8px. The footer's Privacy link reads "Privacy policy" in the same style as the social links.
+
+## 2026-10-29 · One share image for every page
+
+- **Every page shares `public/og.jpg`,** Dawid's new card ("Transforming AI capability into products people actually trust."). Case studies and locked case studies no longer use a crop of their cover, at Dawid's request, so every link from the site previews the same way. The cover crop stays as the `image` in case-study structured data.
+- **JPEG, not PNG.** The supplied PNG is 467 KB; the JPEG is 89 KB and looks the same. WhatsApp and some chat apps skip previews over about 300 KB.
+- `SITE.ogImage.alt` now describes the new card. Change both together.
+
+## 2026-10-29 · Figure `diagram` variant for line drawings
+
+`<Figure variant="diagram" width="content">` shows a transparent line drawing at the text width with no card, corners or background, so it reads as part of the text. Diagrams are drawn in dark ink and inverted in the dark theme (`invert(1) hue-rotate(180deg)`), so one file works in both. Trim transparent padding from the source so the spacing comes from the page. First used for the Anvil UI levels.
+
+## 2026-10-29 · Several demo clips share one frame (VideoTabs)
+
+To show more of a product without making the page longer, `VideoTabs` (content, available in MDX) puts several clips in one frame with a tab per clip. Each clip is a regular `Video`, so loading, autoplay and reduced motion behave the same; only the chosen clip shows, and switching starts it from the beginning. Without JS every clip shows in turn, captioned with its tab name, so nothing is lost. Used for the three Anvil Showroom flows, which replace the stand-in clip.
+
+## 2026-10-28 · Case study images are AVIF
+
+Every image in `src/content/work/` is stored as AVIF (sharp, quality 80, 4:4:4 chroma so UI text and thin lines stay crisp), and `Figure`, `WorkCard`, `NextUp`, the case-study cover and the `Video` poster render AVIF instead of Astro's default WebP. Sources went from 22.5 MB to 12.4 MB, including the new Pantheon and Anvil images. The share image stays JPEG because social previews don't read AVIF. Add new case-study images as AVIF too.
+
+## 2026-10-28 · Zazmic Anvil UI case study goes live
+
+`draft: false` on Dawid's go-ahead. The image slots are still `Figure` placeholders, so production shows the text, the stand-in cover and the stand-in Showroom clip without them until the real images arrive. The invented Anthony Marin quote is taken out before going live, because a made-up quote under a real name shouldn't be public. An MDX comment marks where the real one goes.
+
+## 2026-10-28 · Video: looping clips that play in view
+
+- **New `Video` (ui), available in MDX without an import** like `Figure`. Muted, looping, inline, `preload="none"` with a poster (first frame, served as WebP up to 2560px) that also sets the size, so nothing downloads until the clip is needed and there's no layout shift. Two sources: AV1 MP4 first (smallest and sharpest), H.264 MP4 as the fallback every browser plays. No `src` gives a "Video to come" placeholder on previews, like `Figure`.
+- **Plays only while half of it is on screen** (IntersectionObserver in the component script, not `motion.ts`: it isn't an animation and needs no GSAP). Off screen it pauses.
+- **A pause/play button sits in the corner** (WCAG 2.2.2 needs a way to stop moving content). A pause by hand sticks when the clip scrolls back in. If the browser refuses autoplay (data saver, low power mode), the native controls come back.
+- **Without JS, or with reduced motion**, the native controls stay and nothing autoplays.
+- **Clips are 2x, for Retina.** A wide video shows up to 1280 CSS px (80rem), so it needs 2560 real pixels: record at 2x and export 2560×1440 for 16:9; any other width is also 2x its displayed width. Never upscale a 1x recording; it stays soft. UI loops compress so well that 2x costs little (the stand-in is 360 KB AV1, 480 KB H.264 for 12 s).
+- **Encoding for new clips**: 30fps, no audio. `ffmpeg -c:v libsvtav1 -crf 30 -preset 5` for AV1 and `-c:v libx264 -preset slow -crf 20 -tune animation` for H.264, both with `-movflags +faststart -an`. Files sit next to the MDX (Cloudflare Pages caps a file at 25 MB).
+- **The Zazmic Showroom clip is a stand-in** recorded from the public Storybook (2560×1440, 12 s, frame-stepped with a fake clock so it is a smooth 30fps) until Dawid sends the real recordings. The styleguide uses a 5 s cut of it in `src/assets/placeholders/`.
+
+## 2026-10-28 · Zazmic Anvil UI case study
+
+- **New draft case study, `zazmic-anvil-ui`**, first in `order` (0.5) as the most recent and most AI-focused work. It stays `draft: true` until Dawid has reviewed it and sent the images; every image is a `Figure` placeholder for now.
+- **The cover is a stand-in**: a screenshot of the live Showroom booking flow from the public Storybook, until Dawid sends the final one.
+- **The time savings are estimates Dawid asked for**, not measurements (about six weeks down to a week and a half of interface work, about 350 hours per project), labelled "(estimate)" in the highlights. Every other number comes from the Anvil repository.
+- **The Anthony Marin quote is a placeholder** written for the draft, at Dawid's request, until Dawid sends the real one.
+- **Small grammar slips on purpose.** At Dawid's request the body carries about 25 minor non-native slips (missing articles, prepositions, tense), roughly 2% of its words, so it reads like Dawid's own writing. Title, description, lead, headings, highlights, alt text and the quote stay clean. An MDX comment warns against proofreading them away.
+- **`Figure` grid track is `minmax(0, 1fr)`** so a long placeholder label can't push the figure 1px past a 375px viewport.
+
+## 2026-10-28 · Client logos between the hero and About, no caption
+
+- **The marquee moves up**, out of the About statement, to sit right under the hero, and the "Trusted by teams at" caption is gone (Dawid's call: the logos speak for themselves). The list keeps its accessible name ("Companies I have worked with").
+- It has `--space-section-md` above it; About keeps its own `--space-section-lg` above and `--space-section-md` below, so it still stands apart from the logos and the work. `StoryIntro` loses the slot it gained for the marquee.
+
+## 2026-10-28 · Client logos move into the About statement on Home
+
+- **The marquee now sits inside the About statement**, under the text, instead of in its own section above the footer. `StoryIntro` gained a default slot that renders after the statement at full width (the statement keeps the container width), so the marquee still runs edge to edge. "Trusted by teams at" stays as its caption.
+- **More room around About.** It now has `--space-section-lg` above (was `--space-section-sm`) and `--space-section-md` below (was none), with `--space-section-md` between the statement and the logos. The work section's own `--space-section-lg` stacks on top of the bottom space, so About reads as its own band between the hero and the work.
+
+## 2026-10-28 · Case study pages: cover, client logo, Next up, contents mini map
+
+- **The cover runs edge to edge** at every size, with no radius. Phones get a 3:2 crop. From 48em the frame is 2:1 and holds the cover at 16:9, centred; with the motion layer the image drifts from its top edge to its bottom edge while the frame scrolls past (`[data-parallax]`, GSAP ScrollTrigger in `motion.ts`, so it stays in step with Lenis). The drift is exactly the overhang, so no edge ever shows; without motion it stays centred. `sizes="100vw"`, up to the 3200px rendition.
+- **The facts are My role, Industry, Business and Date**, in two columns at the text width (a narrow Container). Date is a new optional `date` string, written as Dawid gives it ("2021", "2016–2025"), falling back to `year`; it only shows when set, so a case study without one has three facts. Company is gone (the logo carries it), and so is the project link ("See it live"): the `link` field is removed from the schema and from every case study.
+- **The client logo is back above the title**, in place of the "Case study · Company" line. New optional `client` field in the schema (a key of `CLIENTS`), and a new `ClientLogo` (ui) that inlines one logo in the text colour; `ClientLogos` now renders through it. Its accessible name is "Case study for <company>". Every case study now has one (NerdWallet and CSS Peeper added from Dawid's files; CSS Peeper's gradient mark runs from the text colour to 60% of it, so it works in both themes). The text line is the fallback for a case study without one. Logo lists (`ClientLogos`, the Home marquee) use `WORKED_WITH`, which is every client but CSS Peeper, Dawid's own product; NerdWallet joins the marquee.
+- **"Next up" replaces "Next case study".** Dawid picked the ruled index from a six-option navigation playground (Split, Pull through, Index, Filmstrip, Remote, Stories; removed once chosen). `NextUp` lists up to three case studies: the curated `next` first when it has a page, then the ones after this case study in `order`, wrapping round. Rows dim the others on hover; with a fine pointer and the motion layer, the hovered row's cover floats beside the pointer (`coverFollow` in `motion.ts`). Without hover, each row carries a small cover thumbnail instead. `NextProject` is gone.
+- **Contents mini map** (`CaseStudyToc`), fixed at the right edge from 62em while the case-study body is on screen: one short line per h2. Compact at rest, its right edge in line with Back to top (`--space-8`). Lines are `--space-4` (the current one `--space-6`). Hovering it opens the rows up a little, and only the hovered or focused row shows its title, one at a time: its line shrinks to half and the title sits to the left of where the full line was, so the pointer never covers it, arriving with the "signal settle" from the link playground: letters come in as noise and lock in from the left over 420 ms (the row tear was tried first and didn't read on such small text), with no panel behind (Dawid's feedback on a first version that opened every title on a glass panel). Each row is an anchor (Lenis smooths the jump). Each line fills as its section is read and the current one is longer and in the text colour (`aria-current="location"`). A small component script measures the headings on scroll; without it the map stays hidden. h3s are left out to keep the map short. Also on `/styleguide`, over its own sections.
+- **No glitch on case-study card hovers.** On Dawid's call the torn-rows flash is gone from `WorkCard`; the cover keeps its slow zoom. `--duration-glitch` is removed (remove it from Figma too).
+- **Dates from Dawid**, as `date`: Newsweek 2025–2026, NerdWallet 2022–2023, Pantheon 2021–2022, BeatStars 2020–2021 (both), Google 2021–2022, XWP 2021–2024, CSS Peeper 2025.
+- **Card eyebrows read "Role · Company"** (Work and Home), as on Webflow, from the `role` and `company` fields ("Draft" still added on previews). The year is no longer on the card.
+- **The name in the nav no longer tears** on hover; the M mark still does (`data-tear-self` on the home link: motion.ts only flags `[data-tearing]` and Nav's CSS tears the mark).
+
+## 2026-10-28 · Password-protected case studies, locked on the server
+
+`protected: true` now locks a case study on every build, production included. NerdWallet is the first one (Dawid's pick). This replaces "protected drafts get no page on previews" and removes `SHOW_PROTECTED_DRAFTS`.
+
+- **The content never ships as a static file.** Astro builds the full page and a locked page (`/work/<slug>/locked`). After the build, `tooling/protected-work.mjs` moves the full page's HTML into a generated module (`.generated/protected-pages.js`, git-ignored) and puts the locked page at `/work/<slug>`. Cloudflare Pages bundles that module into the Pages Function `functions/work/_middleware.ts`, which is the only place the content exists. A client-side lock (blur, JS check, encrypted HTML) was ruled out: the text would still be in the download.
+- **The gate.** The form posts the password to `/work/<slug>`. The function compares it in constant time with `CASE_STUDY_PASSWORD` (a Pages secret, set per environment), then sets an HttpOnly, Secure, SameSite=Lax cookie for 30 days and redirects back. The cookie is the expiry signed (HMAC-SHA256) with the password, so there is no second secret, and changing the password locks everyone out. One password opens every protected case study. Unlocked responses are `private, no-store` and `noindex`. Without the secret nothing unlocks.
+- **Wrong password:** the function serves the locked page with a 401 and the form switched to its error state, so it works without JS. The field takes a heavier red ring, a faint red tint and a red warning sign, the message shows under it in red, left-aligned with the field, and the field skips sideways once. Typing again clears it.
+- **Locked state:** `LockPanel` centred on the first screen over the hero grain (`HeroBackdrop`), as on other heroes: padlock, "This case study is password protected", password field with a plain Unlock button, and a full-width line inviting people to email for access. A blurred stand-in of the page behind it was tried first; Dawid preferred the plain grain. Cards of protected work show a padlock on the cover (see 2026-10-29).
+- **Not covered:** images used only inside a protected case study are still files in `/_astro/` under hashed names. Nothing public links to them, but they are not behind the password. Brute force is not rate limited by the function; a Cloudflare rate-limiting rule on `POST /work/*` covers that if needed.
+- **New tokens:** `--shadow-panel`, and the site's only colour, for errors: `--red-600` / `--red-400` primitives, `--color-danger` (5.9:1 on white, 7.1:1 on the dark background, AA) and `--color-danger-bg` (add to Figma).
+
+## 2026-10-28 · Scroll budget: idle loops yield to scrolling
+
+Profiled scrolling on every page (Chromium, 1440 desktop and 375 mobile with 4× CPU throttling). Only two pages spend frames on things the visitor isn't looking at, so those are the fixes; the motion itself is unchanged.
+
+- **Home portrait.** The glitch drew every frame while the hero was on screen, including while the page scrolled past it. At rest it now draws at about 30 fps (the bands roll slowly and jitter at 14 fps, so it looks the same) and holds still while the page is scrolling, picking up 160 ms after the last scroll event. Pointing and touch still run every frame.
+- **About hero (Mindblown).** Its idle loops (bobbing, floating cards, brows, the card tails' per-frame layout reads, the CSS boil, blink and belt) never stopped. They now pause while the hero is off screen and resume where they were. Tweens the script had paused itself stay paused.
+- **Lenis `lerp` 0.1 → 0.16.** The default trails the wheel by a long glide; 0.16 keeps the smoothing but settles in about half the time, which reads as snappier. Touch scrolling was and stays native.
+- **Fade reveals 1.2 s / 48 px → 0.8 s / 24 px.** On a quick scroll, cards were still drifting in after the reader had arrived. Heading line reveals are unchanged.
+
+## 2026-10-28 · Portrait reveal: glitch only
+
+With glitch picked, the liquid and pixels styles are gone, and the component is renamed for what it is: `LiquidReveal` → `PortraitReveal` (`<portrait-reveal>`, `portrait-reveal.ts`, `.portrait-reveal` classes). It has no `reveal` prop or `data-style` any more, and the liquid's tuning props (size, soft, pull, wobble, fade, orbit) went with it. `portrait-reveal.ts` now only hosts the glitch: canvas, layer textures, loading, theme, pointer and the frame loop. The liquid's trail mask and composite shaders, its motion model and `reveal-pixels.ts` are deleted, so the hero script is about 12 KB instead of 26 KB. The glitch engine is unchanged; its row texture moved from unit 6 to the now free unit 5. Without WebGL, or if the glitch shader fails, the static photo stays (there is no liquid to fall back to). The "Liquid (current)" tile left the reveal playground.
+
+## 2026-10-28 · About hand-off: Flow
+
+Dawid asked for alternatives to the inverse panel that grew over the held hero, so the About statement reads as a continuation of the hero rather than a separate block, with mobile first. Six were built on a preview with a switcher (Flow, Ink, Split, Sheet, Bridge, Avatar); Dawid shortlisted Flow and Split and picked **Flow**.
+
+- **Same surface as the hero, nothing pinned.** The statement sits on the page background right after the hero; its words light up in reading order as it scrolls through the screen (scrubbed, `motion.ts`). The hero no longer holds or eases back, so `data-hero` and the 260svh pinned track are gone, and on mobile the hero keeps the whole first screen.
+- **No separator.** A hairline that drew in above the label was tried and dropped (Dawid: redundant).
+- **No bottom padding** on the section: the Selected work section brings its own space above it.
+- **Complete without the motion layer**: all words fully lit.
+
+## 2026-10-28 · Case study cards
+
+**Home keeps the staggered grid; Work becomes a ruled index.** Picked from seven layouts in a card playground (PR #20, removed once chosen). `WorkCard` has two layouts, `tile` (Home) and `row` (Work: cover left, text right, hairlines between rows); `WorkGrid` picks one with `layout="grid" | "index"`.
+
+**Titles go from h4 to h3 size** on both, so the quiet links read as the main thing on the card.
+
+**Cards show the first three tags as pills, then "+N more".** The case study page still lists every tag. Which three show is the order in the frontmatter, so put the main ones first.
+
+**Cover hover is a short glitch, CSS only.** Two hidden copies of the cover flash in as torn rows that jump sideways for about 400 ms (`--duration-glitch`, new token: mirror it in Figma), then the cover snaps back clean and zooms as before. Same language as the hero's glitch reveal and the link row tear, without WebGL or JS on a list of eight images. The copies use the cover's own srcset, so the browser reuses the file. Reduced motion: no glitch, no zoom.
+
+**Work rows carry the card summary (`description`), cut to four lines** with a CSS line clamp (the browser adds the ellipsis). The page intro (`lead`) often describes the company rather than Dawid's part, so cards use the summary. Home tiles have no summary.
+
+## 2026-10-28 · Buttons: one family, the row tear
+
+Dawid picked **row tear** from the button playground (`/playground/buttons`), with icon buttons excluded. `Button` is now the only button on the site.
+
+- **Text buttons tear into their hover colours.** The button stacks its face and two aria-hidden copies in the hover colours in one grid cell. On hover or keyboard focus the copies arrive as three rows that jolt sideways for `--duration-tear`, then lock together. Primary (inverse fill) lands as an outline. Secondary keeps its outline style (Dawid: it shouldn't turn into a primary): a subtle `--color-border-muted` ring at rest, a black ring after the tear, never filled. The face hides while hovered so the transparent copies don't double the label. CSS only, unlike the links: a button never wraps, so fixed rows work, and no JS has to run first. After the tear the middle copy hides and the top copy shows whole, so no seams are left at the row edges.
+- **Icon buttons don't tear.** They share the colours and the swap (a secondary icon button only darkens its ring), and the icon moves where it points: it leaves through that edge and comes back in from the opposite one (Back to top goes up, an arrow goes right). Icon-only is `icon` + `label` (the accessible name).
+- **New `size="lg"` and `icon` prop.** The footer email is `lg` with an arrow, the menu contact is `sm`, Back to top is a secondary icon button that keeps its glass background and scroll-driven fade from `SiteLayout`. The hand-made pills and their CSS are gone.
+- **Home hero calls to action are buttons**: About me (primary) and Contact (secondary), both with the arrow. Primary follows the original order.
+- **The theme switch and the menu button stay nav chrome** with their grey hover; they are not `Button`.
+
+## 2026-10-28 · Links: one hover, the row tear
+
+Dawid picked **row tear** from the link playground, with one change: the underline never thickens. Every text, action and quiet link now keeps its hairline and, on hover or keyboard focus, tears into three rows that jolt sideways for 260 ms (`--duration-tear`, needs mirroring in Figma), then snaps back.
+
+- **Built in `motion.ts`, styled in `base.css`.** On first hover the label (everything before the link's icon) is wrapped in `.link-tear`; each run lays two aria-hidden copies over every rendered line, so wrapped links (card titles, long links in case studies) tear line by line, and removes them afterwards. The real text stays in the DOM, so the accessible name never changes. Pseudo-elements were ruled out because card titles, Next project and the menu's current-page dot already use `::after`.
+- **Opt-out with `[data-no-tear]`:** buttons, the footer email and menu contact pills, Back to top and the skip link keep their own hovers.
+- **Quiet links don't tear** (Dawid: too much motion). Menu links, work card titles and Next project only draw the hairline in on hover. The menu's current-page dot is gone.
+- **Quiet links sit their line nearer the baseline** (`--underline-offset`, token `--underline-offset-quiet` 0.14em, needs mirroring in Figma). Text links keep the line at the bottom of the text box.
+- **The logo tears instead of rolling.** The M tears with two copies of its SVG (styled in `Nav`, same keyframes); the name is named as the label with `[data-tear-label]`. No underline on the logo.
+- **Reduced motion and no JS:** no tear, just the hairline. That is the complete state; the tear is decoration.
+- Not done yet from the audit: turning the pills into Buttons and the other role clean-ups (footer social quiet, consistent card-title motion, ↗ on external links in MDX).
+
+## 2026-10-28 · Link playground (audit + six hovers)
+
+- **Audit first.** The site has twelve hover behaviours across links, pills and buttons (listed on the page). Proposal: three link roles (text, action with arrow, quiet) sharing one hover; pills become Buttons; the logo roll stays as the one exception.
+- **Six options from the glitch reveal**, each shown in every role on light, dark and the inverse surface: tracking band, row tear, colour split, signal settle, rows open, torn underline. Black and white only, so the glitch's colour split becomes grey ghosts (no new tokens).
+- **`backdrop-filter: invert(1)` for the band and the rows.** Inverting what is underneath gives the inverse surface in both themes and on the inverse panel without knowing the colours.
+- **Rows use whole-pixel scan lines (3px)** with complementary masks, so odd and even rows meet without hairline seams when closed.
+- **Isolated** under `src/experiments/links/`, page `/playground/links` (private: noindex, out of the sitemap via the existing `/playground` prefix). Not production code; the picked option gets rebuilt in `base.css` / `Link`.
+
+## 2026-10-28 · One navigation for every screen size
+
+- **One bar that grows into the menu, at every size.** Studied on thedesignsociety.fr and anthracitestudio.be: a compact floating bar (mark, name, theme, menu) that is the same on desktop and mobile and opens in place instead of covering the screen. Round 2, after Dawid's feedback: the drop-down content (big links, email) with the two-step motion. First the bar makes room (on desktop it widens from 22 to 28rem and its surface grows a few pixels past the content; on phones the surface grows out to the screen edges and the top), then it drops open. Social links left out. Tried on a preview switcher against the old nav; Dawid approved it, so it replaced the desktop pill and the full-screen mobile sheet in `Nav` (the switcher is gone).
+- **Frosted glass, not a solid panel.** Like Anthracite, the open menu is translucent (`--color-glass`) with a backdrop blur (`--blur-menu`), so the page shows through softly. The page behind gets only a light dim (`--color-scrim`).
+- **The nav is named for page transitions only while one runs.** An element with a `view-transition-name` is a backdrop root, so nothing inside it could blur the page behind (this also affected the current pill's blur). BaseLayout sets `html[data-vt]` on `pageswap`/`pagereveal` when a transition runs, and only then does the nav take `view-transition-name: nav`, so it still stays put between pages.
+- **A link in the open menu collapses it during the page transition.** The page changes right away, with no wait. The new page starts with the menu open, exactly as the last one left it (a sessionStorage note read by an inline script before first paint), and closes it there with the usual motion while the page rises in. During that transition the nav shows only the new page's live image (`html[data-nav-collapse]` in base.css), so the collapse plays through the transition. A link to the current page only closes the menu; new-tab clicks and mailto links are untouched. With reduced motion there is no transition and the new page starts closed.
+- **Menu and theme icons share one grid.** The menu icon is an SVG on the same 24-unit grid, box (1.125em) and stroke (1.75) as the theme icon, so the two read as a pair; its lines meet and turn into the cross.
+- **New tokens** `--color-scrim`, `--color-glass`, `--blur-menu`, `--duration-menu`. Need mirroring in Figma.
+
+## 2026-10-27 · Portrait reveal styles: liquid, pixels, glitch
+
+From the playground Dawid kept the liquid, pixel dither and glitch slices, with two notes: the resting animation suits only the liquid, pixels switched layers too abruptly, and glitch needs calm moments to show what it revealed. A first pass made pixels and glitch hover-only readings of the liquid; Dawid then asked for resting animations and hover behaviour that follow each style's own physics. All three live in `LiquidReveal` (`reveal` prop / `data-style`) on one canvas with the same layers; pixels and glitch are separate engines (`src/scripts/reveal-pixels.ts`, `reveal-glitch.ts`, shared GL helpers in `reveal-gl.ts`), not the liquid's trail.
+
+- **Liquid** is unchanged: orbiting head, roaming drops, pours. The composite favours the head's current layer where layers overlap, so a new pick shows straight away.
+- **Pixels are a living colony.** 8 px cells run a Game-of-Life style automaton on the GPU, 10 ticks a second (survive with 2–3 neighbours, born with 3, die of age after ~4.5 s, only on the figure). A newborn takes the layer most of its neighbours carry, so where colonies of different layers meet they compete cell by cell and the layers weave instead of switching. At rest a small seed lands on the face every 0.3–0.7 s and grows or dies by the rules; about 1.5 single cells a second twinkle to a layer for one tick. The pointer feeds the colonies: births need only 2 neighbours near it, cells age slower and new cells appear outright, so holding still blooms a dense patch and moving leaves a dotted trail that breaks up by the same rules. Age keeps the density bounded without any global clean-up.
+- **Glitch is a weak video signal** in 6 px rows. At rest two tracking bands roll slowly down (VHS mistracking), each showing another layer (by weight) with a light shimmer and picking a new one each time it wraps. A wrapped band comes back in after a random gap, so the distance between the two keeps changing; every 6–8 s a hiccup tears a few rows elsewhere for 150 ms. (Tried and dropped: a single band (Dawid asked for a second one) and two fast streaks at random heights, which read as too random.) The pointer is interference: the band snaps to its height, widens and opens a span around it with ragged row ends; speed drives the tearing and colour split, holding still settles into a clean view, and rows left behind hold for 0.1–0.7 s before closing one by one. Layer switches (arrival, tap, every 3.2–5 s) are bursts with a 1.4 s cooldown, so the reveal is readable most of the time. Row state lives in JS and is uploaded as a tiny texture each frame.
+- **Bands pair up, layers weigh the same.** Dawid found the iridescent layer too rare (weight 0.3) and asked that two bands running together are always one marble and one iridescent. Both layers now weigh 1. A wrapping band still picks at random; when that matches the other band, the other one switches with a small tear, so neither band is stuck on one layer. On hover, taps and timed switches always change the layer (the arrival pick stays random).
+- **Reduced motion:** no automaton, band roll, hiccups or tearing. Pixels show a still patch of cells under the pointer, glitch a clean band at the pointer.
+- **Cost:** pixels redraw only on ticks (one small grid pass plus the composite); glitch uploads a rows × 2 texture (~1 KB) per frame. Both keep running at rest, like the liquid, and pause off screen the same way.
+- **Preview switcher.** `RevealPicker` (bottom right, previews only, never on production) sets the style on the home hero; remembered in localStorage, `?reveal=pixels|glitch|liquid` also works. Without a stored choice it shows the hero's own style. Dawid chose **glitch**: the home hero sets `reveal="glitch"`, so production shows glitch; liquid and pixels stay available as options. _Update 2026-10-28:_ the switcher was still on previews after the pick; removed from the home hero, so previews show glitch too.
+
+## 2026-10-27 · Multi-layer liquid portrait and a reveal playground
+
+Dawid wanted the hero liquid to reveal 3–4 layers at random, with the real photo as the default, the iridescent sculpture as the rarest, and themed versions of the clay and marble. After trying it, Dawid dropped the clay, so two layers remain.
+
+- **Photo on top, layers below.** `LiquidReveal` now takes `top` and `layers` (1–4, each `{ light, dark?, weight? }`) instead of photo/clay/clayDark. Home: marble (white in light, black and gold in dark) and iridescent (both themes, weight 0.3, later 1, see the glitch notes). The set lives in `src/lib/portrait.ts`. The clay pair (black in light, white in dark) was tried and removed.
+- **One mask channel per layer.** The trail mask was RGBA but used only red; each layer now has its own channel, so four layers cost the same mask pass as one. Every blob carries a layer; the composite merges each layer's blobs with its trail, masks the photo with the union and fills each pixel with the deepest (freshest) layer. Hard cap of 4 layers (channels), which also fits WebGL 1's 8 guaranteed texture units (we use 6).
+- **Picking.** Weighted random over all loaded layers, the current one included (a pick of the current layer changes nothing). Excluding it would make a rare layer come up every other time with only two layers. The head picks a new layer when the pointer arrives, on a tap and every 1.6–3.2 s on hover (3.5–6 s at rest). The old head is left behind as trail in its own layer and the new one wells up inside it over 0.5 s, so a switch reads as a pour, not a cut. Each roaming drop picks a new layer whenever it has dried up. Reduced motion: a new layer per hover only.
+- **Memory.** Images used to be painted into 2D canvases that stayed allocated next to their textures. Now each is painted into one scratch canvas, uploaded, and the scratch is released. At 1440 (2x) the photo plus three layers use about 52 MB including the drawing buffer, the same as the old two-layer version; at 375 about 16 MB. Layer textures are capped at 64 MB in total, so huge retina screens draw them slightly below device resolution.
+- **Lazy layers.** The canvas starts with the photo and the first layer (marble); the rest follow one at a time at low fetch priority, each uploaded in its own idle slot, and join the picks once ready. Skipped on Save-Data or 2G/3G. A theme switch reloads only the variants already in use.
+- **AVIF.** Dawid's 2400 × 1792 PNGs (12 MB) are committed as AVIF masters at quality 80 with 4:4:4 chroma (770 KB without the clay). Astro serves the photo at quality 65 (161 KB at 2400, 89 KB at 1600) and the layers at 55, which is visually identical at 100% on the hair and marble veins and about half the bytes. Extras at 1440 (marble and iridescent): about 100 KB (light) to 125 KB (dark); at 375 about 45 KB. No WebP fallback: browsers without AVIF keep the static photo (`<img>` is AVIF-only, as before).
+- **Reveal playground** (`/playground`, noindex, not linked): the same layers through seven alternatives next to the real liquid: glass lens, ink burn, pixel dither, halftone, Voronoi shards, glitch slices and a full-portrait shockwave. Isolated under `src/experiments/reveals/`; one small WebGL canvas per tile (capped at 1.5x), paused off screen. It is for choosing a direction, not production code.
+
+## 2026-10-27 · SEO groundwork before the domain moves
+
+- **www.mlynarz.com is the canonical host.** Webflow redirected the apex to `www`, so that is the host Google has indexed. `site` in `astro.config.mjs` now uses it; at cutover the apex 301s to `www` in Cloudflare (a redirect rule, not `_redirects`, which can't match on hostname).
+- **`/401` redirects to `/`.** It was Webflow's password page and is reachable on the old site.
+- **`seoDescription`** joins `seoTitle` in the case-study schema, so the card summary and lead can stay long while search gets a ~155-character version. The build warns (`[seo]` lines) when an indexable page's title runs past 60 characters or its description past 160. Warnings, not errors, so copy edits never block a deploy.
+- **Structured data shares one Person.** `src/lib/schema.ts` builds the Person (with `@id` `/#person`, the headshot, `alternateName` without the ł, country and `knowsAbout`) and WebSite (`/#website`). Home carries both; About is a `ProfilePage` with the Person as `mainEntity`; case studies point their `author` at the `@id` and add a `BreadcrumbList`.
+- **Analytics: Cloudflare Web Analytics**, cookieless, so no consent banner. The beacon is added only on production builds with `CF_WEB_ANALYTICS_TOKEN` set. Turning on Pages' automatic injection instead would also count preview traffic.
+- **Search phrases: AI-ready design systems, agentic UX and freelance product designer** (Dawid's pick; product strategy stays a service but isn't a search target). Every indexable page now has a title of 60 characters or fewer and a description of 160 or fewer, written around those phrases. Case studies keep their long headline and summary on the page and use `seoTitle`/`seoDescription` for search. Revisit with real Search Console queries 4 to 6 weeks after launch.
+- **The share image (`public/og.png`) still showed the old tagline** at the time; replaced on 2026-10-29 (see "One share image for every page").
+- **Refreshed on 2026-10-29** onto the current site: `SHOW_PROTECTED_DRAFTS` stays removed (server-side protection replaced it), and Zazmic Anvil UI gets its own `seoTitle`/`seoDescription`. Locked case studies stay `noindex` and out of the sitemap.
+
+## 2026-10-27 · Soft rise page transition
+
+- **"Soft rise" replaces the sheet.** Dawid compared four variants live on a preview (curtain, soft rise, columns, spread from the clicked link) and picked soft rise: the old page fades, blurs and lifts away (320 ms), then the new one settles up into focus from 6vh below with a long ease-out (1 s, starting at 200 ms). The backdrop is the page background, so no ink flashes between pages in either theme. The nav is still the only named element and stays put. Timings and distances are tokens (`--duration-page-out`, `--duration-page-in`, `--delay-page-in`, `--shift-page-*`, `--blur-page`); `--duration-page` stays for the ink spread.
+- **Back reverses the motion.** On a history traversal backwards, BaseLayout adds the `back` view-transition type (Navigation API), and both pages move the other way. Browsers without the Navigation API play the forward motion.
+- **The opt-in is inline in `<head>`.** With `@view-transition` in the shared stylesheet, Chrome sometimes resolved the new page's opt-in before that stylesheet applied and skipped the transition ("ViewTransition opt-in disabled"), so some navigations just loaded the page. Measured in Chromium: about 1 in 2 navigations into About and case studies failed; with the rule inline, 32 of 32 played. Reduced motion still opts out through the same media query.
+
+## 2026-10-27 · Smoother liquid portrait
+
+Dawid found the hero reveal jarring and laggy (references: Framer's "Liquid Mouse Reveal" and framer.university's hover mask reveal: a heavy, lerped follow and a gooey trail that shrinks back). Frame cost was already low after the WebGL pass, so the problem was the motion and the low-res mask, not the frame rate.
+
+- **Critically damped follow.** The head used to chase an already-smoothed cursor through an underdamped spring (overshoot, a second of ramp-in before it reached the pointer). It now follows the pointer directly with an exact critically damped step: heavy, never overshoots, and frame-rate independent (the old 33 ms clamp slowed motion down on dropped frames). The hover blend arrives in ~0.4 s and lets go slowly.
+- **The trail recedes instead of fading.** It lives in a small GPU texture that stores a distance ramp; each frame lowers it by a fixed step and stamps the head's path as a capsule. Lowering a distance field moves the edge inwards, so old trail shrinks and tapers like liquid rather than turning into a translucent ghost, and fast moves leave no gaps. Bilinear sampling of a ramp is exact, so the edge stays sharp at full resolution. The step is paid in whole 8-bit units with the remainder carried over, so the heal time is exact at any refresh rate.
+- **Head and lobes are analytic** (stretched along velocity, smooth-merged with the trail), drawn per pixel in the composite pass. Droplets and the tendril are gone: they added randomness that read as jitter.
+- **No 2D fallback any more.** Without WebGL the static portrait stays; WebGL 1 is universal on the browsers we target and the second renderer was ~200 lines of a different motion model.
+- Props (`size`, `soft`, `pull`, `wobble`, `fade`, `orbit`) keep their names and defaults; `pull` now sets how tightly the head follows.
+- **Auto mode is livelier** (Dawid: "more fade, some randomness but very smooth, bigger, multiple blobs merging"). At rest the head is ~25% bigger and breathes, its orbit drifts on smooth random curves (three slow sines with random rates and phases, so no two visits look the same and nothing ever jumps), the edge is feathered and the trail lingers 1.6× longer. Three drops roam the face on their own random paths, grow from nothing, swell and dry up, and merge with the head and each other through the same smooth union. On hover they swirl in around the pointer and merge into one blob; the edge sharpens. Reduced motion has no drops.
+- **Fragile liquid** (Dawid: "sharper edges, a little ripple, blobs that generate trails of smaller blobs"). The edge is crisp again (about 1.5 px instead of the rest-mode feather) with a fine, travelling ripple whose height grows with speed. Trails are stamped beaded (the radius swells and pinches along the path length), so as a trail heals its necks dry first and it breaks into a string of droplets, like a liquid thread. Fast-moving blobs also shed small droplets (up to 8 at a time) that drift, slow down and dry up. Shedding is the one place with frame-to-frame randomness; everything else stays on smooth curves. Reduced motion: no ripple, beads or droplets.
+
+## 2026-10-27 · Performance pass
+
+Measured with Lighthouse (mobile and desktop presets) on home, About, a case study and Services. Case studies and Services already scored ~100; the two heroes were the problem.
+
+- **The liquid portrait renders with WebGL.** The 2D canvas version cost ~25ms per frame on a desktop and ~170ms on a throttled phone (CPU threshold, `getImageData`, five full-size blend-mode draws), so the home page never went idle. One fragment shader now does the threshold, edge wobble and mix per pixel, with the field still splatted on a small 2D canvas and uploaded as a texture: ~2ms per frame on desktop, ~6ms throttled. The motion model is unchanged; the edge is thresholded at full resolution instead of upscaled, so it is marginally crisper. The 2D path stays as the fallback when WebGL is unavailable. Noise phases are wrapped on the CPU so the clock never outgrows `mediump` floats on phones.
+- **The canvas starts after `load` + idle**, decodes its images off the main thread, and reuses the static clay image's file when it is big enough, so the hero no longer downloads the clay twice.
+- **The home portrait is the LCP, so it loads eagerly and fades in from its own `onload`** instead of waiting for the module scripts. In the dark theme the (hidden) light clay is still fetched; the light theme is the default, so that trade favours most visitors. Its `sizes` now asks for the drawn width (the image covers a box taller than its ratio), which also made the static image sharper.
+- **About head pieces are AVIF at the rendered width** (`srcset` 480/720/963) instead of the 963px WebP originals, and only the resting face and lid load at high priority; the other states load at low priority. About: 670KB → 447KB, mobile Lighthouse 77 → 100.
+- **Known lab artefact:** Lighthouse still reports multi-second TBT on the home page at mobile settings. Headless Chrome composites in software and reads the WebGL canvas back on every frame of the always-on orbit; phones and desktops with GPU compositing don't. Options if the lab score matters: start the orbit on first interaction, or cap the canvas at 1.5× pixel density.
+
+## 2026-10-26 · Dotted hero backdrop by default
+
+The About hero's faint dot grid is now the default hero background: `--bg-hero` in `tokens.css` (dots in the new `--color-pattern` over `--color-bg`), used by `HomeHero`, `Hero` (404, styleguide) and the mindblown stage. To let the dots run behind the home portrait, `LiquidReveal` no longer flattens its cutouts onto `--color-bg`: the canvas stays transparent and the liquid masks both layers, so soft edges never let the photo bleed through the clay. `--color-pattern` and the pattern tokens are new; mirror them in Figma Foundations.
+
+## 2026-10-26 · About hero: the "mindblown" experiment
+
+The About page opens with Dawid's approved HTML prototype, ported 1:1 as an isolated experiment in `src/experiments/mindblown/` (component, scoped CSS, `init(root)`/`destroy()` script, card copy in `content.ts`). The centred "Get to know me" intro sits on the same dotted backdrop above the stage, so the old intro paragraph is gone; everything else on the page follows the stripe unchanged.
+
+- Theme colours map by role to semantic tokens (ink → `--color-text`, paper → `--color-bg`, mute → `--color-text-muted`, dots → `--color-border-subtle` mixed into the background, stripe → inverse surface), so the section follows light/dark. The portrait is a sticker: its white outline and the brain, scissors and hole art keep fixed local colours in both themes. Confetti colours are local.
+- Type uses the site face and type tokens by role (labels `--text-small`, tags/kicker `--text-caption`, popover title and stripe `--text-h3`, body `--text-body`). Gochi Hand (self-hosted via Fontsource, loaded only on this page), the handwritten sizes and the big stat number stay local.
+- Stylelint relaxes hex, `rgb()` and raw lengths for `src/experiments/**` only; layers, BEM and the primitive ban still apply. Everything is under `.mindblown`, so nothing leaks into the site.
+- Uses the site's GSAP 3.15 instead of the prototype's 3.12.5. The popover panel has `data-lenis-prevent` so it scrolls natively under Lenis.
+- Not on `/styleguide`: it is a one-off page section, not a reusable component.
+- Review round 1: the intro now sits inside the stage and fades out when the head opens; the stage is only as tall as intro plus head. Thoughts no longer use fixed slots: on every open they scatter at random in a band around the head (widening only if they don't fit), clear of the face, lid and notes. Phones (stage under 720px) show 6 random thoughts in a 3-column grid. Above 1000px the pills and their dots are 50% bigger.
+- Review round 2: 10 random thoughts on desktop, 4 on phones (also scattered at random, at the desktop size); both hand-written hints sit right of the head above the shoulder; the hole spans the full cut; stars sit between ribbon items with equal space; the popover close is a plain X; client logos are off the About page.
+- Review round 3: thoughts take the best of a few random free spots (farthest from those already placed), so they spread evenly above and around the head and may cover the flying lid. The brain lives outside the head's filter: white outline, no hard shadow. The portrait's offset shadow is black in both themes.
+- Brain click ("new thoughts"): once the head is open, the brain is its own button. It sucks every thought back in with a new pained face while the brain strains, then the super-shocked face and the original explosion throw a new batch. Pinned cards only come out in the first batch of each open; later batches take thoughts that weren't just shown and top up at random when too few are left. `pain-*.webp` was aligned to the other expressions (cropped 21px from the left of Dawid's 1007px export) and split at the same y = 309 cut.
+- Experiment (branch `claude/mindblown-peek`): a real photo with an illustrated, slightly surreal layer. No scissors, cut line, snip, shadow or outline. The brain (a flat cartoon) sits inside the head under the lid. The cut is an ellipse seen from slightly above (`--mb-cut`): a flat hole (light pink rim, a dark-to-light pink well) trimmed to the head's outline by `silhouette.webp` (all expressions' alpha), the face strip inside its front half rides on the lid so the lid's edge curves like the rim, and the face below is masked to match while `--cut` is on (closed, the face is whole and the hole hidden, so no seam shows; the face images carry 16 rows above the cut for the same reason). The brain, its three faces (rest, sucking, exploding), the rim, the well's gradient and the brain's shadow come from Dawid's Figma frames (Foundations, brain-sprite), with their colours and proportions in Figma units of the 288-wide ring. Each eye's white glint slides to the side the brain is looking. Open, the brain floats up and down over its shadow. The brain's face is driven by the script, separate from the photo: exploding for a moment on every burst and while the pointer (or focus) is on the risen brain, sucking while thoughts go back in, otherwise the default face; swaps are instant (cross-fades looked odd), and the brows lift now and then. Open, Dawid's super-shocked photo looks up, left or right towards a mouse pointer (look-*-face.webp, aligned to super-face by image registration: +25, +8 px from his 1007 x 896 exports); touch keeps the straight face. While the lid hovers, its shadow falls on the top of the brain (under the lid, clipped to the brain). Hover or keyboard focus lifts the lid and the brain peeks out; the lid leans towards the pointer. No hover effects beyond that. Opening the head throws energy beams, dots and four-point sparkles (purple, pink, lilac, orange) on a canvas with the thoughts, instead of confetti. The cut sits a little higher on the forehead (`--mb-cut-y: 33.3%`) so the rim reads as part of the head. Chrome drops a mask whose ellipse size mixes % and px, so the rim width scales with `--hw` and the masks are plain percentages.
+- The prototype relied on content-box sizing, so the stage keeps it. No CSS `translate` next to `transform` in this file: the production minifier drops it (that is what moved the hole and made the brain sit low).
+
 ## 2026-10-26 · Work tiles cropped to 4:3
 
 Every case-study cover in the work grid is cropped to 4:3 (`object-fit: cover`, centred), so tiles of different widths read as one set. This replaces "covers keep their original ratio" from v2 revision 2. The case-study page still shows the cover uncropped. If a cover crops badly, set a per-entry focal point (an `object-position` field in the schema) rather than changing the ratio.
@@ -100,7 +407,7 @@ Built on `v2` so `main` stays live until the redesign is ready to swap in. The d
   7. Explorations.
   8. A sign-off whose last words cycle.
 - **Motion layer replaces "zero JS by default".** One module (`src/scripts/motion.ts`) runs Lenis, GSAP, ScrollTrigger and SplitText on every page, about 50 KB gzipped. It runs only when `html.motion` is set, which happens before first paint unless the visitor prefers reduced motion. Elements marked `[data-reveal]` wait hidden until the script sets them up, and a 3s CSS failsafe shows them if it never does.
-- **Page transitions use native cross-document View Transitions.** The old page sinks back and dims, the new one rises as a sheet, and a work cover morphs into the case-study cover (`view-transition-name: cover-<slug>`). The nav stays put. Browsers without support, and reduced motion, get a normal page load.
+- **Page transitions use native cross-document View Transitions.** The old page sinks back and dims, the new one rises as a sheet. The nav stays put. Every page uses the same transition: opening a case study used to morph the work cover into the case-study cover, but it read as a different transition from the rest of the site and was dropped. Browsers without support, and reduced motion, get a normal page load. (The motion is superseded by "Soft rise page transition".)
 - **Left for the next passes:** the case-study template (Astapable-style opening), the About story, the "How I work" section, and real numbers.
 
 ## 2026-10-26 · Mobile nav is a hamburger menu
@@ -228,7 +535,7 @@ What changed versus the embed, and why:
 
 **Extensionless URLs, no trailing slash.** `build.format: "file"` + `trailingSlash: "never"` produces `/about.html`, which Cloudflare Pages serves at `/about`. Canonical URLs strip `.html` (see `BaseLayout.astro`).
 
-**Indexing is opt-in per environment.** Only a build where `CF_PAGES_BRANCH === "main"` is indexable (`src/lib/site.ts`). Every other build emits `noindex` meta and a `Disallow: /` robots.txt. `public/_headers` also sends `X-Robots-Tag: noindex` on every `*.pages.dev` hostname, so even the production alias stays out of search; only `mlynarz.com` is indexed.
+**Indexing is opt-in per environment.** Only a build where `CF_PAGES_BRANCH === "main"` is indexable (`src/lib/site.ts`). Every other build emits `noindex` meta and a `Disallow: /` robots.txt. `public/_headers` also sends `X-Robots-Tag: noindex` on every `*.pages.dev` hostname, so even the production alias stays out of search; only `www.mlynarz.com` is indexed.
 
 **Cascade layer order is pinned inline in `<head>`.** Layer order is decided by first appearance; bundle order is not guaranteed once pages get their own CSS chunks. A one-line inline `@layer` statement before any stylesheet removes that risk.
 
@@ -239,3 +546,372 @@ What changed versus the embed, and why:
 **Only DM Sans is installed.** The plan listed Playfair Display, but `tokens.css` has no serif role and the type faces are placeholders until the new ones are chosen. Swap by installing a fontsource package, importing it in `global.css`, and changing `--font-heading` / `--font-body`.
 
 **TypeScript 6, not 7.** `@astrojs/check` peers on the TS 6 JS API; npm resolved 6.0.x. Revisit when the Astro language server supports TS 7.
+
+**Newsweek AI case study dropped.** It won't be written, so the entry is deleted rather than kept as a draft, and `/work/newsweek-ai-experience` redirects to `/work` (`public/_redirects`). The Agentic UX service has no proof link until a new case study exists.
+
+**Hero actions are site links, not social.** The hero shows About me and Contact with the forward arrow (`Link icon="arrow"`); LinkedIn and Dribbble stay in the footer and in the JSON-LD `sameAs`.
+
+**Pantheon case study written from Dawid's side.** The Webflow page was a placeholder, so the body is new. It follows the live case-study structure (My role, Key achievements, Project Background, Objectives, The Challenge, topic sections, Key Takeaways) and tells only Dawid's side: as Design Systems Designer he established the foundations, sold the system to stakeholders, got a design system team formed at Pantheon and passed the know-how on to it, with the marketing site design system as the pilot, scaled into a full product design system, and documentation for both built in-house. The docs-site release note was dropped as irrelevant, along with the year and header link it supplied. System facts (grid, type and spacing scales, training topics) come from the shared project; no metrics are claimed until Dawid supplies them. Title, description and role keep his original Webflow wording. Keep MDX comments on one line: Prettier rewrites a multi-line `{/* */}` into `{/_ _/}`, which breaks the build. The page stays `draft: false` because it was already public with an empty body; there is no header link because the old Storybook URL no longer resolves.
+
+**Figure placeholders.** `<Figure alt="…" />` without `src` renders a dashed "Image to come" box labelled with the alt text, so a case study can be laid out before its images exist. It is a Figure variant rather than a new component. Placeholders render on previews only; production skips them, so a merged page never shows empty boxes. Pantheon shows three highlights (50+ components, 5 designers, 3 training tracks, confirmed by Dawid) in the body right after Key achievements, not in the header.
+
+**XWP gets a full case study.** Dawid answered the brief on 2026-10-27, so `page: false` is gone and the card links to `/work/xwp`. The body follows the Pantheon structure and his answers: half Principal Product Designer, half Design Lead, reporting to the CDO, five designers at the peak, hiring adapted from engineering, Double Diamond process docs with an onboarding buddy, rituals and reviews, Astro Kit growing into Launchpad, and a framework for every client. The 30% is his figure for team velocity. Two numbers are estimates he asked for (40% faster kick-off with Launchpad, +60 eNPS); they are labelled "(estimate)" on the page and noted in an MDX comment until he replaces them. No year, because none was given. A teammate quote is still to come. Image slots are Figure placeholders (hidden in production). Pantheon's next link now points to XWP, which follows it in the order.
+
+**Metrics: three at most, top-aligned, content width.** Dawid's call: the highlights row holds one to three numbers (the build fails on more), lines values up at the top whatever the label length, and defaults to the reading measure like the text around it. At that width the value uses `--text-h2`, one step below the old `--text-h1`; `width="wide"` keeps h1. XWP drops "5 designers" from its row (it is in My role).
+
+**Case study voice.** Dawid wants every case study to read as written by a person and pass AI checkers. No tool can guarantee that, so the rules in `CLAUDE.md` ("Writing case studies") list the tells to avoid. XWP and Pantheon were rewritten to them, same facts.
+
+**CSS Peeper as a 0 to 1 product design story.** Dawid chose a product design case study with a light monetisation chapter over a founder story, and no revenue figures. The page keeps his original Background wording, adds the 2016 launch (16,000 users in two weeks, the redesign at 30,000, from the Medium posts), the quiet years, the 2025 relaunch with Kamil (evenings and weekends, six months, from the csspeeper.com blog) and the freemium switch. Numbers shown: 500K+ users, 4.6 from 350+ reviews (landing page), ~35% trial to paid (Dawid). Churn (~10%) and MRR stay off the page. The quote is Zander Whitehurst’s public LinkedIn post, used on the CSS Peeper site. Card model is now "Freemium Chrome Extension". Image slots are placeholders until Dawid sends screenshots.
+
+## 2026-10-28 · Hero grain
+
+**Grain fade replaces the dot grid.** Dawid compared six options on a preview (grain, grain fade, grainy glow, scanlines, pixel grain, bands) and picked grain fade: fine noise at the top of the page that fades out over the first screen. It is on every hero: Home, About, Services, Work, case studies and the 404. `--bg-hero`, `--pattern-dots` and `--color-pattern` are gone.
+
+**One component, grain only.** `HeroBackdrop` is an absolutely positioned layer at the top of each hero, with the SVG noise (`--texture-grain`, a few hundred bytes, drawn once and tiled) and a mask that fades it out. It has no fill, so the page background shows through. On pages under the floating nav it reaches up under it (`--nav-clearance`, new token, also used by SiteLayout); Home and About use `flush`. Images can't use `light-dark()`, so the dark theme swaps the texture token.
+
+**The grain holds still during page transitions.** While a transition runs it gets `view-transition-name: hero-backdrop`, which takes it out of the page images that fade, blur and rise, and base.css turns its animation off, so the new page's grain is in place from the first frame. It sits above the page images for that second, which doesn't show since it is only grain. A transition name must be unique, so there is one HeroBackdrop per page (the styleguide shows it inside the Hero).
+
+**`will-change: transform` on the grain.** Without its own layer, the Home hero's scroll scale made the browser re-raster the masked grain every frame (about a third more raster work on Home). With it, the grain costs next to nothing: no change to FCP, LCP or main-thread paint, raster within a few percent.
+
+## 2026-10-28 · Work link on case studies
+
+**Section links say `aria-current="true"`, not `"page"`.** The nav marked Work as the current page on every `/work/<slug>`, and the menu's click handler turns a link to the current page into "just close the menu", so Work did nothing on case studies. Now the nav uses `"page"` only on the page itself and `"true"` inside its section: Work still looks current on a case study, and the handler only swallows clicks on `"page"`.
+
+## 2026-10-29 · BeforeAfter comparison
+
+**Pointer drag on the frame, a hidden range input for keyboards.** Dragging anywhere on the image moves the handle (pointer capture, so it keeps tracking outside the frame), and `touch-action: pan-y` lets vertical swipes on a phone still scroll the page. A native range input sits under it, invisible and out of pointer reach, so arrow keys and screen readers get a real slider; focus shows on the grip. Without JS the handle stays at `start`, so both images are still half visible. It's a plain inline script, not a framework island.
+
+## 2026-10-29 · Home Work cards
+
+**Home tiles drop the role and company line.** Dawid asked for it: on Home the outcome title and tags carry the card. The Work index keeps "Role · Company" in its rows. A tile still shows the caption line when it has something else to say: "Draft" on previews, or the padlock on a protected case study. Home and Work already share one order (`order` in the frontmatter, via `getListedWork`), so Home shows the first four of the Work list.
+
+**XWP client work behind the password.** Pantheon and Google Material Design join NerdWallet as `protected: true`; all three came through XWP, so they stay behind the shared password.
+
+**The padlock moves onto the cover.** Cards of protected work no longer show a padlock after the company. It sits in a frosted circle in the top right corner of the cover (`--color-overlay` with the nav's blur), like the Webflow cards had. It is outside the zooming frame, so it stays still on hover.
+
+## 2026-10-29 · Privacy page, no cookie banner
+
+**No consent banner.** Audit of the build: no third-party requests (fonts self-hosted, embeds are plain links), and everything stored is strictly necessary or user-requested, so ePrivacy consent isn't needed: `case_study_access` (signed unlock cookie, only after entering the password, 30 days, HttpOnly), `theme` in localStorage (set by the toggle), `nav-collapse` in sessionStorage (removed on the next page), and Cloudflare's own `__cf_bm`/`_cfuvid` security cookies. Analytics is Cloudflare Web Analytics, enabled in the Pages dashboard (auto-injected beacon, cookieless, nothing on the device). Any analytics or embed that sets cookies or fingerprints would need a consent banner, so pick cookieless tools.
+
+**`/privacy` page.** GDPR transparency still applies (Cloudflare processes IPs), so a short first-person notice lives at `/privacy`, linked from the footer. It reuses `Hero` and the case-study `Prose` column. Update its list and date when anything stored or loaded changes.
+
+## 2026-10-29 · Gooey strands in the Mindblown head
+
+**Beads plus a goo filter, not drawn paths.** Each strand between the lifted lid and the hole's front rim is a row of circles that an SVG filter (blur, then an alpha threshold) melts into one tube (`src/experiments/mindblown/goo.ts`). The beads get smaller towards the middle as the lid rises, so a hover peek leaves them just holding on; past a strand's own snapping distance it tears, the top half goes with the lid and the bottom half drips back into the rim. Tearing comes almost for free from the filter, which a hand-built path would have to fake. A ticker reads the lid's GSAP transform each frame, only while the hole is cut. Both ends stay tucked in: the top under the lid's edge, the bottom inside the hole, clipped by the cut ellipse so it disappears behind the face's front edge, and the whole layer is masked to the head's outline so a tilted lid never shows goo past the head. With reduced motion the strands stretch with the lid but don't wave; without JS the head never opens, so there's nothing to show.
+
+**The lifted lid can be dragged (experiment branch).** On a hover peek, pressing on the lid picks it up instead of popping the head; only the face below the cut and the brain open it. The drag lives on the lid's CSS `translate` and `rotate`, which stack on top of GSAP's transform, so it never fights the lean's `quickTo` tweens. Offsets get a rubber-band falloff (more give the further it goes), the lid tips with the pointer's speed, and on release an elastic tween pulls it home. While held, the strands never tear, add beads as they stretch, sag a little and drop the head-outline mask so they can follow the lid off the head; the face still hides them below the cut (an SVG mask built from the silhouette). They get a darker outline from the goo filter so they read against the page.
+
+## 2026-10-29 · Productised plans on /services
+
+**Three plans, priced from one hidden rate.** Design audit ($5,800, fixed, 2 weeks), Embedded lead ($8,300 a month, 2 days a week, 3-month minimum) and Custom (quoted per project). Prices are calculated in `src/lib/plans.ts` from an internal $120/hour rate (8-hour days, rounded to $100) that never appears on the site; change the rate or the hours and the prices follow. USD, because Dawid works with clients worldwide. Rate research and the reasoning live in the "Productised services and rates" doc.
+
+**Plans replace "Three ways to work with me".** The old Project / Embedded / Full-time list is gone. The plans sit straight under the hero, so prices show early; the three services follow as "what every plan covers". The full-time role is one line above the final button, not a plan.
+
+**One booking link.** Every "Book a call" uses `BOOKING_HREF` (`src/lib/site.ts`): `SITE.bookingUrl` once Dawid sets up a scheduling page, `/contact` until then.
+
+**No "freelance".** Home title, default description, About and Services descriptions now say senior product designer. Plans are also in structured data as an `OfferCatalog` with USD `UnitPriceSpecification`s (monthly for the embedded plan).
+
+**Round 2: services first, then plans, then quotes.** Dawid asked for the services to lead and the plans to follow, with the full-time line right under the plans (no button of its own). Copy speaks as one person: no "we".
+
+**Quotes carousel (`Testimonials`).** Five LinkedIn recommendations, trimmed to the lines about the services. Wording stays the recommender's own (cuts only), so nothing is put in anyone's mouth. Picked for recency and relevance: George Yoon, Chris Beaumont, Anthony A. Marin (Newsweek, 2026), Scott Batchelor (2024), Rohan Mohana (2023). Roles are current LinkedIn headlines. The carousel is a CSS scroll-snap row (one slide on phones, two from 48em) with a small script for the back and next buttons; without JS the buttons stay hidden and the row still swipes and scrolls. Button gained an `arrow-left` icon for it.
+
+**Round 3: a page with a story.** Order is Hero, Services, Working together (Process), Approach (Beliefs), Plans, Quotes, then the site footer. Hero copy is Dawid's headline with a proposed subhead and a "See how I can help" scroll prompt (Button gained `arrow-down`, which bobs gently at rest; reduced motion stills it). SectionIntro gained an optional `lead`.
+
+**Process line.** One segment per step, node to node, so the line always meets the last node whatever the text height. The motion layer (`processLine` in motion.ts) scrubs the segments in sequence as the list passes 65% of the screen and settles each node (scale and fade, expo out, no bounce) with its text as the line arrives. Without JS or with reduced motion the line and nodes are simply drawn.
+
+**Approach as two-tone statements.** Each belief is one sentence, claim in ink and reason muted, the same two-tone voice as the site's headings, numbered in two columns from 62em. A list of cards or icons would have made them read like features.
+
+**Quotes, one at a time.** The carousel shows one large quote (`Quote size="lg"`) on a `--color-bg-subtle` panel under an oversized quote mark, with a bar per quote (click to jump, current one filled), a counter and ghost arrows. It is still a native scroll-snap row, so swipe, trackpad and arrow keys work, and without JS it stays a swipeable row.
+
+**Round 4: calmer page, one measure for headlines.** The services hero now matches Work exactly (same section spacing and head gap, so the headline starts at the same height) and goes straight into the service rows; the scroll prompt and the `arrow-down` button icon are gone. The quotes lost the panel, quote mark and progress bars: a "Kind words" caption, one large quote, two ghost arrows aligned to the text edge.
+
+**Line-length tokens.** `--measure-h1` (12em, about 24 characters), `--measure-h2` (16em, about 32), `--measure-lead` (50ch) and the existing `--measure` (65ch, body). They are in units of the text's own size, so one value holds at every breakpoint. base.css applies them to every h1, h2 and `.text-lead`, replacing the one-off widths on Contact (10em), case-study titles (22ch), SectionIntro (18em) and the hero leads. Add the three new tokens to the Figma Foundations file under the same names.
+
+**Round 5: quotes that move on by themselves.** A mix of vivre.agency and bramvanvugt.com in the site's own type: one quote in h2 type, who said it, a thin line that fills over `--duration-quote` (9s, new token) and then moves to the next quote, and ghost arrows that loop in both directions. The change between quotes is a line-by-line wipe (old lines leave up through their masks, new lines rise in), done in motion.ts through a `quoteswap` event with `waitUntil`, the same pattern as `themechange`; without the motion layer the quote just changes. The line pauses on hover, focus, off screen and in a hidden tab; with reduced motion nothing advances on its own. Auto-advance is not announced to screen readers (`aria-live="off"`); a click on an arrow is. Without JS every quote is listed. All quotes share one grid cell, so the section never changes height.
+
+**Button fix.** `<button>` Buttons showed the browser's grey fill behind ghost and secondary faces; `.button` now clears its background.
+
+**Round 6: retainer first, one icon button.** Plans are no longer three SaaS cards. The retainer (Embedded lead, `featured`) leads as a wide tinted panel, what it is and its price on the left and what's included on the right, with the only primary button; the audit and a custom project follow as open rows under a rule, side by side from 62em. The section title says it in Dawid's voice: "I work best inside your team, two days a week." Plan copy is first person and plainer. Each plan gained a small `label` (Retainer, Fixed price, Project).
+
+**Icon buttons match the nav.** Every icon-only Button is now the nav's size (2.5rem circle, 1.125em icon), and ghost icon buttons share the nav's hover: a `--color-bg-subtle` fill, no ring. The quote arrows use it. The quotes caption is now "From people I've worked with".
+
+**Round 7: engagements that sell the retainer.** Section caption "Engagements", title "A senior design lead on your team, without the hire." The retainer copy no longer leans on "two days a week" (it is one line in what's included; the price still assumes it); each plan lists only its essentials. All three are the same horizontal row (head left, body right from 62em), stacked, with only the retainer on the tinted panel. Page order is now Hero, Services, Approach, Engagements, Quotes, Working together. The quotes keep rotating under the pointer; only keyboard focus, off screen and a hidden tab pause them. Headings set as captions (`h2.text-caption`) skip the headline measure, so they stay on one line.
+
+**Round 8: plan type, and the two smaller plans side by side.** Every plan's price is one step under its name (title `--text-h2`, price `--text-h3`). The design audit and custom project sit side by side from 48em under the retainer, each said in one paragraph instead of a list; `includes` is optional in `src/lib/plans.ts` and only the retainer uses it. The retainer's list has no rule above its first item, so it starts level with the label opposite.
+
+**Role names in title case, and a real booking link.** Whenever the site names Dawid's role it is title case: Senior Product Designer, Senior Design Lead, Embedded Design Lead. The full-time line under the plans is gone. "Book a call" now opens his Google Calendar appointment schedule (`SITE.bookingUrl`); emptying it sends the buttons back to /contact.
+
+**Lead Product Designer everywhere but the case studies.** The site title, descriptions, structured data (`jobTitle`) and page copy now say Lead Product Designer; case studies keep the job titles Dawid held. The retainer keeps the name Embedded Design Lead and now says "2–3 days a week" in its terms, so $8,300 does not read as full time. The price is still worked out from two days a week.
+
+**Menu links stay at h2.** A separate menu-link size was tried and dropped; the open panel's gap between the links and the social row is now `--space-4`.
+
+## 2026-11-02 · No prices on the plans
+
+**Plans end in "Book a call" only.** Dawid asked to remove the prices from the /services plans. Each plan keeps its label, name, promise, list and button; the price and the terms line under it are gone, and so is the rate maths in `src/lib/plans.ts`, `formatPrice` and the `priceSpecification` in the `OfferCatalog` structured data (so search engines don't show a price the page doesn't). The old rate and prices are in git history before this change.
+
+## Grist: human-written loot for AI tools (30 Oct 2026)
+
+- Grist is now "human-written loot for your AI tools". Quests, statuses (Side quest, Fresh, Battle-tested), level-ups, versions, the quest log, volumes, the download count and the layouts test page are gone.
+- Each entry is a folder (`src/content/grist/<slug>/`): `index.mdx` holds the note, `drop.md` the loot. The drop type sets the rarity (rule Common, prompt Uncommon, checklist Rare, spec Epic, skill Legendary), so rarity isn't stored and can't drift.
+- Seasons replace volumes (three planned, eight drops each). Each season has a pack at `/grist/season-<n>.md`.
+- Sightings (product, date, one line) replace level-ups. They are evidence and move `dateModified`; they don't change the rarity.
+- AI feeds: `/grist/<slug>.md` (whole entry), `/grist/<slug>/drop.md` (loot only), `/llms.txt`, `/grist/llms-full.txt`.
+- The "human curated" stamp turns with a plain CSS animation (`--duration-stamp`), not GSAP: it's a decorative loop like the gem sweep, needs no scroll or timeline, and stands still under reduced motion.
+- Front door uses the two-up grid from the six layout options.
+
+## Grist: battle-pass seasons, no sightings (30 Oct 2026)
+
+- Seasons are battle passes: the front door shows all eight slots of a started season, and a slot unlocks on its drop day, every other Friday. The drop day comes from the season start and the entry's `slot`, so it isn't stored. Locked slots show the planned type and date; the next one is outlined; a missed one says it's late instead of hiding.
+- Each season ends on its Skill (Legendary), then takes a two-week break. Unstarted seasons show only their header and start date.
+- Sightings are gone: drops are Dawid's own, with no references to other products.
+- Next to the gem only the deliverable shows ("Checklist"), in semibold. The gem and colour carry the rarity.
+- The stamp reads HUMAN CURATED twice round, around the nav's mark in a black disc (`MARK_PATH` in src/lib/site.ts, shared with Nav).
+- The Readme moved to the Grist header as a link-style button; the front door hero follows Work and Services (caption, long two-tone headline), stamp on the right.
+- A static build only unlocks on rebuild, so production needs a scheduled build on drop days.
+
+## Grist: credential badge, drop anatomy by rarity, demo seasons (30 Oct 2026)
+
+- The stamp is a spin-text badge after Dawid's Framer reference: words fitted to a circle with textLength, a faint outer ring, the nav mark small in a black disc, no surface of its own (the small one gets the page colour, as it sits over the loot box edge). It links to the portfolio and has no hover effect.
+- Rarer drops carry more: every drop has `useWhen` and `outcome`; Prompt and up add `steps`; Spec and up an `## Example` in the body (`example: true`); Skill adds `limits`. The schema enforces it per type (DROP_TYPES.needs). The markdown twin follows the same order, so an agent gets brief, why, how to use it, the drop and its limits.
+- Copy for AI and Download moved into the loot box; the raw drop has its own copy icon on the code panel; the permalink sits alone at the end of the meta row.
+- Lists respect drop days on previews too, so the battle pass shows as it stands; future and draft drops still get pages on previews for review.
+- Demo schedule: season 1 complete, season 2 three drops in. `starts` in SEASONS must be reset before launch.
+- Shiki is off (`markdown.syntaxHighlight: false`): code blocks only appear in Grist examples and take the site's plain code panel in both themes.
+
+## Grist: badge floats in the headline, one hint (30 Oct 2026)
+
+- The front door badge floats at the lower right of the headline from 48em with `shape-outside: circle()`, so the words wrap round it. On phones it sits under the headline, pinned right. A zero-width float sized in headline lines (`lh`) pushes it down, since floats can't anchor to the bottom.
+- `useWhen` and `outcome` merged into one `hint` sentence under the tl;dr (when to use it, what you get).
+- Season packs are named after the season: `/grist/season/<slug>.md` (agentic-ux.md).
+
+## Grist: rarity is set per drop (31 Oct 2026)
+
+- Rarity no longer follows the type. Each drop sets `rarity` by hand for how deep it goes: a short checklist can be Common and a full review checklist Rare; a simple skill Rare and an advanced one Legendary. The season plan lists `[type, rarity]` pairs so locked cards still show both.
+- What a drop must carry now follows rarity (RARITY_INFO.needs): steps from Uncommon, an `## Example` from Epic, limits at Legendary. The Readme lists the five rarities with what to expect in each, so the call stays anchored.
+
+## Grist: Tested and Trying, the voice guide and the grist-entry skill (31 Oct 2026)
+
+- Every drop has `status`: Tested (used on real work) or Trying (curated or new to Dawid), shown next to the date with an icon. Trying drops can credit where the idea came from in `source`, one sentence in his words; guides and research yes, products no. Rare now describes depth only, so a Trying drop can be Rare.
+- Production builds fail when a built drop still has a `CLAUDE:` or `TEST DATA` note (`assertWritten` in lib/drops.ts). Previews don't check, so drafts stay reviewable.
+- `.claude/skills/grist-entry/` holds the workflow (SKILL.md), the voice guide (voice.md, mirrors the "Grist — voice and tone" doc) and another tool's 96 raw drafts as a backlog (drafts.md, not Dawid's words, ignored by Prettier).
+- Parked: Ultra rare, payments, twice-weekly drops and the drop → skill tree → season hierarchy. Revisit if an audience appears.
+
+## Grist: eight seasons drafted, weekly drops, Learned from (31 Oct 2026)
+
+- Drops land every Friday (DROP_INTERVAL_DAYS 7), a week off between seasons. Posting frequency isn't a ranking factor; launching with a full season and a steady weekly drop gets pages indexed and brings people back, and keeps the eight seasons to about 14 months.
+- All eight seasons are in the repo as drafts, imported from another AI tool's drafts (`drafts.md`) by a one-off script: loot as drafted, tl;dr, hint and Why marked `CLAUDE:` until Dawid rewrites them. Order: AI-ready design system, Designing agents (Human checkpoints in slot 1), AI design workspace, Handoff, Prototyping, Shipping agents, Trust and memory, Critique. Four earlier placeholders (undo windows, show the plan first, activity log, handoff to a human) fill gaps in Shipping agents and Trust and memory; the other eight were deleted.
+- Drafts are never published, so there's nothing to remove before launch: approving a drop (rewrite, drop the note, drop `draft`) queues it for its slot's Friday.
+- `/grist/review` lists every drop on previews only (no route in production, out of the sitemap).
+- `learnedFrom` (title, optional url, up to three) replaces `source`: shown under the Why, in the markdown twin and as `isBasedOn` in the JSON-LD. Only sources Dawid has read; the ones in the drafts are unverified.
+
+## Grist: real workflows lead, Scoping AI work season (31 Oct 2026)
+
+- Dawid's own workflows (from an overview of his work Claude account) replace generic drafts wherever they overlap: the token pipeline, design system open items and a design system for agents in season 1; the agentic opportunity map, starting where people drop off and the assistant concept sprint in Designing agents; rebuilding a prototype in your system in Handoff; the two-pass UX audit in Critique. Clients are anonymised. The presales playbook and the Anvil knowledge are his own.
+- New season 3, Scoping AI work (strawman workshop, estimates, SOW review). Prototyping with coding agents is parked to keep eight seasons; its drafts stay in drafts.md.
+- Dawid's picks are back: Agent-readable tokens (replaces Name by job), Write the don'ts down (replaces Ask before assuming), Visible reasoning (replaces The two-sentence why).
+- New drafts mark every fact Claude couldn't confirm with [YOU], and invented examples are labelled as illustrations.
+
+## Grist: previews unlock every drop (31 Oct 2026)
+
+- Preview builds list all 64 drops on the front door, in their seasons, with no locked cards, so Dawid can read the seasons whole before launch. Production is unchanged: a drop unlocks on its Friday and drafts stay out, so the locked cards appear once drops go live.
+
+## Grist: Title Case season names, "human-curated" (31 Oct 2026)
+
+- Season titles are Title Case ("The AI-ready Design System"). One helper, `seasonName`, prints "Season 1 – The AI-ready Design System" for breadcrumbs and markdown; files lead with "Grist // Season 1 – …".
+- Grist never says "human-written". The line is "Human-curated loot for your AI tools, battle tested by Dawid Młynarz"; each drop's markdown says "Curated by".
+
+## Grist: headline audit, industry names first (31 Oct 2026)
+
+- Every drop title was checked against the name the industry already uses (design system audit, pre-mortem, work breakdown, design QA, devil's advocate, AI disclosure, usage guidelines). 41 of 64 renamed; slugs follow the titles (nothing was live yet). Coined names stay only where they name something new, or where Dawid picked them (Agent-readable tokens, Visible reasoning, Write the don'ts down). The full table is in the "Grist — headline audit" doc.
+
+## Grist: tile icon experiment (31 Oct 2026)
+
+- Dawid's tile icons (rounded diamond tiles, plus an Ultimate tier) live in src/experiments/rarity-icons and on the preview-only page /grist/review/rarity, next to the pixel gems in light and dark. Their colours are new `--rarity-*-icon` tokens; legendary deepens on light (#c86400) so every icon keeps 3:1. Legendary keeps the shine sweep. Nothing on the live Grist uses them yet.
+
+## Grist: drop titles in Title Case (31 Oct 2026)
+
+- Drop titles follow the season names: Title Case, small words lowercase unless first or last, hyphenated words capitalise only the first part ("Agent-readable Tokens", "Human-in-the-loop Checkpoints"). Acronyms (AI, UX, QA, SOW) and DESIGN.md stay as they are. The rule is in the grist-entry skill.
+
+## Grist: tile icons replace the pixel gems, gems kept (31 Oct 2026)
+
+- RarityLabel draws Dawid's tile icons (TileIcon) instead of the pixel gems while `RARITY_ICON = "tile"` in src/lib/grist.ts; set it to "gem" to go back. Gem.astro and the gem tokens stay.
+- Tile tier names share the icon's hue (`--rarity-*-tile-text`): 4.5:1 against the page and the subtle surface in both themes; icons 3:1. Only legendary's icon and a few text shades moved from Dawid's colours to get there. Legendary keeps the shine.
+
+## Grist: rarity balance and the Ultimate tier (31 Oct 2026)
+
+- New top tier, Ultimate (tile icon only, #e60303, with the shine). An Ultimate is always a Workflow: several skills and a reviewer subagent that hand off to each other, with checkpoints and a sample run. Its loot is a loot/ folder; the page shows each file, Copy for AI copies them all, Download gives a .zip (src/lib/zip.ts, stored, no dependency). Dawid preferred "Workflow" to "Plugin": it says what it is and doesn't tie the drop to one tool. Hooks are optional.
+- Seasons are checked for balance (balanceProblems in src/lib/drops.ts): one Common, Uncommon/Rare/Epic 1 to 3 each, no neighbouring repeats, top tier in slot 8, Legendary at most 2, Ultimate excludes Legendary. Previews warn, production fails. The season plans follow the table in "Grist — rarity balance and Ultimate"; Ultimates in seasons 3 (presales) and 5 (design to code).
+- Drops re-tiered to that table (approved by Dawid, 31 Oct). Nine Commons became Uncommon by gaining steps and a small template in their loot; Reuse Before Create folded into Build One Component at a Time, and List Assumptions and Exclusions into Design Work Breakdown (their slugs are gone, not redirected: both were unpublished drafts). Every added step, example or limit carries a CLAUDE note until Dawid confirms it. Season plans in src/lib/grist.ts now mirror the written drops, so the plan only matters for empty slots.
+- The two Ultimates are drafted as workflows: Presales Workflow (s03, four skills plus an estimate-reviewer agent) and Design-to-code Workflow (s05, two skills, a design-qa agent and an optional PreToolUse hook that blocks raw colour values; sample run is the Anvil UI rebuild). Both are drafts with CLAUDE notes and [YOU] gaps. Zip entries now carry a fixed 1 Jan 1980 date (the zero date was invalid and showed as 1980-00-00).
+
+## Grist: less project context, clearer titles (31 Oct 2026)
+
+- Drops say what Dawid did in one short, generic line ("I write estimates this way", "on one project"), not which client, industry or employer. Readers come for the loot; a generic line keeps the "battle tested" claim without the detail. His own products (Anvil UI, the token plugin) stay named. Illustrated examples may still use an industry, because they're made up and make the loot concrete.
+- Renamed: Design Tokens Only to Tokens-only Guardrail (says what it is: a rule on the AI); Start at the Drop-off Points to Agent Ideas from Journey Pain Points ("pain points" is the journey-mapping term, and the drop is now context-agnostic). Old slugs aren't redirected: both were unpublished drafts.
+- AI Opportunity Map is tool-agnostic: FigJam was for a follow-up client workshop; a doc table or an AI-drawn artifact works as well.
+- Card rarity icons are 1.5em (RarityLabel size md), matching the drop page.
+- Ultimate is renamed Mythic (1 Nov), the name games use for the tier above Legendary. The key, labels and tokens (--rarity-mythic-*) all follow; the Figma token file needs the same rename.
+
+## Grist: effects playground (1 Nov 2026)
+
+- /grist/review/fx (preview only) tries three things: CSS auras on the rarity icons (glow, twinkles, embers, a Mythic halo; an Off/Subtle/Lively switch), card effects from react-cards-opening, and loot-box frames that evolve by rarity (A: outline ladder, B: gaming-card corners).
+- react-cards-opening is MIT and its effects package runs without React (playEffects on any element, GSAP inside). Its framework-free files are vendored in src/experiments/grist-fx/vendor/rco-effects (licence and source commit in its README), excluded from stylelint and prettier. Its stylesheet is unlayered and namespaced (rco-fx-*); if an effect ships, it moves into src/scripts/motion.ts and its CSS into a layer.
+- Replaced (1 Nov): Dawid wanted the library itself, not my versions. The playground is now an effects builder: react-cards-opening installed from npm as it ships (ui, core, effects), in one React island (@astrojs/react, limited to src/experiments/**/*.tsx; client:only). One card or rarity icon at a time, per-tier controls (trigger, effects, delay, size, strength, density, colour, blend, layer), Grist's card or the library's card. Grist's DropCard and TileIcon are rendered by Astro and passed in as slots. Settings sit in localStorage and copy out as JSON for wiring into the real components. My auras, effect copies, vendored files and frame mocks are gone; the drop frame waits for Dawid's design. The library's stylesheet is unlayered and only loads on this preview page.
+
+## Grist card hover from Figma (Foundations 152:6044)
+
+- Unlocked drop cards take Dawid's hover from Figma: tier-colour stroke, a 70° tier wash, a tier drop shadow and an underlined title. Spacing, type and colours stay as the component had them.
+- The 2px stroke is the 1px border plus a 1px inset ring, so nothing shifts on hover.
+- Dark mode: a 25% shadow vanishes on the dark background, so the wash goes from 8% to 12% and the shadow from 25% to 40%, which reads as a soft glow.
+- `.drop-card--hover` pins the state so the effects builder can show it without the pointer. Locked cards keep their plain hover.
+
+## Grist human-voice pass (1 Nov)
+
+- Dawid asked for everything around the drops to read as written by a person, using the case-study rules. The drops themselves (the loot written for AI tools) stay as they are.
+- Rewritten: every hint (all 64 opened "Use it when …, and you get …"), the "Watch for …" lines, aphorisms and "not X, it's Y" contrasts in the Why, a few colon-list summaries, the rarity notes and the Readme. CLAUDE flags stay where the words still aren't Dawid's.
+- Tagline is now "Loot for AI Grinders". The rarity-tinted hero grain on drop pages was reverted, then brought back the same day: Dawid likes the continuity.
+
+## Rarity-tinted hero grain on drop pages
+
+- `HeroBackdrop` takes an optional `tint` (a token). The grain SVG is a data URL and can't take a CSS colour, so with a tint the grain is used as a mask over a solid fill in the tint colour, and a faint wash (10% light, 14% dark) sits under it. Both fade out like the plain grain.
+- Drop pages pass their rarity colour. Every other page keeps the neutral grain.
+- Cost: one extra masked layer per page, using the same cached SVG. A page only ever has one colour, so more tiers add nothing.
+- For comparing, preview builds show a "Colour grain / Grey grain" switch in the Grist header (GrainToggle, remembered per browser). Production leaves it out. Remove it once the choice is made.
+
+## Grist foil on Legendary and Mythic
+
+- The rarity icon's shine now copies the library's Legendary foil (react-cards-opening `rco-shine`): a diagonal band with soft edges and a bright core, `--ease-in-out-sine` over `--duration-shine` (2.1s), crossing in the first 43% and then resting. Before, it was a straight vertical band on the standard ease, which felt mechanical.
+- A card-wide foil on hovering Legendary and Mythic cards was tried and removed the same evening: Dawid thought it looked bad. Only the icon shines.
+
+## "The drop", six explorations (preview only)
+
+- /grist/review/drop shows six directions for the loot box (src/experiments/drop-box), each built from a real drop of the picked tier, with today's LootBox first: Tier Frame, Foil Card, Loot Crate, Game HUD, Drop Ticket, Aura Glass. Dawid picks one, and it replaces LootBox.
+- Found while building it: a long file name in the Download button (and LootBox's auto-sized grid) pushed drop pages wider than a 375px screen. LootBox now uses `minmax(0, 1fr)`, and DownloadButton cuts the name with an ellipsis.
+- Locked (1 Nov): Foil Card. LootBox now looks like a drop card. It has the card's default 1px outline and large radius, the 70° tier wash and a soft tier shadow, which reads as a glow on dark. There's no foil shine. The loot panel is a frosted inset with its own hairline.
+- Changed again the same evening, from Dawid's Figma (Foundations 164:6254). The box has no tier colour and no shadow: a 1px outline, a large radius and the stamp on its top edge. It leads with the rarity label, then the drop's own name instead of "The drop". Screen readers hear "The drop:" first, and the table of contents still says "The drop". After that comes the type note, the loot, and the same buttons.
+- Long prompts stay fully visible (Dawid's call, after weighing a click-to-reveal). Only Mythic workflows cap each file at about 12 lines with a fade and "Show the whole file". The text stays in the page for search and copy, and without JS nothing is capped.
+
+- Final call (1 Nov): neutral grain everywhere. The tint, its `tint` prop and the preview switch are removed.
+
+## 2026-11-01 · Grist share images from the Figma templates
+
+- Every drop gets its own 1200×630 Open Graph image at `/grist/<slug>/og.png`, and the front door gets `/grist/og.png`. They follow Dawid's Figma templates (Foundations, "opengraph images", 170:6284): one general, one per rarity.
+- Built at build time in `src/lib/og.ts` with Satori (layout to SVG) and resvg (SVG to PNG), from static endpoints. Nothing runs when a link is shared. Adding a drop adds its image.
+- Colours are read from `tokens.css` (light values), the logo and stamp are the template's own SVGs in `src/assets/og/`, the rarity icons come from `tile-icons.ts`. The tint is the tier colour at 8% (the front door uses `--color-bg-subtle`), with the page grain over it, both fading into the background by 75% down.
+- Fonts: Geist 1.9.0 static TTFs (OFL) committed in `src/assets/og/fonts/` with the GPOS table removed. Satori draws glyphs kerned but measures them unkerned, which left visibly wide gaps after words like "Your" and "System". Unkerned, the layout and the drawing agree. Satori can't read woff2 or variable fonts.
+- Text runs are one span per word with a space's width between them, so a line can mix colours. Words are measured with the same font files (fontkitten) before layout: a title steps down from 88px to 76 or 64 only if it would run past two lines, and a summary is cut at a word with an ellipsis when it would run past two.
+- The date from the earlier plan is left out because the template doesn't have one.
+
+## 2026-11-01 · Grist front door hero, badge, logo and footer
+
+- The front door hero follows Dawid's Figma frame (157:6128): the caption reads "Loot for AI grinders. Curated by Dawid Młynarz.", the headline is semibold, and the badge sits in its own column at the lower right (about 180px on desktop) instead of floating inside the headline. On phones it sits under the headline, pinned right.
+- The rotating badge has no outline any more, everywhere it appears. The hero badge reads "Human-curated loot for AI grinders"; at 34 characters it runs round the circle once.
+- The Grist logo uses the Figma `Logo` component (121:178): the dot over the i is now a single slanted block instead of the two-part diamond. The share images use the same artwork.
+- Grist's footer matches the portfolio's: social links and "Dawid Młynarz. All rights reserved", without the closing line and the contact button. The "side quest" credit line and the Footer's `credit` prop are gone.
+- The stamp on the share images keeps "HUMAN CURATED" without a hyphen (Dawid: minor for a preview).
+
+## 2026-11-01 · Author note on Grist
+
+- New `AuthorNote` (Figma "author", 176:6325): Dawid's photo in a circle beside "Howdy! Grist is my side quest…" and "Got a question? Drop me a line" (to /contact). `md` replaces the old "side quest" line at the end of each drop page; `lg` (h3 type, a larger photo, stacked on phones) sits above the footer on the front door.
+- The photo is the existing home portrait (`src/assets/portrait/portrait-photo.avif`), resized by Astro at build time (400 or 560px wide WebP) and cropped to the face in CSS, so nothing new is uploaded. Its background is transparent, so the circle shows `--color-bg-subtle` in both themes.
+- Copy, proposed for search: "a growing collection of prompts, skills, rules and experiments for designing with AI tools, from figuring out what they can really do." It names what the drops are and who they're for in words people search for, and keeps Dawid's own ending. Waiting on Dawid's OK.
+
+## 2026-11-01 · One voice rule for all site copy
+
+- Dawid asked for a standing rule so he doesn't have to explain it again. CLAUDE.md now has "Writing in Dawid's voice (all copy on the site)": start from his words and change as few as possible, use full stops and commas, and avoid colons inside sentences, em and en dashes, semicolons and the usual AI tells. Case studies and the grist-entry `voice.md` point to it.
+- Applied right away. The author note now keeps his sentence ("Enjoy the growing collection of prompts, skills, rules and experiments for designing with AI tools, from figuring out what AI can really do."), with "rules" and "for designing with AI tools" added for search. Share-image alt text, five summaries and hints, and 29 sentences in drop bodies (outside the loot, which is written for AI tools) lose their colons. The italic sample outputs inside drops are left as they are.
+
+## 2026-11-01 · Hero wrap is back, bottom-aligned
+
+- Dawid wanted the earlier front door hero back, with the headline wrapping round the badge (shape-outside), and the badge's bottom level with the last line. Phones still stack the badge under the headline.
+- CSS can't put a float at the bottom, so a small script on the front door sizes the spacer float above the badge from the headline's height, on load, when fonts arrive and when the width changes. At some widths moving the badge rewraps the words and nothing fits, so the badge shrinks by up to 24px until it does. Checked from 768 to 1920px. Without the script the spacer is 1.5 lines tall, as before.
+- The drop page's small badge now grows with the viewport, from 104px on phones to 128px.
+- Author note: "…experiments for product design, from figuring out what it can really do." AI now appears once.
+
+## 2026-11-02 · Embers on hover, bigger hero badge, more room on drops
+
+- Legendary and Mythic cards play embers on hover, from Dawid's builder settings (embers only, 80% of the card's width, strength 0.75, density 0.35, tier colour, in front). `src/scripts/drop-fx.ts` loads the effects library the first time one of these cards is pointed at. The embers play on a layer fixed over the whole viewport, just under the nav, so they rise over neighbouring cards without being clipped. Once per hover, not within a second of the last. Nothing plays with reduced motion or on touch screens. The builder's "every" only applies to its loop trigger, so it isn't used here.
+- Front door badge: 20% bigger on desktop (up to 216px, 19.2vw); phones unchanged.
+- Drop page: 64px between its parts from tablets up (48px on phones), a deeper header and more room under headings and the tl;dr.
+- Author note photo: the About page's portrait (the Mindblown hero's resting face and hair), flattened into one square `src/assets/portrait/portrait-about.webp` (600px, 38 KB) and resized again at build time to 200 or 340px.
+
+## 2026-11-02 · Hover embers removed; readme panel explorations
+
+- The hover embers on Legendary and Mythic cards didn't work for Dawid either. They're gone (`drop-fx.ts` deleted), and the cards are back to the Figma hover.
+- `/grist/review/readme` (preview only): six layouts for the readme panel, each a real popover with no script (CSS tabs, `details` accordion). All of them use the drop card's surface (1px subtle border, large radius) over the open menu's glass (`--color-glass`, `--blur-menu`, `--color-scrim` backdrop, `--shadow-panel`), and put "Why this exists" before the rarities. The layouts are: card, side sheet, drawer, tabs, loot table and drop-down. Phones get bottom sheets. The rarity legend is shown as a list, a ladder, an accordion, a map-key grid, a what-you-get table or a depth meter. The page also compares names for the header button. The recommendation is an info icon with "About".
+- New `info` icon in `Icon.astro`.
+
+## Grist About side sheet (2 Nov)
+
+- Dawid picked layout 2 from the readme playground (`/grist/review/readme`, preview only). The header link is now "About" with an info icon. Readme read like a developer file, and About says what you get. Components renamed to `AboutButton` and `AboutPanel`.
+- One native popover, two shapes. Phones get a bottom sheet (85svh, slides up). From 48em it's a full-height sheet at the right (28rem, slides in from the right). Opening and closing use the same transition (`translate` plus `display`/`overlay` allow-discrete, `@starting-style` for the entry), so it leaves the way it came. With reduced motion it simply appears.
+- Copy starts with Dawid's Howdy line, word for word. The rest of "Why this exists" is two short paragraphs in his voice. The rarity intro uses the same prose style, and the ladder's dashed rung stops at Mythic.
+
+## Grist front door, sandbox and See also (2 Nov)
+
+- About is now an icon button (info), styled like the theme switch and sitting next to it. The label is for screen readers only. The line under "About Grist" in the sheet is gone.
+- Previews now list drops by their drop day, like production, but keep drafts in. So the preview front door shows the real state today (Season 1 complete, Season 2 with one drop out). Production still hides drafts, so Season 1 needs its drafts reviewed before it looks the same live.
+- `/grist/sandbox` (previews only, noindex) is a copy of the front door with every written drop unlocked, for Dawid to click through. The header shows the New badge reading "Sandbox" next to the logo, and the logo leads back to the sandbox. The front door markup moved into `FrontDoor.astro` so both pages share it.
+- See also on every drop: Dawid's `related` picks first, then the nearest drops in the same season, then the same type from other seasons, then the newest. Four cards, listed drops only, so every card leads to a live page.
+- The New badge sits in the card's top right corner instead of next to the rarity.
+
+## Grist front door, round two (2 Nov)
+
+- The front door only shows seasons that have started. The sandbox still shows all eight.
+- A season pack is offered once all eight drops are out (front door and sandbox).
+- The eyebrow is "Loot for AI grinders." with the New badge before it reading "Next drop: Nov 6, 2026". The day comes from the schedule (`nextDropDay`, the earliest slot in any season still to come) and is set at build time, so it moves on with each rebuild. Past the last scheduled slot the badge goes away.
+- The next locked card looks like the other locked cards (dashed), with "Next drop" in its top right corner like New.
+- Every date on Grist uses one format with the year, "Nov 6, 2026" (`formatDate` in `src/lib/drops.ts`): cards, locked cards, drop pages, season headers and the next drop badge.
+- The front door lists seasons newest first, so the running season sits right under the next drop badge. Slots inside a season stay 1 to 8. The sandbox keeps seasons in number order for reading the whole plan.
+
+## Grist drops: installable skills, bundled references, sample runs (2 Nov)
+
+From the market comparison (Claude Doc "Grist drops vs the market").
+
+- Skills download as a .zip like workflows. The folder is named after the `name` in SKILL.md, so it drops straight into `.claude/skills/`. A line under the buttons says where it goes. A one-file skill's drop.md becomes SKILL.md in the zip.
+- Any drop can have a `loot/` folder now, not just workflows. A skill's entry file is SKILL.md, a workflow's README.md. Agent UX Review uses it to ship the Agent Use Case Check and a checkpoint review as `references/`, so it works on its own.
+- Optional sample runs: `output.md` next to index.mdx plus `sampleInput` in the frontmatter shows a "What you get" panel under the drop. Production refuses a drop whose output still has a `CLAUDE:` note, same as the body. The first four (Component Usage Guidelines, Design System Audit, Agent Pre-mortem, Agent UX Review) are Claude's runs, flagged for Dawid to replace or confirm.
+- Dawid's review of the doc (2 Nov). Every Epic, Legendary and Mythic drop is Tested. S1·6 is now a prompt, Token Description Lint (same slug). S2·2 is a prompt, retitled Find Agent Ideas from User Journey Pain Points. S1·4 shows a filled-in DESIGN.md for this site as its sample. S1·8 ships `references/agent-components.md` and a sample report. S2·7 keeps a "You" part for people in each stage and adds a prompt for what an AI tool can draft. All new text is Claude's and flagged with `CLAUDE:` notes.
+- While a season runs, its header shows the pack locked (dashed pill with a lock, like a locked card), a pip per slot filling as drops land, and "The season pack unlocks on" the last drop day. Dawid chose this over a page per season (2 Nov). Season pages can come once there are three or more finished seasons.
+
+## Grist: the DTCG Token Exporter plugin ships with Design Token Pipeline (2 Nov)
+
+- Dawid's Figma plugin lives in `src/content/grist/design-token-pipeline/loot/figma-plugin/`. The only company trace was the plugin id, now `dtcg-token-exporter-mlynarz`. The plugin window has a "Made by Dawid Młynarz" link to mlynarz.com, opened through `figma.openExternal` (the plugin keeps no network access). The README was rewritten short and plain, with neutral example tokens.
+- Files under a drop's `loot/figma-plugin/` ship in the .zip only. They aren't shown on the page or put in the markdown twin and llms files, so 500 lines of plugin code don't flood the copy for AI. A drop with a plugin downloads as a .zip and its card shows "Plugin included" with a Figma icon in the top right corner, next to New.
+- The plugin has a Format choice. W3C DTCG (default) wraps each token as `$value`, `$type` and `$description` (from the Figma variable description), with hex colours and "16px" dimensions, the forms Style Dictionary 4 reads with `usesDtcg`. Plain values keeps the original shape. Tested with a mocked Figma API and a Style Dictionary 4 build, not yet inside Figma.
+
+## Grist Seasons 1 and 2 cleared for launch (2 Nov)
+
+- Dawid confirmed the notes and sample runs. Every Season 1 and 2 drop is out of draft except AI Opportunity Map (rebuilt today, waiting for his read) and AI Assistant Design Sprint (two [YOU] gaps). A production build (`CF_PAGES_BRANCH=main`) passes and lists Season 1 and Human-in-the-loop Checkpoints.
+- AI Opportunity Map now follows the structure of his real FigJam board: a journey table, an agent table under it (leverage, agent's role, user's role, sample exchange, friction addressed, watch for) and an entry point comparison. No client content is used, and the board stays out of the repo.
+- The board was client work about ticket buying, so the ticket-buying illustrations (Opportunity Map, Agent UX Review and its sample run, a component name in Design to Code Handoff) were swapped for grocery and restaurant examples.
+
+## Grist season header from Dawid's design, hidden rarity on locked cards (2 Nov)
+
+- The season header follows Dawid's Figma frame "season header" (Foundations, node 193:3484). Top row: an hourglass (running) or crown (complete) with "Season N", and on the right "n/8 drops" or "Complete" plus a reveal strip, one tile per slot. A slot shows its tier's tile once its drop is out and the hidden [?] tile until then. Below: the title and the blurb, with the pack on the right (under it on phones). The pack is a dashed pill at 50% opacity with a lock until all eight drops are out, then the usual download button. It replaces the pip row from earlier today.
+- Mapped to site tokens. Figma's "h2" there is 28px, so the title uses the site's h3 size in semibold (the site h2 is 56px on desktop). The blurb is the lead style, muted. Hourglass and crown were added to Grist's line icons (Lucide shapes) instead of using Figma's exports.
+- The hidden [?] tile is Dawid's icon from the reveal strip, scaled to the 24px tile grid, as `tier="hidden"` on TileIcon, in `--rarity-hidden-icon` (the common gem's light grey). Every locked card uses it and names only the drop type, so the tier stays a surprise until drop day. Add `rarity/hidden-icon` to the Figma Grist collection to match.
+- The pack file stays `<season>.md` for now. The Figma frame says `.zip`; switching season packs to zips would be its own change.
+- AI Assistant Design Sprint: Dawid's note (2 Nov) that it was a synthetic sprint run by an agent, with lots of human input because the agent can't assume much. The loot now starts with ground rules for the agent: don't assume, ask when context is missing, mark anything inferred as "assumed". Still a draft until he confirms the rest.
+- Locked cards tease what's coming, like a battle pass (Dawid, 2 Nov). A slot whose drop is written and reviewed (out of draft, no `CLAUDE:` or `TEST DATA` note) shows its title and one-liner behind a lock, with the hidden [?] tile and the type. It isn't a link, and the Why, loot and samples stay off the site until drop day. Drafts and unwritten slots still say "Locked". Only the title and summary go public early, and a visible title is a promise, so rename with care.
+- The season header's reveal strip and count follow the real schedule everywhere, the sandbox included (`tiers` from `getSeasons`), so the sandbox header matches the front door while its cards still show every drop. The front door shows only started seasons: the complete ones and the one in progress.
+
+## Grist share images on previews, Seasons 1 and 2 ready (2 Nov)
+
+- Share image URLs are absolute, and they used the live site's address everywhere, so a branch link pointed at an image that only exists once the page is live. Previews now point `og:image` at their own deployment (`CF_PAGES_URL`, set by Cloudflare Pages). Production keeps www.mlynarz.com. Canonical URLs don't change.
+- Images rebuild from each drop's title and summary on every build, so the renamed drops (Token Description Lint, Find Agent Ideas from User Journey Pain Points) already show their new names. Two summaries were cut off with an ellipsis on the card, so they're shorter now (AI Assistant Design Sprint, AI Opportunity Map). The front door uses Dawid's "opengraph-general" frame as it is.
+- Dawid moved every Season 1 and 2 drop to ready. AI Opportunity Map and AI Assistant Design Sprint lost `draft` and their `CLAUDE:` notes. Production still only builds pages and images for drops whose day has come.
+
+## Grist: silent launch this week, drops from Nov 13 (2 Nov)
+
+- Dawid's call: a silent launch this week with Season 1 only, then weekly drops and X marketing from next week. Season 2 now starts Friday Nov 13, 2026, and every later season moves two weeks to keep the same gaps. Season 1 keeps its dates. Production shows Season 1 complete with its pack, and "Next drop: Nov 13, 2026".
+- The sandbox (`/grist/sandbox`) and review queue stay preview-only, so they never ship on mlynarz.com. Every branch preview on Cloudflare Pages still builds them from the same drafts in the repo.
+
+## Grist as a Claude Code plugin marketplace (2 Nov)
+
+- The site hosts the marketplace itself, so there is no separate GitHub repo and the portfolio repo stays private. People run `/plugin marketplace add https://www.mlynarz.com/grist/marketplace.json`, then `/plugin install <slug>@grist`. This needs Claude Code 2.1.224 or later.
+- Only skills and workflows become plugins, since those install as they are. Rules, prompts, checklists and specs stay on the drop pages.
+- The catalog lists the same drops as the front door (`getDrops`), so drafts and drops whose day hasn't come stay out. Production rebuilds on drop days add new plugins.
+- Each plugin is a zip at `/grist/plugins/<slug>.zip`, pinned in the catalog by its SHA-256. No `version` is set, so Claude Code takes the version from the digest and people get an update whenever a drop's files change. The zip writer uses fixed dates, so an unchanged drop keeps its digest.
+- A skill goes in as `skills/<name>/`. A workflow's `skills/` and `agents/` go in as they are. The optional raw value hook in Design to Code Workflow ships as a file but isn't switched on, because its README calls it optional.
+- Previews point their catalog at their own deployment (`CF_PAGES_URL`), so a preview can be tested on its own.

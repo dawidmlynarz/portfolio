@@ -1,0 +1,280 @@
+---
+/**
+ * The drop itself on an entry page, from Dawid's Figma ("The drop", Foundations 164:6254): a plain
+ * card (1px outline, large radius, no tier colour or shadow) with the "human-curated" stamp on its
+ * top edge. It leads with the rarity and type, then the drop's own name (screen readers hear
+ * "The drop:" first) and what the type is. Mythic workflows cap each long file at a dozen lines
+ * until it's opened. The loot text sits as written in drop.md, with a copy
+ * button on its corner for just that text. Below it, the actions for the whole entry: Copy for AI
+ * (the markdown twin: brief, why, how to use it and the drop) and Download (the same, as a file).
+ * A drop with several files (a workflow, or a skill with reference files) shows each under its
+ * path, each with its own copy button. Skills and workflows download as a folder in a .zip; a
+ * skill's folder is named after the skill, with SKILL.md inside, and a line says where it goes.
+ */
+import CopyButton from "./CopyButton.astro";
+import HumanStamp from "./HumanStamp.astro";
+import RarityLabel from "./RarityLabel.astro";
+import { DROP_TYPES } from "@/lib/grist";
+import DownloadButton from "./DownloadButton.astro";
+import {
+  derive,
+  folderOf,
+  hasPlugin,
+  isFolder,
+  lootFilesOf,
+  twinHref,
+  zipHref,
+  type Drop,
+} from "@/lib/drops";
+
+interface Props {
+  drop: Drop;
+  /** Id of the heading, for the page's table of contents. */
+  id?: string;
+}
+
+const { drop, id = "the-drop" } = Astro.props;
+const { rarity } = derive(drop);
+// Files that ship in the .zip only (a plugin's code) aren't shown.
+const files = lootFilesOf(drop).filter((file) => !file.bundled);
+const plugin = hasPlugin(drop);
+// Several files: each under its path, capped until opened. Skills and workflows download as a folder.
+const workflow = files.length > 1;
+const folder = isFolder(drop);
+const skill = drop.data.drop === "skill";
+const type = DROP_TYPES[drop.data.drop];
+---
+
+<section class="loot-box" aria-labelledby={id}>
+  <HumanStamp size="sm" class="loot-box__stamp" />
+  <div class="loot-box__head">
+    <RarityLabel rarity={rarity} type={drop.data.drop} size="md" />
+    <h2 class="loot-box__title" id={id}>
+      <span class="visually-hidden">The drop: </span>
+      {drop.data.title}
+    </h2>
+    <p class="loot-box__note">{type.note}</p>
+  </div>
+  {files.map(({ path, text }) => (
+    <div class="loot-box__file">
+      {workflow && <p class="loot-box__path">{path}</p>}
+      <div class="loot-box__loot" data-loot-cap={workflow ? "" : undefined}>
+        <pre
+          class="loot-box__text"
+          id={workflow ? `${id}-${path.replace(/[^a-z0-9]+/gi, "-")}` : undefined}
+        ><code>{text}</code></pre>
+        <span class="loot-box__copy">
+          <CopyButton
+            text={text}
+            icon="copy"
+            variant="ghost"
+            label={workflow ? `Copy ${path}` : "Copy just the drop"}
+            done={workflow ? "File copied" : "Drop copied"}
+          />
+        </span>
+        {workflow && (
+          <button
+            class="loot-box__more"
+            type="button"
+            aria-expanded="false"
+            aria-controls={`${id}-${path.replace(/[^a-z0-9]+/gi, "-")}`}
+            hidden
+          >
+            Show the whole file
+          </button>
+        )}
+      </div>
+    </div>
+  ))}
+  <div class="loot-box__actions">
+    <CopyButton from={twinHref(drop)} icon="sparkles" done="Copied as markdown">
+      Copy for AI
+    </CopyButton>
+    {folder ? (
+      <DownloadButton href={zipHref(drop)} name={`${drop.id}.zip`} />
+    ) : (
+      <DownloadButton href={twinHref(drop)} name={`${drop.id}.md`} />
+    )}
+  </div>
+  {plugin && (
+    <p class="loot-box__install">
+      The .zip includes the Figma plugin. Install steps are in <code>figma-plugin/README.md</code>.
+    </p>
+  )}
+  {skill && (
+    <p class="loot-box__install">
+      Unzip it into <code>.claude/skills</code> in your project, or <code>~/.claude/skills</code> to
+      use it everywhere. It unpacks to <code>{folderOf(drop)}/SKILL.md</code>.
+    </p>
+  )}
+</section>
+
+<script>
+  // Mythic workflows: each long file is capped at about twelve lines until opened. The full text
+  // stays in the page (search engines and the copy buttons get all of it); without JS nothing is
+  // capped.
+  document.querySelectorAll<HTMLElement>("[data-loot-cap]").forEach((loot) => {
+    const text = loot.querySelector<HTMLElement>(".loot-box__text");
+    const more = loot.querySelector<HTMLButtonElement>(".loot-box__more");
+    if (!text || !more) return;
+    loot.dataset.lootCap = "capped";
+    if (text.scrollHeight <= text.clientHeight + 1) {
+      loot.dataset.lootCap = "";
+      return;
+    }
+    more.hidden = false;
+    more.addEventListener("click", () => {
+      const open = more.getAttribute("aria-expanded") !== "true";
+      more.setAttribute("aria-expanded", String(open));
+      more.textContent = open ? "Show less" : "Show the whole file";
+      loot.dataset.lootCap = open ? "open" : "capped";
+    });
+  });
+</script>
+
+<style>
+  @layer components {
+    .loot-box__install {
+      font-size: var(--text-small);
+      line-height: var(--leading-small);
+      color: var(--color-text-muted);
+    }
+
+    .loot-box {
+      position: relative;
+      display: grid;
+      grid-template-columns: minmax(0, 1fr);
+      gap: var(--space-6);
+      padding: var(--space-6);
+      border: var(--border-width) solid var(--color-border-muted);
+      border-radius: var(--radius-lg);
+      background-color: var(--color-bg);
+    }
+
+    /* Half over the top edge, inside the box's right edge so it never pushes the page wider. */
+    .loot-box__stamp {
+      position: absolute;
+      inset-block-start: 0;
+      inset-inline-end: var(--space-6);
+      translate: 0 -50%;
+    }
+
+    .loot-box__head {
+      display: grid;
+      gap: var(--space-2);
+    }
+
+    /* The stamp sits on the top edge; the rarity row keeps clear of its lower half. */
+    .loot-box__head > :global(:first-child) {
+      padding-inline-end: calc(var(--space-24) + var(--space-4));
+    }
+
+    /* The name starts under the stamp, so it only needs a little room on the right. */
+    .loot-box__title {
+      max-inline-size: none; /* not the page h2's measure: the name uses the box's width */
+      padding-inline-end: var(--space-12);
+      font-size: var(--text-h4);
+      font-weight: var(--weight-semibold);
+      line-height: var(--leading-h4);
+      letter-spacing: var(--tracking-h4);
+    }
+
+    .loot-box__note {
+      font-size: var(--text-small);
+      line-height: var(--leading-small);
+      color: var(--color-text-muted);
+    }
+
+    .loot-box__loot {
+      position: relative;
+    }
+
+    .loot-box__file {
+      display: grid;
+      gap: var(--space-2);
+    }
+
+    /*
+     * Several files (a Mythic workflow): more room between them, and a dotted hairline with 4px
+     * gaps (a CSS dotted border can't set its spacing, so the dots are a repeating gradient).
+     */
+    .loot-box__file + .loot-box__file {
+      margin-block-start: var(--space-4);
+      padding-block-start: var(--space-8);
+      background: linear-gradient(
+          to right,
+          var(--color-border-muted) var(--border-width),
+          transparent var(--border-width)
+        )
+        left top / calc(var(--border-width) + var(--space-1)) var(--border-width) repeat-x;
+    }
+
+    /* A workflow file's path, in the code face above its panel. */
+    .loot-box__path {
+      font-family: var(--font-mono);
+      font-size: var(--text-small);
+      line-height: var(--leading-small);
+      color: var(--color-text-muted);
+    }
+
+    .loot-box__copy {
+      position: absolute;
+      inset-block-start: var(--space-2);
+      inset-inline-end: var(--space-2);
+    }
+
+    .loot-box__text {
+      overflow-x: auto;
+      margin: 0;
+      padding: var(--space-4);
+      padding-inline-end: calc(var(--space-10) + var(--space-4));
+      border-radius: var(--radius-sm);
+      font-family: var(--font-mono);
+      font-size: var(--text-small);
+      line-height: var(--leading-small);
+      white-space: pre-wrap;
+      overflow-wrap: anywhere;
+      background-color: var(--color-bg-subtle);
+    }
+
+    /* Mythic: a long file shows its first dozen lines and fades out until it's opened. */
+    .loot-box__loot[data-loot-cap="capped"] .loot-box__text {
+      max-block-size: calc(var(--leading-small) * var(--text-small) * 12 + var(--space-8));
+      overflow: hidden;
+      mask-image: linear-gradient(to bottom, var(--color-text) 70%, transparent);
+    }
+
+    .loot-box__more {
+      margin-block-start: var(--space-2);
+      padding: 0;
+      border: 0;
+      font: inherit;
+      font-size: var(--text-small);
+      line-height: var(--leading-small);
+      color: inherit;
+      background: linear-gradient(currentcolor, currentcolor) no-repeat left bottom / 100%
+        var(--border-width);
+      cursor: pointer;
+    }
+
+    .loot-box__more:hover {
+      color: var(--color-text-muted);
+    }
+
+    .loot-box__actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: var(--space-3);
+    }
+
+    @media (width >= 48em) {
+      .loot-box {
+        padding: var(--space-8);
+      }
+
+      .loot-box__stamp {
+        inset-inline-end: var(--space-8);
+      }
+    }
+  }
+</style>

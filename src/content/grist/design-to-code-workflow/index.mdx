@@ -1,0 +1,29 @@
+---
+title: "Design-to-code Workflow"
+summary: "From a finished design to a reviewed build, one component at a time, with a design QA agent that checks the work before you do."
+hint: "For a screen or flow that's ready for a coding agent. The build comes back already checked against the brief, and any new component is flagged for you."
+season: "s05"
+slot: 8
+drop: "workflow"
+rarity: "mythic"
+status: "tested"
+steps:
+  - "Download the .zip. In Claude Code, copy skills/ into .claude/skills and agents/ into .claude/agents. In other tools, add each SKILL.md as its own project instruction."
+  - "Optional: add the hook in hooks/ to block raw colour values before they're saved. README.md shows the settings."
+  - "Start with the handoff-brief skill and a link to the design. Approve the brief and its acceptance criteria before any code is written."
+  - "Let component-build work one component at a time. The design QA agent checks the build, and you approve what's left."
+example: true
+limits: "For a one-off prototype that will be thrown away, the setup costs more than it saves. If your code has no design system yet, start with Season 1."
+related: [design-to-code-handoff, rebuild-a-prototype-in-your-system, design-qa-for-generated-code]
+draft: true
+---
+
+{/* CLAUDE: Drafted by Claude from this season's drops (handoff spec, acceptance criteria, one component at a time, design QA, the design-to-code handoff skill), chained into one workflow, with the Anvil UI rebuild as the sample run, as Dawid approved. The split into skills, the QA agent and the hook are my proposal. The sample run is an illustration until Dawid fills the [YOU] gaps. */}
+
+This is the season's handoff as one workflow. The brief, the acceptance criteria and the build each have their own skill, and a separate design QA agent reviews the build. That agent didn't write the code, so it doesn't share the builder's idea of what "done" looks like.
+
+I used this shape to rebuild a working AI proof of concept with [Anvil UI](/work/zazmic-anvil-ui), the design system for AI agents I built. [YOU: what the QA step caught that you'd have missed.]
+
+## Example
+
+The sample run in the drop (sample-run.md) follows that rebuild. It has the brief, the first criteria, the build order, a component the system didn't have and what the QA agent sent back. [YOU: confirm the details, and fill the gaps.]

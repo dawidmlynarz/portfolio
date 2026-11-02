@@ -1,0 +1,284 @@
+---
+/**
+ * Preview only: the Grist effects builder (src/experiments/grist-fx), a React island on
+ * react-cards-opening. Grist's own drop cards and rarity icons are rendered here and handed to it
+ * as slots, one per rarity. Production builds no page here, and /grist/review is out of the sitemap.
+ */
+import { getCollection } from "astro:content";
+import GristLayout from "@/layouts/GristLayout.astro";
+import Container from "@/components/layout/Container.astro";
+import DropCard from "@/components/grist/DropCard.astro";
+import TileIcon from "@/components/grist/TileIcon.astro";
+import FxBuilder from "@/experiments/grist-fx/FxBuilder";
+import { RARITIES } from "@/lib/grist";
+import { isProduction } from "@/lib/site";
+
+export function getStaticPaths() {
+  return isProduction ? [] : [{ params: { all: undefined } }];
+}
+
+const all = await getCollection("grist");
+const cards = RARITIES.map((tier) => ({ tier, drop: all.find((d) => d.data.rarity === tier)! }));
+---
+
+<GristLayout
+  title="Effects builder · Grist"
+  description="Build each rarity's card and icon effects from react-cards-opening."
+  noindex
+>
+  <Container class="fx-page">
+    <header class="fx-page__head">
+      <p class="text-caption fx-page__muted">Preview only</p>
+      <h1>Effects builder</h1>
+      <p class="text-lead fx-page__muted">
+        Pick a rarity, then build its show from the react-cards-opening effects. Each tier starts
+        from the library's own show. Your settings stay in this browser; copy them out when you're
+        happy. The theme switch at the top flips light and dark.
+      </p>
+    </header>
+    <FxBuilder client:only="react">
+      {cards.map(({ tier, drop }) => (
+        <div slot={`card-${tier}`} class="fx-page__card">
+          <DropCard drop={drop} />
+        </div>
+      ))}
+      {RARITIES.map((tier) => (
+        <div slot={`icon-${tier}`} class="fx-page__icon">
+          <TileIcon tier={tier} size="lg" />
+        </div>
+      ))}
+    </FxBuilder>
+  </Container>
+</GristLayout>
+
+<style>
+  @layer components {
+    .fx-page {
+      display: grid;
+      gap: var(--space-12);
+      padding-block: var(--space-12) var(--space-section-md);
+    }
+
+    .fx-page__head {
+      display: grid;
+      gap: var(--space-3);
+      max-inline-size: var(--measure);
+    }
+
+    .fx-page__muted {
+      color: var(--color-text-muted);
+    }
+
+    /* The builder's own UI. Its class names come from the React island, so they're global here. */
+    :global(.fxb) {
+      display: grid;
+      gap: var(--space-8);
+    }
+
+    :global(.fxb__probe) {
+      position: absolute;
+      inline-size: 0;
+      block-size: 0;
+      overflow: hidden;
+    }
+
+    :global(.fxb__bar) {
+      display: flex;
+      flex-wrap: wrap;
+      gap: var(--space-4) var(--space-8);
+    }
+
+    :global(.fxb__group) {
+      display: flex;
+      flex-wrap: wrap;
+      gap: var(--space-2);
+    }
+
+    :global(.fxb__chip),
+    :global(.fxb__button) {
+      padding: var(--space-2) var(--space-4);
+      border: var(--border-width) solid var(--color-border-muted);
+      border-radius: var(--radius-pill);
+      font: inherit;
+      font-size: var(--text-small);
+      line-height: var(--leading-small);
+      color: var(--color-text);
+      background: var(--color-bg);
+      white-space: nowrap;
+      cursor: pointer;
+    }
+
+    :global(.fxb__chip[aria-pressed="true"]),
+    :global(.fxb__button--primary) {
+      border-color: var(--color-text);
+      color: var(--color-bg);
+      background: var(--color-text);
+    }
+
+    :global(.fxb__chip:focus-visible),
+    :global(.fxb__button:focus-visible),
+    :global(.fxb__link:focus-visible),
+    :global(.fxb select:focus-visible),
+    :global(.fxb input:focus-visible) {
+      outline: calc(var(--border-width) * 2) solid var(--color-focus);
+      outline-offset: var(--space-1);
+    }
+
+    :global(.fxb__main) {
+      display: grid;
+      gap: var(--space-8);
+      align-items: start;
+    }
+
+    /* The stage: room around the element for the effects, which never catch the pointer. */
+    :global(.fxb__stage) {
+      position: relative;
+      display: grid;
+      gap: var(--space-4);
+      place-items: center;
+      min-block-size: calc(var(--space-24) * 5);
+      padding: var(--space-16) var(--space-4);
+      border: var(--border-width) solid var(--color-border-subtle);
+      border-radius: var(--radius-lg);
+      overflow: hidden;
+    }
+
+    :global(.fxb__layers) {
+      position: absolute;
+      inset: 0;
+      pointer-events: none;
+    }
+
+    :global(.fxb__layers--front) {
+      z-index: 2;
+    }
+
+    :global(.fxb__subject) {
+      position: relative;
+      z-index: 1;
+      display: grid;
+      place-items: center;
+      inline-size: min(100%, 22rem);
+    }
+
+    :global(.fxb__slot) {
+      display: contents;
+    }
+
+    :global(.fx-page__card) {
+      inline-size: 100%;
+    }
+
+    :global(.fxb__hint) {
+      position: relative;
+      z-index: 3;
+      font-size: var(--text-small);
+      color: var(--color-text-muted);
+    }
+
+    :global(.fxb__link) {
+      padding: 0;
+      border: 0;
+      font: inherit;
+      color: var(--color-text);
+      text-decoration: underline;
+      background: none;
+      cursor: pointer;
+    }
+
+    :global(.fxb__panel) {
+      display: grid;
+      gap: var(--space-6);
+    }
+
+    :global(.fxb__set) {
+      display: grid;
+      gap: var(--space-3);
+      margin: 0;
+      padding: var(--space-4);
+      border: var(--border-width) solid var(--color-border-subtle);
+      border-radius: var(--radius-md);
+    }
+
+    :global(.fxb__legend) {
+      padding-inline: var(--space-2);
+      font-weight: var(--weight-semibold);
+    }
+
+    :global(.fxb__field) {
+      display: grid;
+      grid-template-columns: 7rem minmax(0, 1fr);
+      gap: var(--space-3);
+      align-items: center;
+      font-size: var(--text-small);
+    }
+
+    :global(.fxb__field--slider) {
+      grid-template-columns: 7rem minmax(0, 1fr) 3rem;
+    }
+
+    :global(.fxb select),
+    :global(.fxb input[type="range"]) {
+      inline-size: 100%;
+      min-inline-size: 0;
+      font: inherit;
+      accent-color: var(--color-text);
+    }
+
+    :global(.fxb__check) {
+      justify-self: start;
+      inline-size: var(--space-4);
+      block-size: var(--space-4);
+      accent-color: var(--color-text);
+    }
+
+    :global(.fxb select) {
+      padding: var(--space-1) var(--space-2);
+      border: var(--border-width) solid var(--color-border-muted);
+      border-radius: var(--radius-sm);
+      color: var(--color-text);
+      background: var(--color-bg);
+    }
+
+    :global(.fxb output) {
+      font-family: var(--font-mono);
+      text-align: end;
+    }
+
+    :global(.fxb__row) {
+      display: grid;
+      gap: var(--space-2);
+      padding-block: var(--space-3);
+      border-block-start: var(--border-width) solid var(--color-border-subtle);
+    }
+
+    :global(.fxb__row-head),
+    :global(.fxb__add) {
+      display: flex;
+      gap: var(--space-3);
+      align-items: center;
+    }
+
+    :global(.fxb__muted) {
+      font-size: var(--text-small);
+      color: var(--color-text-muted);
+    }
+
+    :global(.fxb__actions) {
+      display: flex;
+      flex-wrap: wrap;
+      gap: var(--space-2);
+    }
+
+    @media (width >= 64em) {
+      :global(.fxb__main) {
+        grid-template-columns: minmax(0, 3fr) minmax(0, 2fr);
+      }
+
+      :global(.fxb__stage) {
+        position: sticky;
+        inset-block-start: var(--space-24);
+      }
+    }
+  }
+</style>

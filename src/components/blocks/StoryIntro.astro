@@ -1,73 +1,153 @@
 ---
 /**
- * The hand-off after the home hero: an inverse (black) panel grows to fill the screen and a large
- * about-me statement lights up word by word as you scroll (the motion layer, data-story).
- * Without the motion layer (no JS, reduced motion) it is a plain inverse section with the full
- * statement visible.
+ * A large about-me statement on the page surface, lighting up word by word as it scrolls
+ * through the screen (the motion layer, data-story). Nothing is pinned. Without the motion layer
+ * (no JS, reduced motion) the full statement is visible.
+ *
+ * `text` is one plain statement. `paragraphs` takes up to three paragraphs at the same size,
+ * which can hold links and small inline pictures and GIFs that zoom on hover (InlineImage); the
+ * pictures light up with the words around them. Story copy lives in src/lib/story.ts.
  */
+import InlineImage from "@/components/ui/InlineImage.astro";
+
+export type StoryPart =
+  | string
+  | {
+      image: ImageMetadata | string;
+      still?: string;
+      alt: string;
+      shape?: "wide" | "portrait" | "square";
+      focus?: string;
+    }
+  | { text: string; href: string };
+
 interface Props {
   label: string;
-  text: string;
+  text?: string;
+  paragraphs?: StoryPart[][];
   /** Optional link under the statement. */
   href?: string;
   hrefLabel?: string;
 }
 
-const { label, text, href, hrefLabel } = Astro.props;
-const words = text.split(/\s+/);
+const { label, text, paragraphs, href, hrefLabel } = Astro.props;
+const labelId = `story-label-${Math.random().toString(36).slice(2, 8)}`;
+const words = text?.split(/\s+/) ?? [];
+type Picture = Extract<StoryPart, { image: unknown }>;
+type Link = Extract<StoryPart, { href: string }>;
+/** A word, link or picture; " " is a space where the line may break. */
+type Piece = string | Picture | Link | { pair: [Picture, string | Link] };
+
+/**
+ * Splits a paragraph into words, links and pictures. A picture is kept together with the word or
+ * link right after it (the one it illustrates), so a line never breaks between the two.
+ */
+function pieces(parts: StoryPart[]) {
+  const flat = parts.flatMap((part): (string | Picture | Link)[] =>
+    typeof part === "string"
+      ? part
+          .split(/(\s+)/)
+          .filter(Boolean)
+          .map((token) => (/^\s+$/.test(token) ? " " : token))
+      : [part],
+  );
+  const out: Piece[] = [];
+  for (let i = 0; i < flat.length; i++) {
+    const piece = flat[i];
+    if (typeof piece !== "string" && "image" in piece) {
+      let next = i + 1;
+      while (flat[next] === " ") next++;
+      const word = flat[next];
+      if (word !== undefined && (typeof word === "string" || !("image" in word))) {
+        out.push({ pair: [piece, word] });
+        i = next;
+        continue;
+      }
+    }
+    out.push(piece);
+  }
+  return out;
+}
 ---
 
-<section class="story" aria-labelledby="story-label" data-story>
-  <div class="story__sticky">
-    <div class="story__panel" data-story-panel>
-      <div class="story__inner">
-        <h2 class="text-caption story__label" id="story-label">
-          {label}
-        </h2>
-        <p class="story__text">
-          {words.map((word) => (
-            <span class="story__word" data-story-word>
-              {word}{" "}
-            </span>
-          ))}
+<section
+  class:list={["story", { "story--paragraphs": paragraphs }]}
+  aria-labelledby={labelId}
+  data-story
+>
+  <h2 class="text-caption story__label" id={labelId}>
+    {label}
+  </h2>
+  {paragraphs ? (
+    <div class="story__text" data-story-text>
+      {paragraphs.map((parts) => (
+        <p>
+          {pieces(parts).map(function render(piece: Piece): unknown {
+            if (piece === " ") return " ";
+            if (typeof piece === "string")
+              return (
+                <span class="story__word" data-story-word>
+                  {piece}
+                </span>
+              );
+            if ("pair" in piece)
+              return (
+                <span class="story__pair">
+                  {render(piece.pair[0])} {render(piece.pair[1])}
+                </span>
+              );
+            if ("image" in piece)
+              return (
+                <InlineImage
+                  src={piece.image}
+                  still={piece.still}
+                  alt={piece.alt}
+                  shape={piece.shape}
+                  focus={piece.focus}
+                  data-story-word
+                />
+              );
+            return (
+              <a href={piece.href} data-story-word>
+                {piece.text}
+              </a>
+            );
+          })}
         </p>
-        {href && (
-          <a class="story__link" href={href}>
-            {hrefLabel}
-          </a>
-        )}
-      </div>
+      ))}
     </div>
-  </div>
+  ) : (
+    <p class="story__text" data-story-text>
+      {words.map((word) => (
+        <span class="story__word" data-story-word>
+          {word}{" "}
+        </span>
+      ))}
+    </p>
+  )}
+  {href && (
+    <a class="story__link" href={href}>
+      {hrefLabel}
+    </a>
+  )}
 </section>
 
 <style>
   @layer components {
+    /* Generous room above and below, so the statement stands apart from the hero and the work.
+       The next section adds its own space above it on top of this. */
     .story {
-      position: relative;
-      z-index: 1; /* slides over the held hero */
-    }
-
-    .story__panel {
-      display: grid;
-      align-items: center;
-      min-block-size: 100svh;
-      color: var(--color-on-inverse);
-      background-color: var(--color-inverse-bg);
-    }
-
-    .story__inner {
       display: grid;
       justify-items: start;
       gap: var(--space-8);
       inline-size: 100%;
       max-inline-size: calc(var(--container-max) + 2 * var(--gutter));
       margin-inline: auto;
-      padding: var(--space-section-lg) var(--gutter);
+      padding: var(--space-section-lg) var(--gutter) var(--space-section-md);
     }
 
     .story__label {
-      color: var(--color-on-inverse-muted);
+      color: var(--color-text-muted);
     }
 
     .story__text {
@@ -77,24 +157,16 @@ const words = text.split(/\s+/);
       text-wrap: pretty;
     }
 
-    .story__link {
-      color: var(--color-on-inverse);
+    /* A touch more leading than the plain statement, so the pictures have room in the line. */
+    .story--paragraphs .story__text {
+      display: grid;
+      gap: 0.6lh;
+      line-height: var(--leading-h3);
     }
 
-    /* Motion on: a tall track with the panel pinned while the words light up. */
-    :global(.motion) .story {
-      block-size: 260svh;
-    }
-
-    :global(.motion) .story__sticky {
-      position: sticky;
-      inset-block-start: 0;
-      block-size: 100svh;
-      overflow: hidden;
-    }
-
-    :global(.motion) .story__panel {
-      block-size: 100%;
+    /* A picture and the word it illustrates wrap to the next line together. */
+    .story__pair {
+      white-space: nowrap;
     }
   }
 </style>

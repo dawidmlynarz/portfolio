@@ -1,0 +1,464 @@
+---
+import { render } from "astro:content";
+import GristLayout from "@/layouts/GristLayout.astro";
+import Container from "@/components/layout/Container.astro";
+import Link from "@/components/ui/Link.astro";
+import HeroBackdrop from "@/components/blocks/HeroBackdrop.astro";
+import Icon from "@/components/grist/Icon.astro";
+import RarityLabel from "@/components/grist/RarityLabel.astro";
+import StatusLabel from "@/components/grist/StatusLabel.astro";
+import DropCard from "@/components/grist/DropCard.astro";
+import LootBox from "@/components/grist/LootBox.astro";
+import SampleRun from "@/components/grist/SampleRun.astro";
+import AuthorNote from "@/components/grist/AuthorNote.astro";
+import PermalinkButton from "@/components/grist/PermalinkButton.astro";
+import { seasonName } from "@/lib/grist";
+import { SITE } from "@/lib/site";
+import { breadcrumbs } from "@/lib/schema";
+import {
+  derive,
+  dropHref,
+  formatDate,
+  getBuiltDrops,
+  getDrops,
+  isoDate,
+  lootOf,
+  sampleOf,
+  seeAlso,
+  twinHref,
+  type Drop,
+} from "@/lib/drops";
+
+export async function getStaticPaths() {
+  const drops = await getBuiltDrops();
+  const listed = await getDrops();
+  return drops.map((drop) => ({
+    params: { slug: drop.id },
+    props: { drop, related: seeAlso(drop, listed) },
+  }));
+}
+
+interface Props {
+  drop: Drop;
+  related: Drop[];
+}
+
+const { drop, related } = Astro.props;
+const { data } = drop;
+const { Content, headings } = await render(drop);
+const { type, rarity, published } = derive(drop);
+const url = new URL(dropHref(drop), Astro.site).href;
+// Its share image, drawn at build time by ./[slug]/og.png.ts from the Figma template.
+const image = {
+  src: `/grist/${drop.id}/og.png`,
+  width: 1200,
+  height: 630,
+  alt: `${data.title}, a ${rarity} ${type.label.toLowerCase()} on Grist. ${data.summary}`,
+};
+const sample = sampleOf(drop);
+const toc = [
+  { slug: "why", text: "Why" },
+  ...headings.filter((heading) => heading.depth === 2),
+  ...(data.steps.length ? [{ slug: "how-to-use-it", text: "How to use it" }] : []),
+  { slug: "the-drop", text: "The drop" },
+  ...(sample ? [{ slug: "what-you-get", text: "What you get" }] : []),
+  ...(data.limits ? [{ slug: "limits", text: "When not to use it" }] : []),
+  ...(related.length ? [{ slug: "see-also", text: "See also" }] : []),
+];
+
+const article = {
+  "@type": "Article",
+  headline: data.title,
+  description: data.summary,
+  url,
+  datePublished: isoDate(published),
+  author: { "@type": "Person", name: SITE.name, url: Astro.site?.href },
+  isAccessibleForFree: true,
+  hasPart: {
+    "@type": "CreativeWork",
+    name: `${data.title}: ${type.label.toLowerCase()}`,
+    encodingFormat: "text/markdown",
+    text: lootOf(drop),
+  },
+  ...(data.learnedFrom.length && {
+    isBasedOn: data.learnedFrom.map(({ title, url }) => ({
+      "@type": "CreativeWork",
+      name: title,
+      url,
+    })),
+  }),
+};
+const jsonLd = {
+  "@context": "https://schema.org",
+  "@graph": [
+    article,
+    breadcrumbs(Astro.site!, [
+      ["Grist", "/grist"],
+      [seasonName(data.season), `/grist#${data.season}`],
+      [data.title, dropHref(drop)],
+    ]),
+  ],
+};
+---
+
+<GristLayout
+  title={`${data.title} · Grist`}
+  description={data.summary}
+  type="article"
+  {image}
+  {jsonLd}
+>
+  <link slot="head" rel="alternate" type="text/markdown" href={twinHref(drop)} />
+  <div class="hero-backdrop-host">
+    <HeroBackdrop />
+    <Container class="drop">
+      <header class="drop__header">
+        <nav class="drop__crumbs text-small" aria-label="Breadcrumb">
+          <ol role="list">
+            <li>
+              <Icon name="arrow-left" size="lg" />
+              <Link href="/grist">All drops</Link>
+            </li>
+            <li>
+              <Link href={`/grist#${data.season}`}>{seasonName(data.season)}</Link>
+            </li>
+          </ol>
+        </nav>
+        <h1>{data.title}</h1>
+        <div class="drop__meta">
+          <div class="drop__tags">
+            <RarityLabel rarity={rarity} type={data.drop} size="md" />
+            <span class="drop__fact">
+              <Icon name="calendar" size="lg" />
+              <time datetime={isoDate(published)}>{formatDate(published)}</time>
+            </span>
+            <StatusLabel status={data.status} />
+          </div>
+          <PermalinkButton url={url} />
+        </div>
+      </header>
+
+      <div class="drop__layout">
+        <article class="drop__main">
+          <p class="text-caption drop__muted">tl;dr</p>
+          <p class="text-lead drop__summary">{data.summary}</p>
+          <p class="drop__hint">
+            <Icon name="lightbulb" />
+            <span>{data.hint}</span>
+          </p>
+          <h2 class="drop__heading" id="why">
+            Why
+          </h2>
+          <div class="drop__body">
+            <Content />
+          </div>
+          {data.learnedFrom.length > 0 && (
+            <p class="drop__source drop__muted">
+              Learned from:{" "}
+              {data.learnedFrom.map(({ title, url }, i) => (
+                <>
+                  {i > 0 && "; "}
+                  {url ? <Link href={url}>{title}</Link> : title}
+                </>
+              ))}
+            </p>
+          )}
+          {data.steps.length > 0 && (
+            <section class="drop__section" aria-labelledby="how-to-use-it">
+              <h2 class="drop__heading" id="how-to-use-it">
+                How to use it
+              </h2>
+              <ol class="drop__steps">
+                {data.steps.map((step) => (
+                  <li>
+                    {/* `code` in a step (a file or folder name) renders as code. */}
+                    {step.split("`").map((part, i) => (i % 2 ? <code>{part}</code> : part))}
+                  </li>
+                ))}
+              </ol>
+            </section>
+          )}
+          <div class="drop__loot">
+            <LootBox drop={drop} />
+          </div>
+          {sample && (
+            <div class="drop__section">
+              <SampleRun input={sample.input} text={sample.text} />
+            </div>
+          )}
+          {data.limits && (
+            <section class="drop__section" aria-labelledby="limits">
+              <h2 class="drop__heading" id="limits">
+                When not to use it
+              </h2>
+              <p>{data.limits}</p>
+            </section>
+          )}
+        </article>
+
+        <aside class="drop__rail">
+          <nav aria-labelledby="on-this-page">
+            <h2 class="text-caption drop__label" id="on-this-page">
+              On this page
+            </h2>
+            <ul class="drop__toc text-small" role="list">
+              {toc.map((item) => (
+                <li>
+                  <Link href={`#${item.slug}`}>{item.text}</Link>
+                </li>
+              ))}
+            </ul>
+          </nav>
+        </aside>
+
+        <div class="drop__more">
+          {related.length > 0 && (
+            <section aria-labelledby="see-also">
+              <h2 class="drop__heading" id="see-also">
+                See also
+              </h2>
+              <ul class="drop__related" role="list">
+                {related.map((other) => (
+                  <li>
+                    <DropCard drop={other} season={other.data.season !== data.season} />
+                  </li>
+                ))}
+              </ul>
+            </section>
+          )}
+          <AuthorNote class="drop__touch" />
+        </div>
+      </div>
+    </Container>
+  </div>
+</GristLayout>
+
+<style>
+  @layer components {
+    /* Room between the page's parts: 48px on phones, 64px from tablets up. */
+    .drop {
+      --drop-gap: var(--space-12);
+
+      padding-block: var(--space-12) var(--space-section-md);
+    }
+
+    @media (width >= 48em) {
+      .drop {
+        --drop-gap: var(--space-16);
+
+        padding-block-start: var(--space-16);
+      }
+    }
+
+    .drop__header {
+      display: grid;
+      gap: var(--space-6);
+      padding-block-end: var(--space-10);
+      border-block-end: calc(var(--border-width) * 2) solid var(--color-text);
+    }
+
+    /* All drops / Season n: title. The h1 is the page itself, so the trail stops before it. */
+    .drop__crumbs ol {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: var(--space-1) var(--space-2);
+      padding: 0;
+    }
+
+    .drop__crumbs li {
+      display: inline-flex;
+      align-items: center;
+      gap: var(--space-2);
+    }
+
+    .drop__crumbs li + li::before {
+      content: "/";
+      color: var(--color-text-muted);
+    }
+
+    .drop__meta,
+    .drop__tags {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: var(--space-4) var(--space-6);
+    }
+
+    .drop__meta {
+      justify-content: space-between;
+    }
+
+    .drop__fact {
+      display: inline-flex;
+      align-items: center;
+      gap: var(--space-2);
+      font-size: var(--text-small);
+      line-height: var(--leading-small);
+      white-space: nowrap;
+    }
+
+    .drop__source {
+      max-inline-size: var(--measure);
+      margin-block-start: var(--space-6);
+      font-size: var(--text-small);
+      line-height: var(--leading-small);
+    }
+
+    .drop__muted {
+      color: var(--color-text-muted);
+    }
+
+    .drop__layout {
+      display: grid;
+      grid-template-areas: "main" "rail" "more";
+      gap: var(--drop-gap);
+      padding-block-start: var(--drop-gap);
+    }
+
+    /* One column width for everything in the article, measured in body text: the tl;dr's larger
+       type would otherwise run past it. */
+    .drop__main {
+      grid-area: main;
+      min-inline-size: 0;
+      max-inline-size: var(--measure);
+    }
+
+    .drop__rail {
+      display: grid;
+      grid-area: rail;
+      align-content: start;
+      gap: var(--space-10);
+    }
+
+    .drop__more {
+      display: grid;
+      grid-area: more;
+      gap: var(--drop-gap);
+      min-inline-size: 0;
+      max-inline-size: var(--measure);
+    }
+
+    .drop__label {
+      padding-block-end: var(--space-3);
+      border-block-end: var(--border-width) solid var(--color-text);
+      color: var(--color-text-muted);
+    }
+
+    /* One hint under the tl;dr: when to use it and what you get. */
+    .drop__hint {
+      display: flex;
+      gap: var(--space-3);
+      max-inline-size: var(--measure);
+      margin-block-end: var(--space-12);
+      padding: var(--space-4);
+      border-radius: var(--radius-sm);
+      background-color: var(--color-bg-subtle);
+    }
+
+    /* A line tall, so the icon centres on the first line of the hint. */
+    .drop__hint :global(.icon) {
+      block-size: 1lh;
+    }
+
+    .drop__steps {
+      display: grid;
+      gap: var(--space-2);
+      padding-inline-start: var(--space-6);
+    }
+
+    /* Full column width, like the body (text-lead alone would cap it at a shorter measure). */
+    .drop__summary {
+      max-inline-size: none;
+      margin-block: var(--space-3) var(--space-10);
+      color: var(--color-text);
+    }
+
+    .drop__body,
+    .drop__loot,
+    .drop__section {
+      max-inline-size: var(--measure);
+    }
+
+    /* Room above for the stamp, which sits half over the box's top edge. */
+    .drop__loot {
+      margin-block-start: calc(var(--drop-gap) + var(--space-12));
+    }
+
+    /* Section headings in the article use the h3 style, so the page title stays the only big one. */
+    .drop__body :global(h2),
+    .drop__heading {
+      margin-block-end: var(--space-6);
+      font: var(--weight-medium) var(--text-h3) / var(--leading-h3) var(--font-heading);
+      letter-spacing: var(--tracking-h3);
+    }
+
+    .drop__body :global(* + h2) {
+      margin-block-start: var(--drop-gap);
+    }
+
+    /* Examples: the same plain code panel as the loot box. */
+    .drop__body :global(pre) {
+      overflow-x: auto;
+      margin-block-start: var(--space-4);
+      padding: var(--space-4);
+      border-radius: var(--radius-sm);
+      font-family: var(--font-mono);
+      font-size: var(--text-small);
+      line-height: var(--leading-small);
+      white-space: pre-wrap;
+      overflow-wrap: anywhere;
+      background-color: var(--color-bg-subtle);
+    }
+
+    .drop__body :global(p + p) {
+      margin-block-start: var(--space-4);
+    }
+
+    .drop__section {
+      margin-block-start: var(--drop-gap);
+    }
+
+    .drop__toc {
+      display: grid;
+      gap: var(--space-2);
+      padding: var(--space-3) 0 0;
+    }
+
+    .drop__related {
+      display: grid;
+      gap: var(--space-4);
+      padding: 0;
+    }
+
+    .drop__related > li {
+      display: grid;
+    }
+
+    /* The sign-off: one line in the h4 style over a 2px rule, the link doing the asking. */
+    .drop__touch {
+      padding-block-start: var(--space-10);
+      border-block-start: calc(var(--border-width) * 2) solid var(--color-text);
+    }
+
+    @media (width >= 48em) {
+      .drop__related {
+        grid-template-columns: 1fr 1fr;
+      }
+    }
+
+    @media (width >= 64em) {
+      .drop__layout {
+        grid-template-areas: "main rail" "more rail";
+        grid-template-columns: minmax(0, 1fr) 16rem;
+        column-gap: var(--space-16);
+      }
+
+      .drop__rail {
+        position: sticky;
+        inset-block-start: var(--space-8);
+        align-self: start;
+      }
+    }
+  }
+</style>

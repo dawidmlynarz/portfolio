@@ -1,0 +1,263 @@
+---
+/**
+ * About Grist: a side sheet with why it exists and what each rarity means, as a ladder from Common
+ * to Mythic. Layout 2 of the readme explorations (/grist/review/readme), picked by Dawid on 2 Nov.
+ * A native popover (Escape and a click outside close it, focus returns to the button). It has the
+ * drop card's outline over the portfolio menu's frosted glass and dim backdrop. It slides in from
+ * the right on wider screens and up from the bottom on phones, and leaves the way it came. With
+ * reduced motion it simply appears.
+ */
+import Icon from "./Icon.astro";
+import TileIcon from "./TileIcon.astro";
+import { RARITIES, RARITY_INFO, RARITY_LABELS } from "@/lib/grist";
+
+interface Props {
+  id: string;
+}
+
+const { id } = Astro.props;
+---
+
+<div class="about" id={id} popover aria-labelledby={`${id}-title`}>
+  <div class="about__head">
+    <h2 class="about__title" id={`${id}-title`}>
+      <Icon name="info" />
+      About Grist
+    </h2>
+    <button
+      class="about__close"
+      type="button"
+      popovertarget={id}
+      popovertargetaction="hide"
+      aria-label="Close"
+    >
+      <Icon name="close" />
+    </button>
+  </div>
+  <div class="about__body">
+    <section class="about__section">
+      <h3 class="about__label text-caption">Why this exists</h3>
+      <div class="about__prose">
+        <p>
+          Howdy! Grist is my side quest in the world of AI. Enjoy the growing collection of prompts,
+          skills, rules and experiments for product design, from figuring out what it can really do.
+        </p>
+        <p>
+          Each drop comes with a short note on why I use it and a file you can paste straight into
+          Claude, Cursor or a CLAUDE.md. A new one lands every Friday, eight to a season.
+        </p>
+        <p>
+          Tested means I've used it on real work. Trying means I'm still finding out. The ideas are
+          mine, and Claude helps me format the files. Add <code>.md</code> to any address if you'd
+          rather read plain markdown.
+        </p>
+      </div>
+    </section>
+    <section class="about__section">
+      <h3 class="about__label text-caption">Rarities</h3>
+      <p class="about__prose">
+        Rarity is how deep a drop goes. Higher tiers take more setup and give you more.
+      </p>
+      <ol class="about__ladder" role="list">
+        {RARITIES.map((tier) => (
+          <li style={`--tier: var(--rarity-${tier}-icon)`}>
+            <span class="about__node">
+              <TileIcon tier={tier} size="md" />
+            </span>
+            <span class="about__step">
+              <strong>{RARITY_LABELS[tier]}</strong>
+              <span>{RARITY_INFO[tier].note}</span>
+            </span>
+          </li>
+        ))}
+      </ol>
+    </section>
+  </div>
+</div>
+
+<style>
+  @layer components {
+    /* Phones: a bottom sheet. From 48em: a full-height sheet at the right. */
+    .about {
+      --about-from: 0 100%;
+
+      inline-size: 100%;
+      max-inline-size: none;
+      max-block-size: 85svh;
+      margin: auto 0 0;
+      padding: var(--space-6) var(--gutter);
+      overflow: auto;
+      overscroll-behavior: contain;
+      border: var(--border-width) solid var(--color-border-subtle);
+      border-block-end: 0;
+      border-radius: var(--radius-lg) var(--radius-lg) 0 0;
+      color: var(--color-text);
+      background-color: var(--color-glass);
+      backdrop-filter: blur(var(--blur-menu));
+      box-shadow: var(--shadow-panel);
+    }
+
+    .about::backdrop {
+      background-color: var(--color-scrim);
+    }
+
+    @media (width >= 48em) {
+      .about {
+        --about-from: 100% 0;
+
+        inline-size: min(100%, 28rem);
+        block-size: 100svh;
+        max-block-size: none;
+        margin: 0 0 0 auto;
+        padding: var(--space-8);
+        border-block-end: var(--border-width) solid var(--color-border-subtle);
+        border-inline-end: 0;
+        border-radius: var(--radius-lg) 0 0 var(--radius-lg);
+      }
+    }
+
+    /* In and out the same way: slides from off-screen (right, or bottom on phones) and back. */
+    @media (prefers-reduced-motion: no-preference) {
+      .about,
+      .about::backdrop {
+        transition:
+          translate var(--duration-page) var(--ease-out-expo),
+          opacity var(--duration-page) var(--ease-standard),
+          display var(--duration-page) allow-discrete,
+          overlay var(--duration-page) allow-discrete;
+      }
+
+      .about {
+        translate: var(--about-from);
+      }
+
+      .about:popover-open {
+        translate: 0 0;
+      }
+
+      .about::backdrop {
+        opacity: 0;
+      }
+
+      .about:popover-open::backdrop {
+        opacity: 1;
+      }
+
+      @starting-style {
+        .about:popover-open {
+          translate: var(--about-from);
+        }
+
+        .about:popover-open::backdrop {
+          opacity: 0;
+        }
+      }
+    }
+
+    .about__head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: var(--space-4);
+    }
+
+    .about__title {
+      display: inline-flex;
+      align-items: center;
+      gap: var(--space-2);
+      font-size: var(--text-h4);
+      line-height: var(--leading-h4);
+      letter-spacing: var(--tracking-h4);
+      font-weight: var(--weight-semibold);
+    }
+
+    .about__close {
+      display: grid;
+      place-items: center;
+      inline-size: var(--space-10);
+      block-size: var(--space-10);
+      margin: calc(var(--space-2) * -1);
+      padding: 0;
+      border: 0;
+      border-radius: var(--radius-pill);
+      font-size: var(--text-lead);
+      color: inherit;
+      background: none;
+      cursor: pointer;
+    }
+
+    .about__close:hover {
+      background-color: var(--color-bg-subtle);
+    }
+
+    .about__body {
+      display: grid;
+      gap: var(--space-8);
+      padding-block-start: var(--space-6);
+    }
+
+    .about__section {
+      display: grid;
+      align-content: start;
+      gap: var(--space-4);
+    }
+
+    .about__label {
+      color: var(--color-text-muted);
+    }
+
+    .about__prose {
+      display: grid;
+      gap: var(--space-3);
+    }
+
+    /* The ladder: each tier a node, joined to the next by a dashed rung. Mythic ends it. */
+    .about__ladder {
+      display: grid;
+      gap: var(--space-4);
+      padding: 0;
+    }
+
+    .about__ladder li {
+      position: relative;
+      display: flex;
+      align-items: start;
+      gap: var(--space-4);
+      font-size: var(--text-small);
+      line-height: var(--leading-small);
+    }
+
+    .about__ladder li:not(:last-child)::before {
+      content: "";
+      position: absolute;
+      inset-block: var(--space-12) calc(-1 * var(--space-4));
+      inset-inline-start: calc(var(--space-6) - var(--border-width) / 2);
+      border-inline-start: var(--border-width) dashed var(--color-border-muted);
+    }
+
+    .about__node {
+      display: grid;
+      flex: none;
+      place-items: center;
+      inline-size: var(--space-12);
+      block-size: var(--space-12);
+      border: var(--border-width) solid var(--color-border-subtle);
+      border-radius: var(--radius-pill);
+      background-color: var(--color-bg);
+    }
+
+    .about__step {
+      display: grid;
+      gap: var(--space-1);
+      padding-block-start: var(--space-1);
+    }
+
+    .about__step strong {
+      color: var(--tier);
+    }
+
+    .about__step span {
+      color: var(--color-text-muted);
+    }
+  }
+</style>

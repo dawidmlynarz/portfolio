@@ -1,0 +1,395 @@
+---
+/**
+ * Button lab: an audit of today's buttons and pills, then six directions for one button family in
+ * the site's black and white, glitch-led language, each shown in every role a button plays on the
+ * site. A private playground (/playground/buttons), not linked anywhere.
+ * Behaviour: button-lab.ts (tap to replay, the reduced-motion preview).
+ *
+ * Isolated experiment (CLAUDE.md rule 6): classes live under .button-lab / .lab-btn and read only
+ * semantic site tokens.
+ */
+import Button from "@/components/ui/Button.astro";
+import { SITE } from "@/lib/site";
+import LabButton, { type Option } from "./LabButton.astro";
+
+const OPTIONS: { option: Option; name: string; note: string; fit: string }[] = [
+  {
+    option: "current",
+    name: "Today",
+    note: "The Button component and the three hand-made pills as they are on main, for comparison.",
+    fit: "Pill",
+  },
+  {
+    option: "scan",
+    name: "Scan fill",
+    note: "The hover colours roll down through the button as scan lines, the gaps close, and it lands inverted. Leaving rolls it back up.",
+    fit: "Pill · CSS only",
+  },
+  {
+    option: "tear",
+    name: "Row tear",
+    note: "The link hover, scaled up. The inverted button arrives as three rows that jolt sideways for a few frames, then lock together.",
+    fit: "Pill · CSS only · closest to the links",
+  },
+  {
+    option: "frame",
+    name: "Viewfinder",
+    note: "Square, with a mono label like the captions. Crop marks float outside; on hover they snap onto the edge and the fill flickers on.",
+    fit: "Square · CSS only",
+  },
+  {
+    option: "halftone",
+    name: "Halftone",
+    note: "The hero’s dot grid. Outline buttons carry it faintly; on hover the dots grow in steps until they merge into a solid fill.",
+    fit: "Pill · CSS only",
+  },
+  {
+    option: "offset",
+    name: "Misregistered",
+    note: "A print slightly out of register: an outline ghost sits offset behind. On hover the button jitters onto it and locks in, with a grey ghost flashing the other way.",
+    fit: "Soft square · CSS only",
+  },
+  {
+    option: "capsule",
+    name: "Split capsule",
+    note: "A shape experiment. Label and arrow are two pieces; on hover they close into one capsule, the inner corners square off, and the arrow runs out and back in.",
+    fit: "Two-part pill · CSS only",
+  },
+];
+
+const AUDIT = [
+  {
+    name: "Primary button",
+    where: "Home “View all work”, Services “Start a conversation”, 404",
+    look: "Black pill, white label",
+    hover:
+      "None visible (brand and brand-strong are the same ink since the site went black and white)",
+  },
+  {
+    name: "Secondary and ghost buttons",
+    where: "Styleguide only",
+    look: "Grey outline pill / bare label",
+    hover: "Grey background",
+  },
+  {
+    name: "Footer email pill",
+    where: "Every page, footer (hand-made, not the Button)",
+    look: "Big black pill with an arrow",
+    hover: "Arrow slides right",
+  },
+  {
+    name: "Menu contact pill",
+    where: "Open nav menu (hand-made)",
+    look: "Small black pill, no arrow",
+    hover: "None",
+  },
+  {
+    name: "Back to top",
+    where: "Every page, floating (hand-made)",
+    look: "Glass circle with an arrow",
+    hover: "Grey background",
+  },
+  {
+    name: "Theme switch and menu button",
+    where: "Nav",
+    look: "Bare round icon",
+    hover: "Grey background",
+  },
+];
+---
+
+<div class="button-lab" data-button-lab>
+  <section class="button-lab__section" aria-labelledby="audit-title">
+    <div class="button-lab__intro">
+      <p class="text-caption button-lab__muted">01 · Audit</p>
+      <h2 id="audit-title">Six buttons, four hovers, one component</h2>
+      <p class="button-lab__muted">
+        Everything on the site that looks like a button, as it stands on main. Only two of them use
+        the Button component.
+      </p>
+    </div>
+
+    <div class="button-lab__table-wrap">
+      <table class="button-lab__table">
+        <thead>
+          <tr>
+            <th scope="col">Style</th>
+            <th scope="col">Where</th>
+            <th scope="col">Look</th>
+            <th scope="col">Hover</th>
+          </tr>
+        </thead>
+        <tbody>
+          {AUDIT.map(({ name, where, look, hover }) => (
+            <tr>
+              <th scope="row">{name}</th>
+              <td>{where}</td>
+              <td>{look}</td>
+              <td>{hover}</td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
+
+    <div class="button-lab__live">
+      <p class="text-caption button-lab__muted">The Button component, live</p>
+      <div class="button-lab__row">
+        <Button href="#audit-title">Primary</Button>
+        <Button href="#audit-title" variant="secondary">
+          Secondary
+        </Button>
+        <Button href="#audit-title" variant="ghost">
+          Ghost
+        </Button>
+        <Button href="#audit-title" size="sm">
+          Primary small
+        </Button>
+        <Button disabled>Disabled</Button>
+      </div>
+    </div>
+
+    <div class="button-lab__findings">
+      <h3>What doesn’t line up</h3>
+      <ul>
+        <li>The primary button, the one that matters most, has no hover at all.</li>
+        <li>
+          The footer email, the menu contact and Back to top are hand-made pills. They look like
+          buttons but don’t share the component, its focus ring or a hover.
+        </li>
+        <li>
+          The only hover in the family is a grey fill, which says nothing about the site’s glitch
+          language. Links now tear; buttons don’t do anything of their own.
+        </li>
+      </ul>
+
+      <h3>Proposal: one Button, three kinds</h3>
+      <ol>
+        <li>
+          <strong>Primary</strong>, the inverse fill: View all work, Start a conversation, the
+          footer email (large), the menu contact (small).
+        </li>
+        <li>
+          <strong>Secondary</strong>, an outline: second actions next to a primary.
+        </li>
+        <li>
+          <strong>Icon</strong>, round, label for screen readers: Back to top.
+        </li>
+      </ol>
+      <p>
+        All three share the hover you pick below. The theme switch and menu button stay quiet nav
+        chrome with their grey hover, and ghost goes, since nothing uses it.
+      </p>
+    </div>
+  </section>
+
+  <section class="button-lab__section" aria-labelledby="options-title">
+    <div class="button-lab__intro">
+      <p class="text-caption button-lab__muted">02 · Directions</p>
+      <h2 id="options-title">Six directions</h2>
+      <p class="button-lab__muted">
+        Each direction in every role: a primary with a secondary, the footer email, the menu contact
+        with Back to top, and both kinds on the inverse surface. Hover, tab through, or tap on a
+        phone to replay. Switch the theme with the toggle in the nav.
+      </p>
+      <label class="button-lab__switch">
+        <input type="checkbox" data-reduced-switch />
+        Preview reduced motion
+      </label>
+    </div>
+
+    <div class="button-lab__options">
+      {OPTIONS.map(({ option, name, note, fit }, i) => (
+        <article
+          class:list={["button-lab__option", option === "current" && "button-lab__option--ref"]}
+        >
+          <header class="button-lab__head">
+            <p class="text-caption button-lab__muted">
+              {option === "current" ? "Reference" : `Direction ${i}`} · {fit}
+            </p>
+            <h3>{name}</h3>
+            <p class="text-small button-lab__muted">{note}</p>
+          </header>
+
+          <div class="button-lab__row">
+            <LabButton option={option} text="View all work" arrow={option !== "current"} />
+            <LabButton option={option} kind="secondary" text="Read the case study" />
+          </div>
+
+          <div class="button-lab__row">
+            <LabButton option={option} size="lg" text={SITE.email} arrow />
+          </div>
+
+          <div class="button-lab__row">
+            <LabButton option={option} size="sm" text={SITE.email} />
+            <LabButton option={option} kind="icon" text="Back to top" />
+          </div>
+
+          <div class="button-lab__inverse">
+            <p class="text-small">On the inverse surface</p>
+            <div class="button-lab__row">
+              <LabButton option={option} text="Start a conversation" arrow={option !== "current"} />
+              <LabButton option={option} kind="secondary" text="See services" />
+            </div>
+          </div>
+        </article>
+      ))}
+    </div>
+  </section>
+</div>
+
+<script>
+  import "./button-lab.ts";
+</script>
+
+<style>
+  @layer components {
+    .button-lab {
+      display: grid;
+      gap: var(--space-section-lg);
+    }
+
+    /* Reduced-motion preview: the same rule reset.css applies for the OS setting. */
+    .button-lab[data-reduced] :global(*),
+    .button-lab[data-reduced] :global(*::before),
+    .button-lab[data-reduced] :global(*::after) {
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.01ms !important;
+      transition-delay: 0ms !important;
+    }
+
+    .button-lab__section {
+      display: grid;
+      gap: var(--space-10);
+    }
+
+    .button-lab__intro {
+      display: grid;
+      gap: var(--space-3);
+      max-inline-size: var(--measure);
+    }
+
+    .button-lab__muted {
+      color: var(--color-text-muted);
+    }
+
+    .button-lab__table-wrap {
+      overflow-x: auto;
+    }
+
+    .button-lab__table {
+      inline-size: 100%;
+      min-inline-size: 44rem;
+      border-collapse: collapse;
+      font-size: var(--text-small);
+      line-height: var(--leading-small);
+      text-align: start;
+    }
+
+    .button-lab__table :is(th, td) {
+      padding: var(--space-3) var(--space-4) var(--space-3) 0;
+      border-block-end: var(--border-width) solid var(--color-border-subtle);
+      text-align: start;
+      vertical-align: top;
+    }
+
+    .button-lab__table thead th {
+      font: var(--weight-medium) var(--text-caption) / var(--leading-caption) var(--font-mono);
+      letter-spacing: var(--tracking-caption);
+      text-transform: uppercase;
+      color: var(--color-text-muted);
+    }
+
+    .button-lab__table tbody th {
+      font-weight: var(--weight-medium);
+    }
+
+    .button-lab__table td {
+      color: var(--color-text-muted);
+    }
+
+    .button-lab__live {
+      display: grid;
+      gap: var(--space-4);
+    }
+
+    .button-lab__row {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: var(--space-4);
+    }
+
+    .button-lab__findings {
+      display: grid;
+      gap: var(--space-4);
+      max-inline-size: var(--measure);
+    }
+
+    .button-lab__findings :is(ul, ol) {
+      display: grid;
+      gap: var(--space-3);
+      padding-inline-start: var(--space-6);
+    }
+
+    .button-lab__findings h3:not(:first-child) {
+      margin-block-start: var(--space-6);
+    }
+
+    .button-lab__switch {
+      display: inline-flex;
+      align-items: center;
+      gap: var(--space-2);
+      font-size: var(--text-small);
+      cursor: pointer;
+    }
+
+    .button-lab__switch input {
+      accent-color: var(--color-text);
+    }
+
+    .button-lab__options {
+      display: grid;
+      gap: var(--space-6);
+    }
+
+    @media (width >= 62em) {
+      .button-lab__options {
+        grid-template-columns: 1fr 1fr;
+      }
+    }
+
+    .button-lab__option {
+      display: grid;
+      gap: var(--space-8);
+      align-content: start;
+      min-inline-size: 0;
+      padding: var(--space-6);
+      border: var(--border-width) solid var(--color-border-subtle);
+      border-radius: var(--radius-lg);
+    }
+
+    .button-lab__option--ref {
+      background-color: var(--color-bg-subtle);
+    }
+
+    .button-lab__head {
+      display: grid;
+      gap: var(--space-2);
+    }
+
+    .button-lab__inverse {
+      display: grid;
+      gap: var(--space-4);
+      padding: var(--space-6);
+      border-radius: var(--radius-md);
+      color: var(--color-on-inverse);
+      background-color: var(--color-inverse-bg);
+    }
+
+    .button-lab__inverse > p {
+      color: var(--color-on-inverse-muted);
+    }
+  }
+</style>

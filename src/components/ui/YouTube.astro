@@ -1,0 +1,135 @@
+---
+/**
+ * A YouTube video that costs nothing until it is played: a local poster with a play button. The
+ * player (youtube-nocookie.com) is only loaded on click, and starts playing straight away.
+ * Without JS the poster is a plain link to the video on YouTube.
+ */
+import { Image } from "astro:assets";
+
+interface Props {
+  /** The video id, e.g. "Ibm2SO8XvA4" from youtu.be/Ibm2SO8XvA4. */
+  id: string;
+  /** The video's title; names the play button and the player. */
+  title: string;
+  /** A local copy of the thumbnail (i.ytimg.com/vi/<id>/maxresdefault.jpg), 16:9. */
+  poster: ImageMetadata;
+  sizes?: string;
+  class?: string;
+}
+
+const {
+  id,
+  title,
+  poster,
+  sizes = "(min-width: 62em) 40rem, 100vw",
+  class: className,
+} = Astro.props;
+const href = `https://www.youtube.com/watch?v=${id}`;
+---
+
+<div class:list={["youtube", className]} data-youtube={id} data-title={title}>
+  <a class="youtube__poster" href={href} data-no-tear>
+    <Image class="youtube__image" src={poster} alt="" widths={[640, 1280]} sizes={sizes} />
+    <span class="youtube__play" aria-hidden="true">
+      <svg viewBox="0 0 24 24" focusable="false">
+        <path d="M8 5.5v13l11-6.5z"></path>
+      </svg>
+    </span>
+    <span class="visually-hidden">Play “{title}” (YouTube)</span>
+  </a>
+</div>
+
+<script>
+  for (const root of document.querySelectorAll<HTMLElement>("[data-youtube]")) {
+    const link = root.querySelector<HTMLAnchorElement>("a");
+    link?.addEventListener("click", (event) => {
+      if (event.metaKey || event.ctrlKey || event.shiftKey) return;
+      event.preventDefault();
+      const frame = document.createElement("iframe");
+      frame.className = "youtube__frame";
+      frame.src = `https://www.youtube-nocookie.com/embed/${root.dataset.youtube}?autoplay=1&rel=0`;
+      frame.title = root.dataset.title ?? "YouTube video";
+      frame.allow = "autoplay; encrypted-media; picture-in-picture; fullscreen";
+      frame.allowFullscreen = true;
+      root.append(frame);
+      link.remove();
+      frame.focus();
+    });
+  }
+</script>
+
+<style>
+  @layer components {
+    .youtube {
+      position: relative;
+      aspect-ratio: 16 / 9;
+      overflow: hidden;
+      border-radius: var(--radius-lg);
+      background: var(--color-bg-subtle);
+      isolation: isolate;
+    }
+
+    .youtube__poster {
+      display: block;
+      block-size: 100%;
+      color: var(--color-bg);
+      background: none;
+    }
+
+    .youtube__image {
+      inline-size: 100%;
+      block-size: 100%;
+      object-fit: cover;
+      transition: transform var(--duration-zoom) var(--ease-out-expo);
+    }
+
+    .youtube__play {
+      position: absolute;
+      inset: 0;
+      display: grid;
+      place-items: center;
+      margin: auto;
+      inline-size: var(--space-16);
+      block-size: var(--space-16);
+      border-radius: var(--radius-pill);
+      background: var(--color-text);
+      transition: transform var(--duration-zoom) var(--ease-out-expo);
+    }
+
+    .youtube__play svg {
+      inline-size: var(--space-8);
+      block-size: var(--space-8);
+      fill: currentcolor;
+    }
+
+    .youtube__poster:hover .youtube__image,
+    .youtube__poster:focus-visible .youtube__image {
+      transform: scale(1.04);
+    }
+
+    .youtube__poster:hover .youtube__play,
+    .youtube__poster:focus-visible .youtube__play {
+      transform: scale(1.12);
+    }
+
+    /* The frame clips the outline, so it sits inside. */
+    .youtube__poster:focus-visible {
+      outline-offset: calc(-1 * var(--space-1));
+    }
+
+    .youtube :global(.youtube__frame) {
+      position: absolute;
+      inset: 0;
+      inline-size: 100%;
+      block-size: 100%;
+      border: 0;
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      .youtube__image,
+      .youtube__play {
+        transition: none;
+      }
+    }
+  }
+</style>

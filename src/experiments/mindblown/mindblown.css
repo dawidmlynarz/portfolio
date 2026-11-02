@@ -1,0 +1,1044 @@
+/*
+ * Mindblown About: styles. Everything is scoped under .mindblown.
+ * Theme colours and type map to semantic site tokens; illustration colours, hairline borders,
+ * handwritten sizes and layout values are local and match the approved prototype 1:1.
+ */
+@layer components {
+  .mindblown {
+    /* surface + ink: follow the site theme */
+    --mb-paper: var(--color-bg);
+    --mb-ink: var(--color-text);
+    --mb-mute: var(--color-text-muted);
+
+    /* fixed ink in both themes */
+    --mb-art-ink: #141414;
+    --mb-art-paper: #fff;
+
+    /* inside the head: Dawid's illustration (Figma brain-sprite), the same in both themes */
+    --mb-rim: #fbc5cf;
+    --mb-flesh: #f68ca6;
+    --mb-flesh-dark: #ad3753;
+    --mb-brain: #fbc5cf;
+    --mb-brain-line: #f68ca6;
+    --mb-brain-ink: #282828;
+    --mb-brain-cheek: #ffe0ea;
+    --mb-brain-shadow: rgb(0 0 0 / 30%);
+
+    /* the burst when the head pops open: beams, dots and sparkles (canvas), in the brain's colours */
+    --mb-fx-1: #ad3753;
+    --mb-fx-2: #f68ca6;
+    --mb-fx-3: #fbc5cf;
+    --mb-fx-4: #ffe0ea;
+    --mb-fx-5: #282828;
+
+    /* type: the site face; the handwritten face and its sizes are local */
+    --mb-font-hand: "Gochi Hand", "Comic Sans MS", "Marker Felt", cursive;
+    --mb-hand-note: 22px; /* the hints keep clear of the head: their arrow tips stop past its outline */
+    --mb-hand-bubble: 24px;
+    --mb-hand-tip: 22px;
+    --mb-hand-cursor: 18px;
+    --mb-hand-hint: 17px;
+    --mb-stat: 52px;
+    --mb-line: 1.5px;
+    --mb-gut-l: max(16px, env(safe-area-inset-left, 0px));
+    --mb-gut-r: max(16px, env(safe-area-inset-right, 0px));
+
+    /* the tilted stripe is wider than the screen: clip it here so the page never scrolls sideways */
+    overflow-x: clip;
+    line-height: var(--leading-small);
+    color: var(--mb-ink);
+  }
+
+  /* the prototype was built on content-box sizing: keep it so every size matches 1:1 */
+  .mindblown__stage :where(*:not(.mindblown__intro, .mindblown__intro *)),
+  .mindblown__pop :where(*),
+  .mindblown__cursor {
+    box-sizing: content-box;
+  }
+
+  .mindblown :focus-visible {
+    outline: 2px dashed var(--color-focus);
+    outline-offset: 4px;
+  }
+
+  /* ---------- stage ---------- */
+
+  /* The stage is as tall as the intro plus the head: the intro fades out when the head opens,
+     so the thoughts can land where it was. */
+  .mindblown__stage {
+    --hw: clamp(600px, 44vw, 760px);
+    --mb-head-gap: var(--space-8);
+
+    position: relative;
+    overflow: hidden;
+    user-select: none;
+  }
+
+  /* ---------- intro (the page heading, inside the stage) ---------- */
+  .mindblown__intro {
+    position: relative;
+    z-index: 1;
+    display: grid;
+    justify-items: center;
+    gap: var(--space-6);
+    padding-block-start: calc(var(--space-4) + var(--space-12) + var(--space-8));
+    padding-inline: var(--gutter);
+    text-align: center;
+  }
+
+  /* reserves the head's height below the intro (the head itself is positioned absolutely) */
+  .mindblown__head-space {
+    block-size: calc(var(--hw) * 896 / 963);
+    margin-block-start: var(--mb-head-gap);
+  }
+
+  /* ---------- head ---------- */
+
+  /* the face centre sits at 45.5% of the photo width: centre the face, not the shoulders */
+  .mindblown__head-pos {
+    position: absolute;
+    left: calc(50% - var(--hw) * 0.455);
+    bottom: 0;
+    z-index: 5;
+    inline-size: var(--hw);
+    aspect-ratio: 963 / 896;
+  }
+
+  .mindblown__rig {
+    position: absolute;
+    inset: 0;
+  }
+
+  .mindblown__head {
+    position: absolute;
+    inset: 0;
+    cursor: pointer;
+    outline: none;
+
+    /* the cut through the head, seen from slightly above: an ellipse centred on the straight
+       cut in the photos (y 309/896, x 244..633 of 963). The hole fills it, the lid's front edge
+       follows its lower half, and the face below is masked to match */
+    --mb-cut: ellipse 20.2% 3.17% at 45.5% var(--mb-cut-y);
+
+    /* its layers stack among themselves, between the blob behind and the burst in front */
+    isolation: isolate;
+
+    /* the hole's rim scales with the head, so the masks below can be plain percentages (Chrome
+       drops a mask whose ellipse size mixes % and px) */
+    --mb-rim-w: calc(var(--hw) * 0.0045);
+
+    /* the cut's centre line: a little above the straight cut in the photos (34.49%), so the
+       hole hugs the lid instead of sitting low on the forehead */
+    --mb-cut-y: 33.3%;
+  }
+
+  /* keyboard focus also lifts the lid (mindblown.ts); the ring makes it unmistakable */
+  .mindblown__head:focus-visible {
+    outline: 2px dashed var(--color-focus);
+    outline-offset: 6px;
+    border-radius: var(--radius-lg);
+  }
+
+  .mindblown__layer {
+    position: absolute;
+    inset: 0;
+  }
+
+  .mindblown__layer--base {
+    z-index: 1;
+  }
+
+  /* --cut (set by the script from the first peek until the lid is back down): the face loses
+     the front of the cut and the hole shows. While closed the face stays whole, so no seam can
+     show between the pieces */
+  .mindblown__head--cut .mindblown__layer--base {
+    mask: radial-gradient(var(--mb-cut), transparent calc(100% - 2px), #000 100%);
+  }
+
+  /* the face inside the front half of the cut travels with the lid, so the lid's lower edge is
+     the same curve as the hole's front rim. It reaches a little past the face's mask (px along
+     an ellipse's ray are horizontal, about 1/6 of that vertically, hence 8px) */
+  .mindblown__lid-front {
+    position: absolute;
+    inset: 0;
+    mask: radial-gradient(var(--mb-cut), #000 100%, transparent calc(100% + 8px));
+  }
+
+  .mindblown__layer--lid {
+    z-index: 4;
+    transform-origin: 26% 34.5%;
+  }
+
+  .mindblown__piece {
+    position: absolute;
+    inset: 0;
+    inline-size: 100%;
+    block-size: 100%;
+    max-inline-size: none;
+    pointer-events: none;
+    -webkit-user-drag: none;
+  }
+
+  .mindblown__piece--shock,
+  .mindblown__piece--super,
+  .mindblown__piece--pain {
+    visibility: hidden;
+  }
+
+  .mindblown__head--shock .mindblown__piece--shock,
+  .mindblown__head--super .mindblown__piece--super,
+  .mindblown__head--pain .mindblown__piece--pain {
+    visibility: visible;
+  }
+
+  .mindblown__head--shock .mindblown__piece--rest,
+  .mindblown__head--super .mindblown__piece--rest,
+  .mindblown__head--pain .mindblown__piece--rest {
+    visibility: hidden;
+  }
+
+  /* open and super-shocked, the face looks towards the pointer: up, left or right (the base
+     layer only; the lid is off by then) */
+  .mindblown__piece--look {
+    visibility: hidden;
+  }
+
+  .mindblown__head--super.mindblown__head--look-up .mindblown__piece--look-up,
+  .mindblown__head--super.mindblown__head--look-left .mindblown__piece--look-left,
+  .mindblown__head--super.mindblown__head--look-right .mindblown__piece--look-right {
+    visibility: visible;
+  }
+
+  .mindblown__head--super:is(
+      .mindblown__head--look-up,
+      .mindblown__head--look-left,
+      .mindblown__head--look-right
+    )
+    .mindblown__layer--base
+    .mindblown__piece--super {
+    visibility: hidden;
+  }
+
+  /* the cut: straight across at y 309/896, x 244..633 of 963 */
+  .mindblown__inside {
+    position: absolute;
+    left: 25.3%;
+    top: var(--mb-cut-y);
+    inline-size: 40.4%;
+    block-size: 0;
+  }
+
+  /* the hole, trimmed to the head's outline (all expressions together), so the cut never sticks
+     out past the face at the sides */
+  .mindblown__ring {
+    position: absolute;
+    inset: 0;
+    z-index: 2;
+    mask: var(--mb-silhouette) 0 0 / 100% 100% no-repeat;
+  }
+
+  /* the streams and the brain, over the hole and under the lid */
+  .mindblown__inside--front {
+    z-index: 3;
+  }
+
+  /* the goo: over the brain, under the lid, trimmed to the head's outline. Each strand comes
+     out from under the lid's edge and goes down into the hole behind its front edge (goo.ts
+     clips it there). Drawn only while the hole is cut */
+  .mindblown__goo {
+    position: absolute;
+    inset: 0;
+    z-index: 3;
+    inline-size: 100%;
+    block-size: 100%;
+    overflow: visible;
+    pointer-events: none;
+    visibility: hidden;
+    mask: var(--mb-silhouette) 0 0 / 100% 100% no-repeat;
+  }
+
+  .mindblown__goo--on {
+    visibility: visible;
+  }
+
+  .mindblown__goo--free {
+    mask: none;
+  }
+
+  /* the lifted lid can be grabbed and pulled around (mindblown.ts) */
+  .mindblown__head--grab {
+    cursor: grab;
+  }
+
+  .mindblown__head--dragging {
+    cursor: grabbing;
+  }
+
+  .mindblown__goo-body {
+    fill: var(--mb-rim);
+  }
+
+  .mindblown__goo-shine {
+    fill: var(--mb-brain-cheek);
+  }
+
+  .mindblown__goo-line {
+    flood-color: var(--mb-brain-line);
+  }
+
+  .mindblown__hole {
+    position: absolute;
+    left: 0;
+    top: 0;
+    inline-size: 100%;
+    aspect-ratio: 288 / 42;
+    box-sizing: border-box;
+
+    /* half the hole's height (a percentage margin is of the parent's width); no translate,
+       which the CSS minifier drops next to transform */
+    margin-block-start: calc(-100% * 21 / 288);
+    border: var(--mb-rim-w) solid var(--mb-rim);
+    border-radius: 50%;
+
+    /* a pink well: dark at the back, lighter towards the front wall */
+    background: linear-gradient(var(--mb-flesh-dark), var(--mb-flesh));
+    visibility: hidden;
+  }
+
+  /* the brain's shadow on the floor of the well (Figma: 230 x 30 in a 288-wide ring) */
+  .mindblown__shadow {
+    position: absolute;
+    left: calc(100% * 29 / 288);
+    top: 0;
+    inline-size: calc(100% * 230 / 288);
+    aspect-ratio: 230 / 30;
+    margin-block-start: calc(-100% * 15 / 288);
+    background: radial-gradient(closest-side, var(--mb-brain-shadow) 96%, transparent 100%);
+    visibility: hidden;
+  }
+
+  .mindblown__head--cut .mindblown__hole,
+  .mindblown__head--cut .mindblown__shadow {
+    visibility: visible;
+  }
+
+  /* the brain sits in the well: it shows above the cut's centre line and, below it, down to the
+     front of its shadow (Figma's mask), so it rises out of the hole rather than through the rim.
+     In Figma units (the ring is 288 wide, its centre line at 0): the clip is 230 wide and spans
+     -165..15, the brain is 142 x 108 and rests at -103..5 */
+  .mindblown__brain-clip {
+    position: absolute;
+    left: calc(100% * 29 / 288);
+    top: 0;
+    inline-size: calc(100% * 230 / 288);
+    aspect-ratio: 230 / 180;
+    translate: 0 -91.667%;
+    pointer-events: none;
+    mask:
+      linear-gradient(#000 0 0) top / 100% 91.667% no-repeat,
+      radial-gradient(ellipse 50% 8.333% at 50% 91.667%, #000 98%, transparent 100%);
+  }
+
+  .mindblown__brain {
+    position: absolute;
+    left: calc(100% * 44 / 230);
+    top: calc(100% * 62 / 180);
+    inline-size: calc(100% * 142 / 230);
+    aspect-ratio: 142 / 108;
+    block-size: auto;
+    max-inline-size: none;
+    overflow: visible;
+  }
+
+  .mindblown__eye {
+    transform-box: fill-box;
+    transform-origin: center;
+  }
+
+  .mindblown__bface--rest .mindblown__eye {
+    animation: mindblown-blink 4s infinite;
+  }
+
+  /* one face per state; mindblown.ts swaps them with a little squash. Rest shows without JS */
+  .mindblown__bface {
+    transform-box: fill-box;
+    transform-origin: 50% 60%;
+  }
+
+  .mindblown__bface--suck,
+  .mindblown__bface--boom {
+    opacity: 0;
+    visibility: hidden;
+  }
+
+  .mindblown__brow {
+    transform-box: fill-box;
+    transform-origin: center;
+  }
+
+  /* the lid's shadow falls on the brain only while the lid hovers just above it */
+  .mindblown__lid-shade {
+    opacity: 0;
+    transition: opacity 0.4s;
+  }
+
+  .mindblown__head--peek .mindblown__lid-shade {
+    opacity: 1;
+  }
+
+  @keyframes mindblown-blink {
+    0%,
+    92%,
+    100% {
+      transform: scaleY(1);
+    }
+
+    95% {
+      transform: scaleY(0.1);
+    }
+  }
+
+  /* the risen brain is its own button ("new thoughts"); it covers the brain, not the hole */
+  .mindblown__brain-btn {
+    position: absolute;
+    left: 34.5%;
+    top: 15.5%;
+    z-index: 7;
+    inline-size: 22%;
+    block-size: 19%;
+    padding: 0;
+    border: 0;
+    border-radius: 50% 50% 40% 40%;
+    background: none;
+    cursor: pointer;
+  }
+
+  .mindblown__brain-btn[hidden] {
+    display: none;
+  }
+
+  .mindblown__brain-btn:focus-visible {
+    outline: 3px solid var(--color-focus);
+    outline-offset: 4px;
+  }
+
+  /* ---------- handwritten notes + speech bubble ---------- */
+
+  /* both hints hang above the right shoulder, the arrow pointing at the head */
+  .mindblown__note {
+    position: absolute;
+    left: 76%;
+    top: 40%;
+    z-index: 6;
+    inline-size: 220px;
+    font-family: var(--mb-font-hand);
+    font-size: var(--mb-hand-note);
+    line-height: 1.05;
+    rotate: -4deg;
+    pointer-events: none;
+    animation: mindblown-boil 0.5s steps(1) infinite;
+  }
+
+  .mindblown__note svg {
+    inline-size: 110px;
+    max-inline-size: none;
+    margin: 0 0 4px -16px;
+    overflow: visible;
+  }
+
+  @keyframes mindblown-boil {
+    0% {
+      translate: 0 0;
+    }
+
+    33% {
+      translate: 1.5px -1px;
+    }
+
+    66% {
+      translate: -1px 0.5px;
+    }
+  }
+
+  /* sits above the right shoulder, relative to the head */
+  .mindblown__note-close {
+    position: absolute;
+    left: 76%;
+    top: 47%;
+    z-index: 20;
+    inline-size: 220px;
+    font-family: var(--mb-font-hand);
+    font-size: var(--mb-hand-note);
+    line-height: 1.05;
+    rotate: -4deg;
+    pointer-events: none;
+    visibility: hidden;
+    animation: mindblown-boil 0.5s steps(1) infinite;
+  }
+
+  .mindblown__note-close svg {
+    inline-size: 110px;
+    max-inline-size: none;
+    margin: 0 0 4px -16px;
+    overflow: visible;
+  }
+
+  .mindblown__bubble {
+    position: absolute;
+    right: 86%;
+    top: 56%;
+    z-index: 7;
+    padding: 3px 14px;
+    border: var(--mb-line) solid var(--mb-ink);
+    border-radius: 20px 20px 4px;
+    font-family: var(--mb-font-hand);
+    font-size: var(--mb-hand-bubble);
+    white-space: nowrap;
+    background: var(--mb-paper);
+    opacity: 0;
+    pointer-events: none;
+  }
+
+  /* ---------- thought cards ---------- */
+  .mindblown__cards {
+    position: absolute;
+    inset: 0;
+    z-index: 10;
+    pointer-events: none;
+  }
+
+  .mindblown__card {
+    position: absolute;
+    left: 0;
+    top: 0;
+    z-index: 1;
+    padding: 0;
+    border: 0;
+    background: none;
+    cursor: grab;
+    pointer-events: auto;
+    touch-action: none;
+    visibility: hidden;
+  }
+
+  .mindblown__card:active {
+    cursor: grabbing;
+  }
+
+  .mindblown .mindblown__card:focus-visible {
+    outline: none;
+  }
+
+  .mindblown__card-in {
+    display: flex;
+    align-items: center;
+    gap: 9px;
+    padding: 5px 16px 5px 5px;
+    border: var(--mb-line) solid var(--mb-ink);
+    border-radius: var(--radius-pill);
+    color: var(--mb-ink);
+    background: var(--mb-paper);
+    transition:
+      background-color 0.2s,
+      color 0.2s;
+  }
+
+  .mindblown__card:hover .mindblown__card-in,
+  .mindblown__card:focus-visible .mindblown__card-in {
+    color: var(--mb-paper);
+    background: var(--mb-ink);
+  }
+
+  .mindblown__card:focus-visible .mindblown__card-in {
+    outline: 2px dashed var(--color-focus);
+    outline-offset: 3px;
+  }
+
+  .mindblown__icon {
+    display: grid;
+    flex: none;
+    place-items: center;
+    inline-size: 32px;
+    block-size: 32px;
+    border-radius: 50%;
+    color: var(--mb-paper);
+    background: var(--mb-ink);
+    transition:
+      background-color 0.2s,
+      color 0.2s;
+  }
+
+  .mindblown__card:hover .mindblown__icon,
+  .mindblown__card:focus-visible .mindblown__icon {
+    color: var(--mb-ink);
+    background: var(--mb-paper);
+  }
+
+  .mindblown__icon svg {
+    inline-size: 17px;
+    block-size: 17px;
+  }
+
+  .mindblown__label {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    line-height: 1.1;
+    text-align: left;
+  }
+
+  .mindblown__label-text {
+    font-size: var(--text-small);
+    font-weight: var(--weight-medium);
+    letter-spacing: -0.01em;
+    white-space: nowrap;
+  }
+
+  .mindblown__label-tag {
+    font-size: var(--text-caption);
+    white-space: nowrap;
+    opacity: 0.6;
+  }
+
+  /* thought-bubble tails: two dots on the line from each card to the hole */
+  .mindblown__tail {
+    position: absolute;
+    left: 0;
+    top: 0;
+    z-index: 0;
+    border: var(--mb-line) solid var(--mb-ink);
+    border-radius: 50%;
+    background: var(--mb-paper);
+    opacity: 0;
+    pointer-events: none;
+    will-change: transform;
+  }
+
+  .mindblown__tail--t1 {
+    inline-size: 11px;
+    block-size: 11px;
+    margin: -5.5px 0 0 -5.5px;
+  }
+
+  .mindblown__tail--t2 {
+    inline-size: 6px;
+    block-size: 6px;
+    margin: -3px 0 0 -3px;
+  }
+
+  /* ---------- small UI ---------- */
+  .mindblown__tip {
+    position: absolute;
+    left: var(--mb-gut-l);
+    bottom: 22px;
+    z-index: 20;
+    max-inline-size: 200px;
+    font-family: var(--mb-font-hand);
+    font-size: var(--mb-hand-tip);
+    line-height: 1.1;
+    rotate: -4deg;
+    opacity: 0;
+    pointer-events: none;
+  }
+
+  .mindblown__burst {
+    position: absolute;
+    inset: 0;
+    z-index: 9;
+    inline-size: 100%;
+    block-size: 100%;
+    max-inline-size: none;
+    pointer-events: none;
+  }
+
+  .mindblown__cursor {
+    position: fixed;
+    left: 0;
+    top: 0;
+    z-index: 300;
+    padding: 3px 12px;
+    border-radius: var(--radius-pill);
+    font-family: var(--mb-font-hand);
+    font-size: var(--mb-hand-cursor);
+    white-space: nowrap;
+    color: var(--mb-paper);
+    background: var(--mb-ink);
+    pointer-events: none;
+    transform: translate(-50%, -50%) scale(0);
+    transition: transform 0.25s cubic-bezier(0.3, 1.6, 0.5, 1);
+  }
+
+  .mindblown__cursor--on {
+    transform: translate(18px, 18px) scale(1);
+  }
+
+  @media (pointer: coarse) {
+    .mindblown__cursor {
+      display: none;
+    }
+  }
+
+  /* ---------- popover ---------- */
+  .mindblown__pop {
+    position: fixed;
+    inset: 0;
+    z-index: 200;
+    display: grid;
+    place-items: center;
+    padding-block: 24px;
+    padding-inline: var(--mb-gut-l) var(--mb-gut-r);
+  }
+
+  .mindblown__pop[hidden] {
+    display: none;
+  }
+
+  .mindblown__pop-scrim {
+    position: absolute;
+    inset: 0;
+    background: color-mix(in srgb, var(--mb-art-ink) 45%, transparent);
+  }
+
+  .mindblown__pop-panel {
+    position: relative;
+    inline-size: min(460px, 100%);
+    max-block-size: calc(100% - 16px);
+    overflow: auto;
+    border: var(--mb-line) solid var(--mb-ink);
+    border-radius: 20px;
+    color: var(--mb-ink);
+    background: var(--mb-paper);
+    box-shadow: 0 30px 70px -30px rgb(0 0 0 / 50%);
+    overscroll-behavior: contain;
+  }
+
+  .mindblown__pop-head {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    padding: 20px 22px;
+    border-block-end: var(--mb-line) solid var(--mb-ink);
+  }
+
+  .mindblown__pop-head .mindblown__icon {
+    inline-size: 44px;
+    block-size: 44px;
+  }
+
+  .mindblown__pop-head .mindblown__icon svg {
+    inline-size: 22px;
+    block-size: 22px;
+  }
+
+  .mindblown__pop-kicker {
+    font-size: var(--text-caption);
+    line-height: 1;
+    color: var(--mb-mute);
+  }
+
+  .mindblown__pop-title {
+    margin: 4px 0 0;
+    font: var(--weight-semibold) var(--text-h3) / 1.08 var(--font-heading);
+    letter-spacing: var(--tracking-h3);
+    text-wrap: balance;
+  }
+
+  .mindblown__pop-close {
+    display: grid;
+    flex: none;
+    place-items: center;
+    align-self: flex-start;
+    inline-size: 38px;
+    block-size: 38px;
+    margin-inline: auto -8px;
+    padding: 0;
+    border: 0;
+    border-radius: 50%;
+    color: var(--mb-ink);
+    background: none;
+    cursor: pointer;
+    transition: color 0.2s;
+  }
+
+  /* no opacity here: GSAP fades the button in when the popover opens */
+  .mindblown__pop-close:hover {
+    color: var(--mb-mute);
+  }
+
+  .mindblown__pop-close svg {
+    inline-size: 16px;
+    block-size: 16px;
+  }
+
+  .mindblown__pop-body {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+    padding: 20px 22px 24px;
+    font-size: var(--text-body);
+    line-height: var(--leading-small);
+  }
+
+  .mindblown__pop-body p {
+    max-inline-size: 60ch;
+  }
+
+  .mindblown__stat {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    column-gap: 10px;
+  }
+
+  .mindblown__stat-value {
+    font-size: var(--mb-stat);
+    font-weight: var(--weight-semibold);
+    line-height: 1;
+    letter-spacing: -0.04em;
+  }
+
+  .mindblown__stat-caption {
+    font-size: var(--text-small);
+    line-height: 1.3;
+    color: var(--mb-mute);
+  }
+
+  .mindblown__chips {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    padding: 0;
+    list-style: none;
+  }
+
+  .mindblown__chips li {
+    padding: 4px 12px;
+    border: var(--mb-line) solid var(--mb-ink);
+    border-radius: var(--radius-pill);
+    font-size: var(--text-small);
+    font-weight: var(--weight-medium);
+  }
+
+  .mindblown__mail {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .mindblown__mail code {
+    padding: 6px 12px;
+    border: var(--mb-line) dashed var(--mb-ink);
+    border-radius: 10px;
+    font-family: var(--font-body);
+    font-size: var(--text-body);
+    font-weight: var(--weight-semibold);
+    user-select: all;
+  }
+
+  .mindblown__copy {
+    padding: 8px 16px;
+    border: var(--mb-line) solid var(--mb-ink);
+    border-radius: var(--radius-pill);
+    font-weight: var(--weight-semibold);
+    color: var(--mb-paper);
+    background: var(--mb-ink);
+    cursor: pointer;
+  }
+
+  .mindblown__links {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+
+  .mindblown__links a {
+    padding: 6px 14px;
+    border: var(--mb-line) solid var(--mb-ink);
+    border-radius: var(--radius-pill);
+    font-weight: var(--weight-medium);
+    color: var(--mb-ink);
+    background: none;
+    transition:
+      background-color 0.2s,
+      color 0.2s;
+  }
+
+  .mindblown__links a:hover {
+    color: var(--mb-paper);
+    background: var(--mb-ink);
+  }
+
+  /* ---------- ticker stripe ---------- */
+  .mindblown__belt {
+    position: relative;
+    z-index: 40;
+    margin: -14px -10px 0;
+    overflow: hidden;
+    color: var(--color-on-inverse);
+    background: var(--color-inverse-bg);
+    rotate: -1.2deg;
+  }
+
+  .mindblown__belt-track {
+    display: flex;
+    inline-size: max-content;
+    padding-block: 13px;
+    animation: mindblown-belt 30s linear infinite;
+  }
+
+  .mindblown__belt-item,
+  .mindblown__belt-star {
+    font-size: var(--text-h3);
+    font-weight: var(--weight-semibold);
+    letter-spacing: var(--tracking-h3);
+    white-space: nowrap;
+  }
+
+  /* the same space on both sides of every star */
+  .mindblown__belt-star {
+    padding-inline: 0.6em;
+  }
+
+  @keyframes mindblown-belt {
+    to {
+      transform: translateX(-50%);
+    }
+  }
+
+  /* desktop: thoughts 50% bigger so they balance the larger stage */
+  @media (width > 1000px) {
+    .mindblown__card-in {
+      gap: 13.5px;
+      padding: 7.5px 24px 7.5px 7.5px;
+    }
+
+    .mindblown__card .mindblown__icon {
+      inline-size: 48px;
+      block-size: 48px;
+    }
+
+    .mindblown__card .mindblown__icon svg {
+      inline-size: 25.5px;
+      block-size: 25.5px;
+    }
+
+    .mindblown__label-text {
+      font-size: var(--text-h4);
+    }
+
+    .mindblown__label-tag {
+      font-size: var(--text-body);
+    }
+
+    .mindblown__tail--t1 {
+      inline-size: 16.5px;
+      block-size: 16.5px;
+      margin: -8.25px 0 0 -8.25px;
+    }
+
+    .mindblown__tail--t2 {
+      inline-size: 9px;
+      block-size: 9px;
+      margin: -4.5px 0 0 -4.5px;
+    }
+  }
+
+  @media (width <= 1000px) {
+    .mindblown__stage {
+      --hw: min(86vw, 600px);
+    }
+
+    .mindblown__label-tag {
+      display: none;
+    }
+
+    .mindblown__card-in {
+      padding-block: 4px;
+    }
+  }
+
+  @media (width <= 720px) {
+    /* phones: thoughts the same size as desktop's (50% up), hints small, right of the head,
+       the arrow pointing down at the shoulder */
+    .mindblown__card-in {
+      gap: 9px;
+      padding: 4.5px 16.5px 4.5px 4.5px;
+    }
+
+    .mindblown__card .mindblown__icon {
+      inline-size: 37.5px;
+      block-size: 37.5px;
+    }
+
+    .mindblown__card .mindblown__icon svg {
+      inline-size: 21px;
+      block-size: 21px;
+    }
+
+    .mindblown__label-text {
+      font-size: var(--text-lead);
+    }
+
+    .mindblown__tail--t1 {
+      inline-size: 16.5px;
+      block-size: 16.5px;
+      margin: -8.25px 0 0 -8.25px;
+    }
+
+    .mindblown__tail--t2 {
+      inline-size: 9px;
+      block-size: 9px;
+      margin: -4.5px 0 0 -4.5px;
+    }
+
+    .mindblown__note,
+    .mindblown__note-close {
+      left: 72%;
+      top: 22%;
+      display: flex;
+      flex-direction: column-reverse;
+      align-items: flex-start;
+      inline-size: calc(var(--hw) * 0.3);
+      font-size: var(--mb-hand-hint);
+      rotate: 3deg;
+      animation: none;
+    }
+
+    .mindblown__note svg,
+    .mindblown__note-close svg {
+      inline-size: 40px;
+      margin: 4px 0 0 2px;
+      scale: 1 -1;
+      rotate: -35deg;
+    }
+
+    .mindblown__bubble {
+      right: 78%;
+      font-size: calc(var(--mb-hand-bubble) - 4px);
+    }
+
+    .mindblown__stage {
+      --mb-head-gap: calc(var(--hw) * 0.15);
+    }
+
+    .mindblown__tip {
+      display: none;
+    }
+  }
+
+  /* Off screen (mindblown.ts): the looping CSS animations hold still too. */
+  .mindblown[data-mindblown-offscreen]
+    :is(.mindblown__belt-track, .mindblown__note, .mindblown__note-close, .mindblown__eye) {
+    animation-play-state: paused;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .mindblown__belt-track,
+    .mindblown__note,
+    .mindblown__note-close,
+    .mindblown__eye {
+      animation: none !important;
+    }
+  }
+}

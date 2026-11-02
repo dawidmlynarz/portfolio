@@ -1,0 +1,41 @@
+---
+/** Downloads a markdown file (an entry's twin, a raw drop, a season pack), named on the button. */
+import Button from "@/components/ui/Button.astro";
+
+interface Props {
+  href: string;
+  /** File name shown on the button and used for the download. */
+  name: string;
+}
+
+const { href, name } = Astro.props;
+---
+
+<Button
+  class="download-button"
+  href={href}
+  variant="secondary"
+  icon="arrow-down"
+  hover="icon"
+  download={name}
+>
+  {name}
+</Button>
+
+<style>
+  @layer components {
+    /* Long file names end in an ellipsis instead of pushing a phone screen wider. */
+    :global(.download-button) {
+      max-inline-size: 100%;
+    }
+
+    :global(.download-button .button__face) {
+      min-inline-size: 0;
+    }
+
+    :global(.download-button .button__face > span) {
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+  }
+</style>

@@ -1,0 +1,19 @@
+---
+title: "Component Usage Guidelines"
+summary: "Turn a component's code and docs into a contract that says what it's for, what it isn't for and what it promises."
+hint: "For documenting components that agents will use. Each one gets a short contract in markdown."
+season: "s01"
+slot: 7
+drop: "prompt"
+rarity: "rare"
+status: "tested"
+steps:
+  - "Paste the component's code, props and any docs."
+  - 'Fix the "don''t use for" section; it''s the most valuable line and the tool''s weakest guess.'
+  - "Save it next to the component."
+sampleInput: "Run on a Button component from a typical React design system, with its props and docs pasted in."
+---
+
+Every component page in my design system opens with a short description, and agents are the ones reading it.
+
+Props tell an agent what a component accepts. They don't tell it when to use one, so the description has to. The line that does the most work is what the component isn't for. For a button, that's "Don't use it to go to another page. Use a link."

@@ -1,0 +1,652 @@
+---
+/**
+ * One specimen button in the button lab (/playground/buttons): the same button in each direction.
+ * Kinds follow the proposed system: primary (the inverse fill), secondary (outline) and icon (round,
+ * label for screen readers only, like Back to top). Sizes: sm (menu contact), md, lg (footer email).
+ *
+ * Markup: the anchor is a one-cell grid. .lab-btn__face is the button at rest; .lab-btn__fill is a
+ * copy of it in the hover colours stacked in the same cell (aria-hidden), which each direction reveals
+ * in its own way (scan rows, torn rows, dots, a flicker). Text in the copy stays aligned with the
+ * face, so a half-revealed copy reads as the button inverting, not as two labels.
+ *
+ * Isolated experiment (CLAUDE.md rule 6): reads semantic site tokens only. Every hover's end state is
+ * complete on its own, so reduced motion (animations and transitions cut to their last frame) still
+ * shows it.
+ */
+export type Option = "current" | "scan" | "tear" | "frame" | "halftone" | "offset" | "capsule";
+
+interface Props {
+  option: Option;
+  kind?: "primary" | "secondary" | "icon";
+  size?: "sm" | "md" | "lg";
+  text: string;
+  arrow?: boolean;
+}
+
+const { option, kind = "primary", size = "md", text, arrow = false } = Astro.props;
+const icon = kind === "icon";
+const chip = option === "capsule" && arrow && !icon;
+const fills = option === "tear" ? 2 : ["scan", "frame", "halftone"].includes(option) ? 1 : 0;
+const layers = ["face", ...Array.from({ length: fills }, (_, i) => (i ? "fill-b" : "fill"))];
+---
+
+<a
+  href="#"
+  data-no-tear
+  class:list={["lab-btn", `lab-btn--${option}`, `lab-btn--${kind}`, `lab-btn--${size}`]}
+  aria-label={icon ? text : undefined}
+>
+  {layers.map((layer) => (
+    <span
+      class:list={[
+        layer === "face" ? "lab-btn__face" : "lab-btn__fill",
+        layer === "fill-b" && "lab-btn__fill--b",
+      ]}
+      aria-hidden={layer === "face" ? undefined : "true"}
+    >
+      {icon ? (
+        <svg class="lab-btn__icon" viewBox="0 0 24 24" aria-hidden="true">
+          <path d="M12 19V5M5 12l7-7 7 7" />
+        </svg>
+      ) : (
+        text
+      )}
+      {arrow && !chip && (
+        <svg class="lab-btn__arrow" viewBox="0 0 24 24" aria-hidden="true">
+          <path d="M5 12h14M13 6l6 6-6 6" />
+        </svg>
+      )}
+    </span>
+  ))}
+  {chip && (
+    <span class="lab-btn__chip" aria-hidden="true">
+      <svg class="lab-btn__arrow" viewBox="0 0 24 24">
+        <path d="M5 12h14M13 6l6 6-6 6" />
+      </svg>
+    </span>
+  )}
+</a>
+
+<style>
+  /* Halftone: the dot radius, registered so it can transition. */
+  @property --lab-dot {
+    syntax: "<length>";
+    inherits: false;
+    initial-value: -1px;
+  }
+
+  @layer components {
+    /* ---------- Shared ---------- */
+    .lab-btn {
+      --lab-ink: var(--color-text);
+      --lab-paper: var(--color-bg);
+      --lab-line: var(--color-border);
+      --lab-faint: var(--color-border-subtle);
+      --lab-pad: var(--space-3) var(--space-6);
+      --lab-radius: var(--radius-pill);
+      --lab-shift: var(--space-1);
+      --underline-size: 0%;
+
+      position: relative;
+      display: inline-grid;
+      vertical-align: middle;
+      border-radius: var(--lab-radius);
+      font-weight: var(--weight-medium);
+      line-height: 1.2;
+      background: none;
+      transition: scale var(--duration-fast) var(--ease-standard);
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    .lab-btn:focus-visible {
+      outline-color: var(--lab-ink);
+      outline-offset: var(--space-1);
+    }
+
+    .lab-btn:not(.lab-btn--current):active {
+      scale: 0.97;
+    }
+
+    :global(.button-lab__inverse) .lab-btn {
+      --lab-ink: var(--color-on-inverse);
+      --lab-paper: var(--color-inverse-bg);
+      --lab-line: var(--color-on-inverse-muted);
+      --lab-faint: var(--color-on-inverse-muted);
+    }
+
+    /* Rest and hover colours per kind. Primary inverts to paper; secondary and icon fill with ink. */
+    .lab-btn--primary {
+      --rest-bg: var(--lab-ink);
+      --rest-fg: var(--lab-paper);
+      --rest-ring: var(--lab-ink);
+      --hot-bg: var(--lab-paper);
+      --hot-fg: var(--lab-ink);
+      --hot-ring: var(--lab-ink);
+    }
+
+    .lab-btn--secondary,
+    .lab-btn--icon {
+      --rest-bg: transparent;
+      --rest-fg: var(--lab-ink);
+      --rest-ring: var(--lab-line);
+      --hot-bg: var(--lab-ink);
+      --hot-fg: var(--lab-paper);
+      --hot-ring: var(--lab-ink);
+    }
+
+    .lab-btn--sm {
+      --lab-pad: var(--space-2) var(--space-4);
+
+      font-size: var(--text-small);
+    }
+
+    .lab-btn--lg {
+      --lab-pad: var(--space-4) var(--space-6);
+
+      font-size: var(--text-lead);
+    }
+
+    .lab-btn--icon {
+      --lab-pad: var(--space-3);
+    }
+
+    .lab-btn__face,
+    .lab-btn__fill {
+      display: flex;
+      grid-area: 1 / 1;
+      gap: var(--space-2);
+      align-items: center;
+      justify-content: center;
+      padding: var(--lab-pad);
+      border-radius: var(--lab-radius);
+      white-space: nowrap;
+    }
+
+    .lab-btn__face {
+      color: var(--rest-fg);
+      background-color: var(--rest-bg);
+      box-shadow: inset 0 0 0 var(--border-width) var(--rest-ring);
+    }
+
+    .lab-btn__fill {
+      color: var(--hot-fg);
+      background-color: var(--hot-bg);
+      box-shadow: inset 0 0 0 var(--border-width) var(--hot-ring);
+      pointer-events: none;
+    }
+
+    .lab-btn__arrow,
+    .lab-btn__icon {
+      flex-shrink: 0;
+      inline-size: 1em;
+      block-size: 1em;
+      fill: none;
+      stroke: currentcolor;
+      stroke-width: 1.75;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+      transition: translate var(--duration-link) var(--ease-out-expo);
+    }
+
+    .lab-btn__icon {
+      inline-size: 1.25em;
+      block-size: 1.25em;
+    }
+
+    .lab-btn:is(:hover, :focus-visible, [data-hot]) .lab-btn__arrow {
+      translate: var(--space-1) 0;
+    }
+
+    .lab-btn:is(:hover, :focus-visible, [data-hot]) .lab-btn__icon {
+      translate: 0 calc(-1 * var(--space-1));
+    }
+
+    /* ---------- Reference: today's buttons ----------
+       Primary and the menu contact pill: no visible hover. Secondary: grey fill. The footer email
+       nudges its arrow. Back to top: a glass circle that greys on hover. */
+    .lab-btn--current .lab-btn__face {
+      transition: background-color var(--duration-fast) var(--ease-standard);
+    }
+
+    .lab-btn--current.lab-btn--secondary:is(:hover, :focus-visible, [data-hot]) .lab-btn__face {
+      background-color: var(--color-bg-subtle);
+    }
+
+    .lab-btn--current.lab-btn--icon .lab-btn__face {
+      --rest-ring: var(--color-border-subtle);
+
+      background-color: var(--color-overlay);
+    }
+
+    .lab-btn--current.lab-btn--icon:is(:hover, :focus-visible, [data-hot]) .lab-btn__face {
+      background-color: var(--color-bg-subtle);
+    }
+
+    .lab-btn--current.lab-btn--icon:is(:hover, :focus-visible, [data-hot]) .lab-btn__icon {
+      translate: none;
+    }
+
+    /* ---------- 1 · Scan fill ----------
+       The hover colours roll down through the button as scan lines, in steps like the tracking
+       band, then the gaps close. Leaving rolls them back up. The mask cuts text and fill together,
+       so in the gaps the button underneath shows through untouched. */
+    .lab-btn--scan .lab-btn__fill {
+      --lab-scan: 2px;
+
+      clip-path: inset(0 0 100% 0);
+      mask-image:
+        repeating-linear-gradient(
+          #000 0 var(--lab-scan),
+          transparent var(--lab-scan) calc(var(--lab-scan) * 2)
+        ),
+        linear-gradient(#000, #000);
+      mask-position:
+        0 0,
+        top;
+      mask-size:
+        100% calc(var(--lab-scan) * 2),
+        100% 0%;
+      mask-repeat: repeat, no-repeat;
+      transition:
+        clip-path 320ms steps(6, end),
+        mask-size 0ms;
+    }
+
+    .lab-btn--scan:is(:hover, :focus-visible, [data-hot]) .lab-btn__fill {
+      clip-path: inset(0);
+      mask-size:
+        100% calc(var(--lab-scan) * 2),
+        100% 100%;
+      transition:
+        clip-path 320ms steps(6, end),
+        mask-size 240ms steps(4, end) 320ms;
+    }
+
+    /* ---------- 2 · Row tear ----------
+       The links' hover, scaled up to the whole button: the hover colours arrive as three rows that
+       jolt sideways for a few frames, then lock together. The tear is the state change. */
+    .lab-btn--tear .lab-btn__fill {
+      opacity: 0;
+    }
+
+    /* At rest after the tear the top copy is whole and the middle copy hidden, so no seams show. */
+    .lab-btn--tear:is(:hover, :focus-visible, [data-hot]) .lab-btn__fill {
+      opacity: 1;
+      animation: lab-btn-tear-outer var(--duration-tear) steps(1, end);
+    }
+
+    .lab-btn--tear:is(:hover, :focus-visible, [data-hot]) .lab-btn__fill--b {
+      opacity: 0;
+      animation-name: lab-btn-tear-middle;
+    }
+
+    @keyframes lab-btn-tear-outer {
+      0% {
+        translate: -0.3em 0;
+        clip-path: polygon(0 0, 100% 0, 100% 34%, 0 34%, 0 67%, 100% 67%, 100% 100%, 0 100%);
+      }
+
+      25% {
+        translate: 0.4em 0;
+        clip-path: polygon(0 0, 100% 0, 100% 34%, 0 34%, 0 67%, 100% 67%, 100% 100%, 0 100%);
+      }
+
+      50% {
+        translate: -0.1em 0;
+        clip-path: polygon(0 0, 100% 0, 100% 34%, 0 34%, 0 67%, 100% 67%, 100% 100%, 0 100%);
+      }
+
+      75% {
+        translate: 0.15em 0;
+        clip-path: polygon(0 0, 100% 0, 100% 34%, 0 34%, 0 67%, 100% 67%, 100% 100%, 0 100%);
+      }
+    }
+
+    @keyframes lab-btn-tear-middle {
+      0% {
+        translate: 0.45em 0;
+        clip-path: inset(34% 0 33% 0);
+        opacity: 1;
+      }
+
+      25% {
+        translate: -0.25em 0;
+        clip-path: inset(34% 0 33% 0);
+        opacity: 1;
+      }
+
+      50% {
+        translate: 0.2em 0;
+        clip-path: inset(34% 0 33% 0);
+        opacity: 1;
+      }
+
+      75% {
+        translate: -0.08em 0;
+        clip-path: inset(34% 0 33% 0);
+        opacity: 1;
+      }
+    }
+
+    /* ---------- 3 · Viewfinder ----------
+       A square button with a mono label and crop marks floating just outside it. On hover the
+       marks snap onto the edge in two frames, like a camera finding focus, and the fill flickers
+       on. Fits the captions and the portrait. */
+    .lab-btn--frame {
+      --lab-radius: 0;
+      --lab-mark: 0.55em;
+
+      font-family: var(--font-mono);
+      letter-spacing: var(--tracking-caption);
+      text-transform: uppercase;
+    }
+
+    .lab-btn--frame.lab-btn--md,
+    .lab-btn--frame.lab-btn--lg {
+      font-size: var(--text-small);
+    }
+
+    .lab-btn--frame.lab-btn--sm {
+      font-size: var(--text-caption);
+    }
+
+    .lab-btn--frame.lab-btn--lg {
+      --lab-pad: var(--space-4) var(--space-6);
+    }
+
+    .lab-btn--frame.lab-btn--secondary {
+      --rest-ring: transparent;
+    }
+
+    .lab-btn--frame::before {
+      --lab-t: calc(var(--border-width) * 1.5);
+
+      content: "";
+      z-index: 1;
+      grid-area: 1 / 1;
+      margin: calc(-1 * var(--space-1));
+      pointer-events: none;
+      background:
+        linear-gradient(var(--lab-ink), var(--lab-ink)) top left / var(--lab-mark) var(--lab-t),
+        linear-gradient(var(--lab-ink), var(--lab-ink)) top left / var(--lab-t) var(--lab-mark),
+        linear-gradient(var(--lab-ink), var(--lab-ink)) top right / var(--lab-mark) var(--lab-t),
+        linear-gradient(var(--lab-ink), var(--lab-ink)) top right / var(--lab-t) var(--lab-mark),
+        linear-gradient(var(--lab-ink), var(--lab-ink)) bottom left / var(--lab-mark) var(--lab-t),
+        linear-gradient(var(--lab-ink), var(--lab-ink)) bottom left / var(--lab-t) var(--lab-mark),
+        linear-gradient(var(--lab-ink), var(--lab-ink)) bottom right / var(--lab-mark) var(--lab-t),
+        linear-gradient(var(--lab-ink), var(--lab-ink)) bottom right / var(--lab-t) var(--lab-mark);
+      background-repeat: no-repeat;
+      transition: margin 140ms steps(2, end);
+    }
+
+    .lab-btn--frame:is(:hover, :focus-visible, [data-hot])::before {
+      margin: 0;
+    }
+
+    .lab-btn--frame .lab-btn__fill {
+      opacity: 0;
+    }
+
+    .lab-btn--frame:is(:hover, :focus-visible, [data-hot]) .lab-btn__fill {
+      opacity: 1;
+      animation: lab-btn-flicker 220ms steps(1, end);
+    }
+
+    .lab-btn--frame:focus-visible {
+      outline-offset: var(--space-2);
+    }
+
+    @keyframes lab-btn-flicker {
+      0%,
+      50% {
+        opacity: 0;
+      }
+
+      25%,
+      75% {
+        opacity: 1;
+      }
+    }
+
+    /* ---------- 4 · Halftone ----------
+       The hero's dot grid. Secondary buttons carry it faintly at rest; on hover the dots grow in
+       steps until they merge into a solid fill, and shrink back on the way out. */
+    .lab-btn--halftone {
+      --lab-cell: 6px;
+    }
+
+    .lab-btn--halftone:is(.lab-btn--secondary, .lab-btn--icon) .lab-btn__face {
+      background-image: radial-gradient(circle, var(--lab-faint) 0.75px, transparent 1.25px);
+      background-size: var(--lab-cell) var(--lab-cell);
+    }
+
+    .lab-btn--halftone .lab-btn__fill {
+      mask-image: radial-gradient(
+        circle,
+        #000 var(--lab-dot),
+        transparent calc(var(--lab-dot) + 0.5px)
+      );
+      mask-size: var(--lab-cell) var(--lab-cell);
+      transition: --lab-dot 300ms steps(5, end);
+    }
+
+    .lab-btn--halftone:is(:hover, :focus-visible, [data-hot]) .lab-btn__fill {
+      --lab-dot: calc(var(--lab-cell) * 0.75);
+    }
+
+    /* ---------- 5 · Misregistered ----------
+       Like a print run slightly out of register: an outline ghost sits offset behind the button.
+       On hover the button jitters onto it and locks in place, with a grey ghost flashing on the
+       other side, the way the glitch splits colour. Secondary also fills. */
+    .lab-btn--offset {
+      --lab-radius: var(--radius-sm);
+    }
+
+    .lab-btn--offset.lab-btn--secondary,
+    .lab-btn--offset.lab-btn--icon {
+      --rest-bg: var(--lab-paper);
+    }
+
+    .lab-btn--offset::before,
+    .lab-btn--offset::after {
+      content: "";
+      grid-area: 1 / 1;
+      border-radius: var(--lab-radius);
+      pointer-events: none;
+    }
+
+    .lab-btn--offset::before {
+      box-shadow: inset 0 0 0 var(--border-width) var(--lab-ink);
+      translate: var(--lab-shift) var(--lab-shift);
+    }
+
+    .lab-btn--offset:is(.lab-btn--secondary, .lab-btn--icon)::before {
+      background-color: var(--lab-ink);
+    }
+
+    .lab-btn--offset::after {
+      background-color: var(--lab-line);
+      opacity: 0;
+    }
+
+    .lab-btn--offset .lab-btn__face {
+      z-index: 1;
+      transition:
+        translate 160ms steps(2, end),
+        color 0ms 120ms,
+        background-color 0ms 120ms;
+    }
+
+    .lab-btn--offset:is(:hover, :focus-visible, [data-hot]) .lab-btn__face {
+      translate: var(--lab-shift) var(--lab-shift);
+      animation: lab-btn-register 240ms steps(1, end);
+    }
+
+    .lab-btn--offset:is(.lab-btn--secondary, .lab-btn--icon):is(:hover, :focus-visible, [data-hot])
+      .lab-btn__face {
+      color: var(--hot-fg);
+      background-color: var(--hot-bg);
+    }
+
+    .lab-btn--offset:is(:hover, :focus-visible, [data-hot])::after {
+      animation: lab-btn-ghost 240ms steps(1, end);
+    }
+
+    @keyframes lab-btn-register {
+      0% {
+        translate: calc(var(--lab-shift) * 2) calc(var(--lab-shift) * 0.25);
+      }
+
+      25% {
+        translate: calc(var(--lab-shift) * 0.25) calc(var(--lab-shift) * 1.5);
+      }
+
+      50% {
+        translate: calc(var(--lab-shift) * 1.5) calc(var(--lab-shift) * 0.75);
+      }
+
+      75% {
+        translate: calc(var(--lab-shift) * 0.75) var(--lab-shift);
+      }
+    }
+
+    @keyframes lab-btn-ghost {
+      0%,
+      50% {
+        opacity: 1;
+        translate: calc(var(--lab-shift) * -1.5) calc(var(--lab-shift) * -0.5);
+      }
+
+      25% {
+        opacity: 1;
+        translate: calc(var(--lab-shift) * -0.75) 0;
+      }
+
+      75% {
+        opacity: 0;
+      }
+    }
+
+    /* ---------- 6 · Split capsule ----------
+       A shape experiment: the label and its arrow are two pieces with a gap between them. On
+       hover they close up into one capsule, the facing corners square off, and the arrow runs out
+       of its circle and back in. */
+    .lab-btn--capsule {
+      --lab-round: 2em;
+      --lab-chip-pad: var(--space-3);
+
+      display: inline-flex;
+      gap: var(--space-1);
+      transition:
+        gap var(--duration-link) var(--ease-out-expo),
+        scale var(--duration-fast) var(--ease-standard);
+    }
+
+    .lab-btn--capsule.lab-btn--sm {
+      --lab-chip-pad: var(--space-2);
+    }
+
+    .lab-btn--capsule.lab-btn--lg {
+      --lab-chip-pad: var(--space-4);
+    }
+
+    .lab-btn--capsule .lab-btn__face,
+    .lab-btn__chip {
+      border-radius: var(--lab-round);
+      transition: border-radius var(--duration-link) var(--ease-out-expo);
+    }
+
+    .lab-btn__chip {
+      display: grid;
+      place-items: center;
+      align-self: stretch;
+      padding-inline: var(--lab-chip-pad);
+      overflow: clip;
+      color: var(--lab-paper);
+      background-color: var(--lab-ink);
+    }
+
+    /* Without a chip (secondary, icon) there is nothing to join: the colours swap instead. */
+    .lab-btn--capsule:not(:has(.lab-btn__chip)) .lab-btn__face {
+      transition:
+        border-radius var(--duration-link) var(--ease-out-expo),
+        color var(--duration-fast) var(--ease-standard),
+        background-color var(--duration-fast) var(--ease-standard),
+        box-shadow var(--duration-fast) var(--ease-standard);
+    }
+
+    .lab-btn--capsule:not(:has(.lab-btn__chip)):is(:hover, :focus-visible, [data-hot])
+      .lab-btn__face {
+      color: var(--hot-fg);
+      background-color: var(--hot-bg);
+      box-shadow: inset 0 0 0 var(--border-width) var(--hot-ring);
+    }
+
+    .lab-btn--capsule.lab-btn--icon .lab-btn__face {
+      overflow: clip;
+    }
+
+    .lab-btn--capsule:is(:hover, :focus-visible, [data-hot]):has(.lab-btn__chip) {
+      gap: 0;
+    }
+
+    .lab-btn--capsule:is(:hover, :focus-visible, [data-hot]):has(.lab-btn__chip) .lab-btn__face {
+      border-start-end-radius: var(--radius-sm);
+      border-end-end-radius: var(--radius-sm);
+    }
+
+    .lab-btn--capsule:is(:hover, :focus-visible, [data-hot]) .lab-btn__chip {
+      border-start-start-radius: var(--radius-sm);
+      border-end-start-radius: var(--radius-sm);
+    }
+
+    .lab-btn--capsule:is(:hover, :focus-visible, [data-hot]) :is(.lab-btn__arrow, .lab-btn__icon) {
+      translate: none;
+      animation: lab-btn-loop-x 520ms var(--ease-out-expo);
+    }
+
+    .lab-btn--capsule:is(:hover, :focus-visible, [data-hot]) .lab-btn__icon {
+      animation-name: lab-btn-loop-y;
+    }
+
+    @keyframes lab-btn-loop-x {
+      0% {
+        translate: 0 0;
+        animation-timing-function: var(--ease-standard);
+      }
+
+      40% {
+        translate: 180% 0;
+      }
+
+      41% {
+        translate: -180% 0;
+        animation-timing-function: var(--ease-out-expo);
+      }
+
+      100% {
+        translate: 0 0;
+      }
+    }
+
+    @keyframes lab-btn-loop-y {
+      0% {
+        translate: 0 0;
+        animation-timing-function: var(--ease-standard);
+      }
+
+      40% {
+        translate: 0 -180%;
+      }
+
+      41% {
+        translate: 0 180%;
+        animation-timing-function: var(--ease-out-expo);
+      }
+
+      100% {
+        translate: 0 0;
+      }
+    }
+  }
+</style>

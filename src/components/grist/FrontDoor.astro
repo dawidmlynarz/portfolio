@@ -1,0 +1,224 @@
+---
+/**
+ * The Grist front door: the hero with the badge and the next drop day, the seasons as their eight
+ * slots, and Dawid's note. /grist shows the seasons that have started and the drops that are out. Dawid's sandbox
+ * (/grist/sandbox, previews only) passes every season with every written drop unlocked.
+ */
+import Container from "@/components/layout/Container.astro";
+import HeroBackdrop from "@/components/blocks/HeroBackdrop.astro";
+import DropCard from "./DropCard.astro";
+import HumanStamp from "./HumanStamp.astro";
+import AuthorNote from "./AuthorNote.astro";
+import SeasonHeader from "./SeasonHeader.astro";
+import NewBadge from "./NewBadge.astro";
+import { SEASON_SLOTS, type Season } from "@/lib/grist";
+import { formatDate, nextDropDay, type getSeasons } from "@/lib/drops";
+
+interface Props {
+  seasons: Awaited<ReturnType<typeof getSeasons>>;
+  /** Seasons that offer their pack. Left out: the ones with all eight drops out. */
+  packs?: Set<Season>;
+}
+
+const { seasons, packs } = Astro.props;
+const next = nextDropDay();
+---
+
+<section class="front-hero hero-backdrop-host" aria-labelledby="grist-title">
+  <HeroBackdrop />
+  <Container class="front-hero__head">
+    <p class="front-hero__eyebrow text-caption front__muted">
+      {next && <NewBadge label={`Next drop: ${formatDate(next)}`} />}
+      Loot for AI grinders.
+    </p>
+    <div class="front-hero__title" data-hero-wrap>
+      <span class="front-hero__spacer" aria-hidden="true"></span>
+      <HumanStamp class="front-hero__stamp" words="Human-curated loot for AI grinders" />
+      <h1 id="grist-title">
+        Your AI is only as good as what you feed it.{" "}
+        <span class="front__muted">Here’s human-curated loot, a new drop every Friday.</span>
+      </h1>
+    </div>
+  </Container>
+</section>
+
+<Container class="front">
+  {seasons.map((season) => (
+    <section class="front__season" aria-labelledby={season.id}>
+      <SeasonHeader
+        season={season.id}
+        tiers={season.tiers}
+        pack={packs ? packs.has(season.id) : season.drops.length >= SEASON_SLOTS}
+      />
+      {season.open && (
+        <ul class="front__grid" role="list">
+          {season.slots.map((slot) => (
+            <li>
+              {slot.drop ? (
+                <DropCard drop={slot.drop} />
+              ) : (
+                <DropCard
+                  locked={{
+                    type: slot.type,
+                    rarity: slot.rarity,
+                    date: slot.date,
+                    next: slot.next,
+                    late: slot.late,
+                    teaser: slot.teaser,
+                  }}
+                />
+              )}
+            </li>
+          ))}
+        </ul>
+      )}
+    </section>
+  ))}
+  <AuthorNote size="lg" class="front__author" />
+</Container>
+
+<script>
+  // Size the hero's spacer so the badge's bottom lines up with the headline's last line. Changing
+  // the spacer can rewrap the words, so it settles over a few passes.
+  const wrap = document.querySelector<HTMLElement>("[data-hero-wrap]");
+  const spacer = wrap?.querySelector<HTMLElement>(".front-hero__spacer");
+  const stamp = wrap?.querySelector<HTMLElement>(".front-hero__stamp");
+  const title = wrap?.querySelector<HTMLElement>("h1");
+  if (wrap && spacer && stamp && title) {
+    let width = 0;
+    const fit = (force = false) => {
+      // Only a new width (or new fonts) rewraps the words; the spacer's own changes must not
+      // start another round, or two wraps can take turns forever.
+      if (!force && wrap.offsetWidth === width) return;
+      width = wrap.offsetWidth;
+      if (getComputedStyle(spacer).display === "none") return;
+      // Each pass moves the badge down to the last line. Moving it can rewrap the words so the
+      // last line moves too, and at some widths no spacer fits. Then the badge shrinks a few pixels
+      // and tries again; failing that, it keeps the closest fit that doesn't hang below the text.
+      stamp.style.removeProperty("--stamp-size");
+      const natural = stamp.offsetWidth;
+      let best = { size: 0, shrink: 0, off: Infinity };
+      for (const shrink of [0, 8, 16, 24]) {
+        if (shrink) stamp.style.setProperty("--stamp-size", `${natural - shrink}px`);
+        for (let pass = 0; pass < 6; pass += 1) {
+          const off = title.offsetHeight - stamp.offsetHeight - spacer.offsetHeight;
+          if (off >= 0 && off < best.off) best = { size: spacer.offsetHeight, shrink, off };
+          if (Math.abs(off) < 1) return;
+          spacer.style.blockSize = `${Math.max(0, spacer.offsetHeight + off)}px`;
+        }
+      }
+      if (best.shrink) stamp.style.setProperty("--stamp-size", `${natural - best.shrink}px`);
+      else stamp.style.removeProperty("--stamp-size");
+      spacer.style.blockSize = `${best.size}px`;
+    };
+    new ResizeObserver(() => fit()).observe(wrap);
+    document.fonts.ready.then(() => fit(true));
+  }
+</script>
+
+<style>
+  @layer components {
+    .front-hero {
+      padding-block: var(--space-section-md);
+    }
+
+    /*
+     * Figma "hero" (157:6128), with the headline wrapping round the badge as before. Phones: the
+     * headline runs full width and the badge sits under it, pinned right. From 48em the badge
+     * floats at the right and shape-outside makes the float a circle, so the words wrap round it.
+     * A float can't sit at the bottom on its own, so a zero-width float above it (the spacer)
+     * pushes it down. The script below sizes the spacer so the badge's bottom meets the last line;
+     * without it the spacer is 1.5 lines tall.
+     */
+    .front-hero__head {
+      display: grid;
+      gap: var(--space-4);
+    }
+
+    .front-hero__title {
+      display: flex;
+      flex-direction: column;
+    }
+
+    .front-hero__title h1 {
+      font-weight: var(--weight-semibold);
+    }
+
+    .front-hero__spacer {
+      display: none;
+    }
+
+    .front-hero__title .front-hero__stamp {
+      --stamp-size: clamp(var(--space-24) + var(--space-6), 19.2vw, var(--space-24) * 2.25);
+
+      order: 1;
+      align-self: end;
+      margin-block-start: var(--space-4);
+    }
+
+    @media (width >= 48em) {
+      .front-hero__title {
+        display: flow-root;
+      }
+
+      .front-hero__spacer {
+        display: block;
+        float: right;
+        inline-size: 0;
+        block-size: calc(1.5 * 1lh);
+        font: var(--weight-semibold) var(--text-h1) / var(--leading-h1) var(--font-heading);
+      }
+
+      .front-hero__title .front-hero__stamp {
+        float: right;
+        clear: right;
+        margin: 0 0 0 var(--space-8);
+        shape-outside: circle(50%);
+        shape-margin: var(--space-8);
+      }
+    }
+
+    .front-hero__eyebrow {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: var(--space-2) var(--space-3);
+    }
+
+    .front__muted {
+      color: var(--color-text-muted);
+    }
+
+    .front {
+      display: grid;
+      gap: var(--space-section-sm);
+      padding-block-end: var(--space-section-md);
+    }
+
+    .front__author {
+      padding-block-start: var(--space-section-sm);
+      border-block-start: calc(var(--border-width) * 2) solid var(--color-text);
+    }
+
+    .front__season {
+      display: grid;
+      gap: var(--space-6);
+    }
+
+    .front__grid {
+      display: grid;
+      gap: var(--space-4);
+      padding: 0;
+    }
+
+    .front__grid > li {
+      display: grid;
+    }
+
+    @media (width >= 48em) {
+      .front__grid {
+        grid-template-columns: 1fr 1fr;
+      }
+    }
+  }
+</style>

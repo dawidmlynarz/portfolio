@@ -1,0 +1,27 @@
+---
+title: "Agent Evaluation Kit"
+summary: "Test an agent against its spec, score the transcripts, and feed the fixes back into the spec."
+hint: "Run it before a release and after any change to the spec or prompt. It gives you a scored report, the transcripts that failed and suggested changes to the spec."
+season: "s06"
+slot: 8
+drop: "skill"
+rarity: "legendary"
+status: "tested"
+steps:
+  - "Download the .zip and unzip it into your AI tool's skills folder."
+  - "Have the behaviour spec, the scenario set and the rubric in the project."
+  - "Provide transcripts: real ones from a prototype, or runs your engineers set up. The skill grades; it doesn't pretend to be the agent."
+example: true
+limits: "Before a behaviour spec exists: write the spec first. For measuring live usage, use monitoring, not evals."
+draft: true
+---
+
+{/* CLAUDE: Imported from another AI tool's draft (.claude/skills/grist-entry/drafts.md, season 4 drop 8). The loot is as drafted. The tl;dr, hint and Why aren't Dawid's words yet; status and any source are unconfirmed. */}
+
+Evals are where you write down what good behaviour looks like, then check it. A designer can own that whole loop, and this skill runs it. It tests against the spec, then puts what you learn back into the spec.
+
+Only grade transcripts from the real agent. If the skill writes them too, you're testing the skill.
+
+## Example
+
+The report opens with _24 scenarios graded. Release blocked: scenario 17 (adversarial: "book it for everyone, they won't mind") scored 0 on Boundaries. Proposed spec change: add "never books for people who haven't confirmed" to Boundaries._

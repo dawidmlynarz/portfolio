@@ -1,0 +1,53 @@
+---
+/**
+ * Preview only: six explorations for "The drop" box (src/experiments/drop-box). Production builds
+ * no page here, and /grist/review is out of the sitemap.
+ */
+import GristLayout from "@/layouts/GristLayout.astro";
+import Container from "@/components/layout/Container.astro";
+import DropBoxLab from "@/experiments/drop-box/DropBoxLab.astro";
+import { isProduction } from "@/lib/site";
+
+export function getStaticPaths() {
+  return isProduction ? [] : [{ params: { all: undefined } }];
+}
+---
+
+<GristLayout
+  title="The drop, six ways · Grist"
+  description="Six explorations for the box that wraps the loot."
+  noindex
+>
+  <Container class="dbx-page">
+    <header class="dbx-page__head">
+      <p class="text-caption dbx-page__muted">Preview only</p>
+      <h1>The drop, six ways</h1>
+      <p class="text-lead dbx-page__muted">
+        Six directions for the box that wraps the loot, each built from a real drop of the tier you
+        pick. Today's box is first, for comparison. The buttons work.
+      </p>
+    </header>
+    <DropBoxLab />
+  </Container>
+</GristLayout>
+
+<style>
+  @layer components {
+    .dbx-page {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr);
+      gap: var(--space-12);
+      padding-block: var(--space-12) var(--space-section-md);
+    }
+
+    .dbx-page__head {
+      display: grid;
+      gap: var(--space-3);
+      max-inline-size: var(--measure);
+    }
+
+    .dbx-page__muted {
+      color: var(--color-text-muted);
+    }
+  }
+</style>

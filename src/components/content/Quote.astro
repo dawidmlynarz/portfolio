@@ -2,11 +2,13 @@
 interface Props {
   author?: string;
   role?: string;
+  /** md: case studies · lg: the /services quotes carousel */
+  size?: "md" | "lg";
 }
-const { author, role } = Astro.props;
+const { author, role, size = "md" } = Astro.props;
 ---
 
-<figure class="quote">
+<figure class:list={["quote", `quote--${size}`]}>
   <blockquote class="quote__text">
     <slot />
   </blockquote>
@@ -29,6 +31,16 @@ const { author, role } = Astro.props;
       font: var(--weight-medium) var(--text-h3) / var(--leading-h3) var(--font-heading);
       letter-spacing: var(--tracking-h3);
       text-wrap: balance;
+    }
+
+    .quote--lg {
+      gap: var(--space-8);
+    }
+
+    .quote--lg .quote__text {
+      font-size: var(--text-h2);
+      line-height: var(--leading-h2);
+      letter-spacing: var(--tracking-h2);
     }
 
     .quote__source {
