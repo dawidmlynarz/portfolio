@@ -266,6 +266,42 @@ export function sampleOf(drop: Drop) {
   return { input: drop.data.sampleInput, text };
 }
 
+/**
+ * Grist's licences (see DECISIONS.md). Drops are CC BY 4.0, so people can use and adapt them,
+ * at work too, as long as they credit Dawid. Code (a Figma plugin) is MIT, in its own LICENSE
+ * file inside loot/figma-plugin/. The rest of mlynarz.com stays all rights reserved.
+ */
+export const DROP_LICENSE = {
+  spdx: "CC-BY-4.0",
+  name: "CC BY 4.0",
+  href: "https://creativecommons.org/licenses/by/4.0/",
+} as const;
+export const CODE_LICENSE = {
+  spdx: "MIT",
+  name: "MIT",
+  href: "https://opensource.org/license/mit",
+} as const;
+
+/** LICENSE.md for a drop's .zip and plugin zip. Not shown on the page or in the markdown. */
+export function licenseFileOf(drop: Drop, base: URL) {
+  const page = new URL(dropHref(drop), base).href;
+  const text = [
+    `# ${drop.data.title}`,
+    "",
+    `By Dawid Młynarz, from Grist. ${page}`,
+    "",
+    `Licensed under ${DROP_LICENSE.name}. ${DROP_LICENSE.href}`,
+    "",
+    "Use it, change it and share it, at work too. Just credit Dawid Młynarz and link back to the page above.",
+  ];
+  if (hasPlugin(drop))
+    text.push(
+      "",
+      `The Figma plugin in figma-plugin/ is ${CODE_LICENSE.name}. See its LICENSE file.`,
+    );
+  return { path: "LICENSE.md", text: text.join("\n") };
+}
+
 /** A Figma plugin that ships with a drop lives in loot/figma-plugin/, zip only. */
 const PLUGIN_FOLDER = "figma-plugin/";
 export const hasPlugin = (drop: Drop) =>

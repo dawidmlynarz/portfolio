@@ -912,6 +912,12 @@ From the market comparison (Claude Doc "Grist drops vs the market").
 - A skill goes in as `skills/<name>/`. A workflow's `skills/` and `agents/` go in as they are. The optional raw value hook in Design to Code Workflow ships as a file but isn't switched on, because its README calls it optional.
 - Previews point their catalog at their own deployment (`CF_PAGES_URL`), so a preview can be tested on its own.
 
+## Grist licences (2 Nov)
+
+- Dawid chose CC BY 4.0 for drops (skills, workflows, prompts, rules, notes) and MIT for code (the DTCG Token Exporter Figma plugin). CC BY lets people use and adapt drops at work as long as they credit him. NonCommercial was left out because most readers use drops at their jobs, and CC0 would drop the credit. Creative Commons advises against CC for software, hence MIT for code.
+- Only drops are licensed. The rest of mlynarz.com (case studies, Grist's design, its name and gems) stays all rights reserved, and the repo stays private.
+- `DROP_LICENSE` and `CODE_LICENSE` live in `src/lib/drops.ts`. Every drop .zip and plugin zip carries a generated `LICENSE.md` (not shown on the page or in the markdown), marketplace entries and plugin.json set `license: "CC-BY-4.0"`, and the plugin folder has its own MIT `LICENSE`. The site itself has no licence line. Dawid chose to keep the licence in the files only. Adding the licence file changed every plugin digest once, so installed plugins see one update.
+
 ## Grist: first drop Friday Nov 6 (2 Nov)
 
 - Dawid moved the first drop forward a week. Season 2 starts Friday Nov 6, 2026 and every later season moves one week earlier, keeping the same gaps.
