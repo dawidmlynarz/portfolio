@@ -235,6 +235,8 @@
     --rarity-legendary-tile-text: light-dark(#b15800, #fb7d00);
     --rarity-mythic-icon: #e60303;
     --rarity-mythic-tile-text: light-dark(#d40000, #ff3b3b);
+    /* The hidden [?] tile on locked slots: the common gem's light grey, quieter than any tier. */
+    --rarity-hidden-icon: var(--rarity-common-fill);
     --shadow-panel: 0 24px 64px -24px light-dark(rgb(0 0 0 / 28%), rgb(0 0 0 / 80%));
     /* Space above content on pages that don't run under the floating nav (SiteLayout) */
     --nav-clearance: calc(var(--space-4) + var(--space-12) + var(--space-8));

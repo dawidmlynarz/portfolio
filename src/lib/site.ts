@@ -66,12 +66,18 @@ export const PRODUCTION_BRANCH = "main";
 export const isProduction = CF_PAGES_BRANCH === PRODUCTION_BRANCH;
 
 /**
+ * Where share images are fetched from. Production: the site. A preview: its own deployment, since
+ * the images for unreleased pages don't exist on the live site yet.
+ */
+export const assetOrigin = !isProduction && CF_PAGES_URL ? CF_PAGES_URL : undefined;
+
+/**
  * Absolute base for links that must work from outside the site, like the Grist plugin marketplace.
- * Production uses the site; a preview uses its own deployment URL, so its catalog leads to its own
- * zips (whose digests match).
+ * Production uses the site. A preview uses its own deployment, so its catalog leads to its own zips
+ * (whose digests match).
  */
 export const siteBase = (site: URL | undefined) =>
-  new URL(!isProduction && CF_PAGES_URL ? CF_PAGES_URL : (site ?? "https://www.mlynarz.com"));
+  new URL(assetOrigin ?? site ?? "https://www.mlynarz.com");
 
 /** Cloudflare Web Analytics runs on production only, and only when a token is set. */
 export const webAnalyticsToken = isProduction ? CF_WEB_ANALYTICS_TOKEN : undefined;

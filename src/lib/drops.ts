@@ -78,6 +78,17 @@ function assertWritten(drop: Drop) {
     );
 }
 
+/** Reviewed: out of draft with no author notes left, so its title can be teased before drop day. */
+const isReviewed = (drop: Drop) => {
+  if (drop.data.draft) return false;
+  try {
+    assertWritten(drop);
+    return true;
+  } catch {
+    return false;
+  }
+};
+
 export type Slot =
   | { slot: number; date: Date; drop: Drop }
   | {
@@ -91,6 +102,8 @@ export type Slot =
       next: boolean;
       /** Its day has passed and nothing dropped: shown as late, not hidden. */
       late: boolean;
+      /** A reviewed drop waiting for its day: its title and one-liner show on the locked card. */
+      teaser?: { title: string; summary: string };
     };
 
 /**
@@ -102,6 +115,7 @@ export type Slot =
  */
 export async function getSeasons({ all = false } = {}) {
   const drops = all ? await getBuiltDrops() : await getDrops();
+  const everyDrop = await getCollection("grist");
   await checkBalance();
   return (Object.keys(SEASONS) as Season[]).map((id) => {
     const season = SEASONS[id];
@@ -116,9 +130,27 @@ export async function getSeasons({ all = false } = {}) {
       const next = !late && !nextFound;
       if (next) nextFound = true;
       const [type, rarity] = season.plan[i]!;
-      return { slot, date, type, rarity, next, late };
+      const waiting = everyDrop.find((d) => d.data.season === id && d.data.slot === slot);
+      const teaser =
+        waiting && isReviewed(waiting)
+          ? { title: waiting.data.title, summary: waiting.data.summary }
+          : undefined;
+      return { slot, date, type, rarity, next, late, teaser };
     });
-    return { id, ...season, drops: own, slots, open: own.length > 0, starts: dropDay(id, 1) };
+    // The header's reveal strip follows the schedule on every page, the sandbox included.
+    const tiers = Array.from({ length: SEASON_SLOTS }, (_, i) => {
+      const drop = everyDrop.find((d) => d.data.season === id && d.data.slot === i + 1);
+      return drop && isListed(drop) ? derive(drop).rarity : null;
+    });
+    return {
+      id,
+      ...season,
+      drops: own,
+      slots,
+      tiers,
+      open: own.length > 0,
+      starts: dropDay(id, 1),
+    };
   });
 }
 

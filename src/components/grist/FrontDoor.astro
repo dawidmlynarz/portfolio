@@ -47,7 +47,7 @@ const next = nextDropDay();
     <section class="front__season" aria-labelledby={season.id}>
       <SeasonHeader
         season={season.id}
-        unlocked={season.drops.length}
+        tiers={season.tiers}
         pack={packs ? packs.has(season.id) : season.drops.length >= SEASON_SLOTS}
       />
       {season.open && (
@@ -64,6 +64,7 @@ const next = nextDropDay();
                     date: slot.date,
                     next: slot.next,
                     late: slot.late,
+                    teaser: slot.teaser,
                   }}
                 />
               )}

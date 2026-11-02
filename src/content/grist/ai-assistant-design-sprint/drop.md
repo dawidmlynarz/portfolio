@@ -1,6 +1,12 @@
 # AI assistant design sprint
 
-Five stages. You run the sprint and make the calls. Each stage has a prompt for the part an AI tool can draft. Paste the output of one stage into the next.
+A synthetic sprint. An agent runs it as if it was a real one, and you give it the input it can't make up. Paste the ground rules first, once. Then go through the five stages. Each one has a part for you and a prompt for the agent. Paste the output of one stage into the next.
+
+## 0. Ground rules
+
+Prompt:
+
+> We're running a design sprint for [client and product], as if it was a real one. Don't assume anything about the client, their users, their brand or what they've already built. When you lack context, stop and ask me before you go on, one question at a time. Never fill a gap with a plausible guess. If something can only be inferred, mark it "assumed" and ask me to confirm it. Keep these rules for every stage that follows.
 
 ## 1. Competitive audit
 
