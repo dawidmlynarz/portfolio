@@ -8,15 +8,16 @@ drop: "skill"
 rarity: "legendary"
 status: "trying"
 steps:
-  - "Save the drop as `SKILL.md` in a folder called `agent-ux-review` in your AI tool's skills folder."
+  - "Download the folder and unzip it into your AI tool's skills folder. It holds `SKILL.md` and the two checklists it runs."
   - "Give it the brief, the list of actions and any screens."
   - "Read the report, cut anything you disagree with, and share it."
 example: true
 limits: "For a chat feature that only answers questions and never acts, use Season 8's trust drops instead. After launch, use real data, not a review."
 draft: true
+sampleInput: "Run on a brief for a ticket-buying assistant, with its four actions and the current flow. Trimmed to the verdict, issues and action map."
 ---
 
-{/* CLAUDE: Imported from another AI tool's draft (.claude/skills/grist-entry/drafts.md, season 1 drop 8). The loot is as drafted. The tl;dr, hint and Why aren't Dawid's words yet; status and any source are unconfirmed. */}
+{/* CLAUDE: Imported from another AI tool's draft (.claude/skills/grist-entry/drafts.md, season 1 drop 8). The loot is as drafted, now a folder: references/agent-use-case-check.md is a copy of S2·3, and references/checkpoint-review.md was written by Claude from the Human-in-the-loop Checkpoints note and the skill's guardrails, because the skill called a "checkpoint review" that didn't exist. output.md is a sample run Claude did on the ticket-buying example. Replace it with one of your own runs, or confirm it. The tl;dr, hint and Why aren't Dawid's words yet; status and any source are unconfirmed. */}
 
 Run this season's drops in order and you've done a design review. As a skill, your AI tool runs the whole thing from a brief, and you spend your time on the calls that need judgement.
 

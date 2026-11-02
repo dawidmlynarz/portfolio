@@ -9,6 +9,7 @@ import RarityLabel from "@/components/grist/RarityLabel.astro";
 import StatusLabel from "@/components/grist/StatusLabel.astro";
 import DropCard from "@/components/grist/DropCard.astro";
 import LootBox from "@/components/grist/LootBox.astro";
+import SampleRun from "@/components/grist/SampleRun.astro";
 import AuthorNote from "@/components/grist/AuthorNote.astro";
 import PermalinkButton from "@/components/grist/PermalinkButton.astro";
 import { seasonName } from "@/lib/grist";
@@ -22,6 +23,7 @@ import {
   getDrops,
   isoDate,
   lootOf,
+  sampleOf,
   seeAlso,
   twinHref,
   type Drop,
@@ -53,11 +55,13 @@ const image = {
   height: 630,
   alt: `${data.title}, a ${rarity} ${type.label.toLowerCase()} on Grist. ${data.summary}`,
 };
+const sample = sampleOf(drop);
 const toc = [
   { slug: "why", text: "Why" },
   ...headings.filter((heading) => heading.depth === 2),
   ...(data.steps.length ? [{ slug: "how-to-use-it", text: "How to use it" }] : []),
   { slug: "the-drop", text: "The drop" },
+  ...(sample ? [{ slug: "what-you-get", text: "What you get" }] : []),
   ...(data.limits ? [{ slug: "limits", text: "When not to use it" }] : []),
   ...(related.length ? [{ slug: "see-also", text: "See also" }] : []),
 ];
@@ -177,6 +181,11 @@ const jsonLd = {
           <div class="drop__loot">
             <LootBox drop={drop} />
           </div>
+          {sample && (
+            <div class="drop__section">
+              <SampleRun input={sample.input} text={sample.text} />
+            </div>
+          )}
           {data.limits && (
             <section class="drop__section" aria-labelledby="limits">
               <h2 class="drop__heading" id="limits">

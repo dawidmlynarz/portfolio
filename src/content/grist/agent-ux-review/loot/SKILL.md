@@ -23,7 +23,7 @@ Review an agent concept, brief or flow in four steps. Ask for anything missing b
 
 ## Step 1: Kickoff check
 
-Answer every item of the "Agent use case check" checklist from the inputs. Mark unknowns as unknown. If section A has a "no", stop and write a short report recommending against an agent.
+Answer every item of the checklist in `references/agent-use-case-check.md` from the inputs. Mark unknowns as unknown. If section A has a "no", stop and write a short report recommending against an agent.
 
 ## Step 2: Failure modes
 
@@ -31,7 +31,7 @@ List failures in four groups: wrong action, overreach, stall, misleading. Give e
 
 ## Step 3: Checkpoint review
 
-Map every action to one of: checkpoint, log and undo, no interface. Run the checkpoint review on each checkpoint. Flag missing checkpoints, unnecessary ones and irreversible steps buried in a plan.
+Map every action to one of: checkpoint, log and undo, no interface. Run `references/checkpoint-review.md` on each checkpoint. Flag missing checkpoints, unnecessary ones and irreversible steps buried in a plan.
 
 ## Step 4: Report
 

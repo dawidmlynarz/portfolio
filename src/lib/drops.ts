@@ -67,7 +67,12 @@ export async function getBuiltDrops() {
  */
 const AUTHOR_NOTES = /CLAUDE:|TEST DATA/;
 function assertWritten(drop: Drop) {
-  if (AUTHOR_NOTES.test(drop.body ?? "") || AUTHOR_NOTES.test(lootOf(drop)))
+  const sample = sampleOf(drop)?.text ?? "";
+  if (
+    AUTHOR_NOTES.test(drop.body ?? "") ||
+    AUTHOR_NOTES.test(lootOf(drop)) ||
+    AUTHOR_NOTES.test(sample)
+  )
     throw new Error(
       `Grist: ${drop.id} still has a CLAUDE: or TEST DATA note. Confirm or rewrite it, or set draft: true.`,
     );
@@ -177,32 +182,60 @@ export interface LootFile {
 }
 
 /**
- * The loot as files. A workflow's are its loot/ folder, overview (README.md) first, then by path;
- * every other drop has one file, drop.md.
+ * The loot as files. A drop with a loot/ folder (every workflow, and a skill that ships reference
+ * files) gives its files, the entry file first (README.md for a workflow, SKILL.md for a skill),
+ * then by path. Every other drop has one file, drop.md. A one-file skill's drop.md is its SKILL.md.
  */
 export function lootFilesOf(drop: Drop): LootFile[] {
-  if (drop.data.drop === "workflow") {
-    const prefix = `/src/content/grist/${drop.id}/loot/`;
-    const files = Object.entries(LOOT_FILES)
-      .filter(([path]) => path.startsWith(prefix))
-      .map(([path, text]) => ({ path: path.slice(prefix.length), text: text.trim() }))
-      .sort((a, b) =>
-        a.path === "README.md" ? -1 : b.path === "README.md" ? 1 : a.path.localeCompare(b.path),
-      );
-    if (!files.length) throw new Error(`Grist: workflow ${drop.id} has no files in loot/.`);
-    return files;
-  }
+  const prefix = `/src/content/grist/${drop.id}/loot/`;
+  const entry = drop.data.drop === "workflow" ? "README.md" : "SKILL.md";
+  const files = Object.entries(LOOT_FILES)
+    .filter(([path]) => path.startsWith(prefix))
+    .map(([path, text]) => ({ path: path.slice(prefix.length), text: text.trim() }))
+    .sort((a, b) => (a.path === entry ? -1 : b.path === entry ? 1 : a.path.localeCompare(b.path)));
+  if (files.length) return files;
+  if (drop.data.drop === "workflow")
+    throw new Error(`Grist: workflow ${drop.id} has no files in loot/.`);
   const text = RAW[`/src/content/grist/${drop.id}/drop.md`];
   if (text === undefined)
-    throw new Error(`Grist: ${drop.id} has no drop.md next to its index.mdx.`);
-  return [{ path: "drop.md", text: text.trim() }];
+    throw new Error(`Grist: ${drop.id} has no drop.md (or loot/ folder) next to its index.mdx.`);
+  return [{ path: drop.data.drop === "skill" ? "SKILL.md" : "drop.md", text: text.trim() }];
 }
 
-/** The loot as one text: drop.md, or a workflow's files one after another under their paths. */
+/** A sample run: what the drop gives back, as written in output.md next to index.mdx. */
+const OUTPUTS = import.meta.glob<string>("/src/content/grist/*/output.md", {
+  query: "?raw",
+  import: "default",
+  eager: true,
+});
+
+/** The drop's sample output, if it has one, with the input it was run on (`sampleInput`). */
+export function sampleOf(drop: Drop) {
+  const text = OUTPUTS[`/src/content/grist/${drop.id}/output.md`]?.trim();
+  if (!text) return undefined;
+  if (!drop.data.sampleInput)
+    throw new Error(`Grist: ${drop.id} has an output.md but no sampleInput in its frontmatter.`);
+  return { input: drop.data.sampleInput, text };
+}
+
+/** The loot as one text: drop.md, or several files one after another under their paths. */
 export function lootOf(drop: Drop) {
   const files = lootFilesOf(drop);
-  if (drop.data.drop !== "workflow") return files[0]!.text;
+  if (files.length === 1) return files[0]!.text;
   return files.map(({ path, text }) => `<!-- file: ${path} -->\n\n${text}`).join("\n\n");
+}
+
+/** Skills and workflows download as a folder (zipped); everything else as one markdown file. */
+export const isFolder = (drop: Drop) => drop.data.drop === "skill" || drop.data.drop === "workflow";
+
+/**
+ * The folder a zip unpacks to. A skill's must match the `name` in its SKILL.md, so it drops
+ * straight into .claude/skills/. A workflow's is the drop's own slug.
+ */
+export function folderOf(drop: Drop) {
+  if (drop.data.drop !== "skill") return drop.id;
+  const skill = lootFilesOf(drop).find((file) => file.path === "SKILL.md");
+  return skill?.text.match(/^name:\s*(\S+)/m)?.[1] ?? drop.id;
 }
 
 /** The next drop day on the schedule, in any season, or undefined once the last season is out. */
@@ -244,7 +277,7 @@ export function seeAlso(drop: Drop, listed: Drop[]) {
 export const dropHref = (drop: Drop) => `/grist/${drop.id}`;
 export const twinHref = (drop: Drop) => `/grist/${drop.id}.md`;
 export const lootHref = (drop: Drop) => `/grist/${drop.id}/drop.md`;
-/** A workflow's files as a folder, zipped (/grist/<slug>.zip). */
+/** A skill's or workflow's files as a folder, zipped (/grist/<slug>.zip). */
 export const zipHref = (drop: Drop) => `/grist/${drop.id}.zip`;
 export const seasonPackHref = (season: Season) => `/grist/season/${SEASONS[season].slug}.md`;
 

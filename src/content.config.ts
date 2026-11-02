@@ -104,6 +104,8 @@ const grist = defineCollection({
         .default([]),
       /** Its place in the season, 1 to 8. The slot sets the drop day (src/lib/grist.ts). */
       slot: z.number().int().min(1).max(8),
+      /** The input a sample run used, in one line. Goes with output.md (the run's result). */
+      sampleInput: z.string().optional(),
       /** Slugs for See also. */
       related: z.array(z.string()).default([]),
       /** Drafts show on preview builds only. */

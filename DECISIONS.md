@@ -855,3 +855,11 @@ What changed versus the embed, and why:
 - The next locked card looks like the other locked cards (dashed), with "Next drop" in its top right corner like New.
 - Every date on Grist uses one format with the year, "Nov 6, 2026" (`formatDate` in `src/lib/drops.ts`): cards, locked cards, drop pages, season headers and the next drop badge.
 - The front door lists seasons newest first, so the running season sits right under the next drop badge. Slots inside a season stay 1 to 8. The sandbox keeps seasons in number order for reading the whole plan.
+
+## Grist drops: installable skills, bundled references, sample runs (2 Nov)
+
+From the market comparison (Claude Doc "Grist drops vs the market").
+
+- Skills download as a .zip like workflows. The folder is named after the `name` in SKILL.md, so it drops straight into `.claude/skills/`. A line under the buttons says where it goes. A one-file skill's drop.md becomes SKILL.md in the zip.
+- Any drop can have a `loot/` folder now, not just workflows. A skill's entry file is SKILL.md, a workflow's README.md. Agent UX Review uses it to ship the Agent Use Case Check and a checkpoint review as `references/`, so it works on its own.
+- Optional sample runs: `output.md` next to index.mdx plus `sampleInput` in the frontmatter shows a "What you get" panel under the drop. Production refuses a drop whose output still has a `CLAUDE:` note, same as the body. The first four (Component Usage Guidelines, Design System Audit, Agent Pre-mortem, Agent UX Review) are Claude's runs, flagged for Dawid to replace or confirm.

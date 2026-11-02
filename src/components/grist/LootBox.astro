@@ -7,15 +7,16 @@
  * until it's opened. The loot text sits as written in drop.md, with a copy
  * button on its corner for just that text. Below it, the actions for the whole entry: Copy for AI
  * (the markdown twin: brief, why, how to use it and the drop) and Download (the same, as a file).
- * A workflow shows each of its files under its path, each with its own copy button, and Download
- * gives the whole folder as a .zip.
+ * A drop with several files (a workflow, or a skill with reference files) shows each under its
+ * path, each with its own copy button. Skills and workflows download as a folder in a .zip; a
+ * skill's folder is named after the skill, with SKILL.md inside, and a line says where it goes.
  */
 import CopyButton from "./CopyButton.astro";
 import HumanStamp from "./HumanStamp.astro";
 import RarityLabel from "./RarityLabel.astro";
 import { DROP_TYPES } from "@/lib/grist";
 import DownloadButton from "./DownloadButton.astro";
-import { derive, lootFilesOf, twinHref, zipHref, type Drop } from "@/lib/drops";
+import { derive, folderOf, isFolder, lootFilesOf, twinHref, zipHref, type Drop } from "@/lib/drops";
 
 interface Props {
   drop: Drop;
@@ -26,7 +27,10 @@ interface Props {
 const { drop, id = "the-drop" } = Astro.props;
 const { rarity } = derive(drop);
 const files = lootFilesOf(drop);
-const workflow = drop.data.drop === "workflow";
+// Several files: each under its path, capped until opened. Skills and workflows download as a folder.
+const workflow = files.length > 1;
+const folder = isFolder(drop);
+const skill = drop.data.drop === "skill";
 const type = DROP_TYPES[drop.data.drop];
 ---
 
@@ -75,12 +79,18 @@ const type = DROP_TYPES[drop.data.drop];
     <CopyButton from={twinHref(drop)} icon="sparkles" done="Copied as markdown">
       Copy for AI
     </CopyButton>
-    {workflow ? (
+    {folder ? (
       <DownloadButton href={zipHref(drop)} name={`${drop.id}.zip`} />
     ) : (
       <DownloadButton href={twinHref(drop)} name={`${drop.id}.md`} />
     )}
   </div>
+  {skill && (
+    <p class="loot-box__install">
+      Unzip it into <code>.claude/skills</code> in your project, or <code>~/.claude/skills</code> to
+      use it everywhere. It unpacks to <code>{folderOf(drop)}/SKILL.md</code>.
+    </p>
+  )}
 </section>
 
 <script>
@@ -108,6 +118,12 @@ const type = DROP_TYPES[drop.data.drop];
 
 <style>
   @layer components {
+    .loot-box__install {
+      font-size: var(--text-small);
+      line-height: var(--leading-small);
+      color: var(--color-text-muted);
+    }
+
     .loot-box {
       position: relative;
       display: grid;
