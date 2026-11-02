@@ -2,12 +2,13 @@
 /**
  * Dawid's note on Grist (Figma "author", 176:6325): his photo in a circle beside a short hello,
  * what Grist is, and a line to the contact page. `md` closes each drop page; `lg` sits above the
- * footer on the front door, with bigger type and photo. The photo is the home portrait
- * (src/assets/portrait), resized at build time and cropped to the face in CSS.
+ * footer on the front door, with bigger type and photo. The photo is the About page's
+ * portrait (the Mindblown hero's resting face and hair, flattened and cropped square into
+ * src/assets/portrait/portrait-about.webp) and resized again at build time.
  */
 import { Image } from "astro:assets";
 import Link from "@/components/ui/Link.astro";
-import { portraitPhoto } from "@/lib/portrait";
+import portrait from "@/assets/portrait/portrait-about.webp";
 import { SITE } from "@/lib/site";
 
 interface Props {
@@ -21,9 +22,9 @@ const { size = "md", class: className } = Astro.props;
 <aside class:list={["author-note", `author-note--${size}`, className]} aria-label="About Grist">
   <span class="author-note__photo">
     <Image
-      src={portraitPhoto}
+      src={portrait}
       alt={SITE.name}
-      width={size === "lg" ? 560 : 400}
+      width={size === "lg" ? 340 : 200}
       quality={70}
       loading="lazy"
       decoding="async"
@@ -58,15 +59,11 @@ const { size = "md", class: className } = Astro.props;
       background-color: var(--color-bg-subtle);
     }
 
-    /* The portrait is a wide shot: cover the circle, then zoom in on the face. */
     .author-note__photo img {
       display: block;
       inline-size: 100%;
       block-size: 100%;
       object-fit: cover;
-      object-position: 50% 50%;
-      scale: 1.2;
-      transform-origin: 48% 48%;
     }
 
     .author-note__text {

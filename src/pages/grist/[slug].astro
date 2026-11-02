@@ -226,14 +226,25 @@ const jsonLd = {
 
 <style>
   @layer components {
+    /* Room between the page's parts: 48px on phones, 64px from tablets up. */
     .drop {
+      --drop-gap: var(--space-12);
+
       padding-block: var(--space-12) var(--space-section-md);
+    }
+
+    @media (width >= 48em) {
+      .drop {
+        --drop-gap: var(--space-16);
+
+        padding-block-start: var(--space-16);
+      }
     }
 
     .drop__header {
       display: grid;
       gap: var(--space-6);
-      padding-block-end: var(--space-8);
+      padding-block-end: var(--space-10);
       border-block-end: calc(var(--border-width) * 2) solid var(--color-text);
     }
 
@@ -292,8 +303,8 @@ const jsonLd = {
     .drop__layout {
       display: grid;
       grid-template-areas: "main" "rail" "more";
-      gap: var(--space-12);
-      padding-block-start: var(--space-12);
+      gap: var(--drop-gap);
+      padding-block-start: var(--drop-gap);
     }
 
     /* One column width for everything in the article, measured in body text: the tl;dr's larger
@@ -314,7 +325,7 @@ const jsonLd = {
     .drop__more {
       display: grid;
       grid-area: more;
-      gap: var(--space-12);
+      gap: var(--drop-gap);
       min-inline-size: 0;
       max-inline-size: var(--measure);
     }
@@ -350,7 +361,7 @@ const jsonLd = {
     /* Full column width, like the body (text-lead alone would cap it at a shorter measure). */
     .drop__summary {
       max-inline-size: none;
-      margin-block: var(--space-3) var(--space-8);
+      margin-block: var(--space-3) var(--space-10);
       color: var(--color-text);
     }
 
@@ -362,19 +373,19 @@ const jsonLd = {
 
     /* Room above for the stamp, which sits half over the box's top edge. */
     .drop__loot {
-      margin-block-start: calc(var(--space-12) + var(--space-12));
+      margin-block-start: calc(var(--drop-gap) + var(--space-12));
     }
 
     /* Section headings in the article use the h3 style, so the page title stays the only big one. */
     .drop__body :global(h2),
     .drop__heading {
-      margin-block-end: var(--space-4);
+      margin-block-end: var(--space-6);
       font: var(--weight-medium) var(--text-h3) / var(--leading-h3) var(--font-heading);
       letter-spacing: var(--tracking-h3);
     }
 
     .drop__body :global(* + h2) {
-      margin-block-start: var(--space-12);
+      margin-block-start: var(--drop-gap);
     }
 
     /* Examples: the same plain code panel as the loot box. */
@@ -396,7 +407,7 @@ const jsonLd = {
     }
 
     .drop__section {
-      margin-block-start: var(--space-12);
+      margin-block-start: var(--drop-gap);
     }
 
     .drop__toc {
@@ -417,7 +428,7 @@ const jsonLd = {
 
     /* The sign-off: one line in the h4 style over a 2px rule, the link doing the asking. */
     .drop__touch {
-      padding-block-start: var(--space-8);
+      padding-block-start: var(--space-10);
       border-block-start: calc(var(--border-width) * 2) solid var(--color-text);
     }
 

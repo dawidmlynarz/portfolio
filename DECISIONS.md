@@ -819,3 +819,10 @@ What changed versus the embed, and why:
 - CSS can't put a float at the bottom, so a small script on the front door sizes the spacer float above the badge from the headline's height, on load, when fonts arrive and when the width changes. At some widths moving the badge rewraps the words and nothing fits, so the badge shrinks by up to 24px until it does. Checked from 768 to 1920px. Without the script the spacer is 1.5 lines tall, as before.
 - The drop page's small badge now grows with the viewport, from 104px on phones to 128px.
 - Author note: "…experiments for product design, from figuring out what it can really do." AI now appears once.
+
+## 2026-11-02 · Embers on hover, bigger hero badge, more room on drops
+
+- Legendary and Mythic cards play embers on hover, from Dawid's builder settings (embers only, 80% of the card's width, strength 0.75, density 0.35, tier colour, in front). `src/scripts/drop-fx.ts` loads the effects library the first time one of these cards is pointed at. The embers play on a layer fixed over the whole viewport, just under the nav, so they rise over neighbouring cards without being clipped. Once per hover, not within a second of the last. Nothing plays with reduced motion or on touch screens. The builder's "every" only applies to its loop trigger, so it isn't used here.
+- Front door badge: 20% bigger on desktop (up to 216px, 19.2vw); phones unchanged.
+- Drop page: 64px between its parts from tablets up (48px on phones), a deeper header and more room under headings and the tl;dr.
+- Author note photo: the About page's portrait (the Mindblown hero's resting face and hair), flattened into one square `src/assets/portrait/portrait-about.webp` (600px, 38 KB) and resized again at build time to 200 or 340px.
