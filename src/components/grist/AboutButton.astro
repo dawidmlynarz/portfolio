@@ -1,0 +1,51 @@
+---
+/**
+ * Opens the About side sheet (AboutPanel), a native popover, so it needs no script. An info icon
+ * and "About", drawn as the site's default link (hairline underline under the word) since it sits
+ * in the header next to the logo.
+ */
+import Icon from "./Icon.astro";
+
+interface Props {
+  /** id of the AboutPanel it opens. */
+  panel: string;
+  class?: string;
+}
+
+const { panel, class: className } = Astro.props;
+---
+
+<button class:list={["about-link", className]} type="button" popovertarget={panel}>
+  <Icon name="info" />
+  <span class="about-link__label">About</span>
+</button>
+
+<style>
+  @layer components {
+    .about-link {
+      display: inline-flex;
+      align-items: center;
+      gap: var(--space-1);
+      padding: 0;
+      border: 0;
+      font: inherit;
+      font-size: var(--text-small);
+      line-height: var(--leading-small);
+      color: inherit;
+      background: none;
+      cursor: pointer;
+      transition: color var(--duration-fast) var(--ease-standard);
+    }
+
+    /* The <a> underline from base.css, under the word only. */
+    .about-link__label {
+      background: linear-gradient(currentcolor, currentcolor) no-repeat left bottom / 100%
+        var(--border-width);
+    }
+
+    /* Like every text link on Grist: the underline stays and the ink softens (GristLayout). */
+    .about-link:hover {
+      color: var(--color-text-muted);
+    }
+  }
+</style>

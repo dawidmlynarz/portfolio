@@ -45,8 +45,8 @@ import TileIcon from "@/components/grist/TileIcon.astro";
 import Icon, { type IconName } from "@/components/grist/Icon.astro";
 import Logo from "@/components/grist/Logo.astro";
 import RarityLabel from "@/components/grist/RarityLabel.astro";
-import ReadmeButton from "@/components/grist/ReadmeButton.astro";
-import ReadmePanel from "@/components/grist/ReadmePanel.astro";
+import AboutButton from "@/components/grist/AboutButton.astro";
+import AboutPanel from "@/components/grist/AboutPanel.astro";
 import DownloadButton from "@/components/grist/DownloadButton.astro";
 import PermalinkButton from "@/components/grist/PermalinkButton.astro";
 import NewBadge from "@/components/grist/NewBadge.astro";
@@ -631,14 +631,15 @@ const GRIST_ICONS: IconName[] = [
         <Stack gap="4">
           <h3>Buttons</h3>
           <p class="muted measure">
-            The Readme opens from a link-style button in the Grist header. Then the site's secondary
-            pill with its own line icons: Copy for AI (sparkles; fetches the markdown twin), the
-            ghost copy icon on the loot box's corner (just the drop's text), Download (on hover the
-            arrow drops out and back in, no tear), Permalink and Get in touch.
+            About (info icon) opens the side sheet from a link-style button in the Grist header.
+            Then the site's secondary pill with its own line icons: Copy for AI (sparkles; fetches
+            the markdown twin), the ghost copy icon on the loot box's corner (just the drop's text),
+            Download (on hover the arrow drops out and back in, no tear), Permalink and Get in
+            touch.
           </p>
           <div class="row">
-            <ReadmeButton panel="readme-demo" />
-            <ReadmePanel id="readme-demo" />
+            <AboutButton panel="about-demo" />
+            <AboutPanel id="about-demo" />
             <CopyButton text="Copied from the styleguide" icon="sparkles">
               Copy for AI
             </CopyButton>

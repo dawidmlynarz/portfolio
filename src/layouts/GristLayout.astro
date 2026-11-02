@@ -1,16 +1,15 @@
 ---
 /**
- * Grist (/grist): its own slim header (logo home to /grist, the Readme and the site's theme switch on
- * the right; the
- * footer leads back to the portfolio) and the simple footer. Shares BaseLayout, so SEO tags, theme and fonts stay the
+ * Grist (/grist): its own slim header (logo home to /grist, About and the site's theme switch on the
+ * right) and the simple footer. Shares BaseLayout, so SEO tags, theme and fonts stay the
  * site's. No motion module: nothing on Grist animates except the gems and the New badge (CSS).
  */
 import BaseLayout from "@/layouts/BaseLayout.astro";
 import Footer from "@/components/blocks/Footer.astro";
 import Container from "@/components/layout/Container.astro";
 import Logo from "@/components/grist/Logo.astro";
-import ReadmeButton from "@/components/grist/ReadmeButton.astro";
-import ReadmePanel from "@/components/grist/ReadmePanel.astro";
+import AboutButton from "@/components/grist/AboutButton.astro";
+import AboutPanel from "@/components/grist/AboutPanel.astro";
 import ThemeToggle from "@/components/blocks/ThemeToggle.astro";
 import type { ComponentProps } from "astro/types";
 
@@ -29,12 +28,12 @@ type Props = ComponentProps<typeof BaseLayout>;
           <Logo />
         </a>
         <div class="grist__actions">
-          <ReadmeButton panel="readme" />
+          <AboutButton panel="about" />
           <ThemeToggle />
         </div>
       </Container>
     </header>
-    <ReadmePanel id="readme" />
+    <AboutPanel id="about" />
     <main id="main" tabindex="-1">
       <slot />
     </main>
