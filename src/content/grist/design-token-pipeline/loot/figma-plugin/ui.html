@@ -1,0 +1,536 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <style>
+      :root {
+        --bg: #ffffff;
+        --fg: #1e1e1e;
+        --muted: #6f6f6f;
+        --border: #e6e6e6;
+        --accent: #0d99ff;
+        --accent-hover: #0a7fd4;
+        --warn-bg: #fff8e1;
+        --warn-fg: #7a5b00;
+      }
+      * {
+        box-sizing: border-box;
+      }
+      body {
+        margin: 0;
+        padding: 16px;
+        font:
+          12px/1.5 -apple-system,
+          BlinkMacSystemFont,
+          "Segoe UI",
+          sans-serif;
+        color: var(--fg);
+        background: var(--bg);
+        display: flex;
+        flex-direction: column;
+        height: 100vh;
+      }
+      h1 {
+        font-size: 13px;
+        font-weight: 600;
+        margin: 0 0 4px;
+      }
+      p.sub {
+        color: var(--muted);
+        margin: 0 0 12px;
+      }
+
+      #tree-container {
+        flex: 1;
+        overflow-y: auto;
+        border: 1px solid var(--border);
+        border-radius: 6px;
+        padding: 4px 8px;
+        margin-bottom: 10px;
+      }
+      #tree-container.loading,
+      #tree-container.empty {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: var(--muted);
+        font-style: italic;
+      }
+
+      .collection {
+        margin: 6px 0;
+      }
+      .collection > summary {
+        font-weight: 600;
+      }
+      details > summary {
+        list-style: none;
+        cursor: pointer;
+      }
+      details > summary::-webkit-details-marker {
+        display: none;
+      }
+      summary {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        padding: 3px 0;
+      }
+      summary .arrow {
+        display: inline-block;
+        width: 10px;
+        color: var(--muted);
+        font-size: 9px;
+        transition: transform 0.1s;
+      }
+      details[open] > summary .arrow {
+        transform: rotate(90deg);
+      }
+      .node-label {
+        flex: 1;
+      }
+      .node-count {
+        color: var(--muted);
+        font-size: 10px;
+      }
+      .node-children {
+        margin-left: 18px;
+      }
+      .leaf-row {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        padding: 3px 0;
+      }
+      .leaf-row .node-label {
+        flex: 1;
+        margin-left: 16px;
+      }
+      input[type="checkbox"] {
+        flex: none;
+        cursor: pointer;
+      }
+
+      .footer-row {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        margin-bottom: 8px;
+        font-size: 11px;
+        color: var(--muted);
+      }
+      .footer-row button {
+        background: none;
+        border: none;
+        color: var(--accent);
+        font-size: 11px;
+        font-weight: 600;
+        cursor: pointer;
+        padding: 0;
+      }
+
+      button.primary {
+        width: 100%;
+        padding: 10px;
+        border: none;
+        border-radius: 6px;
+        background: var(--accent);
+        color: #fff;
+        font-weight: 600;
+        font-size: 12px;
+        cursor: pointer;
+      }
+      button.primary:hover {
+        background: var(--accent-hover);
+      }
+      button.primary:disabled {
+        opacity: 0.5;
+        cursor: default;
+      }
+
+      #result {
+        display: none;
+        margin-top: 10px;
+        padding: 10px;
+        border: 1px solid var(--border);
+        border-radius: 6px;
+      }
+      #result .row {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 8px;
+      }
+      #result .name {
+        font-family: ui-monospace, Menlo, monospace;
+        font-size: 12px;
+        font-weight: 600;
+      }
+      #result .meta {
+        color: var(--muted);
+        font-size: 10px;
+        margin-top: 2px;
+      }
+      #result a {
+        flex: none;
+        font-size: 11px;
+        color: var(--accent);
+        text-decoration: none;
+        font-weight: 600;
+        padding: 6px 10px;
+        border: 1px solid var(--accent);
+        border-radius: 5px;
+      }
+      #result a:hover {
+        background: var(--accent);
+        color: #fff;
+      }
+
+      .warnings {
+        margin-top: 10px;
+        padding: 8px 10px;
+        border-radius: 6px;
+        background: var(--warn-bg);
+        color: var(--warn-fg);
+        font-size: 11px;
+        max-height: 90px;
+        overflow-y: auto;
+        white-space: pre-wrap;
+      }
+      .error {
+        margin-top: 10px;
+        color: #d0021b;
+        font-size: 11px;
+      }
+
+      .credit {
+        margin: 12px 0 0;
+        color: var(--muted);
+        font-size: 11px;
+        text-align: center;
+      }
+      .credit a {
+        color: var(--fg);
+        text-decoration: underline;
+        text-underline-offset: 2px;
+      }
+    </style>
+  </head>
+  <body>
+    <h1>DTCG Token Exporter</h1>
+    <p class="sub">
+      Pick the collections and folders to include, then export <code>tokens.json</code>. Primitives
+      go in once, and semantic tokens point at them by name for each theme.
+    </p>
+
+    <div class="footer-row">
+      <span id="selection-summary">Scanning…</span>
+      <button id="select-all">Select all</button>
+    </div>
+
+    <div id="tree-container" class="loading">Scanning variables…</div>
+
+    <button class="primary" id="export" disabled>Export selected</button>
+
+    <div id="result">
+      <div class="row">
+        <div>
+          <div class="name">tokens.json</div>
+          <div class="meta" id="result-meta"></div>
+        </div>
+        <a id="download" download="tokens.json">Download</a>
+      </div>
+    </div>
+    <div id="messages"></div>
+
+    <p class="credit">Made by <a id="credit" href="https://mlynarz.com">Dawid Młynarz</a></p>
+
+    <script>
+      var treeContainer = document.getElementById("tree-container");
+      var exportBtn = document.getElementById("export");
+      var selectAllBtn = document.getElementById("select-all");
+      var selectionSummary = document.getElementById("selection-summary");
+      var result = document.getElementById("result");
+      var resultMeta = document.getElementById("result-meta");
+      var downloadLink = document.getElementById("download");
+      var messages = document.getElementById("messages");
+
+      // scanData: what the plugin sent us (tree shape + counts, read-only)
+      // stateByKey: our own checked/indeterminate tracking, keyed by
+      //   collectionId + "||" + path.join("/")  (path === [] for the collection root)
+      var scanData = [];
+      var stateByKey = {};
+
+      function keyFor(collectionId, path) {
+        return collectionId + "||" + path.join("/");
+      }
+
+      function initState(collectionId, node, path) {
+        stateByKey[keyFor(collectionId, path)] = { checked: true, indeterminate: false };
+        Object.keys(node.children).forEach(function (seg) {
+          initState(collectionId, node.children[seg], path.concat([seg]));
+        });
+      }
+
+      // Set this node and every descendant to the same checked value.
+      function cascadeDown(collectionId, node, path, checked) {
+        stateByKey[keyFor(collectionId, path)] = { checked: checked, indeterminate: false };
+        Object.keys(node.children).forEach(function (seg) {
+          cascadeDown(collectionId, node.children[seg], path.concat([seg]), checked);
+        });
+      }
+
+      // Recompute this node's state from its children (post-order), returns the new state.
+      function recomputeUp(collectionId, node, path) {
+        var childKeys = Object.keys(node.children);
+        if (childKeys.length === 0) {
+          return stateByKey[keyFor(collectionId, path)];
+        }
+        var childStates = childKeys.map(function (seg) {
+          return recomputeUp(collectionId, node.children[seg], path.concat([seg]));
+        });
+        var allChecked = childStates.every(function (s) {
+          return s.checked && !s.indeterminate;
+        });
+        var allUnchecked = childStates.every(function (s) {
+          return !s.checked && !s.indeterminate;
+        });
+        var state = allChecked
+          ? { checked: true, indeterminate: false }
+          : allUnchecked
+            ? { checked: false, indeterminate: false }
+            : { checked: false, indeterminate: true };
+        stateByKey[keyFor(collectionId, path)] = state;
+        return state;
+      }
+
+      function toggle(collectionId, node, path, checked) {
+        cascadeDown(collectionId, node, path, checked);
+        // Recompute the whole collection's tree bottom-up so ancestors reflect
+        // the change (their own recomputeUp call re-derives everything fresh).
+        var collection = scanData.filter(function (c) {
+          return c.id === collectionId;
+        })[0];
+        recomputeUp(collectionId, collection.tree, []);
+        render();
+      }
+
+      function selectedTotal() {
+        var total = 0;
+        scanData.forEach(function (collection) {
+          (function walk(node, path) {
+            var state = stateByKey[keyFor(collection.id, path)];
+            if (state.checked) total += node.ownCount;
+            Object.keys(node.children).forEach(function (seg) {
+              walk(node.children[seg], path.concat([seg]));
+            });
+          })(collection.tree, []);
+        });
+        return total;
+      }
+
+      function grandTotal() {
+        return scanData.reduce(function (sum, c) {
+          return sum + c.tree.totalCount;
+        }, 0);
+      }
+
+      function renderNode(collectionId, node, path, label) {
+        var key = keyFor(collectionId, path);
+        var state = stateByKey[key];
+        var childSegs = Object.keys(node.children);
+        var hasChildren = childSegs.length > 0;
+
+        var checkboxHtml =
+          '<input type="checkbox" data-collection="' +
+          collectionId +
+          '" data-path="' +
+          encodeURIComponent(JSON.stringify(path)) +
+          '"' +
+          (state.checked ? " checked" : "") +
+          (state.indeterminate ? ' data-indeterminate="1"' : "") +
+          " />";
+
+        if (!hasChildren) {
+          return (
+            '<div class="leaf-row">' +
+            checkboxHtml +
+            '<span class="node-label">' +
+            label +
+            "</span>" +
+            '<span class="node-count">' +
+            node.totalCount +
+            "</span>" +
+            "</div>"
+          );
+        }
+
+        var childrenHtml = childSegs
+          .sort()
+          .map(function (seg) {
+            return renderNode(collectionId, node.children[seg], path.concat([seg]), seg);
+          })
+          .join("");
+
+        return (
+          "<details open>" +
+          "<summary>" +
+          '<span class="arrow">▶</span>' +
+          checkboxHtml +
+          '<span class="node-label">' +
+          label +
+          "</span>" +
+          '<span class="node-count">' +
+          node.totalCount +
+          "</span>" +
+          "</summary>" +
+          '<div class="node-children">' +
+          childrenHtml +
+          "</div>" +
+          "</details>"
+        );
+      }
+
+      function render() {
+        if (scanData.length === 0) {
+          treeContainer.className = "empty";
+          treeContainer.textContent = "No local variable collections found.";
+          exportBtn.disabled = true;
+          selectionSummary.textContent = "";
+          return;
+        }
+
+        treeContainer.className = "";
+        treeContainer.innerHTML = scanData
+          .map(function (collection) {
+            var label =
+              collection.modeCount > 0
+                ? collection.name +
+                  " (" +
+                  collection.modeCount +
+                  (collection.modeCount === 1 ? " mode" : " modes") +
+                  ")"
+                : collection.name;
+            var body = renderNode(collection.id, collection.tree, [], label);
+            return '<div class="collection">' + body + "</div>";
+          })
+          .join("");
+
+        // checkbox.indeterminate can only be set via the DOM property, not markup.
+        treeContainer.querySelectorAll('input[data-indeterminate="1"]').forEach(function (cb) {
+          cb.indeterminate = true;
+        });
+
+        var selected = selectedTotal();
+        var total = grandTotal();
+        selectionSummary.textContent = selected + " of " + total + " variables selected";
+        exportBtn.disabled = selected === 0;
+      }
+
+      treeContainer.addEventListener("change", function (event) {
+        var target = event.target;
+        if (target.tagName !== "INPUT") return;
+        var collectionId = target.getAttribute("data-collection");
+        var path = JSON.parse(decodeURIComponent(target.getAttribute("data-path")));
+        var collection = scanData.filter(function (c) {
+          return c.id === collectionId;
+        })[0];
+        var node = collection.tree;
+        for (var i = 0; i < path.length; i++) node = node.children[path[i]];
+        toggle(collectionId, node, path, target.checked);
+      });
+
+      selectAllBtn.addEventListener("click", function () {
+        scanData.forEach(function (collection) {
+          cascadeDown(collection.id, collection.tree, [], true);
+        });
+        render();
+      });
+
+      // Collect every *unchecked* node whose parent is still (at least partially)
+      // checked — those are the minimal set of subtrees to exclude on export.
+      // (Sending redundant deeper-unchecked nodes too is harmless; the plugin
+      // matches by prefix, so only the topmost exclusion for a branch matters.)
+      function collectExcluded() {
+        var excluded = [];
+        scanData.forEach(function (collection) {
+          (function walk(node, path) {
+            var state = stateByKey[keyFor(collection.id, path)];
+            if (!state.checked && !state.indeterminate) {
+              excluded.push({ collectionId: collection.id, path: path });
+              return; // no need to descend further, prefix match covers children
+            }
+            Object.keys(node.children).forEach(function (seg) {
+              walk(node.children[seg], path.concat([seg]));
+            });
+          })(collection.tree, []);
+        });
+        return excluded;
+      }
+
+      exportBtn.addEventListener("click", function () {
+        exportBtn.disabled = true;
+        exportBtn.textContent = "Exporting…";
+        result.style.display = "none";
+        messages.innerHTML = "";
+        parent.postMessage({ pluginMessage: { type: "EXPORT", excluded: collectExcluded() } }, "*");
+      });
+
+      window.onmessage = function (event) {
+        var msg = event.data.pluginMessage;
+        if (!msg) return;
+
+        if (msg.type === "ERROR") {
+          messages.innerHTML = '<div class="error"></div>';
+          messages.firstChild.textContent = msg.message;
+          exportBtn.disabled = false;
+          exportBtn.textContent = "Export selected";
+          return;
+        }
+
+        if (msg.type === "SCAN_RESULT") {
+          scanData = msg.collections;
+          stateByKey = {};
+          scanData.forEach(function (collection) {
+            initState(collection.id, collection.tree, []);
+          });
+          render();
+          exportBtn.textContent = "Export selected";
+          return;
+        }
+
+        if (msg.type === "EXPORT_RESULT") {
+          exportBtn.disabled = false;
+          exportBtn.textContent = "Export selected";
+
+          var blob = new Blob([msg.body], { type: "application/json" });
+          var url = URL.createObjectURL(blob);
+
+          downloadLink.href = url;
+          downloadLink.download = msg.fileName;
+          resultMeta.textContent = (blob.size / 1024).toFixed(1) + " KB";
+          result.style.display = "block";
+
+          if (msg.warnings && msg.warnings.length) {
+            var warn = document.createElement("div");
+            warn.className = "warnings";
+            warn.textContent = msg.warnings.join("\n");
+            messages.appendChild(warn);
+          }
+        }
+      };
+
+      // Links can't open from the plugin window itself, so the plugin opens them in the browser.
+      document.getElementById("credit").addEventListener("click", function (event) {
+        event.preventDefault();
+        parent.postMessage(
+          { pluginMessage: { type: "OPEN_URL", url: event.currentTarget.href } },
+          "*",
+        );
+      });
+
+      // Kick off the scan as soon as the UI loads.
+      parent.postMessage({ pluginMessage: { type: "SCAN" } }, "*");
+    </script>
+  </body>
+</html>

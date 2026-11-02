@@ -3,7 +3,8 @@
  * One drop as a tile, used everywhere drops are listed (front door, See also, styleguide). It sizes
  * itself with a container query: narrow, it stacks (type, title, summary, then the date at the
  * bottom, so tiles in a grid line up); from 48rem wide it becomes a row with the date on the right.
- * The whole tile is the link's hit area.
+ * The whole tile is the link's hit area. New sits in the top right corner, and a drop that ships a
+ * Figma plugin says "Plugin included" there too.
  *
  * Locked variant (battle pass): a slot whose drop day hasn't come. Dashed border, the planned
  * gem faded, no title, and the day it unlocks. The next one to unlock says so in its top right
@@ -14,7 +15,7 @@ import RarityLabel from "./RarityLabel.astro";
 import StatusLabel from "./StatusLabel.astro";
 import Icon from "./Icon.astro";
 import { DROP_TYPES, SEASONS, type DropType, type Rarity } from "@/lib/grist";
-import { derive, dropHref, formatDate, isoDate, type Drop } from "@/lib/drops";
+import { derive, dropHref, formatDate, hasPlugin, isoDate, type Drop } from "@/lib/drops";
 
 interface Props {
   drop?: Drop;
@@ -30,6 +31,7 @@ interface Props {
 const { drop, locked, level = 3, season = false, class: className } = Astro.props;
 const Heading = `h${level}` as "h2" | "h3" | "h4";
 const shown = drop && derive(drop);
+const plugin = drop && hasPlugin(drop);
 ---
 
 {drop && shown ? (
@@ -44,7 +46,17 @@ const shown = drop && derive(drop);
             <RarityLabel rarity={shown.rarity} type={drop.data.drop} size="md" />
             {season && <span class="drop-card__season">{SEASONS[drop.data.season].title}</span>}
           </span>
-          {shown.isNew && <NewBadge class="drop-card__new" />}
+          {(shown.isNew || plugin) && (
+            <span class="drop-card__corner">
+              {plugin && (
+                <span class="drop-card__extra text-caption">
+                  <Icon name="figma" />
+                  Plugin included
+                </span>
+              )}
+              {shown.isNew && <NewBadge />}
+            </span>
+          )}
         </p>
         <Heading class="drop-card__title">
           <a class="drop-card__link" href={dropHref(drop)} data-no-tear>
@@ -173,9 +185,23 @@ const shown = drop && derive(drop);
       gap: var(--space-2) var(--space-3);
     }
 
-    .drop-card__rank :global(.drop-card__new) {
+    /* Top right corner: New, and what ships beyond the text (a Figma plugin). */
+    .drop-card__corner {
+      display: inline-flex;
       flex: none;
+      flex-wrap: wrap;
+      justify-content: flex-end;
+      gap: var(--space-2);
       margin-inline-start: auto;
+    }
+
+    .drop-card__extra {
+      display: inline-flex;
+      align-items: center;
+      gap: var(--space-1);
+      padding-inline: var(--space-1) calc(var(--space-1) - var(--tracking-caption));
+      border: var(--border-width) solid currentcolor;
+      border-radius: var(--radius-sm);
     }
 
     .drop-card__season {

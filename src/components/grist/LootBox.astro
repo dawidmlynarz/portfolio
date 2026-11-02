@@ -16,7 +16,16 @@ import HumanStamp from "./HumanStamp.astro";
 import RarityLabel from "./RarityLabel.astro";
 import { DROP_TYPES } from "@/lib/grist";
 import DownloadButton from "./DownloadButton.astro";
-import { derive, folderOf, isFolder, lootFilesOf, twinHref, zipHref, type Drop } from "@/lib/drops";
+import {
+  derive,
+  folderOf,
+  hasPlugin,
+  isFolder,
+  lootFilesOf,
+  twinHref,
+  zipHref,
+  type Drop,
+} from "@/lib/drops";
 
 interface Props {
   drop: Drop;
@@ -26,7 +35,9 @@ interface Props {
 
 const { drop, id = "the-drop" } = Astro.props;
 const { rarity } = derive(drop);
-const files = lootFilesOf(drop);
+// Files that ship in the .zip only (a plugin's code) aren't shown.
+const files = lootFilesOf(drop).filter((file) => !file.bundled);
+const plugin = hasPlugin(drop);
 // Several files: each under its path, capped until opened. Skills and workflows download as a folder.
 const workflow = files.length > 1;
 const folder = isFolder(drop);
@@ -85,6 +96,11 @@ const type = DROP_TYPES[drop.data.drop];
       <DownloadButton href={twinHref(drop)} name={`${drop.id}.md`} />
     )}
   </div>
+  {plugin && (
+    <p class="loot-box__install">
+      The .zip includes the Figma plugin. Install steps are in <code>figma-plugin/README.md</code>.
+    </p>
+  )}
   {skill && (
     <p class="loot-box__install">
       Unzip it into <code>.claude/skills</code> in your project, or <code>~/.claude/skills</code> to

@@ -179,6 +179,8 @@ export interface LootFile {
   /** Path inside the drop's folder, e.g. "skills/straw-man/SKILL.md". */
   path: string;
   text: string;
+  /** Ships in the .zip only, not shown on the page or in the markdown (a Figma plugin's code). */
+  bundled: boolean;
 }
 
 /**
@@ -188,10 +190,18 @@ export interface LootFile {
  */
 export function lootFilesOf(drop: Drop): LootFile[] {
   const prefix = `/src/content/grist/${drop.id}/loot/`;
-  const entry = drop.data.drop === "workflow" ? "README.md" : "SKILL.md";
+  const entry =
+    drop.data.drop === "workflow"
+      ? "README.md"
+      : drop.data.drop === "skill"
+        ? "SKILL.md"
+        : "drop.md";
   const files = Object.entries(LOOT_FILES)
     .filter(([path]) => path.startsWith(prefix))
-    .map(([path, text]) => ({ path: path.slice(prefix.length), text: text.trim() }))
+    .map(([path, text]) => {
+      const inner = path.slice(prefix.length);
+      return { path: inner, text: text.trim(), bundled: inner.startsWith(PLUGIN_FOLDER) };
+    })
     .sort((a, b) => (a.path === entry ? -1 : b.path === entry ? 1 : a.path.localeCompare(b.path)));
   if (files.length) return files;
   if (drop.data.drop === "workflow")
@@ -199,7 +209,13 @@ export function lootFilesOf(drop: Drop): LootFile[] {
   const text = RAW[`/src/content/grist/${drop.id}/drop.md`];
   if (text === undefined)
     throw new Error(`Grist: ${drop.id} has no drop.md (or loot/ folder) next to its index.mdx.`);
-  return [{ path: drop.data.drop === "skill" ? "SKILL.md" : "drop.md", text: text.trim() }];
+  return [
+    {
+      path: drop.data.drop === "skill" ? "SKILL.md" : "drop.md",
+      text: text.trim(),
+      bundled: false,
+    },
+  ];
 }
 
 /** A sample run: what the drop gives back, as written in output.md next to index.mdx. */
@@ -218,15 +234,21 @@ export function sampleOf(drop: Drop) {
   return { input: drop.data.sampleInput, text };
 }
 
+/** A Figma plugin that ships with a drop lives in loot/figma-plugin/, zip only. */
+const PLUGIN_FOLDER = "figma-plugin/";
+export const hasPlugin = (drop: Drop) =>
+  lootFilesOf(drop).some((file) => file.path === `${PLUGIN_FOLDER}manifest.json`);
+
 /** The loot as one text: drop.md, or several files one after another under their paths. */
 export function lootOf(drop: Drop) {
-  const files = lootFilesOf(drop);
+  const files = lootFilesOf(drop).filter((file) => !file.bundled);
   if (files.length === 1) return files[0]!.text;
   return files.map(({ path, text }) => `<!-- file: ${path} -->\n\n${text}`).join("\n\n");
 }
 
-/** Skills and workflows download as a folder (zipped); everything else as one markdown file. */
-export const isFolder = (drop: Drop) => drop.data.drop === "skill" || drop.data.drop === "workflow";
+/** Skills, workflows and drops with a plugin download as a folder (zipped); the rest as one markdown file. */
+export const isFolder = (drop: Drop) =>
+  drop.data.drop === "skill" || drop.data.drop === "workflow" || hasPlugin(drop);
 
 /**
  * The folder a zip unpacks to. A skill's must match the `name` in its SKILL.md, so it drops
