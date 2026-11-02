@@ -12,7 +12,7 @@ import AuthorNote from "./AuthorNote.astro";
 import SeasonHeader from "./SeasonHeader.astro";
 import NewBadge from "./NewBadge.astro";
 import { SEASON_SLOTS, type Season } from "@/lib/grist";
-import { formatDayYear, nextDropDay, type getSeasons } from "@/lib/drops";
+import { formatDate, nextDropDay, type getSeasons } from "@/lib/drops";
 
 interface Props {
   seasons: Awaited<ReturnType<typeof getSeasons>>;
@@ -28,7 +28,7 @@ const next = nextDropDay();
   <HeroBackdrop />
   <Container class="front-hero__head">
     <p class="front-hero__eyebrow text-caption front__muted">
-      {next && <NewBadge label={`Next drop on ${formatDayYear(next)}`} />}
+      {next && <NewBadge label={`Next drop: ${formatDate(next)}`} />}
       Loot for AI grinders.
     </p>
     <div class="front-hero__title" data-hero-wrap>

@@ -851,5 +851,6 @@ What changed versus the embed, and why:
 
 - The front door only shows seasons that have started. The sandbox still shows all eight.
 - A season pack is offered once all eight drops are out (front door and sandbox).
-- The eyebrow is "Loot for AI grinders." with the New badge before it reading "Next drop on 6 Nov, 2026". The day comes from the schedule (`nextDropDay`, the earliest slot in any season still to come) and is set at build time, so it moves on with each rebuild. Past the last scheduled slot the badge goes away.
+- The eyebrow is "Loot for AI grinders." with the New badge before it reading "Next drop: Nov 6, 2026". The day comes from the schedule (`nextDropDay`, the earliest slot in any season still to come) and is set at build time, so it moves on with each rebuild. Past the last scheduled slot the badge goes away.
 - The next locked card looks like the other locked cards (dashed), with "Next drop" in its top right corner like New.
+- Every date on Grist uses one format with the year, "Nov 6, 2026" (`formatDate` in `src/lib/drops.ts`): cards, locked cards, drop pages, season headers and the next drop badge.

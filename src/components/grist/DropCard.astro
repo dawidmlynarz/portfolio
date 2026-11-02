@@ -14,7 +14,7 @@ import RarityLabel from "./RarityLabel.astro";
 import StatusLabel from "./StatusLabel.astro";
 import Icon from "./Icon.astro";
 import { DROP_TYPES, SEASONS, type DropType, type Rarity } from "@/lib/grist";
-import { derive, dropHref, formatDay, isoDate, type Drop } from "@/lib/drops";
+import { derive, dropHref, formatDate, isoDate, type Drop } from "@/lib/drops";
 
 interface Props {
   drop?: Drop;
@@ -56,7 +56,7 @@ const shown = drop && derive(drop);
       <ul class="drop-card__meta" role="list">
         <li class="drop-card__fact">
           <Icon name="calendar" size="lg" />
-          <time datetime={isoDate(shown.published)}>{formatDay(shown.published)}</time>
+          <time datetime={isoDate(shown.published)}>{formatDate(shown.published)}</time>
         </li>
         <li class="drop-card__fact">
           <StatusLabel status={drop.data.status} />
@@ -89,7 +89,7 @@ const shown = drop && derive(drop);
           <li class="drop-card__fact">
             <Icon name="calendar" size="lg" />
             <time datetime={isoDate(locked.date)}>
-              {locked.late ? "Was due" : "Drops"} {formatDay(locked.date)}
+              {locked.late ? "Was due" : "Drops"} {formatDate(locked.date)}
             </time>
           </li>
         </ul>

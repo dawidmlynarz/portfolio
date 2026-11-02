@@ -248,16 +248,14 @@ export const lootHref = (drop: Drop) => `/grist/${drop.id}/drop.md`;
 export const zipHref = (drop: Drop) => `/grist/${drop.id}.zip`;
 export const seasonPackHref = (season: Season) => `/grist/season/${SEASONS[season].slug}.md`;
 
-const dayMonth = new Intl.DateTimeFormat("en-GB", { day: "numeric", month: "short" });
-const dayMonthYear = new Intl.DateTimeFormat("en-GB", {
-  day: "numeric",
+/** One date format everywhere on Grist, always with the year: "Nov 6, 2026". */
+const dateFormat = new Intl.DateTimeFormat("en-US", {
   month: "short",
+  day: "numeric",
   year: "numeric",
+  timeZone: "UTC",
 });
-export const formatDay = (date: Date) => dayMonth.format(date);
-export const formatDate = (date: Date) => dayMonthYear.format(date);
-/** "26 Nov, 2026", for the next drop badge. */
-export const formatDayYear = (date: Date) => `${formatDay(date)}, ${date.getFullYear()}`;
+export const formatDate = (date: Date) => dateFormat.format(date);
 export const isoDate = (date: Date) => date.toISOString().slice(0, 10);
 
 export function derive(drop: Drop) {
