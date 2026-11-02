@@ -126,6 +126,8 @@
     --weight-regular: 400;
     --weight-medium: 500;
     --weight-semibold: 600;
+    /* Every heading and heading-sized line (h1 to h4, display, big numbers, the menu). */
+    --weight-heading: var(--weight-medium);
     /* Line lengths, in units of the text's own size so each holds at every breakpoint. Bigger
        type reads best in shorter lines: about 24 characters for h1, 32 for h2, 50 for leads and
        65 for body copy. */

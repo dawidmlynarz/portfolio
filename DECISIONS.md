@@ -2,6 +2,16 @@
 
 Non-obvious choices, newest first. One entry per decision: what, why, and what it rules out.
 
+## 2026-11-02 · One heading weight, Grist shows the coming season
+
+**Every heading is medium (500), on the portfolio and Grist.** Grist headings were semibold while the portfolio's were medium, so the two looked different. A semantic token `--weight-heading` now sets h1 to h4, display, the big numbers, the menu links and every heading-sized line on both. Semibold was tried site-wide and Dawid went back to 500. Small labels stay on their own weights.
+
+**The coming season shows before its first drop.** /grist listed only seasons with a drop out, so between seasons the hero teased "Next drop" while the season it belonged to was hidden. The front door now also shows the season holding the next drop day, with its eight locked cards and the first one marked Next drop. Later seasons stay hidden.
+
+**Season order follows the drops.** Until the coming season's first drop is out, the front door lists seasons in number order (Season 1, then Season 2). From that Friday on, the newest season goes first. Dawid asked for Season 1 first until Season 2 starts.
+
+**No portfolio link to Grist yet.** A nav item, a home section and a footer link back from Grist were tried and taken out. Dawid will design the home section.
+
 ## 2026-10-30 · Grist: rarity by hand, no quest types
 
 Dawid's call: each quest's rarity is set by hand in frontmatter (`rarity`), and level-ups are only a changelog that never changes it, so Next rank is gone. Quest types (side quest, demo, deep dive, kit) are removed. "Side quest" is now a status next to Fresh and Battle-tested. Tiles and quest pages show the status and the date side by side.
