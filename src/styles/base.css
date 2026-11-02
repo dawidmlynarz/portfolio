@@ -45,14 +45,14 @@
 
   h1 {
     max-inline-size: var(--measure-h1);
-    font: var(--weight-medium) var(--text-h1) / var(--leading-h1) var(--font-heading);
+    font: var(--weight-heading) var(--text-h1) / var(--leading-h1) var(--font-heading);
     letter-spacing: var(--tracking-h1);
     text-wrap: balance;
   }
 
   h2 {
     max-inline-size: var(--measure-h2);
-    font: var(--weight-medium) var(--text-h2) / var(--leading-h2) var(--font-heading);
+    font: var(--weight-heading) var(--text-h2) / var(--leading-h2) var(--font-heading);
     letter-spacing: var(--tracking-h2);
     text-wrap: balance;
   }
@@ -63,13 +63,13 @@
   }
 
   h3 {
-    font: var(--weight-medium) var(--text-h3) / var(--leading-h3) var(--font-heading);
+    font: var(--weight-heading) var(--text-h3) / var(--leading-h3) var(--font-heading);
     letter-spacing: var(--tracking-h3);
     text-wrap: balance;
   }
 
   h4 {
-    font: var(--weight-medium) var(--text-h4) / var(--leading-h4) var(--font-heading);
+    font: var(--weight-heading) var(--text-h4) / var(--leading-h4) var(--font-heading);
     letter-spacing: var(--tracking-h4);
   }
 
@@ -204,7 +204,7 @@
 
   /* The one display line on the site: the email on /contact. */
   .text-display {
-    font: var(--weight-medium) var(--text-display) / var(--leading-display) var(--font-heading);
+    font: var(--weight-heading) var(--text-display) / var(--leading-display) var(--font-heading);
     letter-spacing: var(--tracking-display);
   }
 

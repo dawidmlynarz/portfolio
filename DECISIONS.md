@@ -6,6 +6,16 @@ Non-obvious choices, newest first. One entry per decision: what, why, and what i
 
 Grist unlocks a drop by comparing its day with the build time, so production needs a build every Friday. A GitHub Action calls a Cloudflare Pages deploy hook at 05:07 UTC on Fridays (drops unlock at 00:00 UTC, so they are live by early morning in Europe). Chosen over a daily build because every drop, New badge and Next drop date changes on a Friday, and over a Cloudflare Worker cron because it needs no second project. Each run re-enables its own schedule, since GitHub turns schedules off in public repos after 60 days without commits. Scheduled workflows only run from the default branch, so that has to be `main`. If drops ever move off Fridays, change the cron with `DROP_INTERVAL_DAYS` and the season starts.
 
+## 2026-11-02 · One heading weight, Grist shows the coming season
+
+**Every heading is medium (500), on the portfolio and Grist.** Grist headings were semibold while the portfolio's were medium, so the two looked different. A semantic token `--weight-heading` now sets h1 to h4, display, the big numbers, the menu links and every heading-sized line on both. Semibold was tried site-wide and Dawid went back to 500. Small labels stay on their own weights.
+
+**The coming season shows before its first drop.** /grist listed only seasons with a drop out, so between seasons the hero teased "Next drop" while the season it belonged to was hidden. The front door now also shows the season holding the next drop day, with its eight locked cards and the first one marked Next drop. Later seasons stay hidden.
+
+**Season order follows the drops.** Until the coming season's first drop is out, the front door lists seasons in number order (Season 1, then Season 2). From that Friday on, the newest season goes first. Dawid asked for Season 1 first until Season 2 starts.
+
+**No portfolio link to Grist yet.** A nav item, a home section and a footer link back from Grist were tried and taken out. Dawid will design the home section.
+
 ## 2026-10-30 · Grist: rarity by hand, no quest types
 
 Dawid's call: each quest's rarity is set by hand in frontmatter (`rarity`), and level-ups are only a changelog that never changes it, so Next rank is gone. Quest types (side quest, demo, deep dive, kit) are removed. "Side quest" is now a status next to Fresh and Battle-tested. Tiles and quest pages show the status and the date side by side.
@@ -915,3 +925,13 @@ From the market comparison (Claude Doc "Grist drops vs the market").
 - Each plugin is a zip at `/grist/plugins/<slug>.zip`, pinned in the catalog by its SHA-256. No `version` is set, so Claude Code takes the version from the digest and people get an update whenever a drop's files change. The zip writer uses fixed dates, so an unchanged drop keeps its digest.
 - A skill goes in as `skills/<name>/`. A workflow's `skills/` and `agents/` go in as they are. The optional raw value hook in Design to Code Workflow ships as a file but isn't switched on, because its README calls it optional.
 - Previews point their catalog at their own deployment (`CF_PAGES_URL`), so a preview can be tested on its own.
+
+## Grist licences (2 Nov)
+
+- Dawid chose CC BY 4.0 for drops (skills, workflows, prompts, rules, notes) and MIT for code (the DTCG Token Exporter Figma plugin). CC BY lets people use and adapt drops at work as long as they credit him. NonCommercial was left out because most readers use drops at their jobs, and CC0 would drop the credit. Creative Commons advises against CC for software, hence MIT for code.
+- Only drops are licensed. The rest of mlynarz.com (case studies, Grist's design, its name and gems) stays all rights reserved, and the repo stays private.
+- `DROP_LICENSE` and `CODE_LICENSE` live in `src/lib/drops.ts`. Every drop .zip and plugin zip carries a generated `LICENSE.md` (not shown on the page or in the markdown), marketplace entries and plugin.json set `license: "CC-BY-4.0"`, and the plugin folder has its own MIT `LICENSE`. The site itself has no licence line. Dawid chose to keep the licence in the files only. Adding the licence file changed every plugin digest once, so installed plugins see one update.
+
+## Grist: first drop Friday Nov 6 (2 Nov)
+
+- Dawid moved the first drop forward a week. Season 2 starts Friday Nov 6, 2026 and every later season moves one week earlier, keeping the same gaps.

@@ -14,7 +14,15 @@
  */
 import { createHash } from "node:crypto";
 import { DROP_TYPES, SEASONS } from "@/lib/grist";
-import { dropHref, folderOf, getDrops, lootFilesOf, type Drop } from "@/lib/drops";
+import {
+  DROP_LICENSE,
+  dropHref,
+  folderOf,
+  getDrops,
+  licenseFileOf,
+  lootFilesOf,
+  type Drop,
+} from "@/lib/drops";
 import { SITE } from "@/lib/site";
 import { zip } from "@/lib/zip";
 
@@ -41,6 +49,7 @@ function manifestOf(drop: Drop, base: URL) {
     description: drop.data.summary,
     author: author(base),
     homepage: new URL(dropHref(drop), base).href,
+    license: DROP_LICENSE.spdx,
     keywords: [DROP_TYPES[drop.data.drop].label.toLowerCase(), SEASONS[drop.data.season].slug],
   };
 }
@@ -59,6 +68,7 @@ export function pluginFilesOf(drop: Drop, base: URL) {
       text: JSON.stringify(manifestOf(drop, base), null, 2),
     },
     ...loot.map(({ path, text }) => ({ path: `${prefix}${path}`, text })),
+    licenseFileOf(drop, base),
   ];
 }
 

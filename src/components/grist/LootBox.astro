@@ -26,6 +26,8 @@ import {
   zipHref,
   type Drop,
 } from "@/lib/drops";
+import { MARKETPLACE_NAME, isPlugin, marketplaceHref } from "@/lib/marketplace";
+import { siteBase } from "@/lib/site";
 
 interface Props {
   drop: Drop;
@@ -43,6 +45,13 @@ const workflow = files.length > 1;
 const folder = isFolder(drop);
 const skill = drop.data.drop === "skill";
 const type = DROP_TYPES[drop.data.drop];
+// Skills and workflows are also plugins in the Grist marketplace (src/lib/marketplace.ts).
+const install = isPlugin(drop)
+  ? [
+      `/plugin marketplace add ${new URL(marketplaceHref, siteBase(Astro.site)).href}`,
+      `/plugin install ${drop.id}@${MARKETPLACE_NAME}`,
+    ].join("\n")
+  : undefined;
 ---
 
 <section class="loot-box" aria-labelledby={id}>
@@ -107,6 +116,25 @@ const type = DROP_TYPES[drop.data.drop];
       use it everywhere. It unpacks to <code>{folderOf(drop)}/SKILL.md</code>.
     </p>
   )}
+  {install && (
+    <div class="loot-box__plugin">
+      <p class="loot-box__install">
+        In Claude Code you can install it as a plugin instead, and it stays up to date.
+      </p>
+      <div class="loot-box__loot">
+        <pre class="loot-box__text"><code>{install}</code></pre>
+        <span class="loot-box__copy">
+          <CopyButton
+            text={install}
+            icon="copy"
+            variant="ghost"
+            label="Copy the install commands"
+            done="Commands copied"
+          />
+        </span>
+      </div>
+    </div>
+  )}
 </section>
 
 <script>
@@ -134,6 +162,11 @@ const type = DROP_TYPES[drop.data.drop];
 
 <style>
   @layer components {
+    .loot-box__plugin {
+      display: grid;
+      gap: var(--space-2);
+    }
+
     .loot-box__install {
       font-size: var(--text-small);
       line-height: var(--leading-small);
@@ -174,7 +207,7 @@ const type = DROP_TYPES[drop.data.drop];
       max-inline-size: none; /* not the page h2's measure: the name uses the box's width */
       padding-inline-end: var(--space-12);
       font-size: var(--text-h4);
-      font-weight: var(--weight-semibold);
+      font-weight: var(--weight-heading);
       line-height: var(--leading-h4);
       letter-spacing: var(--tracking-h4);
     }
