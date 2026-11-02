@@ -20,7 +20,7 @@ draft: true
 
 {/* CLAUDE: limits added for the Legendary tier. Confirm or rewrite. */}
 
-{/* CLAUDE: The plugin ships in loot/figma-plugin/ (2 Nov). Claude rewrote its README, changed the plugin id, and added a "Made by Dawid Młynarz" link. Check: the export isn't strict W3C format (no $value or $type), so "JSON that follows the W3C design tokens format and that Style Dictionary reads as it is" below doesn't match the plugin, and neither does the Export line in drop.md. */}
+{/* CLAUDE: The plugin ships in loot/figma-plugin/ (2 Nov). Claude rewrote its README, changed the plugin id, and added a "Made by Dawid Młynarz" link. Claude also added the W3C DTCG format option (now the default) at Dawid's request, so the line about the W3C format below matches. Tested against a mocked Figma API and Style Dictionary 4, not yet in Figma. */}
 
 I built a small Figma plugin that turns Figma variables straight into a token file Style Dictionary can read. It keeps the links between tokens (a role pointing at a raw colour) and exports text styles too. I needed one specific export, JSON that follows the W3C design tokens format and that Style Dictionary reads as it is. So I built it. It's in the .zip with this drop now. From there Style Dictionary builds the code for each platform, and Storybook shows the result.
 

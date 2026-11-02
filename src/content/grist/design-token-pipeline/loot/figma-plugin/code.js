@@ -449,6 +449,131 @@ async function buildTypographyToken(style, warnings, excludedByCollection, globa
 }
 
 // ---------------------------------------------------------------------------
+// W3C DTCG output (the "W3C DTCG" format option)
+// ---------------------------------------------------------------------------
+// Same layers and references as the default shape, but every token becomes
+// { "$value", "$type", "$description" }, which Style Dictionary reads with
+// usesDtcg. Colours stay hex strings and sizes become "16px" strings, the
+// forms Style Dictionary and most token tools read today.
+
+/** Figma variable scopes that hold a size in pixels. */
+var DIMENSION_SCOPES = [
+  "CORNER_RADIUS",
+  "WIDTH_HEIGHT",
+  "GAP",
+  "STROKE_FLOAT",
+  "FONT_SIZE",
+  "LETTER_SPACING",
+  "PARAGRAPH_SPACING",
+  "PARAGRAPH_INDENT",
+  "EFFECT_FLOAT",
+];
+
+/** The DTCG $type for a Figma variable, or undefined when the spec has no type for it. */
+function dtcgTypeOf(variable) {
+  var scopes = variable.scopes || [];
+  if (variable.resolvedType === "COLOR") return "color";
+  if (variable.resolvedType === "FLOAT") {
+    if (scopes.indexOf("FONT_WEIGHT") !== -1) return "fontWeight";
+    for (var i = 0; i < DIMENSION_SCOPES.length; i++) {
+      if (scopes.indexOf(DIMENSION_SCOPES[i]) !== -1) return "dimension";
+    }
+    return "number";
+  }
+  if (variable.resolvedType === "STRING" && scopes.indexOf("FONT_FAMILY") !== -1) {
+    return "fontFamily";
+  }
+  return undefined; // strings and booleans have no DTCG type
+}
+
+function isReference(value) {
+  return typeof value === "string" && /^\{[^}]+\}$/.test(value);
+}
+
+/** A number of pixels as a DTCG dimension string; references pass through. */
+function px(value) {
+  return typeof value === "number" ? value + "px" : value;
+}
+
+/** Wrap a variable's exported value as a DTCG token. */
+function dtcgToken(variable, value) {
+  var type = dtcgTypeOf(variable);
+  var token = { $value: type === "dimension" && !isReference(value) ? px(value) : value };
+  if (type) token.$type = type;
+  if (variable.description) token.$description = variable.description;
+  return token;
+}
+
+/** Figma's font style name ("Semi Bold Italic") as a CSS weight (600). */
+var FONT_WEIGHTS = [
+  ["thin", 100],
+  ["hairline", 100],
+  ["extra light", 200],
+  ["extralight", 200],
+  ["ultra light", 200],
+  ["light", 300],
+  ["regular", 400],
+  ["normal", 400],
+  ["book", 400],
+  ["medium", 500],
+  ["semi bold", 600],
+  ["semibold", 600],
+  ["demi bold", 600],
+  ["extra bold", 800],
+  ["extrabold", 800],
+  ["ultra bold", 800],
+  ["bold", 700],
+  ["black", 900],
+  ["heavy", 900],
+];
+function fontWeightOf(styleName) {
+  if (isReference(styleName)) return styleName;
+  var name = String(styleName).toLowerCase();
+  for (var i = 0; i < FONT_WEIGHTS.length; i++) {
+    if (name.indexOf(FONT_WEIGHTS[i][0]) !== -1) return FONT_WEIGHTS[i][1];
+  }
+  return 400;
+}
+
+/**
+ * A typography token from buildTypographyToken, as a DTCG composite. Line height becomes a ratio of
+ * the font size; Figma's text case, decoration and paragraph settings, which the spec doesn't
+ * cover, go under $extensions.
+ */
+function dtcgTypography(style, token) {
+  var value = {
+    fontFamily: token.fontFamily,
+    fontWeight: fontWeightOf(token.fontStyle),
+    fontSize: px(token.fontSize),
+    letterSpacing:
+      style.letterSpacing.unit === "PERCENT" && !isReference(token.letterSpacing)
+        ? token.letterSpacing + "em"
+        : px(token.letterSpacing),
+  };
+  if (
+    style.lineHeight.unit === "PIXELS" &&
+    typeof token.lineHeight === "number" &&
+    typeof token.fontSize === "number"
+  ) {
+    value.lineHeight = Math.round((token.lineHeight / token.fontSize) * 1000) / 1000;
+  } else if (token.lineHeight !== "AUTO") {
+    value.lineHeight = token.lineHeight;
+  }
+  var out = { $type: "typography", $value: value };
+  if (style.description) out.$description = style.description;
+  out.$extensions = {
+    "com.figma": {
+      fontStyle: token.fontStyle,
+      textCase: token.textCase,
+      textDecoration: token.textDecoration,
+      paragraphSpacing: token.paragraphSpacing,
+      paragraphIndent: token.paragraphIndent,
+    },
+  };
+  return out;
+}
+
+// ---------------------------------------------------------------------------
 // Scan (populates the selection tree in the UI)
 // ---------------------------------------------------------------------------
 
@@ -499,7 +624,9 @@ async function scanVariables() {
 // Export
 // ---------------------------------------------------------------------------
 
-async function exportTokens(excluded) {
+async function exportTokens(excluded, format) {
+  // "dtcg" wraps every token as { $value, $type, $description }; anything else keeps the plain shape.
+  var dtcg = format === "dtcg";
   var collections = await figma.variables.getLocalVariableCollectionsAsync();
   var textStyles = await figma.getLocalTextStylesAsync();
 
@@ -574,7 +701,13 @@ async function exportTokens(excluded) {
         );
         if (gValue === undefined) continue;
 
-        setNested(globalBucket, namePath(gVariable.name), gValue, gCollection.name, warnings);
+        setNested(
+          globalBucket,
+          namePath(gVariable.name),
+          dtcg ? dtcgToken(gVariable, gValue) : gValue,
+          gCollection.name,
+          warnings,
+        );
       }
     }
 
@@ -596,7 +729,13 @@ async function exportTokens(excluded) {
           excludedByCollection,
           GLOBAL_LAYER_NAME,
         );
-        setNested(typographyBucket, namePath(style.name), typographyToken, "Text Styles", warnings);
+        setNested(
+          typographyBucket,
+          namePath(style.name),
+          dtcg ? dtcgTypography(style, typographyToken) : typographyToken,
+          "Text Styles",
+          warnings,
+        );
       }
 
       globalBucket[TYPOGRAPHY_GROUP_NAME] = typographyBucket;
@@ -655,7 +794,7 @@ async function exportTokens(excluded) {
         setNested(
           themeObj,
           namePath(variable1.name),
-          value1,
+          dtcg ? dtcgToken(variable1, value1) : value1,
           collection1.name + " (" + themeSlug + ")",
           warnings,
         );
@@ -684,7 +823,7 @@ figma.ui.onmessage = function (msg) {
     });
   }
   if (msg.type === "EXPORT") {
-    exportTokens(msg.excluded).catch(function (err) {
+    exportTokens(msg.excluded, msg.format).catch(function (err) {
       figma.ui.postMessage({ type: "ERROR", message: String(err) });
     });
   }

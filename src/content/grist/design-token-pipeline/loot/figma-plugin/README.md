@@ -14,31 +14,66 @@ You need the Figma desktop app. Local plugins don't load in the browser.
 
 ## What you get
 
+Pick a format before you export. Both keep the same layers and references.
+
+- **W3C DTCG** (the default). Every token is `{ "$value", "$type", "$description" }`, in the W3C design tokens format. Style Dictionary reads it as it is, with `usesDtcg: true`.
+- **Plain values.** The same tree with bare values and no wrappers, for importing straight into JavaScript.
+
 ```json
 {
   "primitives": {
-    "color": { "blue": { "400": "#60a5fa", "600": "#1d4ed8" }, "gray": { "900": "#111111" } },
+    "color": { "blue": { "600": { "$value": "#1d4ed8", "$type": "color" } } },
+    "space": {
+      "4": { "$value": "16px", "$type": "dimension", "$description": "Gap between items" }
+    },
     "typography": {
       "Heading": {
-        "H1": { "fontFamily": "Inter", "fontStyle": "Bold", "fontSize": 32, "lineHeight": 1.2 }
+        "H1": {
+          "$type": "typography",
+          "$value": {
+            "fontFamily": "Inter",
+            "fontWeight": 600,
+            "fontSize": "32px",
+            "lineHeight": 1.25,
+            "letterSpacing": "-0.02em"
+          }
+        }
       }
     }
   },
-  "light": { "color": { "text": { "link": "{primitives.color.blue.600}" } } },
-  "dark": { "color": { "text": { "link": "{primitives.color.blue.400}" } } }
+  "light": {
+    "color": {
+      "text": {
+        "link": {
+          "$value": "{primitives.color.blue.600}",
+          "$type": "color",
+          "$description": "Links in body text"
+        }
+      }
+    }
+  },
+  "dark": {
+    "color": {
+      "text": {
+        "link": {
+          "$value": "{primitives.color.blue.400}",
+          "$type": "color",
+          "$description": "Links in body text"
+        }
+      }
+    }
+  }
 }
 ```
 
 - Collections with one mode (your raw palette, type scale, spacing) go into `primitives`, once.
 - Collections with modes are written once per mode. Light and Dark modes give you `light` and `dark`.
 - An alias stays a reference, like `{primitives.color.blue.600}`, so changing a primitive changes every token that points at it.
-- Colours export as `#rrggbb`, or `#rrggbbaa` with transparency. Sizes export as plain numbers, without `px`.
-- Text Styles land under `primitives.typography`. Line height and letter spacing in percent become ratios (150% is `1.5`).
+- A variable's description in Figma becomes its `$description`. That's the line agents read to pick the right token.
+- `$type` comes from the variable's type and scopes. Colours are `color`, sizes scoped to gap, radius, width or font size are `dimension` in px, font weights are `fontWeight`, other numbers are `number`. Strings and booleans have no type in the spec, so they go without one.
+- Colours export as hex, with alpha when there's transparency.
+- Text Styles land under `primitives.typography` as `typography` tokens. The font style name (Semi Bold) becomes a weight (600), and line height becomes a ratio of the font size. Text case, decoration and paragraph spacing go under `$extensions`.
 - If two variables end up on the same path, or a token points at something you left out, the plugin shows a warning instead of overwriting.
-
-## Before you build with it
-
-The references need resolving before the values are usable in code. Style Dictionary can do it with a custom parser, since this shape has no `$value` and `$type` wrappers. A short script that swaps each `{a.b.c}` for the value at that path works too.
 
 ## Changing it
 

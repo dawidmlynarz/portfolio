@@ -203,6 +203,26 @@
         font-size: 11px;
       }
 
+      .format {
+        display: flex;
+        gap: 12px;
+        margin: 0 0 10px;
+        padding: 0;
+        border: 0;
+        font-size: 11px;
+      }
+      .format legend {
+        float: left;
+        margin-right: 4px;
+        color: var(--muted);
+      }
+      .format label {
+        display: inline-flex;
+        align-items: center;
+        gap: 4px;
+        cursor: pointer;
+      }
+
       .credit {
         margin: 12px 0 0;
         color: var(--muted);
@@ -229,6 +249,14 @@
     </div>
 
     <div id="tree-container" class="loading">Scanning variables…</div>
+
+    <fieldset class="format">
+      <legend>Format</legend>
+      <label
+        ><input type="radio" name="format" value="dtcg" checked /> W3C DTCG ($value, $type)</label
+      >
+      <label><input type="radio" name="format" value="plain" /> Plain values</label>
+    </fieldset>
 
     <button class="primary" id="export" disabled>Export selected</button>
 
@@ -473,7 +501,11 @@
         exportBtn.textContent = "Exporting…";
         result.style.display = "none";
         messages.innerHTML = "";
-        parent.postMessage({ pluginMessage: { type: "EXPORT", excluded: collectExcluded() } }, "*");
+        var format = document.querySelector('input[name="format"]:checked').value;
+        parent.postMessage(
+          { pluginMessage: { type: "EXPORT", excluded: collectExcluded(), format: format } },
+          "*",
+        );
       });
 
       window.onmessage = function (event) {
