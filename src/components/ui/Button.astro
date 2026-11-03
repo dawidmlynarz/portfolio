@@ -1,5 +1,6 @@
 ---
 import type { HTMLAttributes } from "astro/types";
+import Icon from "@/components/ui/Icon.astro";
 
 interface Props extends Omit<HTMLAttributes<"button">, "class" | "type"> {
   /** Renders an <a> when set, otherwise a <button>. */
@@ -44,18 +45,6 @@ const classes = [
   className,
 ];
 const content = iconOnly ? "" : await Astro.slots.render("default");
-const ICONS = {
-  arrow: "M5 12h14M13 6l6 6-6 6",
-  "arrow-left": "M19 12H5M11 6l-6 6 6 6",
-  "arrow-up": "M12 19V5M5 12l7-7 7 7",
-  info: "M12 21a9 9 0 1 0 0-18 9 9 0 0 0 0 18ZM12 11v5M12 7.5h.01",
-  "arrow-down": "M12 5v14M5 12l7 7 7-7",
-  copy: "M10 8h9a1 1 0 0 1 1 1v10a1 1 0 0 1-1 1h-9a1 1 0 0 1-1-1V9a1 1 0 0 1 1-1ZM5 16a1 1 0 0 1-1-1V5a1 1 0 0 1 1-1h9a1 1 0 0 1 1 1",
-  link: "M10 14a4 4 0 0 0 5.66 0l3-3a4 4 0 0 0-5.66-5.66l-1 1M14 10a4 4 0 0 0-5.66 0l-3 3a4 4 0 0 0 5.66 5.66l1-1",
-  // Lucide "sparkles" (ISC).
-  sparkles:
-    "M9.94 15.5A2 2 0 0 0 8.5 14.06l-6.14-1.58a.5.5 0 0 1 0-.96L8.5 9.94A2 2 0 0 0 9.94 8.5l1.58-6.14a.5.5 0 0 1 .96 0l1.58 6.14a2 2 0 0 0 1.44 1.44l6.14 1.58a.5.5 0 0 1 0 .96l-6.14 1.58a2 2 0 0 0-1.44 1.44l-1.58 6.14a.5.5 0 0 1-.96 0ZM20 3v4M22 5h-4M4 17v2M5 18H3",
-};
 // Arrows point onward, so they follow the label; the rest name the action, so they lead.
 const leading = Boolean(icon && !["arrow", "arrow-left", "arrow-up"].includes(icon));
 // The face is the button at rest. Text buttons add two copies in the hover colours for the row
@@ -72,25 +61,9 @@ const layers = iconHover ? ["face"] : ["face", "outer", "middle"];
       ]}
       aria-hidden={layer === "face" ? undefined : "true"}
     >
-      {leading && icon && (
-        <svg
-          class:list={["button__icon", `button__icon--${icon}`]}
-          viewBox="0 0 24 24"
-          aria-hidden="true"
-        >
-          <path d={ICONS[icon]} />
-        </svg>
-      )}
+      {leading && icon && <Icon name={icon} class={`button__icon button__icon--${icon}`} />}
       {content && <span set:html={content} />}
-      {!leading && icon && (
-        <svg
-          class:list={["button__icon", `button__icon--${icon}`]}
-          viewBox="0 0 24 24"
-          aria-hidden="true"
-        >
-          <path d={ICONS[icon]} />
-        </svg>
-      )}
+      {!leading && icon && <Icon name={icon} class={`button__icon button__icon--${icon}`} />}
     </span>
   ));
   return href ? (
@@ -121,13 +94,14 @@ const layers = iconHover ? ["face"] : ["face", "outer", "middle"];
      */
     .button {
       --button-pad: var(--space-3) var(--space-6);
+      --tear-shift: 2; /* the link tear, jolting twice as far */
 
       display: inline-grid;
       padding: 0;
       border: 0;
       border-radius: var(--radius-pill);
       font-weight: var(--weight-medium);
-      line-height: 1.2;
+      line-height: var(--leading-tight);
       text-align: center;
       background: none; /* no link underline, no browser fill on <button> (the face paints it) */
       transition: scale var(--duration-fast) var(--ease-standard);
@@ -224,11 +198,6 @@ const layers = iconHover ? ["face"] : ["face", "outer", "middle"];
       flex-shrink: 0;
       inline-size: 1em;
       block-size: 1em;
-      fill: none;
-      stroke: currentcolor;
-      stroke-width: 1.75;
-      stroke-linecap: round;
-      stroke-linejoin: round;
       transition: translate var(--duration-link) var(--ease-out-expo);
     }
 
@@ -239,71 +208,24 @@ const layers = iconHover ? ["face"] : ["face", "outer", "middle"];
 
     /* ---------- Text buttons: the row tear ----------
        The copies stand in for the face, as the link tear hides the real text while it runs.
-       After the tear the top copy stays whole and the middle copy hides, so no seams show. */
+       After the tear the top copy stays whole and the middle copy hides, so no seams show.
+       The keyframes are the link tear's (base.css), at twice the shift. */
     .button:not(:disabled, .button--icon-hover):is(:hover, :focus-visible) .button__face {
       opacity: 0;
     }
 
     .button:not(:disabled):is(:hover, :focus-visible) .button__tear--outer {
       opacity: 1;
-      animation: button-tear-outer var(--duration-tear) steps(1, end);
+      animation: link-tear-outer var(--duration-tear) steps(1, end);
     }
 
     .button:not(:disabled):is(:hover, :focus-visible) .button__tear--middle {
-      animation: button-tear-middle var(--duration-tear) steps(1, end);
+      animation: link-tear-middle var(--duration-tear) steps(1, end);
     }
 
     .button:not(:disabled, .button--icon-hover):is(:hover, :focus-visible)
       :is(.button__icon--arrow, .button__icon--arrow-left, .button__icon--arrow-up) {
       translate: var(--space-1) 0;
-    }
-
-    @keyframes button-tear-outer {
-      0% {
-        translate: -0.3em 0;
-        clip-path: polygon(0 0, 100% 0, 100% 34%, 0 34%, 0 67%, 100% 67%, 100% 100%, 0 100%);
-      }
-
-      25% {
-        translate: 0.4em 0;
-        clip-path: polygon(0 0, 100% 0, 100% 34%, 0 34%, 0 67%, 100% 67%, 100% 100%, 0 100%);
-      }
-
-      50% {
-        translate: -0.1em 0;
-        clip-path: polygon(0 0, 100% 0, 100% 34%, 0 34%, 0 67%, 100% 67%, 100% 100%, 0 100%);
-      }
-
-      75% {
-        translate: 0.15em 0;
-        clip-path: polygon(0 0, 100% 0, 100% 34%, 0 34%, 0 67%, 100% 67%, 100% 100%, 0 100%);
-      }
-    }
-
-    @keyframes button-tear-middle {
-      0% {
-        opacity: 1;
-        translate: 0.45em 0;
-        clip-path: inset(34% 0 33% 0);
-      }
-
-      25% {
-        opacity: 1;
-        translate: -0.25em 0;
-        clip-path: inset(34% 0 33% 0);
-      }
-
-      50% {
-        opacity: 1;
-        translate: 0.2em 0;
-        clip-path: inset(34% 0 33% 0);
-      }
-
-      75% {
-        opacity: 1;
-        translate: -0.08em 0;
-        clip-path: inset(34% 0 33% 0);
-      }
     }
 
     /* ---------- Icon buttons: same colours, the icon goes where it points ----------
@@ -315,19 +237,19 @@ const layers = iconHover ? ["face"] : ["face", "outer", "middle"];
     }
 
     .button--icon-hover:not(:disabled):is(:hover, :focus-visible) .button__icon--arrow {
-      animation: button-icon-right 560ms;
+      animation: button-icon-right var(--duration-icon);
     }
 
     .button--icon-hover:not(:disabled):is(:hover, :focus-visible) .button__icon--arrow-left {
-      animation: button-icon-left 560ms;
+      animation: button-icon-left var(--duration-icon);
     }
 
     .button--icon-hover:not(:disabled):is(:hover, :focus-visible) .button__icon--arrow-up {
-      animation: button-icon-up 560ms;
+      animation: button-icon-up var(--duration-icon);
     }
 
     .button--icon-hover:not(:disabled):is(:hover, :focus-visible) .button__icon--arrow-down {
-      animation: button-icon-down 560ms;
+      animation: button-icon-down var(--duration-icon);
     }
 
     @keyframes button-icon-right {
@@ -412,7 +334,7 @@ const layers = iconHover ? ["face"] : ["face", "outer", "middle"];
 
     .button:disabled {
       cursor: not-allowed;
-      opacity: 0.5;
+      opacity: var(--opacity-disabled);
     }
   }
 </style>

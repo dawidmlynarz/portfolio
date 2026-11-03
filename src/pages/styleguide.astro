@@ -31,7 +31,8 @@ import YouTube from "@/components/ui/YouTube.astro";
 import { CAREER } from "@/lib/career";
 import youtubeSample from "@/assets/about/video-css-peeper.jpg";
 import portraitSample from "@/assets/about/tadzik.jpg";
-import gifSample from "@/assets/about/gifs/gandalf.webp?url";
+import gifSampleMp4 from "@/assets/about/gifs/gandalf.mp4?url";
+import gifSampleWebm from "@/assets/about/gifs/gandalf.webm?url";
 import gifSampleStill from "@/assets/about/gifs/gandalf-still.webp?url";
 import ClientLogos from "@/components/blocks/ClientLogos.astro";
 import WorkMarquee from "@/components/blocks/WorkMarquee.astro";
@@ -42,7 +43,8 @@ import { getPagedWork } from "@/lib/work";
 import LockPanel from "@/components/blocks/LockPanel.astro";
 import Gem from "@/components/grist/Gem.astro";
 import TileIcon from "@/components/grist/TileIcon.astro";
-import Icon, { type IconName } from "@/components/grist/Icon.astro";
+import Icon, { type IconName } from "@/components/ui/Icon.astro";
+import { ICONS } from "@/lib/icons";
 import Logo from "@/components/grist/Logo.astro";
 import RarityLabel from "@/components/grist/RarityLabel.astro";
 import AboutButton from "@/components/grist/AboutButton.astro";
@@ -123,7 +125,7 @@ const sampleWork = (
 ).filter((entry) => entry !== undefined);
 const sampleService = { ...SERVICES[0]!, title: "Services row" };
 
-const RADII = ["sm", "md", "lg", "xl", "pill"] as const;
+const RADII = ["sm", "md", "lg", "pill"] as const;
 
 const SECTIONS = [
   ["color", "Color"],
@@ -136,15 +138,8 @@ const SECTIONS = [
   ["blocks", "Blocks"],
 ] as const;
 
-/** Grist's line icons for meta lines, in the site's icon style. */
-const GRIST_ICONS: IconName[] = [
-  "lock",
-  "calendar",
-  "arrow-left",
-  "close",
-  "circle-check",
-  "flask",
-];
+/** Every icon in the site's set (src/lib/icons.ts). */
+const ICON_NAMES = Object.keys(ICONS) as IconName[];
 ---
 
 <SiteLayout title="Styleguide" description="Tokens and components of mlynarz.com." noindex>
@@ -347,6 +342,33 @@ const GRIST_ICONS: IconName[] = [
         </Stack>
 
         <Stack gap="4">
+          <h3>Icon</h3>
+          <p class="text-small">
+            Every line icon on the site, from <code>src/lib/icons.ts</code>. Buttons, the lock, the
+            video controls and Grist all draw from this one set.
+          </p>
+          <ul class="row plain-list icon-list" role="list">
+            {ICON_NAMES.map((name) => (
+              <li class="icon-list__item">
+                <Icon name={name} />
+                <code>{name}</code>
+              </li>
+            ))}
+          </ul>
+          <p class="text-small">
+            Size lg (1.25em), for meta rows (date, status) and the back arrow:
+          </p>
+          <ul class="row plain-list icon-list" role="list">
+            {ICON_NAMES.map((name) => (
+              <li class="icon-list__item">
+                <Icon name={name} size="lg" />
+                <code>{name}</code>
+              </li>
+            ))}
+          </ul>
+        </Stack>
+
+        <Stack gap="4">
           <h3>Tag</h3>
           <ul class="row plain-list" role="list">
             <Tag as="li">Product design</Tag>
@@ -423,7 +445,12 @@ const GRIST_ICONS: IconName[] = [
             <InlineImage src={youtubeSample} alt="CSS Peeper inspecting colours and fonts." />, a
             portrait one <InlineImage src={portraitSample} alt="Tadzik the dog." shape="portrait" />{" "}
             or a GIF{" "}
-            <InlineImage src={gifSample} still={gifSampleStill} alt="GIF: Gandalf dancing." />,
+            <InlineImage
+              src={{ mp4: gifSampleMp4, webm: gifSampleWebm }}
+              still={gifSampleStill}
+              alt="GIF: Gandalf dancing."
+            />
+            {", "}
             sized in em so it follows the text. Hover zooms it well past the line; with reduced
             motion a GIF shows a still frame.
           </p>
@@ -628,27 +655,6 @@ const GRIST_ICONS: IconName[] = [
             </div>
           </Stack>
         )}
-
-        <Stack gap="4">
-          <h3>Line icons</h3>
-          <ul class="row plain-list grist-icons" role="list">
-            {GRIST_ICONS.map((name) => (
-              <li class="grist-icons__item">
-                <Icon name={name} />
-                <code>{name}</code>
-              </li>
-            ))}
-          </ul>
-          <p class="text-small">Size lg (1.25em), for the date, the status and the back arrow:</p>
-          <ul class="row plain-list grist-icons" role="list">
-            {GRIST_ICONS.map((name) => (
-              <li class="grist-icons__item">
-                <Icon name={name} size="lg" />
-                <code>{name}</code>
-              </li>
-            ))}
-          </ul>
-        </Stack>
 
         <Stack gap="4">
           <h3>Buttons</h3>
@@ -912,7 +918,7 @@ const GRIST_ICONS: IconName[] = [
       inline-size: var(--bar);
       block-size: var(--space-3);
       border-radius: var(--radius-sm);
-      background-color: var(--color-brand);
+      background-color: var(--color-text);
     }
 
     .shape {
@@ -984,18 +990,18 @@ const GRIST_ICONS: IconName[] = [
       padding-block-start: var(--space-12);
     }
 
-    .grist-icons {
+    .icon-list {
       gap: var(--space-6);
     }
 
-    .grist-icons__item {
+    .icon-list__item {
       display: grid;
       justify-items: center;
       gap: var(--space-2);
       font-size: var(--text-h3);
     }
 
-    .grist-icons__item code {
+    .icon-list__item code {
       font-size: var(--text-caption);
     }
   }

@@ -33,7 +33,6 @@
     /* ---------- 1. Primitives (v2: black and white, true neutral greys) ---------- */
     --neutral-0: #fff;
     --neutral-50: #f5f5f5;
-    --neutral-100: #ebebeb;
     --neutral-200: #d9d9d9;
     --neutral-300: #b3b3b3;
     --neutral-500: #808080;
@@ -51,11 +50,8 @@
     --color-bg-subtle: light-dark(var(--neutral-50), var(--neutral-900));
     --color-text: light-dark(var(--neutral-950), var(--neutral-50));
     --color-text-muted: light-dark(var(--neutral-700), var(--neutral-300));
-    /* No accent colour: the "brand" is the ink itself */
-    --color-brand: var(--color-text);
-    --color-brand-strong: var(--color-text);
     /* UI borders only, never text */
-    --color-border: light-dark(var(--neutral-500), var(--neutral-500));
+    --color-border: var(--neutral-500); /* the same grey reads in both themes */
     --color-border-muted: light-dark(var(--neutral-300), var(--neutral-800));
     --color-border-subtle: light-dark(var(--neutral-200), var(--neutral-850));
     --color-focus: var(--color-text);
@@ -65,15 +61,13 @@
     /* Inverse surface (story panel, primary buttons, menu contact) and the text on it */
     --color-inverse-bg: light-dark(var(--neutral-950), var(--neutral-50));
     --color-on-inverse: light-dark(var(--neutral-0), var(--neutral-950));
-    --color-on-inverse-muted: light-dark(var(--neutral-500), var(--neutral-700));
+    --color-on-inverse-muted: light-dark(
+      var(--neutral-500),
+      var(--neutral-700)
+    ); /* experiments only */
     --color-overlay: color-mix(in srgb, var(--color-bg) 88%, transparent); /* sticky nav */
     --color-scrim: color-mix(in srgb, var(--color-bg) 35%, transparent); /* behind the open menu */
     --color-glass: color-mix(in srgb, var(--color-bg) 64%, transparent); /* the open menu */
-    /* Hero backdrop: a faint dot grid on the page background (Home, About, every Hero) */
-    --color-pattern: color-mix(in srgb, var(--color-border-subtle) 70%, var(--color-bg));
-    /* PREVIEW: hero backdrop options (see "Hero backdrop options" below) */
-    --color-hero-tint: color-mix(in srgb, var(--color-text) 5%, var(--color-bg));
-    --color-scanline: color-mix(in srgb, var(--color-text) 5%, var(--color-bg));
 
     /* ---------- Typography ----------
        Roles, not sizes. Fluid between 375px and 1440px viewports.
@@ -84,6 +78,7 @@
          h2        30 -> 56      1.05         -0.03em    500
          h3        22 -> 30      1.20         -0.015em   500
          h4        19 -> 22      1.30         -0.005em   500
+         tight     -             1.20          -         -     (one-line labels: buttons, the lock form)
          lead      18 -> 22      1.50          0         400
          body      16 -> 18      1.60          0         400
          small     14 -> 15      1.50          0         400
@@ -117,6 +112,7 @@
     --leading-h3: 1.2;
     --tracking-h3: -0.015em;
     --leading-h4: 1.3;
+    --leading-tight: 1.2;
     --tracking-h4: -0.005em;
     --leading-lead: 1.5;
     --leading-body: 1.6;
@@ -156,17 +152,26 @@
     --space-section-md: clamp(3.5rem, 2.972rem + 2.254vw, 5rem); /* 56 -> 80  */
     --space-section-lg: clamp(4.5rem, 3.62rem + 3.756vw, 7rem); /* 72 -> 112 */
     --container-max: 80rem;
+    /* Fixed widths shared by several components */
+    --size-panel: 30rem; /* side sheets and dialogs: the Grist About panel, the case-study lock */
+    --size-cover: 22rem; /* a case-study cover beside a list: Next up, the /contact marquee */
+    /* Space above content on pages that don't run under the floating nav (SiteLayout) */
+    --nav-clearance: calc(var(--space-4) + var(--space-12) + var(--space-8));
 
-    /* Breakpoints (can't be vars in @media): 48em (768px), 62em (992px) */
+    /* Breakpoints (can't be vars in @media): 36em (576px, small grids only), 48em (768px),
+       62em (992px). Container queries use rem: 24rem and 48rem. */
 
     /* ---------- Shape, depth, motion ---------- */
     --radius-sm: 4px;
     --radius-md: 8px;
     --radius-lg: 20px;
-    --radius-xl: 48px; /* verify it is used, else drop from both CSS and Figma */
     --radius-pill: 9999px;
     --border-width: 1px;
     --shadow-bar: 0 12px 30px -20px light-dark(rgb(0 0 0 / 30%), rgb(0 0 0 / 70%));
+    --shadow-panel: 0 24px 64px -24px light-dark(rgb(0 0 0 / 28%), rgb(0 0 0 / 80%));
+    /* Fading things back: siblings of the hovered row, and anything disabled or locked */
+    --opacity-dim: 0.35;
+    --opacity-disabled: 0.5;
     --blur-nav: 12px; /* backdrop blur behind the sticky nav */
     --blur-menu: 16px; /* backdrop blur behind the open menu */
     --blur-page: 12px; /* page transition: pages blur out and in */
@@ -178,12 +183,11 @@
     --duration-fade: 1200ms; /* portrait fade-in on page load */
     --duration-reveal: 600ms; /* media fading in once ready (portrait reveal canvas) */
     --duration-zoom: 800ms; /* case-study cover zoom on hover */
-    --duration-marquee: 40s; /* one full loop of the client logo marquee */
-    --duration-marquee-work: 60s; /* one full loop of the case-study covers on /contact */
-    --duration-stamp: 24s; /* one turn of the Grist "human curated" stamp */
     --duration-shine: 2.1s; /* Grist foil: one pass of the shine on Legendary and Mythic, then a rest */
-    --duration-quote: 9s; /* how long each /services quote stays before the next one */
     --ease-out-expo: cubic-bezier(0.19, 1, 0.22, 1);
+    --duration-icon: 560ms; /* button icon hover: the icon leaves and comes back */
+    --duration-sweep: 2.4s; /* Grist: one pass of the shine on the NEW badge and the pixel gem */
+    --duration-failsafe: 3s; /* show [data-reveal] content if the motion layer never runs */
     --duration-page: 700ms; /* ink spread (theme switch); the nav during page changes */
     --duration-menu: 900ms; /* nav menu: makes room, then drops open */
     --duration-page-out: 320ms; /* page transition: the old page fades out */
@@ -240,9 +244,6 @@
     --rarity-mythic-tile-text: light-dark(#d40000, #ff3b3b);
     /* The hidden [?] tile on locked slots: the common gem's light grey, quieter than any tier. */
     --rarity-hidden-icon: var(--rarity-common-fill);
-    --shadow-panel: 0 24px 64px -24px light-dark(rgb(0 0 0 / 28%), rgb(0 0 0 / 80%));
-    /* Space above content on pages that don't run under the floating nav (SiteLayout) */
-    --nav-clearance: calc(var(--space-4) + var(--space-12) + var(--space-8));
 
     /* Hero grain (HeroBackdrop): SVG noise, a few hundred bytes, drawn once and tiled. Ink at a
        few percent alpha: dark on light, light on dark. Images can't use light-dark(), so the dark

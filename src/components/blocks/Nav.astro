@@ -243,6 +243,7 @@ const menu = [{ href: "/", label: "Home" }, ...NAV_LINKS];
       /* Every control in the bar is this tall; the bar adds an even --space-1 all round. */
       --nav-item-size: var(--space-10);
       --nav-radius: calc(var(--nav-item-size) / 2 + var(--space-1));
+      --nav-stagger: 40ms; /* the open menu: delay between one item and the next */
       --nav-bar-size: 22rem;
       --nav-open-size: 28rem;
 
@@ -605,7 +606,7 @@ const menu = [{ href: "/", label: "Home" }, ...NAV_LINKS];
         transition:
           translate var(--duration-page) var(--ease-out-expo),
           opacity var(--duration-page) var(--ease-out-expo);
-        transition-delay: calc(var(--duration-menu) * 0.45 + var(--i) * 40ms);
+        transition-delay: calc(var(--duration-menu) * 0.45 + var(--i) * var(--nav-stagger));
 
         @starting-style {
           translate: 0 var(--space-6);

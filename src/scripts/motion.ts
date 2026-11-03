@@ -13,8 +13,9 @@
  *   image drifts from its top edge to its bottom edge while the frame scrolls past.
  * - [data-cover-follow]: in a list of links ("Next up"), the hovered link's cover follows the
  *   pointer, beside it.
- * - [data-animated]: inline GIFs (InlineImage) start as a still frame; the animation is swapped
- *   in after the page has loaded, so it never competes with the hero for bandwidth.
+ * - [data-animated]: inline GIFs (InlineImage, short muted clips) show their still frame; after
+ *   the page has loaded each one plays while it is on screen, so it never competes with the hero
+ *   for bandwidth.
  * - Links: the "row tear" hover (styles in base.css). Links marked [data-no-tear] keep their own
  *   hover: buttons, pills and quiet links (menu, case-study cards, Next project).
  *
@@ -339,13 +340,20 @@ function linkTear() {
 }
 
 function animatedImages() {
-  const swap = () => {
-    for (const img of document.querySelectorAll<HTMLImageElement>("img[data-animated]")) {
-      img.src = img.dataset.animated!;
-    }
+  const clips = document.querySelectorAll<HTMLVideoElement>("video[data-animated]");
+  if (!clips.length) return;
+  const start = () => {
+    const observer = new IntersectionObserver((entries) => {
+      for (const { target, isIntersecting } of entries) {
+        const clip = target as HTMLVideoElement;
+        if (isIntersecting) clip.play().catch(() => {});
+        else clip.pause();
+      }
+    });
+    for (const clip of clips) observer.observe(clip);
   };
-  if (document.readyState === "complete") swap();
-  else addEventListener("load", swap, { once: true });
+  if (document.readyState === "complete") start();
+  else addEventListener("load", start, { once: true });
 }
 
 if (root.classList.contains("motion")) {

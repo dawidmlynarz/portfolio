@@ -8,7 +8,7 @@
  * locked, dashed and faded, until all eight drops are out, then downloads. Over a 2px rule.
  */
 import DownloadButton from "./DownloadButton.astro";
-import Icon from "./Icon.astro";
+import Icon from "@/components/ui/Icon.astro";
 import TileIcon from "./TileIcon.astro";
 import { RARITY_LABELS, SEASON_SLOTS, SEASONS, type Rarity, type Season } from "@/lib/grist";
 import { dropDay, formatDate, isoDate, seasonPackHref } from "@/lib/drops";
@@ -149,17 +149,18 @@ const revealed = slots.map((tier) => (tier ? RARITY_LABELS[tier] : "hidden")).jo
       color: var(--color-text-muted);
     }
 
-    /* The pack, locked: the download button's shape, dashed and faded like a locked card. */
+    /* The pack, locked: the download button's shape, dashed and in muted text like a locked card.
+       Muted text, not opacity, so the file name keeps 4.5:1 against the page. */
     .season-header__pack {
       display: inline-flex;
       align-items: center;
       gap: var(--space-2);
       max-inline-size: 100%;
       padding: var(--space-3) var(--space-6);
-      border: var(--border-width) dashed var(--color-border-muted);
+      border: var(--border-width) dashed var(--color-border-subtle);
       border-radius: var(--radius-pill);
+      color: var(--color-text-muted);
       font-weight: var(--weight-medium);
-      opacity: 0.5;
     }
 
     .season-header__file {

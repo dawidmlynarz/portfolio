@@ -4,7 +4,7 @@ import GristLayout from "@/layouts/GristLayout.astro";
 import Container from "@/components/layout/Container.astro";
 import Link from "@/components/ui/Link.astro";
 import HeroBackdrop from "@/components/blocks/HeroBackdrop.astro";
-import Icon from "@/components/grist/Icon.astro";
+import Icon from "@/components/ui/Icon.astro";
 import RarityLabel from "@/components/grist/RarityLabel.astro";
 import StatusLabel from "@/components/grist/StatusLabel.astro";
 import DropCard from "@/components/grist/DropCard.astro";
@@ -447,7 +447,7 @@ const jsonLd = {
       }
     }
 
-    @media (width >= 64em) {
+    @media (width >= 62em) {
       .drop__layout {
         grid-template-areas: "main rail" "more rail";
         grid-template-columns: minmax(0, 1fr) 16rem;

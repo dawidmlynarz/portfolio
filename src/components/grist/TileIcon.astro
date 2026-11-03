@@ -4,8 +4,16 @@
  * (src/lib/grist.ts), and the hidden [?] tile for a tier that hasn't dropped yet. Decorative
  * (a tier name always sits next to it). Legendary and Mythic have a foil shine: a soft diagonal band sweeps
  * across the tiles, clipped to them, and stops under reduced motion.
+ *
+ * A tier's tiles are one path. The first icon of a tier on a page draws it with an id; every later
+ * one is a `<use>` of it, so a page full of icons ships each shape once.
  */
-import { HIDDEN_ICON_PATHS, RARITY_ICON_PATHS, type RarityIconTier } from "./tile-icons";
+import {
+  HIDDEN_ICON_PATHS,
+  RARITY_ICON_PATHS,
+  drawnTiers,
+  type RarityIconTier,
+} from "./tile-icons";
 
 interface Props {
   /** hidden: the [?] tile, the rarity kept back until the drop lands */
@@ -15,8 +23,14 @@ interface Props {
 }
 
 const { tier, size = "sm" } = Astro.props;
-const paths = tier === "hidden" ? HIDDEN_ICON_PATHS : RARITY_ICON_PATHS[tier];
+const d = (tier === "hidden" ? HIDDEN_ICON_PATHS : RARITY_ICON_PATHS[tier]).join("");
 const shiny = tier === "legendary" || tier === "mythic";
+const shapeId = `rarity-icon-shape-${tier}`;
+// Tiers already drawn on this page (Astro.locals is one object per page render).
+const drawn = drawnTiers.get(Astro.locals) ?? new Set<string>();
+drawnTiers.set(Astro.locals, drawn);
+const first = !drawn.has(tier);
+drawn.add(tier);
 // Unique per instance, so every icon on the page clips its own band.
 const clipId = `rarity-icon-${crypto.randomUUID().slice(0, 8)}`;
 ---
@@ -30,9 +44,7 @@ const clipId = `rarity-icon-${crypto.randomUUID().slice(0, 8)}`;
   {shiny && (
     <defs>
       <clipPath id={clipId}>
-        {paths.map((d) => (
-          <path d={d} />
-        ))}
+        <use href={`#${shapeId}`} />
       </clipPath>
       <linearGradient id={`${clipId}-band`} x1="0" x2="1" y1="0" y2="0">
         <stop class="rarity-icon__light" offset="0" stop-opacity="0" />
@@ -43,9 +55,7 @@ const clipId = `rarity-icon-${crypto.randomUUID().slice(0, 8)}`;
       </linearGradient>
     </defs>
   )}
-  {paths.map((d) => (
-    <path d={d} />
-  ))}
+  {first ? <path id={shapeId} d={d} /> : <use href={`#${shapeId}`} />}
   {shiny && (
     <g clip-path={`url(#${clipId})`}>
       <g transform="rotate(25 12 12)">
