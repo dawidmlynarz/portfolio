@@ -24,7 +24,7 @@ draft: true
 
 ## My role
 
-I designed and built Grist by myself, and I write every drop. The ideas and the judgement are mine. Claude helps me format the files and build the site, inside rules I set for it.
+I designed and built [Grist](/grist) by myself, and I write every drop. The ideas and the judgement are mine. Claude helps me format the files and build the site, inside rules I set for it.
 
 ### Key achievements
 
@@ -88,7 +88,7 @@ I borrowed the names from games on purpose. People already know that Legendary i
 
 This was the main design problem. A person wants to know why a drop exists and whether it's for them. An AI tool only needs the loot itself, clean and with nothing around it.
 
-So every drop is two things. The page has my note, a one-line hint on when to use it, the type, the rarity and whether it's Tested or Trying. Under it sits the loot, with Copy for AI and Download. The same drop also lives as plain markdown, and adding `.md` to any address gives you that version. There's a file with only the loot, a pack for each finished season and an `llms.txt` for the whole collection, so an agent can read Grist without scraping the page.
+So every drop is two things. The page has my note, a one-line hint on when to use it, the type, the rarity and whether it's Tested or Trying. Under it sits the loot, with Copy for AI and Download. The same drop also lives as plain markdown, and adding `.md` to any address gives you that version. There's a file with only the loot, a pack for each finished season and an `llms.txt` for the whole collection, so an agent can read [Grist](/grist) without scraping the page.
 
 Skills and workflows download as a `.zip` you can drop straight into `.claude/skills/`. The bigger drops show a sample run under the loot, so you can see what you get before you install anything.
 
@@ -107,7 +107,7 @@ A season shows all eight slots from the start. Each slot unlocks on its Friday, 
 
 ## Shipping beyond the site
 
-Some drops work best inside the tools themselves. Grist is also a plugin marketplace for Claude Code, hosted on mlynarz.com. You add it with one command, and then install any skill or workflow by its name. When I change a drop, people who installed it get the update.
+Some drops work best inside the tools themselves. [Grist](/grist) is also a plugin marketplace for Claude Code, hosted on mlynarz.com. You add it with one command, and then install any skill or workflow by its name. When I change a drop, people who installed it get the update.
 
 One drop, Design Token Pipeline, ships with a Figma plugin I made. It exports Figma variables as design tokens in the W3C format, so a build tool like Style Dictionary can read them.
 
@@ -115,7 +115,7 @@ I also had to decide how people can use all of this. Drops are under CC BY 4.0, 
 
 ## Building it with an agent, with a checkpoint
 
-I built Grist the same way I built Anvil UI, with an AI coding agent doing a lot of the typing. The project rules fix the stack, the tokens and the voice, and the agent checks its work in a real browser before it asks me to look.
+I built [Grist](/grist) the same way I built Anvil UI, with an AI coding agent doing a lot of the typing. The project rules fix the stack, the tokens and the voice, and the agent checks its work in a real browser before it asks me to look.
 
 Writing is where I was most careful. The ideas and the Why in each drop are mine. When Claude adds something I didn't write, it leaves a note in the file, and a production build refuses to publish a drop that still has one. It's the same rule as in my Human-in-the-loop Checkpoints drop. The agent pauses before anything that speaks for me.
 
