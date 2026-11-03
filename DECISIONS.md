@@ -2,6 +2,20 @@
 
 Non-obvious choices, newest first. One entry per decision: what, why, and what it rules out.
 
+## 2026-11-03 · Front-end review: lighter pages, fewer tokens, one icon set
+
+From the front-end and design system review. Measured on a production build.
+
+- **Inline SVG drawn once.** Client logos are run through SVGO (3-decimal precision, visually identical at 3x) and the marquee's second copy is a `<use>` of the first. Each Grist tile shape is one path, drawn by the first icon of its tier on a page and reused by the rest (`drawnTiers`, keyed on `Astro.locals`). Home HTML 159 KB to 87 KB, Grist 200 KB to 103 KB.
+- **GIFs are short videos.** The story GIFs are muted, looping AV1 WebM with an H.264 MP4 fallback, `preload="none"`, the still frame as the poster. motion.ts plays each one only while it is on screen. About 590 KB of animated WebP became about 140 KB.
+- **Motion loads only when it runs.** SiteLayout imports motion.ts dynamically when `html.motion` is set, so reduced-motion visitors skip GSAP entirely.
+- **Tokens.** Removed (unused): `--color-brand`, `--color-brand-strong`, `--color-pattern`, `--color-hero-tint`, `--color-scanline`, `--neutral-100`, `--radius-xl`. Moved into their components as local values: the marquee, work marquee, stamp and quote durations. Added: `--leading-tight`, `--opacity-dim`, `--opacity-disabled`, `--size-panel`, `--size-cover`, `--duration-icon`, `--duration-sweep`, `--duration-failsafe`. `--shadow-panel` and `--nav-clearance` moved out of the Grist group. `--color-on-inverse-muted` stays for the experiments. Mirrored in Figma Foundations.
+- **Stylelint** now also refuses raw times in `transition`/`animation`, raw `line-height` and raw fractional `opacity`. A value one component uses alone goes in a local custom property.
+- **One icon set.** `src/lib/icons.ts` + `ui/Icon.astro` replace Button's own paths, `grist/Icon` and the loose SVGs in LockPanel, WorkCard, ThemeToggle, Video, YouTube and BeforeAfter. The lock is the Lucide shape everywhere now (a little larger on case-study cards and the lock panel), and YouTube's play triangle is the video player's. The Nav hamburger stays its own SVG because its lines animate.
+- **Shared tear.** Buttons use the link tear keyframes from base.css with `--tear-shift: 2`.
+- **Smaller things.** Skip link lives once in BaseLayout. Page titles use "·" instead of an em dash. The locked season pack uses muted text instead of 50% opacity (3.7:1 to 4.5:1+). `color-scheme` and `theme-color` follow the chosen theme. `text-size-adjust: 100%`. The 64em breakpoint folded into 62em. `_headers` adds HSTS and a CSP without script rules (frame-ancestors, base-uri, object-src, form-action). A GitHub Action runs `npm run check` on PRs.
+- **Not done:** retiring the gem tokens (kept, per 31 Oct), trimming font subsets (unused subsets never download, the CSS saving is about 1 KB), splitting Nav, keeping experiments out of production builds.
+
 ## 2026-11-02 · Weekly drop rebuild
 
 Grist unlocks a drop by comparing its day with the build time, so production needs a build every Friday. A GitHub Action calls a Cloudflare Pages deploy hook at 05:07 UTC on Fridays (drops unlock at 00:00 UTC, so they are live by early morning in Europe). Chosen over a daily build because every drop, New badge and Next drop date changes on a Friday, and over a Cloudflare Worker cron because it needs no second project. Each run re-enables its own schedule, since GitHub turns schedules off in public repos after 60 days without commits. Scheduled workflows only run from the default branch, so that has to be `main`. If drops ever move off Fridays, change the cron with `DROP_INTERVAL_DAYS` and the season starts.

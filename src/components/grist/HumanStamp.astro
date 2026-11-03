@@ -62,6 +62,7 @@ const pathId = `stamp-ring-${crypto.randomUUID().slice(0, 8)}`;
   @layer components {
     /* Large: scales with the viewport, from 7.5rem on phones to 15rem. */
     .human-stamp {
+      --stamp-turn: 24s; /* one full turn of the ring */
       --stamp-size: clamp(var(--space-24) + var(--space-6), 24vw, var(--space-24) * 2.5);
       --underline-size: 0%;
 
@@ -129,7 +130,7 @@ const pathId = `stamp-ring-${crypto.randomUUID().slice(0, 8)}`;
 
     @media (prefers-reduced-motion: no-preference) {
       .human-stamp__spin {
-        animation: human-stamp-turn var(--duration-stamp) linear infinite;
+        animation: human-stamp-turn var(--stamp-turn) linear infinite;
       }
     }
 

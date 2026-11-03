@@ -6,27 +6,32 @@
 import type { StoryPart } from "@/components/blocks/StoryIntro.astro";
 import csspeeper from "@/content/work/csspeeper/cover.avif";
 import gaming from "@/assets/about/gaming.jpg";
-import bigBrain from "@/assets/about/gifs/big-brain.webp?url";
+import bigBrainMp4 from "@/assets/about/gifs/big-brain.mp4?url";
+import bigBrainWebm from "@/assets/about/gifs/big-brain.webm?url";
 import bigBrainStill from "@/assets/about/gifs/big-brain-still.webp?url";
-import leo from "@/assets/about/gifs/leo.webp?url";
+import leoMp4 from "@/assets/about/gifs/leo.mp4?url";
+import leoWebm from "@/assets/about/gifs/leo.webm?url";
 import leoStill from "@/assets/about/gifs/leo-still.webp?url";
-import yesNod from "@/assets/about/gifs/yes-nod.webp?url";
+import yesNodMp4 from "@/assets/about/gifs/yes-nod.mp4?url";
+import yesNodWebm from "@/assets/about/gifs/yes-nod.webm?url";
 import yesNodStill from "@/assets/about/gifs/yes-nod-still.webp?url";
-import aiPanic from "@/assets/about/gifs/music-sick-ai.webp?url";
+import aiPanicMp4 from "@/assets/about/gifs/music-sick-ai.mp4?url";
+import aiPanicWebm from "@/assets/about/gifs/music-sick-ai.webm?url";
 import aiPanicStill from "@/assets/about/gifs/music-sick-ai-still.webp?url";
-import emmet from "@/assets/about/gifs/emmet.webp?url";
+import emmetMp4 from "@/assets/about/gifs/emmet.mp4?url";
+import emmetWebm from "@/assets/about/gifs/emmet.webm?url";
 import emmetStill from "@/assets/about/gifs/emmet-still.webp?url";
 
 /** Each picture sits right before the words it illustrates. */
 const pictures = {
   yesNod: {
-    image: yesNod,
+    image: { mp4: yesNodMp4, webm: yesNodWebm },
     still: yesNodStill,
     alt: "GIF: a bearded mountain man nodding in approval.",
     shape: "square",
   },
   aiPanic: {
-    image: aiPanic,
+    image: { mp4: aiPanicMp4, webm: aiPanicWebm },
     still: aiPanicStill,
     alt: "GIF: a retro robot panicking, its red eyes flashing.",
   },
@@ -39,7 +44,7 @@ export const HOME_STORY: StoryPart[][] = [
     pictures.yesNod,
     " Lead Product Designer with 15+ years of experience. I've helped turn ",
     {
-      image: bigBrain,
+      image: { mp4: bigBrainMp4, webm: bigBrainWebm },
       still: bigBrainStill,
       alt: "GIF: a man smugly tapping his temple, the “big brain” meme.",
     },
@@ -56,7 +61,7 @@ export const ABOUT_STORY: StoryPart[][] = [
     pictures.yesNod,
     " Lead Product Designer from Poland. For over 15 years I’ve worked on everything from product strategy and research to design systems. I’ve also ",
     {
-      image: leo,
+      image: { mp4: leoMp4, webm: leoWebm },
       still: leoStill,
       alt: "GIF: Leonardo DiCaprio in a tuxedo, smiling with fireworks behind him.",
       shape: "square",
@@ -80,7 +85,7 @@ export const ABOUT_STORY: StoryPart[][] = [
     },
     " Arc Raiders. Oh, and I collect ",
     {
-      image: emmet,
+      image: { mp4: emmetMp4, webm: emmetWebm },
       still: emmetStill,
       alt: "GIF: Emmet from The LEGO Movie, mouth wide open.",
       shape: "square",

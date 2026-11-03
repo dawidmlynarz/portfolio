@@ -12,6 +12,7 @@
  *
  * Hover: the cover zooms in slowly. Reduced motion keeps a still cover.
  */
+import Icon from "@/components/ui/Icon.astro";
 import { Image } from "astro:assets";
 import Tag from "@/components/ui/Tag.astro";
 import { hasPage, workHref, type Work } from "@/lib/work";
@@ -66,10 +67,7 @@ const sizes =
     </div>
     {data.protected && (
       <span class="work-card__lock" title="Password protected">
-        <svg viewBox="0 0 24 24" aria-hidden="true">
-          <rect x="5" y="10.5" width="14" height="10" rx="2.5" />
-          <path d="M8.5 10.5V7.5a3.5 3.5 0 0 1 7 0v3" />
-        </svg>
+        <Icon name="lock" class="work-card__lock-icon" />
         <span class="visually-hidden">Password protected</span>
       </span>
     )}
@@ -154,14 +152,10 @@ const sizes =
       backdrop-filter: blur(var(--blur-nav));
     }
 
-    .work-card__lock svg {
+    .work-card__lock-icon {
       inline-size: 50%;
       block-size: 50%;
-      fill: none;
-      stroke: currentcolor;
       stroke-width: 2;
-      stroke-linecap: round;
-      stroke-linejoin: round;
     }
 
     .work-card__title {

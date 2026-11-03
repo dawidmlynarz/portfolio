@@ -25,9 +25,6 @@ const { sandbox = false, ...props } = Astro.props;
 <BaseLayout {...props}>
   <slot name="head" slot="head" />
   <div class="grist">
-    <a class="grist__skip" href="#main" data-no-tear>
-      Skip to content
-    </a>
     <header class="grist__header">
       <Container class="grist__bar">
         <div class="grist__brand">
@@ -62,22 +59,6 @@ const { sandbox = false, ...props } = Astro.props;
       grid-template-rows: auto 1fr auto;
       grid-template-columns: minmax(0, 1fr);
       min-block-size: 100svh;
-    }
-
-    .grist__skip {
-      position: fixed;
-      inset-block-start: var(--space-2);
-      inset-inline-start: var(--space-2);
-      z-index: calc(var(--z-nav) + 1);
-      padding: var(--space-2) var(--space-4);
-      border-radius: var(--radius-sm);
-      color: var(--color-bg);
-      background-color: var(--color-text);
-      translate: 0 -200%;
-    }
-
-    .grist__skip:focus-visible {
-      translate: 0;
     }
 
     .grist__header {

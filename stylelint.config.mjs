@@ -5,6 +5,11 @@
 const SPACING_PROPS =
   "/^(margin|padding|gap|row-gap|column-gap|inset|top|right|bottom|left)(-|$)|^(margin|padding|inset)-(block|inline)/";
 
+// var(--neutral-*), var(--blue-*): primitives, only for tokens.css.
+const PRIMITIVE = "/var\\(\\s*--(neutral|blue)-/";
+// A time other than 0: 560ms, 2.4s, 0.3s (not 0s, which only orders a visibility switch).
+const RAW_TIME = "/(^|[\\s,(])(0*[1-9][\\d.]*|0?\\.\\d*[1-9]\\d*)m?s\\b/";
+
 /** @type {import("stylelint").Config} */
 export default {
   extends: ["stylelint-config-standard", "stylelint-config-html/astro"],
@@ -50,10 +55,20 @@ export default {
       { message: "Use a token (--space-*, --radius-*, --text-*) instead of a raw length." },
     ],
 
-    // Components use semantic tokens, never primitives (--neutral-*, --blue-*).
+    // Components use semantic tokens, never primitives (--neutral-*, --blue-*). Motion, leading and
+    // opacity come from tokens too: --duration-*, --leading-*, --opacity-* (0s and 0/1 are fine).
+    // A value used by one component only can be a local custom property (--ticker-cycle: 7.5s).
     "declaration-property-value-disallowed-list": [
-      { "/.*/": ["/var\\(\\s*--(neutral|blue)-/"] },
-      { message: "Use a semantic token (e.g. --color-text), not a primitive." },
+      {
+        "/.*/": [PRIMITIVE],
+        "/^(transition|animation)/": [PRIMITIVE, RAW_TIME],
+        "line-height": [PRIMITIVE, "/^[\\d.]/"],
+        opacity: [PRIMITIVE, "/^0?\\.\\d/"],
+      },
+      {
+        message:
+          "Use a token: a semantic colour (not a primitive), --duration-*, --leading-* or --opacity-*.",
+      },
     ],
 
     // Astro scoped <style> is unlayered and would beat every layer: wrap it in @layer components.
@@ -68,7 +83,16 @@ export default {
         "color-no-hex": null,
         "function-disallowed-list": null,
         "declaration-property-unit-disallowed-list": null,
+        "declaration-property-value-disallowed-list": [
+          { "/.*/": [PRIMITIVE] },
+          { message: "Use a semantic token (e.g. --color-text), not a primitive." },
+        ],
       },
+    },
+    {
+      // The reduced-motion reset cuts every animation to a near-zero time on purpose.
+      files: ["src/styles/reset.css"],
+      rules: { "declaration-property-value-disallowed-list": null },
     },
     {
       files: ["src/styles/tokens.css"],

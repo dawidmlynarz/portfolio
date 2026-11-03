@@ -11,7 +11,10 @@
   }
 
   html {
-    text-size-adjust: none;
+    /* 100%, not none: no landscape inflation on iOS, and the reader's own text size still applies.
+       iOS Safari only reads the prefixed name. */
+    -webkit-text-size-adjust: 100%; /* stylelint-disable-line property-no-vendor-prefix */
+    text-size-adjust: 100%;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
   }

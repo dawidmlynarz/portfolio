@@ -9,6 +9,7 @@
  * passing a promise to event.detail.waitUntil (the portrait reveal uses it to repaint first).
  * Reduced motion or no View Transitions: the theme switches instantly.
  */
+import Icon from "@/components/ui/Icon.astro";
 ---
 
 <button
@@ -20,13 +21,8 @@
   hidden
 >
   <span class="theme-toggle__icons" aria-hidden="true">
-    <svg class="theme-toggle__icon theme-toggle__icon--light" viewBox="0 0 24 24">
-      <circle cx="12" cy="12" r="4"></circle>
-      <path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"></path>
-    </svg>
-    <svg class="theme-toggle__icon theme-toggle__icon--dark" viewBox="0 0 24 24">
-      <path d="M20 14.5A8 8 0 1 1 9.5 4a6.5 6.5 0 0 0 10.5 10.5Z"></path>
-    </svg>
+    <Icon name="sun" class="theme-toggle__icon theme-toggle__icon--light" />
+    <Icon name="moon" class="theme-toggle__icon theme-toggle__icon--dark" />
   </span>
   <span class="visually-hidden">Dark mode</span>
 </button>
@@ -47,6 +43,11 @@
       // Storage blocked: the choice still applies for this page view.
     }
     root.dataset.theme = mode;
+    // Keep the head in step (BaseLayout): UA controls and the browser bar follow the theme.
+    const scheme = document.querySelector<HTMLMetaElement>('meta[name="color-scheme"]');
+    const bar = document.querySelector<HTMLMetaElement>('meta[name="theme-color"]');
+    if (scheme) scheme.content = mode;
+    if (bar) bar.content = bar.dataset[mode] ?? bar.content;
     const pending: Promise<unknown>[] = [];
     document.dispatchEvent(
       new CustomEvent("themechange", {
@@ -111,11 +112,6 @@
       grid-area: 1 / 1;
       inline-size: 1.125em;
       block-size: 1.125em;
-      fill: none;
-      stroke: currentcolor;
-      stroke-width: 1.75;
-      stroke-linecap: round;
-      stroke-linejoin: round;
       transition:
         rotate var(--duration-page) var(--ease-out-expo),
         scale var(--duration-page) var(--ease-out-expo),

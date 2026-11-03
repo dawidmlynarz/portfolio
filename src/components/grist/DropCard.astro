@@ -14,7 +14,7 @@
 import NewBadge from "./NewBadge.astro";
 import RarityLabel from "./RarityLabel.astro";
 import StatusLabel from "./StatusLabel.astro";
-import Icon from "./Icon.astro";
+import Icon from "@/components/ui/Icon.astro";
 import { DROP_TYPES, SEASONS, type DropType, type Rarity } from "@/lib/grist";
 import { derive, dropHref, formatDate, hasPlugin, isoDate, type Drop } from "@/lib/drops";
 
@@ -274,7 +274,7 @@ const plugin = drop && hasPlugin(drop);
     }
 
     .drop-card--locked :global(.gem) {
-      opacity: 0.45;
+      opacity: var(--opacity-disabled);
     }
 
     /* The lock sits on the first line when a teaser title wraps. */

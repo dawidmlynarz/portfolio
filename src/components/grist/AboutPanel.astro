@@ -7,7 +7,7 @@
  * the right on wider screens and up from the bottom on phones, and leaves the way it came. With
  * reduced motion it simply appears.
  */
-import Icon from "./Icon.astro";
+import Icon from "@/components/ui/Icon.astro";
 import TileIcon from "./TileIcon.astro";
 import { RARITIES, RARITY_INFO, RARITY_LABELS } from "@/lib/grist";
 
@@ -105,7 +105,7 @@ const { id } = Astro.props;
       .about {
         --about-from: 100% 0;
 
-        inline-size: min(100%, 28rem);
+        inline-size: min(100%, var(--size-panel));
         block-size: 100svh;
         max-block-size: none;
         margin: 0 0 0 auto;
