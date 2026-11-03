@@ -68,6 +68,7 @@ const {
   @layer components {
     .work-marquee {
       --work-marquee-gap: var(--space-4);
+      --work-marquee-loop: 60s; /* one full loop of the covers */
 
       padding-block-start: var(--work-marquee-lift, 0); /* room for a lifted cover */
       overflow: hidden;
@@ -76,7 +77,7 @@ const {
     .work-marquee__track {
       display: flex;
       inline-size: max-content;
-      animation: work-marquee var(--duration-marquee-work) linear infinite;
+      animation: work-marquee var(--work-marquee-loop) linear infinite;
     }
 
     .work-marquee:has(.work-marquee__link:hover) .work-marquee__track,
@@ -92,7 +93,7 @@ const {
 
     .work-marquee__item {
       flex-shrink: 0;
-      inline-size: var(--work-marquee-size, 22rem);
+      inline-size: var(--work-marquee-size, var(--size-cover));
     }
 
     .work-marquee__link {

@@ -151,6 +151,8 @@ const { testimonials, label = "What people say" } = Astro.props;
 <style>
   @layer components {
     .testimonials {
+      --testimonials-hold: 9s; /* how long each quote stays before the next one */
+
       display: grid;
       gap: var(--space-10);
     }
@@ -225,7 +227,7 @@ const { testimonials, label = "What people say" } = Astro.props;
     }
 
     .testimonials__progress--running::after {
-      animation: testimonials-fill var(--duration-quote) linear forwards;
+      animation: testimonials-fill var(--testimonials-hold) linear forwards;
     }
 
     .testimonials[data-paused] .testimonials__progress::after {

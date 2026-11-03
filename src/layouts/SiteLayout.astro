@@ -18,9 +18,6 @@ const { navOverlap = false, fit = false, ...base } = Astro.props;
 
 <BaseLayout {...base}>
   <div class:list={["site", { "site--nav-overlap": navOverlap, "site--fit": fit }]} id="top">
-    <a class="skip-link" href="#main" data-no-tear>
-      Skip to content
-    </a>
     <Nav />
     <main id="main" tabindex="-1">
       <slot />
@@ -41,7 +38,9 @@ const { navOverlap = false, fit = false, ...base } = Astro.props;
 </BaseLayout>
 
 <script>
-  import "@/scripts/motion";
+  // The motion layer (GSAP) only downloads when it will run: BaseLayout sets html.motion unless the
+  // visitor prefers reduced motion.
+  if (document.documentElement.classList.contains("motion")) import("@/scripts/motion");
 </script>
 
 <style>
@@ -51,22 +50,6 @@ const { navOverlap = false, fit = false, ...base } = Astro.props;
       grid-template-rows: 1fr auto;
       grid-template-columns: minmax(0, 1fr);
       min-block-size: 100svh;
-    }
-
-    .skip-link {
-      position: fixed;
-      inset-block-start: var(--space-2);
-      inset-inline-start: var(--space-2);
-      z-index: calc(var(--z-nav) + 1);
-      padding: var(--space-2) var(--space-4);
-      border-radius: var(--radius-sm);
-      color: var(--color-bg);
-      background-color: var(--color-text);
-      translate: 0 -200%;
-    }
-
-    .skip-link:focus-visible {
-      translate: 0;
     }
 
     /* Back to top floats over the page on the nav's glass; Button draws it and its hover. */

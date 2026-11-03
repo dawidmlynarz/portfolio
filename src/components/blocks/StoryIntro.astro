@@ -8,12 +8,12 @@
  * which can hold links and small inline pictures and GIFs that zoom on hover (InlineImage); the
  * pictures light up with the words around them. Story copy lives in src/lib/story.ts.
  */
-import InlineImage from "@/components/ui/InlineImage.astro";
+import InlineImage, { type Clip } from "@/components/ui/InlineImage.astro";
 
 export type StoryPart =
   | string
   | {
-      image: ImageMetadata | string;
+      image: ImageMetadata | Clip;
       still?: string;
       alt: string;
       shape?: "wide" | "portrait" | "square";

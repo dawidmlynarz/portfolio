@@ -4,15 +4,22 @@
  * the line on hover so you can see what's in it. Sized in em, so it follows whatever text it sits
  * in. The zoom is a nicety: the picture already reads without it.
  *
- * `src` is an image (optimised by astro:assets) or, for a GIF, the URL of an animated WebP plus a
- * `still` frame. The still frame loads first; the motion layer swaps in the animation once the
- * page has loaded, so GIFs never hold up the hero. With reduced motion or no JS the still stays. `shape` follows the picture: wide,
- * portrait or square.
+ * `src` is an image (optimised by astro:assets) or, for a GIF, a short muted clip (`mp4` plus an
+ * AV1 `webm`, a fraction of an animated WebP's size) and its `still` frame. The still is the
+ * poster and nothing else loads up front; the motion layer starts the clip once the page has
+ * loaded and plays it only while it is on screen, so GIFs never hold up the hero. With reduced
+ * motion or no JS the still stays. `shape` follows the picture: wide, portrait or square.
  */
 import { Image } from "astro:assets";
 
+/** A GIF as video: H.264 for every browser, AV1 where supported. */
+export interface Clip {
+  mp4: string;
+  webm: string;
+}
+
 interface Props {
-  src: ImageMetadata | string;
+  src: ImageMetadata | Clip;
   /** Still frame of an animated `src`, shown with reduced motion. */
   still?: string;
   /** Required. Describe the picture; it is read in the middle of the sentence. */
@@ -36,18 +43,28 @@ const {
 const style = `object-position: ${focus}`;
 ---
 
-<span class:list={["inline-image", `inline-image--${shape}`, className]} {...attrs}>
-  {typeof src === "string" ? (
-    <img
+<span
+  class:list={["inline-image", `inline-image--${shape}`, className]}
+  role={"mp4" in src ? "img" : undefined}
+  aria-label={"mp4" in src ? alt : undefined}
+  {...attrs}
+>
+  {"mp4" in src ? (
+    <video
       class="inline-image__img"
-      src={still ?? src}
-      data-animated={still ? src : undefined}
-      alt={alt}
-      loading="lazy"
-      decoding="async"
-      fetchpriority="low"
+      poster={still}
+      muted
+      loop
+      playsinline
+      disablepictureinpicture
+      preload="none"
+      aria-hidden="true"
+      data-animated
       style={style}
-    />
+    >
+      <source src={src.webm} type='video/webm; codecs="av01.0.05M.08"' />
+      <source src={src.mp4} type="video/mp4" />
+    </video>
   ) : (
     <Image
       class="inline-image__img"

@@ -9,6 +9,10 @@ import { CLIENTS, nextLogoId, type Client } from "@/lib/clients";
  *
  * The SVG is `role="img"` named after the client. Size it from the parent with `block-size` on the
  * svg; `inline-size` follows the artboard.
+ *
+ * Drawing the same logo twice on a page (the marquee copy): give the first one an `id` and the
+ * copy `copyOf` with that id. The copy is a small decorative `<use>` of the first, so the paths
+ * ship once.
  */
 const files = import.meta.glob<string>("/src/assets/clients/*.svg", {
   query: "?raw",
@@ -20,17 +24,38 @@ interface Props {
   client: Client;
   /** Accessible name; defaults to the client's name. */
   label?: string;
+  /** id on this logo's svg, so a later copy can reuse it. */
+  id?: string;
+  /** Draw a decorative copy of the logo with this id (already on the page) instead of the paths. */
+  copyOf?: string;
 }
 
-const { client, label = CLIENTS[client] } = Astro.props;
+const { client, label = CLIENTS[client], id, copyOf } = Astro.props;
 const raw = files[`/src/assets/clients/${client}.svg`];
+const artboard = raw?.match(/<svg\b[^>]*>/)?.[0] ?? "";
+const attr = (name: string) => artboard.match(new RegExp(`\\b${name}="([^"]*)"`))?.[1];
 const suffix = nextLogoId();
 const svg = raw
   ?.replace(/<\?xml[^>]*>/, "")
   .replace(/fill="(black|#000|#000000)"/gi, 'fill="currentColor"')
   .replace(/\bid="([^"]+)"/g, `id="$1-${suffix}"`)
   .replace(/url\(#([^)]+)\)/g, `url(#$1-${suffix})`)
-  .replace(/<svg\b/, `<svg role="img" aria-label="${label}" focusable="false"`);
+  .replace(
+    /<svg\b/,
+    `<svg${id ? ` id="${id}"` : ""} role="img" aria-label="${label}" focusable="false"`,
+  );
 ---
 
-{svg && <Fragment set:html={svg} />}
+{copyOf ? (
+  <svg
+    width={attr("width")}
+    height={attr("height")}
+    viewBox={attr("viewBox")}
+    aria-hidden="true"
+    focusable="false"
+  >
+    <use href={`#${copyOf}`} />
+  </svg>
+) : (
+  svg && <Fragment set:html={svg} />
+)}

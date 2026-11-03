@@ -110,6 +110,8 @@ const endings = ["AI product", "design system", "product team"];
     }
 
     .footer__ticker-track {
+      --ticker-cycle: 7.5s; /* one full round of the words */
+
       display: flex;
       flex-direction: column;
       line-height: var(--ticker-line);
@@ -117,7 +119,7 @@ const endings = ["AI product", "design system", "product team"];
 
     @media (prefers-reduced-motion: no-preference) {
       .footer__ticker-track {
-        animation: footer-ticker 7.5s var(--ease-in-out-quart) infinite;
+        animation: footer-ticker var(--ticker-cycle) var(--ease-in-out-quart) infinite;
       }
     }
 

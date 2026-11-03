@@ -1,4 +1,5 @@
 ---
+import Icon from "@/components/ui/Icon.astro";
 import { Image } from "astro:assets";
 
 interface Props {
@@ -76,9 +77,7 @@ const sizes = {
     </span>
     <div class="before-after__handle" aria-hidden="true">
       <span class="before-after__grip">
-        <svg viewBox="0 0 24 24" class="before-after__icon">
-          <path d="M9 7l-5 5 5 5M15 7l5 5-5 5"></path>
-        </svg>
+        <Icon name="swap" class="before-after__icon" />
       </span>
     </div>
     {/* Keyboard and screen readers move the handle through this slider; the script wires it up. */}
@@ -233,11 +232,7 @@ const sizes = {
     .before-after__icon {
       inline-size: var(--space-6);
       block-size: var(--space-6);
-      fill: none;
-      stroke: currentcolor;
       stroke-width: 1.5;
-      stroke-linecap: round;
-      stroke-linejoin: round;
     }
 
     /* The slider sits under the handle, invisible, so focus lands on the grip. */

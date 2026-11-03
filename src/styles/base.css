@@ -145,49 +145,62 @@
     }
   }
 
+  /*
+   * The tear's two moves, shared with Button. --tear-shift scales how far the rows jolt (1 for
+   * links, 2 for the bigger button labels). The clip is part of each frame so a copy that is
+   * whole at rest (the button's top copy) is only cut into rows while the tear runs.
+   */
   @keyframes link-tear-outer {
     0% {
       opacity: 1;
-      translate: -0.14em 0;
+      translate: calc(var(--tear-shift, 1) * -0.14em) 0;
+      clip-path: polygon(0 0, 100% 0, 100% 34%, 0 34%, 0 67%, 100% 67%, 100% 100%, 0 100%);
     }
 
     25% {
       opacity: 1;
-      translate: 0.2em 0;
+      translate: calc(var(--tear-shift, 1) * 0.2em) 0;
+      clip-path: polygon(0 0, 100% 0, 100% 34%, 0 34%, 0 67%, 100% 67%, 100% 100%, 0 100%);
     }
 
     50% {
       opacity: 1;
-      translate: -0.05em 0;
+      translate: calc(var(--tear-shift, 1) * -0.05em) 0;
+      clip-path: polygon(0 0, 100% 0, 100% 34%, 0 34%, 0 67%, 100% 67%, 100% 100%, 0 100%);
     }
 
     75%,
     100% {
       opacity: 1;
-      translate: 0.08em 0;
+      translate: calc(var(--tear-shift, 1) * 0.08em) 0;
+      clip-path: polygon(0 0, 100% 0, 100% 34%, 0 34%, 0 67%, 100% 67%, 100% 100%, 0 100%);
     }
   }
 
   @keyframes link-tear-middle {
     0% {
       opacity: 1;
-      translate: 0.22em 0;
+      translate: calc(var(--tear-shift, 1) * 0.22em) 0;
+      clip-path: inset(34% 0 33% 0);
     }
 
     25% {
       opacity: 1;
-      translate: -0.1em 0;
+      translate: calc(var(--tear-shift, 1) * -0.1em) 0;
+      clip-path: inset(34% 0 33% 0);
     }
 
     50% {
       opacity: 1;
-      translate: 0.14em 0;
+      translate: calc(var(--tear-shift, 1) * 0.14em) 0;
+      clip-path: inset(34% 0 33% 0);
     }
 
     75%,
     100% {
       opacity: 1;
-      translate: -0.04em 0;
+      translate: calc(var(--tear-shift, 1) * -0.04em) 0;
+      clip-path: inset(34% 0 33% 0);
     }
   }
 
@@ -354,11 +367,11 @@
 
   /*
    * Motion layer (src/scripts/motion.ts): reveal targets wait hidden until the script has set
-   * their starting state. If it never runs, the failsafe shows them after 3s.
+   * their starting state. If it never runs, the failsafe shows them after --duration-failsafe.
    */
   .motion [data-reveal]:not([data-reveal-ready]) {
     visibility: hidden;
-    animation: reveal-failsafe 0s 3s forwards;
+    animation: reveal-failsafe 0s var(--duration-failsafe) forwards;
   }
 
   /*

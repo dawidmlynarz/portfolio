@@ -4,6 +4,7 @@
  * player (youtube-nocookie.com) is only loaded on click, and starts playing straight away.
  * Without JS the poster is a plain link to the video on YouTube.
  */
+import Icon from "@/components/ui/Icon.astro";
 import { Image } from "astro:assets";
 
 interface Props {
@@ -31,9 +32,7 @@ const href = `https://www.youtube.com/watch?v=${id}`;
   <a class="youtube__poster" href={href} data-no-tear>
     <Image class="youtube__image" src={poster} alt="" widths={[640, 1280]} sizes={sizes} />
     <span class="youtube__play" aria-hidden="true">
-      <svg viewBox="0 0 24 24" focusable="false">
-        <path d="M8 5.5v13l11-6.5z"></path>
-      </svg>
+      <Icon name="play" class="youtube__play-icon" />
     </span>
     <span class="visually-hidden">Play “{title}” (YouTube)</span>
   </a>
@@ -96,10 +95,11 @@ const href = `https://www.youtube.com/watch?v=${id}`;
       transition: transform var(--duration-zoom) var(--ease-out-expo);
     }
 
-    .youtube__play svg {
+    .youtube__play-icon {
       inline-size: var(--space-8);
       block-size: var(--space-8);
       fill: currentcolor;
+      stroke: none;
     }
 
     .youtube__poster:hover .youtube__image,

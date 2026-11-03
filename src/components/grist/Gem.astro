@@ -132,26 +132,28 @@ const clipId = `gem-clip-${crypto.randomUUID().slice(0, 8)}`;
     }
 
     .gem__sweep {
+      --gem-sweep-opacity: 0.9;
+
       fill: var(--gem-light);
       opacity: 0;
     }
 
     @media (prefers-reduced-motion: no-preference) {
       .gem--legendary .gem__sweep {
-        animation: gem-sweep 2.4s var(--ease-standard) infinite;
+        animation: gem-sweep var(--duration-sweep) var(--ease-standard) infinite;
       }
     }
 
     /* The band crosses in the first half of the loop, then waits off the gem. */
     @keyframes gem-sweep {
       0% {
-        opacity: 0.9;
+        opacity: var(--gem-sweep-opacity);
         translate: 0 0;
       }
 
       45%,
       100% {
-        opacity: 0.9;
+        opacity: var(--gem-sweep-opacity);
         translate: 20px 0;
       }
     }

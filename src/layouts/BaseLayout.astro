@@ -29,7 +29,7 @@ const {
   canonicalPath: canonicalOverride,
 } = Astro.props;
 
-const pageTitle = title ? `${title} — ${SITE.name}` : SITE.title;
+const pageTitle = title ? `${title} · ${SITE.name}` : SITE.title;
 // build.format "file" exposes "/about.html" and "/index.html"; canonical URLs are extensionless.
 const canonicalPath =
   canonicalOverride ?? Astro.url.pathname.replace(/(index)?\.html$/, "").replace(/(.)\/$/, "$1");
@@ -59,6 +59,9 @@ const imageType = /\.jpe?g$/i.test(image.src) ? "image/jpeg" : "image/png";
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta name="color-scheme" content="light" />
+    <!-- The browser bar: --color-bg in each theme (--neutral-0, --neutral-950). Kept in step by
+         the script below and by ThemeToggle. -->
+    <meta name="theme-color" content="#ffffff" data-light="#ffffff" data-dark="#0a0a0a" />
     <!-- Fix the cascade layer order before any stylesheet loads, whatever order bundles arrive in. -->
     <style is:inline>
       @layer reset, tokens, base, components, utilities;
@@ -77,8 +80,13 @@ const imageType = /\.jpe?g$/i.test(image.src) ? "image/jpeg" : "image/png";
     <!-- Before first paint: apply a saved dark theme (light is the default), flag JS and the motion layer. -->
     <script is:inline>
       try {
-        if (localStorage.getItem("theme") === "dark")
+        if (localStorage.getItem("theme") === "dark") {
           document.documentElement.dataset.theme = "dark";
+          // Scrollbars, form controls and the browser bar go dark before the stylesheet arrives.
+          document.querySelector('meta[name="color-scheme"]').content = "dark";
+          const bar = document.querySelector('meta[name="theme-color"]');
+          bar.content = bar.dataset.dark;
+        }
       } catch {}
       document.documentElement.classList.add("js");
       // Opt in to the motion layer (src/scripts/motion.ts) unless the visitor prefers less motion.
@@ -143,7 +151,6 @@ const imageType = /\.jpe?g$/i.test(image.src) ? "image/jpeg" : "image/png";
     <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
     <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
     <link rel="manifest" href="/site.webmanifest" />
-    <meta name="theme-color" content="#ffffff" />
     <link rel="sitemap" href="/sitemap-index.xml" />
     {jsonLd && <script type="application/ld+json" set:html={JSON.stringify(jsonLd)} />}
     {webAnalyticsToken && (
@@ -158,6 +165,30 @@ const imageType = /\.jpe?g$/i.test(image.src) ? "image/jpeg" : "image/png";
     <slot name="head" />
   </head>
   <body>
+    {/* Both page layouts (SiteLayout, GristLayout) put the content in <main id="main">. */}
+    <a class="skip-link" href="#main" data-no-tear>
+      Skip to content
+    </a>
     <slot />
   </body>
 </html>
+
+<style>
+  @layer components {
+    .skip-link {
+      position: fixed;
+      inset-block-start: var(--space-2);
+      inset-inline-start: var(--space-2);
+      z-index: calc(var(--z-nav) + 1);
+      padding: var(--space-2) var(--space-4);
+      border-radius: var(--radius-sm);
+      color: var(--color-bg);
+      background-color: var(--color-text);
+      translate: 0 -200%;
+    }
+
+    .skip-link:focus-visible {
+      translate: 0;
+    }
+  }
+</style>

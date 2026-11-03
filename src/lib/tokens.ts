@@ -10,8 +10,6 @@ export const COLOR_ROLES = [
   "bg-subtle",
   "text",
   "text-muted",
-  "brand",
-  "brand-strong",
   "border",
   "border-muted",
   "border-subtle",
@@ -22,5 +20,4 @@ export const COLOR_ROLES = [
   "on-inverse",
   "on-inverse-muted",
   "overlay",
-  "pattern",
 ] as const;

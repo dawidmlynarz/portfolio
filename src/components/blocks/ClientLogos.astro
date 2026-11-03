@@ -1,13 +1,13 @@
 ---
 import ClientLogo from "@/components/ui/ClientLogo.astro";
-import { WORKED_WITH, type Client } from "@/lib/clients";
+import { WORKED_WITH, nextLogoId, type Client } from "@/lib/clients";
 
 /**
  * Client logos (each one a `ClientLogo`, in the text colour).
  *
  * Variants: a wrapping row (default), spread across the width, or a marquee (Home, between the
  * hero and About): an endless, full-width loop. The marquee renders the list twice (the copy hidden from
- * assistive tech) and slides it by one copy, pure CSS. It pauses on hover; with reduced motion it
+ * assistive tech, drawn with `<use>` so the paths ship once) and slides it by one copy, pure CSS. It pauses on hover; with reduced motion it
  * is a static, centred row.
  */
 interface Props {
@@ -28,6 +28,8 @@ const {
   marquee = false,
   class: className,
 } = Astro.props;
+// The marquee's second copy reuses the first copy's paths.
+const ids = Object.fromEntries(clients.map((key) => [key, `client-logo-${key}-${nextLogoId()}`]));
 ---
 
 {marquee ? (
@@ -42,7 +44,11 @@ const {
         >
           {clients.map((key) => (
             <li class="client-logos__item" data-client={key}>
-              <ClientLogo client={key} />
+              {copy === 0 ? (
+                <ClientLogo client={key} id={ids[key]} />
+              ) : (
+                <ClientLogo client={key} copyOf={ids[key]} />
+              )}
             </li>
           ))}
         </ul>
@@ -87,6 +93,7 @@ const {
        same gap it has between logos, so the seam is invisible. Edges fade into the page. */
     .client-logos-marquee {
       --marquee-gap: var(--space-24);
+      --marquee-loop: 40s; /* one full loop */
 
       overflow: hidden;
       mask-image: linear-gradient(
@@ -101,7 +108,7 @@ const {
     .client-logos-marquee__track {
       display: flex;
       inline-size: max-content;
-      animation: client-logos-marquee var(--duration-marquee) linear infinite;
+      animation: client-logos-marquee var(--marquee-loop) linear infinite;
     }
 
     .client-logos-marquee:hover .client-logos-marquee__track {
