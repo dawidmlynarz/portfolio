@@ -2,6 +2,12 @@
 
 Non-obvious choices, newest first. One entry per decision: what, why, and what it rules out.
 
+## 2026-11-03 · Grist case study, listed under Agentic UX
+
+- Grist gets its own case study at `/work/grist` (draft), and Services lists it next to Zazmic under Agentic UX. Services links case studies only, so the line points to the story and not to `/grist` itself. While the page is a draft, production skips it in Services on its own.
+- Grist sits after CSS Peeper on Work (order 3.7), and Next up runs CSS Peeper, Grist, NerdWallet. Both are side products of mine.
+- Three images are placeholders (front door screenshot, rarity explanation, drop page sample). The cover is a screenshot of the preview front door at 1920×960, to swap for a designed one. Sections that need Dawid's words carry `FLAG` comments.
+
 ## 2026-11-03 · Front-end review: lighter pages, fewer tokens, one icon set
 
 From the front-end and design system review. Measured on a production build.
