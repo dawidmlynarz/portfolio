@@ -67,7 +67,6 @@ const widths = (work: Work) => [320, 480, 800].filter((w) => w <= work.data.cove
   @layer components {
     .next-up {
       padding-block: var(--space-section-md);
-      border-block-start: var(--border-width) solid var(--color-border-subtle);
     }
 
     .next-up__heading {
@@ -114,6 +113,7 @@ const widths = (work: Work) => [320, 480, 800].filter((w) => w <= work.data.cove
       font: var(--weight-heading) var(--text-h4) / var(--leading-h4) var(--font-heading);
       letter-spacing: var(--tracking-h4);
       text-wrap: balance;
+      max-inline-size: var(--measure-h3);
     }
 
     .next-up__meta {

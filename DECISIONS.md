@@ -935,3 +935,10 @@ From the market comparison (Claude Doc "Grist drops vs the market").
 ## Grist: first drop Friday Nov 6 (2 Nov)
 
 - Dawid moved the first drop forward a week. Season 2 starts Friday Nov 6, 2026 and every later season moves one week earlier, keeping the same gaps.
+
+## Case study hero and Next up widths (3 Nov)
+
+- The separator above Next up is gone. The rules between Next up rows stay.
+- Next up titles stop at `--measure-h3` (26em, about 780px at desktop h3 size, about 52 characters a line). Geist runs wide, so 50ch would be about 1000px. Dawid guessed 768 to 800px, which matches. Every current title balances into two lines at 1440. The row and its hover target stay full width, with the company still at the right edge.
+- The case study h1 drops the h1 measure and runs the full container width. The lead takes the body measure (65ch) instead of the lead measure (50ch).
+- `--measure-h3` is new in `tokens.css`. It still needs adding to the Figma Foundations file.

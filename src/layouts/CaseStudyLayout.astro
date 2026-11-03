@@ -155,6 +155,16 @@ const facts = [
       color: var(--color-text-muted);
     }
 
+    /* The case study title runs the full container width (the h1 measure is for short page
+       titles). The lead gets the body measure, a bit wider than a standard lead. */
+    .case-study__title {
+      max-inline-size: none;
+    }
+
+    .case-study__lead {
+      max-inline-size: var(--measure);
+    }
+
     .case-study__tags {
       display: flex;
       flex-wrap: wrap;
