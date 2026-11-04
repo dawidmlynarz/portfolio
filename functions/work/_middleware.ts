@@ -11,7 +11,9 @@
  *
  * One password, CASE_STUDY_PASSWORD (a Cloudflare Pages secret), unlocks every protected case
  * study for 30 days. The cookie is signed with it, so changing the password locks everyone out.
- * Without the secret nothing unlocks.
+ * Without the secret nothing unlocks, and the function logs a warning (Pages real-time logs).
+ * Spaces or line breaks around the secret or the typed password are ignored, since a pasted
+ * secret with a trailing newline looks right in the dashboard but never matches.
  */
 import pages from "../../.generated/protected-pages.js";
 
@@ -131,12 +133,13 @@ export async function onRequest({ request, env, next }: Context) {
   const slug = protectedSlug(url.pathname);
   if (!slug) return next();
 
-  const password = env.CASE_STUDY_PASSWORD;
+  const password = env.CASE_STUDY_PASSWORD?.trim();
+  if (!password) console.warn("CASE_STUDY_PASSWORD is not set for this environment");
 
   if (request.method === "POST") {
     const form = await request.formData().catch(() => undefined);
     const attempt = form?.get("password");
-    if (password && typeof attempt === "string" && (await sameSecret(attempt, password))) {
+    if (password && typeof attempt === "string" && (await sameSecret(attempt.trim(), password))) {
       return new Response(null, {
         status: 303,
         headers: {

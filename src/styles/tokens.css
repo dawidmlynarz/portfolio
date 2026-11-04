@@ -183,7 +183,7 @@
     --duration-fade: 1200ms; /* portrait fade-in on page load */
     --duration-reveal: 600ms; /* media fading in once ready (portrait reveal canvas) */
     --duration-zoom: 800ms; /* case-study cover zoom on hover */
-    --duration-shine: 2.1s; /* Grist foil: one pass of the shine on Legendary and Mythic, then a rest */
+    --duration-shine: 2.1s; /* Grist foil: one pass of the shine on Legendary and Ultra, then a rest */
     --ease-out-expo: cubic-bezier(0.19, 1, 0.22, 1);
     --duration-icon: 560ms; /* button icon hover: the icon leaves and comes back */
     --duration-sweep: 2.4s; /* Grist: one pass of the shine on the NEW badge and the pixel gem */
@@ -229,7 +229,7 @@
     --rarity-legendary-text: light-dark(#8f6400, var(--rarity-legendary-light));
     /* Tile icons (TileIcon, RARITY_ICON "tile"): Dawid's colours, adjusted only where needed so
        every icon keeps 3:1 and every tier name 4.5:1 against the page and the subtle surface, in
-       both themes. Text shares the icon's hue. Mythic is a future tier. */
+       both themes. Text shares the icon's hue. Ultra is a future tier. */
     --rarity-common-icon: #5f6367;
     --rarity-common-tile-text: light-dark(#5f6367, #7a7f84);
     --rarity-uncommon-icon: #179441;
@@ -240,8 +240,8 @@
     --rarity-epic-tile-text: light-dark(#9341f2, #9f57f4);
     --rarity-legendary-icon: light-dark(#df6f00, #fb7d00);
     --rarity-legendary-tile-text: light-dark(#b15800, #fb7d00);
-    --rarity-mythic-icon: #e60303;
-    --rarity-mythic-tile-text: light-dark(#d40000, #ff3b3b);
+    --rarity-ultra-icon: #e60303;
+    --rarity-ultra-tile-text: light-dark(#d40000, #ff3b3b);
     /* The hidden [?] tile on locked slots: the common gem's light grey, quieter than any tier. */
     --rarity-hidden-icon: var(--rarity-common-fill);
 

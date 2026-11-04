@@ -229,7 +229,7 @@ async function png(tree: El) {
 
 /** The front door: all six icons over the hero line. */
 export function frontImage() {
-  const icons = (["common", "uncommon", "rare", "epic", "legendary", "mythic"] as const).map((r) =>
+  const icons = (["common", "uncommon", "rare", "epic", "legendary", "ultra"] as const).map((r) =>
     img(icon(r), 36, 36),
   );
   return png(

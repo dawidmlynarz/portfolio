@@ -81,5 +81,17 @@ const { class: className } = Astro.props;
     .prose :global(strong) {
       font-weight: var(--weight-semibold);
     }
+
+    /* Inline code (file names, commands): the mono face on a soft grey chip. */
+    .prose :global(:not(pre) > code) {
+      padding: calc(var(--space-1) / 2) var(--space-1);
+      border: var(--border-width) solid var(--color-border-subtle);
+      border-radius: var(--radius-sm);
+      font-family: var(--font-mono);
+      font-size: var(--text-small);
+      background-color: var(--color-bg-subtle);
+      overflow-wrap: anywhere;
+      box-decoration-break: clone;
+    }
   }
 </style>

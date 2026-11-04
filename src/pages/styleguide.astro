@@ -24,6 +24,8 @@ import Testimonials from "@/components/blocks/Testimonials.astro";
 import Process from "@/components/blocks/Process.astro";
 import Beliefs from "@/components/blocks/Beliefs.astro";
 import Quote from "@/components/content/Quote.astro";
+import Callout from "@/components/content/Callout.astro";
+import Prose from "@/components/content/Prose.astro";
 import StoryIntro from "@/components/blocks/StoryIntro.astro";
 import CareerTimeline from "@/components/blocks/CareerTimeline.astro";
 import InlineImage from "@/components/ui/InlineImage.astro";
@@ -540,7 +542,7 @@ const ICON_NAMES = Object.keys(ICONS) as IconName[];
             {RARITIES.map((rarity) => (
               <li class="rarity-swatch">
                 <span class="rarity-swatch__gem">
-                  {rarity !== "mythic" && <Gem rarity={rarity} />}
+                  {rarity !== "ultra" && <Gem rarity={rarity} />}
                   <TileIcon tier={rarity} />
                 </span>
                 <RarityLabel rarity={rarity} />
@@ -774,6 +776,18 @@ const ICON_NAMES = Object.keys(ICONS) as IconName[];
         <Quote size="lg" author="Name" role="Role, Company">
           The same quote, carousel size.
         </Quote>
+        <h3 class="text-caption muted">Prose · inline code in a case study</h3>
+        <Prose>
+          <p>
+            Add <code>.md</code> to any address, or drop the folder into{" "}
+            <code>.claude/skills/</code>.
+          </p>
+        </Prose>
+        <h3 class="text-caption muted">Callout · default, and draft (previews only)</h3>
+        <Callout title="Title">A short aside inside a case study.</Callout>
+        <Callout variant="draft">
+          A note on what needs Dawid's words before the draft comes off.
+        </Callout>
         <h3 class="text-caption muted">
           Process · steps on a line that draws itself as it scrolls (/services)
         </h3>

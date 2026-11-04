@@ -2,6 +2,16 @@
 
 Non-obvious choices, newest first. One entry per decision: what, why, and what it rules out.
 
+## 2026-11-04 · Case study password ignores surrounding spaces
+
+The gate trims `CASE_STUDY_PASSWORD` and the typed password before comparing. A secret pasted into the Cloudflare dashboard with a trailing space or newline looks right there but never matches, and that is invisible from the site. When the secret is missing the function logs a warning, so Pages real-time logs show it. Spaces inside the password still count.
+
+## 2026-11-03 · Grist case study, listed under Agentic UX
+
+- Grist gets its own case study at `/work/grist` (draft), and Services lists it next to Zazmic under Agentic UX. Services links case studies only, so the line points to the story and not to `/grist` itself. While the page is a draft, production skips it in Services on its own.
+- Grist sits after CSS Peeper on Work (order 3.7), and Next up runs CSS Peeper, Grist, NerdWallet. Both are side products of mine.
+- Three images are placeholders (front door screenshot, rarity explanation, drop page sample). The cover is a screenshot of the preview front door at 1920×960, to swap for a designed one. Sections that need Dawid's words carry `FLAG` comments.
+
 ## 2026-11-03 · Front-end review: lighter pages, fewer tokens, one icon set
 
 From the front-end and design system review. Measured on a production build.
@@ -956,3 +966,13 @@ From the market comparison (Claude Doc "Grist drops vs the market").
 - Next up titles stop at `--measure-h3` (26em, about 780px at desktop h3 size, about 52 characters a line). Geist runs wide, so 50ch would be about 1000px. Dawid guessed 768 to 800px, which matches. Every current title balances into two lines at 1440. The row and its hover target stay full width, with the company still at the right edge.
 - The case study h1 drops the h1 measure and runs the full container width. The lead takes the body measure (65ch) instead of the lead measure (50ch).
 - `--measure-h3` is new in `tokens.css`. It still needs adding to the Figma Foundations file.
+
+## Grist: Mythic is renamed Ultra (4 Nov 2026)
+
+- Dawid's call. The top tier is Ultra now, everywhere: labels, the README ladder, share images, the content key (`rarity: "ultra"`), component classes and tokens (`--rarity-ultra-*`). The two workflow drops moved to the new key, and the schema, balance check and grist-entry skill use it too, so new drops can't bring the old name back. Earlier entries above keep "Mythic" as history.
+- The Figma token file needs the same rename.
+
+## Grist: effects builder removed (4 Nov 2026)
+
+- Dawid asked to drop react-cards-opening now that nothing on the site uses it (the hover embers were already gone). The preview-only builder at /grist/review/fx and its island are deleted, with the library's three packages. React and `@astrojs/react` went too, since the builder was their only user. An experiment that needs a framework island adds its integration back.
+- The rarity icon's shine keeps its own CSS copy of the library's foil timing, so nothing visible changes.

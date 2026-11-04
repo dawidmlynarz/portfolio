@@ -26,13 +26,13 @@ const { rarity, type, size = "sm", hidden = false, class: className } = Astro.pr
   class:list={[
     "rarity-label",
     hidden ? "rarity-label--hidden" : `rarity-label--${rarity}`,
-    { "rarity-label--tile": !hidden && (RARITY_ICON === "tile" || rarity === "mythic") },
+    { "rarity-label--tile": !hidden && (RARITY_ICON === "tile" || rarity === "ultra") },
     className,
   ]}
 >
   {hidden ? (
     <TileIcon tier="hidden" size={size} />
-  ) : RARITY_ICON === "tile" || rarity === "mythic" ? (
+  ) : RARITY_ICON === "tile" || rarity === "ultra" ? (
     <TileIcon tier={rarity} size={size} />
   ) : (
     <Gem rarity={rarity} />
@@ -98,8 +98,8 @@ const { rarity, type, size = "sm", hidden = false, class: className } = Astro.pr
       color: var(--rarity-legendary-tile-text);
     }
 
-    .rarity-label--tile.rarity-label--mythic {
-      color: var(--rarity-mythic-tile-text);
+    .rarity-label--tile.rarity-label--ultra {
+      color: var(--rarity-ultra-tile-text);
     }
   }
 </style>
