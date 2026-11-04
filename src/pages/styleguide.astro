@@ -542,7 +542,7 @@ const ICON_NAMES = Object.keys(ICONS) as IconName[];
             {RARITIES.map((rarity) => (
               <li class="rarity-swatch">
                 <span class="rarity-swatch__gem">
-                  {rarity !== "mythic" && <Gem rarity={rarity} />}
+                  {rarity !== "ultra" && <Gem rarity={rarity} />}
                   <TileIcon tier={rarity} />
                 </span>
                 <RarityLabel rarity={rarity} />

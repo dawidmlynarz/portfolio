@@ -2,7 +2,7 @@
 /**
  * Dawid's tile icon for a rarity tier, shown instead of the pixel gem when RARITY_ICON is "tile"
  * (src/lib/grist.ts), and the hidden [?] tile for a tier that hasn't dropped yet. Decorative
- * (a tier name always sits next to it). Legendary and Mythic have a foil shine: a soft diagonal band sweeps
+ * (a tier name always sits next to it). Legendary and Ultra have a foil shine: a soft diagonal band sweeps
  * across the tiles, clipped to them, and stops under reduced motion.
  *
  * A tier's tiles are one path. The first icon of a tier on a page draws it with an id; every later
@@ -24,7 +24,7 @@ interface Props {
 
 const { tier, size = "sm" } = Astro.props;
 const d = (tier === "hidden" ? HIDDEN_ICON_PATHS : RARITY_ICON_PATHS[tier]).join("");
-const shiny = tier === "legendary" || tier === "mythic";
+const shiny = tier === "legendary" || tier === "ultra";
 const shapeId = `rarity-icon-shape-${tier}`;
 // Tiers already drawn on this page (Astro.locals is one object per page render).
 const drawn = drawnTiers.get(Astro.locals) ?? new Set<string>();
@@ -111,8 +111,8 @@ const clipId = `rarity-icon-${crypto.randomUUID().slice(0, 8)}`;
       fill: var(--rarity-legendary-icon);
     }
 
-    .rarity-icon--mythic {
-      fill: var(--rarity-mythic-icon);
+    .rarity-icon--ultra {
+      fill: var(--rarity-ultra-icon);
     }
 
     .rarity-icon--hidden {
