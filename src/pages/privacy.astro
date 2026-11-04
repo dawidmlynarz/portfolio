@@ -3,7 +3,6 @@ import SiteLayout from "@/layouts/SiteLayout.astro";
 import Hero from "@/components/blocks/Hero.astro";
 import Prose from "@/components/content/Prose.astro";
 import Link from "@/components/ui/Link.astro";
-import Button from "@/components/ui/Button.astro";
 import { SITE } from "@/lib/site";
 
 /** Bump when the text changes. */
@@ -13,13 +12,13 @@ const updated = "4 November 2026";
 <SiteLayout
   title="Privacy policy"
   footer="legal"
-  description="What this site stores, what it measures and who handles it. No ads, and analytics only if you agree."
+  description="What this site stores, what it measures and who handles it. No ads, no tracking cookies, no banner."
 >
   <Hero
     eyebrow="Legal"
     title="Privacy policy"
     align="center"
-    lead="There are no ads and nothing is sold or shared for marketing. Analytics only run if you agree. Here is everything the site does."
+    lead="There are no ads, no tracking cookies and nothing sold or shared for marketing. Here is everything the site does."
   />
 
   <Prose class="privacy">
@@ -52,32 +51,20 @@ const updated = "4 November 2026";
 
     <h2>Visitor statistics</h2>
     <p>
-      I use analytics to measure and improve the website, only if you agree. When you press Accept
-      on the small card at the bottom of the page, the site loads Cloudflare Web Analytics. It
-      doesn’t use cookies and doesn’t follow you across sites. I only see totals, like page views,
-      referring sites, countries, browsers and device types. No individual visitor can be picked
-      out.
-    </p>
-    <p>
-      The legal basis is your consent (Article 6(1)(a) GDPR). If you press Decline, nothing loads.
-      You can change your mind at any time, and it won’t affect anything collected before.
-    </p>
-    <p class="privacy__consent" data-consent-open hidden>
-      <Button size="sm" variant="secondary" hover="icon">
-        Change analytics choice
-      </Button>
+      I use Cloudflare Web Analytics to see which pages people read and roughly where visits come
+      from. It doesn’t use cookies, doesn’t store anything on your device and doesn’t follow you
+      across sites. I only see totals, like page views, referring sites, countries, browsers and
+      device types. No individual visitor can be picked out. I rely on my legitimate interest in
+      understanding how the site is used so I can improve it (Article 6(1)(f) GDPR). If you’d rather
+      not be counted, an ad or tracker blocker will stop it.
     </p>
 
     <h2>Cookies and local storage</h2>
     <p>
-      Apart from analytics, nothing the site stores needs your consent. Each item is there only to
-      do something you asked for or to keep the site running.
+      Nothing the site stores needs your consent. Each item is there only to do something you asked
+      for or to keep the site running.
     </p>
     <ul>
-      <li>
-        <strong>analytics-consent</strong> is saved in your browser’s local storage when you press
-        Accept or Decline, so the site doesn’t ask again on every page.
-      </li>
       <li>
         <strong>case_study_access</strong> is a cookie set only after you enter the password for a
         protected case study, so you don’t have to type it again. It lasts 30 days and holds no
