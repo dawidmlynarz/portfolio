@@ -8,13 +8,21 @@ interface Props {
   /** Second phrase of a two-tone headline, in the muted ink (as on Home). */
   titleMuted?: string;
   lead?: string;
+  /** center: eyebrow, title and lead centred, as the About intro (text-only heroes, e.g. /privacy). */
+  align?: "start" | "center";
 }
 
-const { eyebrow, title, titleMuted, lead } = Astro.props;
+const { eyebrow, title, titleMuted, lead, align = "start" } = Astro.props;
 const hasMedia = Astro.slots.has("media");
 ---
 
-<section class:list={["hero", "hero-backdrop-host", { "hero--split": hasMedia }]}>
+<section
+  class:list={[
+    "hero",
+    "hero-backdrop-host",
+    { "hero--split": hasMedia, "hero--center": align === "center" },
+  ]}
+>
   <HeroBackdrop />
   <Container class="hero__grid">
     <div class="hero__content">
@@ -61,6 +69,11 @@ const hasMedia = Astro.slots.has("media");
     .hero__muted,
     .hero__lead {
       color: var(--color-text-muted);
+    }
+
+    .hero--center .hero__content {
+      justify-items: center;
+      text-align: center;
     }
 
     .hero__actions {

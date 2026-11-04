@@ -11,9 +11,11 @@ type Props = ComponentProps<typeof BaseLayout> & {
   /** One screen, no footer (/contact): the page is exactly the viewport tall when its content
    * fits, so there is nothing to scroll; on very short screens it still scrolls. */
   fit?: boolean;
+  /** Footer variant: the closing line and links (default), or only the copyright (legal). */
+  footer?: ComponentProps<typeof Footer>["variant"];
 };
 
-const { navOverlap = false, fit = false, ...base } = Astro.props;
+const { navOverlap = false, fit = false, footer, ...base } = Astro.props;
 ---
 
 <BaseLayout {...base}>
@@ -24,7 +26,7 @@ const { navOverlap = false, fit = false, ...base } = Astro.props;
     </main>
     {!fit && (
       <>
-        <Footer />
+        <Footer variant={footer} />
         <Button
           class="to-top"
           href="#top"
