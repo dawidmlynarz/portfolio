@@ -45,7 +45,7 @@ Workers & Pages → Create → Pages → Connect to Git → this repo.
 | Build output directory | `dist`          |
 | Env var `NODE_VERSION` | `22`            |
 
-Optional, production only: `CF_WEB_ANALYTICS_TOKEN` (Cloudflare Web Analytics site token) adds the analytics beacon, loaded only after a visitor accepts the consent banner. Keep Cloudflare's automatic injection off.
+Optional, production only: `CF_WEB_ANALYTICS_TOKEN` (Cloudflare Web Analytics site token) adds the analytics beacon.
 
 Every other branch gets a preview URL, which is `noindex` (see `DECISIONS.md`).
 
