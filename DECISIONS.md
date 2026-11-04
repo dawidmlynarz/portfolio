@@ -2,6 +2,10 @@
 
 Non-obvious choices, newest first. One entry per decision: what, why, and what it rules out.
 
+## 2026-11-04 · Case study password ignores surrounding spaces
+
+The gate trims `CASE_STUDY_PASSWORD` and the typed password before comparing. A secret pasted into the Cloudflare dashboard with a trailing space or newline looks right there but never matches, and that is invisible from the site. When the secret is missing the function logs a warning, so Pages real-time logs show it. Spaces inside the password still count.
+
 ## 2026-11-03 · Front-end review: lighter pages, fewer tokens, one icon set
 
 From the front-end and design system review. Measured on a production build.
