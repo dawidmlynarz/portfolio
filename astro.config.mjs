@@ -1,7 +1,6 @@
 // @ts-check
 import { defineConfig, envField } from "astro/config";
 import mdx from "@astrojs/mdx";
-import react from "@astrojs/react";
 import sitemap from "@astrojs/sitemap";
 import protectedWork, { protectedSlugs } from "./tooling/protected-work.mjs";
 
@@ -25,8 +24,6 @@ export default defineConfig({
   scopedStyleStrategy: "class",
   integrations: [
     mdx(),
-    // React only for experiment islands (src/experiments); the site itself ships no framework JS.
-    react({ include: ["**/experiments/**/*.tsx"] }),
     sitemap({
       filter: (page) => {
         const { pathname } = new URL(page);

@@ -967,3 +967,8 @@ From the market comparison (Claude Doc "Grist drops vs the market").
 
 - Dawid's call. The top tier is Ultra now, everywhere: labels, the README ladder, share images, the content key (`rarity: "ultra"`), component classes and tokens (`--rarity-ultra-*`). The two workflow drops moved to the new key, and the schema, balance check and grist-entry skill use it too, so new drops can't bring the old name back. Earlier entries above keep "Mythic" as history.
 - The Figma token file needs the same rename.
+
+## Grist: effects builder removed (4 Nov 2026)
+
+- Dawid asked to drop react-cards-opening now that nothing on the site uses it (the hover embers were already gone). The preview-only builder at /grist/review/fx and its island are deleted, with the library's three packages. React and `@astrojs/react` went too, since the builder was their only user. An experiment that needs a framework island adds its integration back.
+- The rarity icon's shine keeps its own CSS copy of the library's foil timing, so nothing visible changes.
