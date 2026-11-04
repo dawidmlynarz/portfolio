@@ -4,7 +4,8 @@
  * reduced motion; screen readers get the full sentence), "Get in touch" (to /contact) as the
  * main action, social links and the copyright line. Not on /contact (SiteLayout `footer`).
  * The simple variant (Grist) is the same footer without the closing line and the button: the
- * social links and the legal line, as on the portfolio.
+ * social links and the legal line, as on the portfolio. The legal variant (/privacy) keeps only the
+ * copyright line, centred.
  */
 import Container from "@/components/layout/Container.astro";
 import Button from "@/components/ui/Button.astro";
@@ -12,16 +13,17 @@ import Link from "@/components/ui/Link.astro";
 import { SITE, SOCIAL_LINKS } from "@/lib/site";
 
 interface Props {
-  variant?: "default" | "simple";
+  variant?: "default" | "simple" | "legal";
 }
 
 const { variant = "default" } = Astro.props;
-const simple = variant === "simple";
+const simple = variant !== "default";
+const legal = variant === "legal";
 const year = new Date().getFullYear();
 const endings = ["AI product", "design system", "product team"];
 ---
 
-<footer class:list={["footer", { "footer--simple": simple }]}>
+<footer class:list={["footer", { "footer--simple": simple, "footer--legal": legal }]}>
   <Container class="footer__inner">
     {!simple && (
       <>
@@ -47,18 +49,20 @@ const endings = ["AI product", "design system", "product team"];
       </>
     )}
     <div class="footer__meta text-small">
-      <ul class="footer__social" role="list">
-        {SOCIAL_LINKS.map(({ href, label }) => (
-          <li>
-            <Link href={href}>{label}</Link>
-          </li>
-        ))}
-      </ul>
+      {!legal && (
+        <ul class="footer__social" role="list">
+          {SOCIAL_LINKS.map(({ href, label }) => (
+            <li>
+              <Link href={href}>{label}</Link>
+            </li>
+          ))}
+        </ul>
+      )}
       <p class="footer__legal">
         <span>
           {SITE.name}. All rights reserved © 2011 – {year}
         </span>
-        <Link href="/privacy">Privacy policy</Link>
+        {!legal && <Link href="/privacy">Privacy policy</Link>}
       </p>
     </div>
   </Container>
@@ -153,6 +157,12 @@ const endings = ["AI product", "design system", "product team"];
       padding-block-start: var(--space-8);
       border-block-start: var(--border-width) solid var(--color-border-subtle);
       color: var(--color-text-muted);
+    }
+
+    /* Legal pages: only the copyright line, centred. */
+    .footer--legal .footer__meta {
+      align-items: center;
+      text-align: center;
     }
 
     .footer__legal {

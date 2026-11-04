@@ -294,7 +294,7 @@ Dawid wanted the hero liquid to reveal 3–4 layers at random, with the real pho
 - **`/401` redirects to `/`.** It was Webflow's password page and is reachable on the old site.
 - **`seoDescription`** joins `seoTitle` in the case-study schema, so the card summary and lead can stay long while search gets a ~155-character version. The build warns (`[seo]` lines) when an indexable page's title runs past 60 characters or its description past 160. Warnings, not errors, so copy edits never block a deploy.
 - **Structured data shares one Person.** `src/lib/schema.ts` builds the Person (with `@id` `/#person`, the headshot, `alternateName` without the ł, country and `knowsAbout`) and WebSite (`/#website`). Home carries both; About is a `ProfilePage` with the Person as `mainEntity`; case studies point their `author` at the `@id` and add a `BreadcrumbList`.
-- **Analytics: Cloudflare Web Analytics**, cookieless, so no consent banner. The beacon is added only on production builds with `CF_WEB_ANALYTICS_TOKEN` set. Turning on Pages' automatic injection instead would also count preview traffic.
+- **Analytics: Cloudflare Web Analytics**, cookieless (a consent banner was added and dropped on 2026-11-04, see below). The beacon is added only on production builds with `CF_WEB_ANALYTICS_TOKEN` set. Turning on Pages' automatic injection instead would also count preview traffic.
 - **Search phrases: AI-ready design systems, agentic UX and freelance product designer** (Dawid's pick; product strategy stays a service but isn't a search target). Every indexable page now has a title of 60 characters or fewer and a description of 160 or fewer, written around those phrases. Case studies keep their long headline and summary on the page and use `seoTitle`/`seoDescription` for search. Revisit with real Search Console queries 4 to 6 weeks after launch.
 - **The share image (`public/og.png`) still showed the old tagline** at the time; replaced on 2026-10-29 (see "One share image for every page").
 - **Refreshed on 2026-10-29** onto the current site: `SHOW_PROTECTED_DRAFTS` stays removed (server-side protection replaced it), and Zazmic Anvil UI gets its own `seoTitle`/`seoDescription`. Locked case studies stay `noindex` and out of the sitemap.
@@ -976,3 +976,18 @@ From the market comparison (Claude Doc "Grist drops vs the market").
 
 - Dawid asked to drop react-cards-opening now that nothing on the site uses it (the hover embers were already gone). The preview-only builder at /grist/review/fx and its island are deleted, with the library's three packages. React and `@astrojs/react` went too, since the builder was their only user. An experiment that needs a framework island adds its integration back.
 - The rarity icon's shine keeps its own CSS copy of the library's foil timing, so nothing visible changes.
+
+## Analytics consent banner (4 Nov)
+
+- Dawid asked for a consent banner to avoid any risk, even though Cloudflare Web Analytics is cookieless (the EDPB's 2023 reading of ePrivacy Art. 5(3) can cover scripts that read browser data). `ConsentBanner` is a small card bottom left (full width under 768px, clear of Back to top) with his line, a Privacy policy link and Decline and Accept.
+- Both buttons are the same secondary style, so declining is as easy and as visible as accepting. The card doesn't block the page or steal focus.
+- The beacon is injected by BaseLayout's head script only when `analytics-consent` is `granted` in localStorage. No choice sets `html[data-consent="ask"]`, which shows the card from first paint (no layout jump). Without JS nothing loads and no card shows.
+- /privacy has "Change analytics choice", which reopens the card. Declining after accepting reloads the page so the beacon stops.
+- Cloudflare's automatic injection must stay off, because it adds the beacon at the edge without asking. The token goes in `CF_WEB_ANALYTICS_TOKEN` instead (production only, as before).
+- /privacy now carries Dawid's business details (name, address, NIP, for the Polish e-services act) and the GDPR Art. 13 items it was missing: legal bases, US transfers under the Data Privacy Framework, Google Workspace for email, YouTube and the booking page, email retention (up to two years, Claude's suggestion) and the full list of rights.
+- Follow-up (Dawid): /privacy uses a centred Hero (`align="center"`, like the About intro) with "Legal" over "Privacy policy", and the new `legal` Footer variant (no closing line, no social links, only the copyright, centred). The lead lost its opening "Not much.", which answered the old title.
+
+## Consent banner dropped (4 Nov)
+
+- Dawid chose to drop the banner and keep Cloudflare Web Analytics running for everyone, with Pages' automatic setup as before. It sets no cookies and stores nothing on the device, so it needs no consent under the usual reading (CNIL exempts this kind of audience measurement). The EDPB's 2023 guidelines read ePrivacy Art. 5(3) more broadly, so this is very low risk, not zero. Claude told him so before he chose.
+- `ConsentBanner` is deleted (it's in git history if Google Analytics or anything with cookies is ever added). /privacy names legitimate interest (Art. 6(1)(f)) as the basis for the statistics. The business details, centred hero and legal footer stay.
