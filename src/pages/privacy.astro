@@ -3,20 +3,23 @@ import SiteLayout from "@/layouts/SiteLayout.astro";
 import Hero from "@/components/blocks/Hero.astro";
 import Prose from "@/components/content/Prose.astro";
 import Link from "@/components/ui/Link.astro";
+import Button from "@/components/ui/Button.astro";
 import { SITE } from "@/lib/site";
 
 /** Bump when the text changes. */
-const updated = "29 October 2026";
+const updated = "4 November 2026";
 ---
 
 <SiteLayout
-  title="Privacy"
-  description="What this site stores, what it measures and who handles it. No ads, no tracking cookies, no banner."
+  title="Privacy policy"
+  footer="legal"
+  description="What this site stores, what it measures and who handles it. No ads, and analytics only if you agree."
 >
   <Hero
-    eyebrow="Privacy"
-    title="What this site knows about you"
-    lead="Not much. There are no ads, no tracking cookies and nothing sold or shared for marketing. Here is everything it does."
+    eyebrow="Legal"
+    title="Privacy policy"
+    align="center"
+    lead="There are no ads and nothing is sold or shared for marketing. Analytics only run if you agree. Here is everything the site does."
   />
 
   <Prose class="privacy">
@@ -28,29 +31,53 @@ const updated = "29 October 2026";
       any personal data it handles. If you have a question about it, write to me at{" "}
       <Link href={`mailto:${SITE.email}`}>{SITE.email}</Link>.
     </p>
+    <p class="privacy__details">
+      Dawid Młynarz UI/UX Designer
+      <br />
+      Chludowska 5A/2, 62-003 Biedrusko, Poland
+      <br />
+      NIP 6060071225
+    </p>
 
     <h2>Hosting</h2>
     <p>
       The site is hosted on Cloudflare Pages. To deliver pages and keep the site safe from abuse,
       Cloudflare processes technical data from every request, such as your IP address, browser and
-      the page you asked for. I don’t see or keep those logs. You can read how Cloudflare handles
-      them in its <Link href="https://www.cloudflare.com/privacypolicy/">privacy policy</Link>.
+      the page you asked for. I don’t see or keep those logs. I rely on my legitimate interest in
+      running a working, secure site (Article 6(1)(f) GDPR). Cloudflare is a US company and may
+      process this data outside the EU. It’s certified under the EU-US Data Privacy Framework. You
+      can read how Cloudflare handles the data in its{" "}
+      <Link href="https://www.cloudflare.com/privacypolicy/">privacy policy</Link>.
     </p>
 
     <h2>Visitor statistics</h2>
     <p>
-      I use Cloudflare Web Analytics to see which pages people read and roughly where visits come
-      from. It doesn’t use cookies, doesn’t store anything on your device and doesn’t follow you
-      across sites. I only see totals: page views, referring sites, countries, browsers and device
-      types. No individual visitor can be picked out.
+      I use analytics to measure and improve the website, only if you agree. When you press Accept
+      on the small card at the bottom of the page, the site loads Cloudflare Web Analytics. It
+      doesn’t use cookies and doesn’t follow you across sites. I only see totals, like page views,
+      referring sites, countries, browsers and device types. No individual visitor can be picked
+      out.
+    </p>
+    <p>
+      The legal basis is your consent (Article 6(1)(a) GDPR). If you press Decline, nothing loads.
+      You can change your mind at any time, and it won’t affect anything collected before.
+    </p>
+    <p class="privacy__consent" data-consent-open hidden>
+      <Button size="sm" variant="secondary" hover="icon">
+        Change analytics choice
+      </Button>
     </p>
 
     <h2>Cookies and local storage</h2>
     <p>
-      The site doesn’t need your consent for anything it stores, because each item is there only to
-      do something you asked for or to keep the site running:
+      Apart from analytics, nothing the site stores needs your consent. Each item is there only to
+      do something you asked for or to keep the site running.
     </p>
     <ul>
+      <li>
+        <strong>analytics-consent</strong> is saved in your browser’s local storage when you press
+        Accept or Decline, so the site doesn’t ask again on every page.
+      </li>
       <li>
         <strong>case_study_access</strong> is a cookie set only after you enter the password for a
         protected case study, so you don’t have to type it again. It lasts 30 days and holds no
@@ -70,17 +97,33 @@ const updated = "29 October 2026";
       </li>
     </ul>
 
+    <h2>Videos and booking a call</h2>
+    <p>
+      The videos on the About page come from YouTube. Nothing loads from YouTube until you press
+      play. Then the player loads from youtube-nocookie.com and Google’s{" "}
+      <Link href="https://policies.google.com/privacy">privacy policy</Link> applies.
+    </p>
+    <p>
+      Book a call takes you to my Google Calendar booking page. The name and email you give there
+      come to me so I can set up the call. I use them to talk about working together (Article
+      6(1)(b) GDPR).
+    </p>
+
     <h2>Email</h2>
     <p>
-      If you email me, I keep the conversation in my inbox so I can reply and follow up. I don’t add
-      anyone to a mailing list.
+      If you email me, I keep the conversation in my inbox so I can reply and follow up. My email
+      runs on Google Workspace. I keep a conversation for up to two years after we last talked,
+      unless we end up working together and the law asks me to keep it longer, for example for
+      invoices. I rely on my legitimate interest in answering you (Article 6(1)(f) GDPR). I don’t
+      add anyone to a mailing list.
     </p>
 
     <h2>Your rights</h2>
     <p>
-      Under the GDPR you can ask me what I hold about you, and ask me to correct or delete it. Just
-      email me. If you think I’ve handled your data badly, you can also complain to a data
-      protection authority. In Poland that’s <Link href="https://uodo.gov.pl/en">UODO</Link>.
+      Under the GDPR you can ask me what I hold about you and get a copy. You can also ask me to
+      correct it, delete it, limit how I use it or object to it. Just email me. If you think I’ve
+      handled your data badly, you can also complain to a data protection authority. In Poland
+      that’s <Link href="https://uodo.gov.pl/en">UODO</Link>.
     </p>
   </Prose>
 </SiteLayout>
@@ -89,6 +132,10 @@ const updated = "29 October 2026";
   @layer components {
     .privacy {
       padding-block-end: var(--space-section-md);
+    }
+
+    .privacy__details {
+      color: var(--color-text-muted);
     }
 
     .privacy__updated {
