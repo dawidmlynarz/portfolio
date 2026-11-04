@@ -3,7 +3,7 @@
  * The drop itself on an entry page, from Dawid's Figma ("The drop", Foundations 164:6254): a plain
  * card (1px outline, large radius, no tier colour or shadow) with the "human-curated" stamp on its
  * top edge. It leads with the rarity and type, then the drop's own name (screen readers hear
- * "The drop:" first) and what the type is. Mythic workflows cap each long file at a dozen lines
+ * "The drop:" first) and what the type is. Ultra workflows cap each long file at a dozen lines
  * until it's opened. The loot text sits as written in drop.md, with a copy
  * button on its corner for just that text. Below it, the actions for the whole entry: Copy for AI
  * (the markdown twin: brief, why, how to use it and the drop) and Download (the same, as a file).
@@ -138,7 +138,7 @@ const install = isPlugin(drop)
 </section>
 
 <script>
-  // Mythic workflows: each long file is capped at about twelve lines until opened. The full text
+  // Ultra workflows: each long file is capped at about twelve lines until opened. The full text
   // stays in the page (search engines and the copy buttons get all of it); without JS nothing is
   // capped.
   document.querySelectorAll<HTMLElement>("[data-loot-cap]").forEach((loot) => {
@@ -228,7 +228,7 @@ const install = isPlugin(drop)
     }
 
     /*
-     * Several files (a Mythic workflow): more room between them, and a dotted hairline with 4px
+     * Several files (an Ultra workflow): more room between them, and a dotted hairline with 4px
      * gaps (a CSS dotted border can't set its spacing, so the dots are a repeating gradient).
      */
     .loot-box__file + .loot-box__file {
@@ -270,7 +270,7 @@ const install = isPlugin(drop)
       background-color: var(--color-bg-subtle);
     }
 
-    /* Mythic: a long file shows its first dozen lines and fades out until it's opened. */
+    /* Ultra: a long file shows its first dozen lines and fades out until it's opened. */
     .loot-box__loot[data-loot-cap="capped"] .loot-box__text {
       max-block-size: calc(var(--leading-small) * var(--text-small) * 12 + var(--space-8));
       overflow: hidden;
