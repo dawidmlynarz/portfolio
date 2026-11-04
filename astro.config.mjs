@@ -45,7 +45,7 @@ export default defineConfig({
       // This deployment's own address (also set by Cloudflare Pages). Previews point their share
       // images and the Grist plugin marketplace here, so a branch link works before the page goes live.
       CF_PAGES_URL: envField.string({ context: "server", access: "public", optional: true }),
-      // Cloudflare Web Analytics site token. Production only; no cookies, no consent banner needed.
+      // Cloudflare Web Analytics site token. Production only, and loaded only after consent (ConsentBanner).
       CF_WEB_ANALYTICS_TOKEN: envField.string({
         context: "server",
         access: "public",
