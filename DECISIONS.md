@@ -956,3 +956,8 @@ From the market comparison (Claude Doc "Grist drops vs the market").
 - Next up titles stop at `--measure-h3` (26em, about 780px at desktop h3 size, about 52 characters a line). Geist runs wide, so 50ch would be about 1000px. Dawid guessed 768 to 800px, which matches. Every current title balances into two lines at 1440. The row and its hover target stay full width, with the company still at the right edge.
 - The case study h1 drops the h1 measure and runs the full container width. The lead takes the body measure (65ch) instead of the lead measure (50ch).
 - `--measure-h3` is new in `tokens.css`. It still needs adding to the Figma Foundations file.
+
+## Grist: Mythic is renamed Ultra (4 Nov 2026)
+
+- Dawid's call. The top tier is Ultra now, everywhere: labels, the README ladder, share images, the content key (`rarity: "ultra"`), component classes and tokens (`--rarity-ultra-*`). The two workflow drops moved to the new key, and the schema, balance check and grist-entry skill use it too, so new drops can't bring the old name back. Earlier entries above keep "Mythic" as history.
+- The Figma token file needs the same rename.

@@ -31,7 +31,7 @@ const VARIANTS = [
   {
     id: "foil",
     name: "Foil Card",
-    note: "The drop as the card you just opened. Rounded like the drop cards, the Figma hover wash, and the foil running across it. Legendary and Mythic shine on their own; the rest shine when you point at them.",
+    note: "The drop as the card you just opened. Rounded like the drop cards, the Figma hover wash, and the foil running across it. Legendary and Ultra shine on their own; the rest shine when you point at them.",
   },
   {
     id: "crate",
@@ -51,11 +51,11 @@ const VARIANTS = [
   {
     id: "aura",
     name: "Aura Glass",
-    note: "A quiet glass panel lifted off the page by a soft tier glow behind it. The calmest of the six; Legendary and Mythic glow brighter.",
+    note: "A quiet glass panel lifted off the page by a soft tier glow behind it. The calmest of the six; Legendary and Ultra glow brighter.",
   },
 ] as const;
 
-const shiny = (tier: Rarity) => tier === "legendary" || tier === "mythic";
+const shiny = (tier: Rarity) => tier === "legendary" || tier === "ultra";
 ---
 
 <div class="dbx-lab" data-dbx-lab>

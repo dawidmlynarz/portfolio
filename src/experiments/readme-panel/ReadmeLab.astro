@@ -26,7 +26,7 @@ const VARIANTS = [
     name: "2 · Side sheet",
     where: "Slides in from the right; a bottom sheet on phones",
     legend: "Tier ladder",
-    note: "Full height beside the page, so the cards stay in view while you read. The rarities climb a ladder from Common to Mythic, joined by a line.",
+    note: "Full height beside the page, so the cards stay in view while you read. The rarities climb a ladder from Common to Ultra, joined by a line.",
   },
   {
     id: "drawer",
@@ -74,9 +74,7 @@ const INCLUDES = [
 ] as const;
 const has = (tier: (typeof RARITIES)[number], key: (typeof INCLUDES)[number]["key"]) =>
   key === "idea" ||
-  (key === "run"
-    ? tier === "mythic"
-    : (RARITY_INFO[tier].needs as readonly string[]).includes(key));
+  (key === "run" ? tier === "ultra" : (RARITY_INFO[tier].needs as readonly string[]).includes(key));
 
 const NAMES = [
   {

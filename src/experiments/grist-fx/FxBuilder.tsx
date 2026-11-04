@@ -7,6 +7,7 @@
  */
 import { useCallback, useEffect, useMemo, useRef, useState, type ReactNode } from "react";
 import "@react-cards-opening/ui/styles.css";
+import { DEFAULT_RARITIES } from "@react-cards-opening/core";
 import { Card, SIGNATURE_EFFECTS, type CardTheme } from "@react-cards-opening/ui";
 import {
   clearEffects,
@@ -18,7 +19,7 @@ import {
   type EffectName,
 } from "@react-cards-opening/effects";
 
-const TIERS = ["common", "uncommon", "rare", "epic", "legendary", "mythic"] as const;
+const TIERS = ["common", "uncommon", "rare", "epic", "legendary", "ultra"] as const;
 type Tier = (typeof TIERS)[number];
 const LABEL: Record<Tier, string> = {
   common: "Common",
@@ -26,7 +27,7 @@ const LABEL: Record<Tier, string> = {
   rare: "Rare",
   epic: "Epic",
   legendary: "Legendary",
-  mythic: "Mythic",
+  ultra: "Ultra",
 };
 
 type Mode = "card" | "icon";
@@ -71,9 +72,16 @@ const row = (effect: EffectName, extra: Partial<Row> = {}): Row => ({
   ...extra,
 });
 
+/** The library still calls the top tier "mythic". Grist calls it Ultra, so map it at the edge. */
+const libTier = (t: Tier) => (t === "ultra" ? "mythic" : t);
+/** The library's tiers, with the top one labelled Ultra on the card. */
+const LIB_RARITIES = DEFAULT_RARITIES.map((r) =>
+  r.id === "mythic" ? { ...r, label: LABEL.ultra } : r,
+);
+
 /** The library's own show for each tier (the steps played as a card turns), as a starting point. */
 function signatureRows(tier: Tier): Row[] {
-  const steps = SIGNATURE_EFFECTS[tier] as readonly (
+  const steps = SIGNATURE_EFFECTS[libTier(tier)] as readonly (
     string | { effect: string; on?: string; delay?: number }
   )[];
   return steps
@@ -88,7 +96,7 @@ const ICON_START: Record<Tier, Row[]> = {
   rare: [],
   epic: [],
   legendary: [],
-  mythic: [],
+  ultra: [],
 };
 
 function defaults(): Setup {
@@ -174,7 +182,7 @@ const themeOf = (p: Palette): CardTheme => ({
   fg: p.text,
   muted: p.muted,
   levels: [p.subtle, p.muted, p.muted, p.text, p.text],
-  rarity: p.tier,
+  rarity: Object.fromEntries(TIERS.map((t) => [libTier(t), p.tier[t]])),
 });
 
 const SAMPLE: Record<Tier, { name: string; line: string }> = {
@@ -183,7 +191,7 @@ const SAMPLE: Record<Tier, { name: string; line: string }> = {
   rare: { name: "Design System Audit", line: "What your design system hasn't decided yet." },
   epic: { name: "DESIGN.md", line: "One plain file that explains your design system." },
   legendary: { name: "Agent Evaluation Kit", line: "Test an agent against its spec." },
-  mythic: { name: "Presales Workflow", line: "From call notes to a signed statement of work." },
+  ultra: { name: "Presales Workflow", line: "From call notes to a signed statement of work." },
 };
 
 type Slots = Record<string, ReactNode>;
@@ -328,7 +336,12 @@ export default function FxBuilder(props: Slots) {
     mode === "icon" ? (
       slot(props, `icon-${tier}`)
     ) : setup.cardStyle === "library" && theme ? (
-      <Card card={{ id: tier, rarity: tier, ...SAMPLE[tier] }} theme={theme} width={280} />
+      <Card
+        card={{ id: tier, rarity: libTier(tier), ...SAMPLE[tier] }}
+        rarities={LIB_RARITIES}
+        theme={theme}
+        width={280}
+      />
     ) : (
       slot(props, `card-${tier}`)
     );
