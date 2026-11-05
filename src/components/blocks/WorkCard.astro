@@ -158,10 +158,13 @@ const sizes =
       stroke-width: 2;
     }
 
+    /* The title fills the same width as the summary under it. An h2 would otherwise keep the
+       headline measure, and balance would pull its lines in further, so it wraps like text. */
     .work-card__title {
+      max-inline-size: none;
       font: var(--weight-heading) var(--text-h3) / var(--leading-h3) var(--font-heading);
       letter-spacing: var(--tracking-h3);
-      text-wrap: balance;
+      text-wrap: pretty;
     }
 
     /* Quiet at rest; the underline draws in when the card is hovered or the link focused. */
