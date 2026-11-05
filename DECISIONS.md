@@ -999,3 +999,11 @@ From the market comparison (Claude Doc "Grist drops vs the market").
 - Their entrance is now the page transition's "page-in" rise, played on `main` as a plain CSS animation on first load, so a first visit and a click between pages look the same. It starts with the first paint and needs no JS. `pagereveal` sets `html[data-arrived]` when a view transition brought the page in, which turns the CSS version off so it doesn't play twice. Firefox and older Safari (no cross-document transitions) get the rise on every page.
 - Not chosen: a preloader. It would hide the content for longer, it adds a fake wait on fast connections, and it would make LCP worse. Fixing what blocks the title is the root-cause fix.
 - Below-the-fold reveals (section titles, fades, the story, the process line) still use the motion layer. They are off screen when it loads, so nothing waits on them.
+
+## Lighter portrait on phones (5 Nov)
+
+- Measured on a throttled Pixel 7: the portrait was 256 KB of a 449 KB page. The photo came at 2400 px (157 KB, the phone shows it at about half that), then two sculpture layers.
+- Phones at 2.5x and up now ask for a photo near 2x, like the canvas already did (`sizes` in HomeHero). 87 KB, same file reused by the canvas.
+- Dawid chose "lean glitch" for touch screens: one layer only, the iridescent one (`touch: true` in `src/lib/portrait.ts`), and no tap or drag interference. The rolling bands stay. Desktop is unchanged and keeps both layers.
+- The portrait's page-load fade now starts at 1% opacity, not 0. Chrome treats 0 as not painted, so the 1.2 s fade pushed the phone LCP from 1.8 s to 3.2 s. Nothing visible changes.
+- Result on the same phone: portrait 152 KB, page 346 KB, LCP 1.8 s.

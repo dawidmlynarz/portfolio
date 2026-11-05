@@ -9,7 +9,8 @@ import iridescent from "@/assets/portrait/portrait-iridescent.avif";
 export { portraitPhoto };
 
 // The first loads with the canvas; the others follow once it is idle, in this order.
+// Touch screens load only the layer marked `touch` (iridescent, Dawid's pick for phones).
 export const PORTRAIT_LAYERS = [
   { light: marbleLight, dark: marbleDark, weight: 1 },
-  { light: iridescent, weight: 1 },
+  { light: iridescent, weight: 1, touch: true },
 ];
