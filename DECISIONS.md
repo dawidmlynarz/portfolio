@@ -2,6 +2,10 @@
 
 Non-obvious choices, newest first. One entry per decision: what, why, and what it rules out.
 
+## 2026-11-05 · Covers are stored at 3200px wide
+
+Case-study covers are saved at 3200×2133, the largest rendition any page asks for, with the same AVIF settings (quality 80, 4:4:4). The latest covers have more detail and came out 420 to 940 KB at 3840px. At 3200px they are 280 to 680 KB and look the same on screen.
+
 ## 2026-11-05 · Work tiles and Next up covers are 3:2
 
 Every case-study cover is now 3840×2560 (3:2), so the work cards (Work page and Home) and the Next up thumbnails and hover preview crop to 3:2 instead of 4:3. The covers show whole, with nothing trimmed. This replaces the 4:3 crop from 26 Oct for those three places. The Contact page marquee keeps 4:3 for now because its size formula is built on it.
