@@ -110,7 +110,6 @@ export const ITEMS: Thought[] = [
     icon: "star",
     title: "Newsweek's new design language",
     body: "I helped lead Newsweek from fragmented legacy components to a unified, token-driven design system.",
-    stat: ["70%", "traffic growth at Newsweek"],
     links: [["Read the case study", "/work/newsweek-design-system"]],
   },
 
