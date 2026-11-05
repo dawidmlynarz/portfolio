@@ -12,13 +12,19 @@ businessLabel: Model
 date: "2026"
 tags: [Agentic UX, AI Tools, Content Design, Design Systems, Design Engineering]
 cover: ./cover.avif
-coverAlt: The Grist front door in light mode. The headline reads Your AI is only as good as what you feed it, next to the rotating badge and the first cards of Season 1.
+coverAlt: The Grist front door in a browser window. The headline reads Your AI is only as good as what you feed it, next to the rotating badge and the first cards of Season 1.
 order: 3.7
 next: nerdwallet
 draft: true
 ---
 
-{/* Draft by Claude on 2026-11-03, from the Grist code, DECISIONS.md and Dawid's Grist copy (the About panel, the author note, the Human-in-the-loop Checkpoints drop). Draft notes (Callout variant draft, previews only) mark what needs Dawid's words or a check before draft comes off. The cover is a screenshot of the preview front door, swap it for a designed one when it's ready. */}
+import frontDoor from "./grist-front-door.avif";
+import rarities from "./grist-rarities.avif";
+import dropTitle from "./grist-drop-title.avif";
+import dropPages from "./grist-drop-pages.avif";
+import mobile from "./grist-mobile.avif";
+
+{/* Draft by Claude on 2026-11-03, from the Grist code, DECISIONS.md and Dawid's Grist copy (the About panel, the author note, the Human-in-the-loop Checkpoints drop). Draft notes (Callout variant draft, previews only) mark what needs Dawid's words or a check before draft comes off. Images from Dawid on 2026-11-05. */}
 
 {/* Every number here is counted from the repository on 2026-11-03 (64 drops, 8 seasons, 6 rarities, 6 drop types). None is an estimate. */}
 
@@ -60,7 +66,10 @@ So I started putting them in one place, with a short note on why I use each one.
 - A clear sense of how deep a drop goes before you open it.
 - Free to use at work, as long as people credit me.
 
-<Figure alt="Screenshot to come. The Grist front door with the next drop, the running season and its eight cards." />
+<Figure
+  src={frontDoor}
+  alt="The Grist front door with the next drop date, Season 1 complete with its pack, and the Season 2 cards still locked."
+/>
 
 ## Rarity says how deep a drop goes
 
@@ -77,7 +86,10 @@ The tiers aren't only a label. Each one sets what a drop has to carry around the
 
 I borrowed the names from games on purpose. People already know that Legendary is above Epic, so I didn't have to explain the order. Each tier has its own tile icon and colour, and the name always sits next to the icon, so colour is never the only signal.
 
-<Figure alt="Rarity explanation to come. The six tiers from Common to Ultra, each with its tile icon, colour and what a drop of that tier carries." />
+<Figure
+  src={rarities}
+  alt="The rarity ladder from Common to Ultra, each with its tile icon, above drop cards tinted by tier, like a Design-to-code Workflow at the top, a Legendary spec and a Rare checklist."
+/>
 
 <Callout variant="draft">
   Optional. Say why you dropped the pixel gems for tile icons, and the foil and embers you tried on
@@ -88,17 +100,30 @@ I borrowed the names from games on purpose. People already know that Legendary i
 
 This was the main design problem. A person wants to know why a drop exists and whether it's for them. An AI tool only needs the loot itself, clean and with nothing around it.
 
+<Figure
+  src={dropTitle}
+  alt="The top of the DESIGN.md drop page, with its breadcrumb, the Spec type, the date, Tested and the one-line summary."
+/>
+
 So every drop is two things. The page has my note, a one-line hint on when to use it, the type, the rarity and whether it's Tested or Trying. Under it sits the loot, with Copy for AI and Download. The same drop also lives as plain markdown, and adding `.md` to any address gives you that version. There's a file with only the loot, a pack for each finished season and an `llms.txt` for the whole collection, so an agent can read [Grist](/grist) without scraping the page.
 
 Skills and workflows download as a `.zip` you can drop straight into `.claude/skills/`. The bigger drops show a sample run under the loot, so you can see what you get before you install anything.
 
-<Figure alt="Drop page sample to come. A Legendary drop with the note, the hint, the loot, Copy for AI and Download, next to its plain markdown version." />
+<Figure
+  src={dropPages}
+  alt="Three drop pages side by side. In the middle, Design System for Conversational AI with its one-line summary, the hint, the Why and the page contents."
+/>
 
 ## Seasons and Friday drops
 
 Drops come in seasons of eight, like a battle pass. The first one is about the AI-ready design system, the second about designing agents, and later ones go into scoping AI work, handoff to coding agents, trust and memory, and critique with AI.
 
 A season shows all eight slots from the start. Each slot unlocks on its Friday, and the site rebuilds itself that morning to let it out. Before that, a reviewed drop shows only its title and a lock, and the tier stays hidden until drop day. It gives people a reason to come back on Fridays.
+
+<Figure
+  src={mobile}
+  alt="Grist on a phone. The front door in the middle, Season 2 with its locked cards on the left, and the Season 1 cards on the right."
+/>
 
 <Callout variant="draft">
   Season 1 went out in a silent launch, and Season 2 starts on Friday Nov 6, 2026. Tell me what to
