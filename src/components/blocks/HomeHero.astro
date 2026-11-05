@@ -3,7 +3,8 @@
  * Home hero: a two-tone headline at the bottom of the first screen, the portrait reveal filling
  * the right half to the viewport edges (the floating nav runs over it).
  * Tablet: 44/56 split. Mobile: copy under the nav, then a tall full-bleed portrait.
- * The motion layer reveals the headline line by line.
+ * The first screen is never held back for the motion layer: it paints at once and arrives with
+ * the page-in rise (base.css), the same one page transitions use.
  */
 import PortraitReveal from "@/components/blocks/PortraitReveal.astro";
 import HeroBackdrop from "@/components/blocks/HeroBackdrop.astro";
@@ -25,23 +26,23 @@ const { label, title, titleMuted, lead } = Astro.props;
 // times the image ratio (≈1.34). Box heights below: mobile max(62svh, 27.5rem), wider screens at
 // least max(100svh, 40rem). Asking for the drawn width keeps the static image sharp and lets the
 // canvas reuse the same file instead of downloading a second one.
+// Phones at 2.5x and up ask for three quarters of that, which caps them near 2x like the canvas
+// (portrait-reveal.ts). A 3x file is a third of the page's weight and looks the same at that size.
 const SIZES =
-  "(min-width: 62em) max(50vw, 134vh, 54rem), (min-width: 48em) max(56vw, 134vh, 54rem), max(100vw, 83vh, 37rem)";
+  "(min-width: 62em) max(50vw, 134vh, 54rem), (min-width: 48em) max(56vw, 134vh, 54rem), (min-resolution: 2.5dppx) calc(max(100vw, 83vh, 37rem) * 0.75), max(100vw, 83vh, 37rem)";
 ---
 
 <section class="home-hero hero-backdrop-host" aria-labelledby="home-hero-title">
   <HeroBackdrop flush />
   <div class="home-hero__copy">
     {label && <p class="text-caption home-hero__label">{label}</p>}
-    <h1 id="home-hero-title" data-reveal="lines">
+    <h1 id="home-hero-title">
       {title}
       {titleMuted && " "}
       {titleMuted && <span class="home-hero__muted">{titleMuted}</span>}
     </h1>
-    <p class="text-lead home-hero__lead" data-reveal="fade">
-      {lead}
-    </p>
-    <div class="home-hero__actions" data-reveal="fade">
+    <p class="text-lead home-hero__lead">{lead}</p>
+    <div class="home-hero__actions">
       <slot name="actions" />
     </div>
   </div>

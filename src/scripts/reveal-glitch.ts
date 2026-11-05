@@ -11,8 +11,8 @@
  *   widens, and its rows open across a span around the pointer with ragged ends. Speed drives the
  *   tearing (rows jump sideways, colours split); holding still lets the signal settle into a clean
  *   view. Rows the band leaves behind hold for a moment, then close one at a time. A layer switch
- *   (on arrival, on a tap and every 3–5 s) is a hiccup; hiccups have a 1.4 s cooldown. Taps and
- *   timed switches always change the layer.
+ *   (on arrival and every 3–5 s) is a hiccup; hiccups have a 1.4 s cooldown. Timed switches
+ *   always change the layer. Touch doesn't count as a pointer (portrait-reveal.ts).
  * - Leaving: the band lets go and rolls on from where it was. The second band waits during hover.
  * - Reduced motion: no rolling band or hiccups; a clean band at the pointer only.
  *
@@ -148,7 +148,7 @@ export class GlitchSignal {
     this.#energy *= Math.exp(-dt * 4.5);
 
     // Layer switches are hiccups.
-    if (f.arrived || f.tapped || (f.pointing && !rm && now > this.#nextSwitch)) {
+    if (f.arrived || (f.pointing && !rm && now > this.#nextSwitch)) {
       this.#layer = f.arrived ? f.pick(this.#layer) : f.pair(this.#layer);
       this.#nextSwitch = now + between(3200, 5000);
       this.#burst(now, 1, rm);

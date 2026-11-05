@@ -15,9 +15,8 @@ export type StyleFrame = {
   W: number;
   H: number;
   cursor: { x: number; y: number };
-  pointing: boolean; // hover, or a finger shortly after a tap
+  pointing: boolean; // a mouse or pen over the portrait
   arrived: boolean; // the pointer came over the portrait this frame
-  tapped: boolean;
   reduceMotion: boolean;
   pick: (current: number) => number; // a loaded layer by weight (may return `current`)
   pair: (layer: number) => number; // a loaded layer other than `layer`, by weight (`layer` if none)
