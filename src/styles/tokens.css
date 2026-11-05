@@ -172,6 +172,7 @@
     /* Fading things back: siblings of the hovered row, and anything disabled or locked */
     --opacity-dim: 0.35;
     --opacity-disabled: 0.5;
+    --opacity-unpainted: 0.01; /* looks like nothing, but Chrome counts it as painted (LCP) */
     --blur-nav: 12px; /* backdrop blur behind the sticky nav */
     --blur-menu: 16px; /* backdrop blur behind the open menu */
     --blur-page: 12px; /* page transition: pages blur out and in */

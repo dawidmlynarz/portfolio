@@ -2,6 +2,10 @@
 
 Non-obvious choices, newest first. One entry per decision: what, why, and what it rules out.
 
+## 2026-11-05 · Work tiles and Next up covers are 3:2
+
+Every case-study cover is now 3840×2560 (3:2), so the work cards (Work page and Home) and the Next up thumbnails and hover preview crop to 3:2 instead of 4:3. The covers show whole, with nothing trimmed. This replaces the 4:3 crop from 26 Oct for those three places. The Contact page marquee keeps 4:3 for now because its size formula is built on it.
+
 ## 2026-11-04 · Case study password ignores surrounding spaces
 
 The gate trims `CASE_STUDY_PASSWORD` and the typed password before comparing. A secret pasted into the Cloudflare dashboard with a trailing space or newline looks right there but never matches, and that is invisible from the site. When the secret is missing the function logs a warning, so Pages real-time logs show it. Spaces inside the password still count.
@@ -991,3 +995,19 @@ From the market comparison (Claude Doc "Grist drops vs the market").
 
 - Dawid chose to drop the banner and keep Cloudflare Web Analytics running for everyone, with Pages' automatic setup as before. It sets no cookies and stores nothing on the device, so it needs no consent under the usual reading (CNIL exempts this kind of audience measurement). The EDPB's 2023 guidelines read ePrivacy Art. 5(3) more broadly, so this is very low risk, not zero. Claude told him so before he chose.
 - `ConsentBanner` is deleted (it's in git history if Google Analytics or anything with cookies is ever added). /privacy names legitimate interest (Art. 6(1)(f)) as the basis for the statistics. The business details, centred hero and legal footer stay.
+
+## First screen never waits for the motion layer (5 Nov)
+
+- Problem on mobile: every page title (and the home lead and buttons) was `visibility: hidden` until `motion.ts` had downloaded GSAP and SplitText, waited for `document.fonts.ready`, and split the lines. On slow 4G with a mid-range phone that is about 2 s after first paint, and the line rise then takes another 1.2 s. If the script stalled, the 3 s failsafe was the only thing that showed it. The title is the first thing a visitor reads, so it can't sit behind a script.
+- Fix: first-screen titles, leads, the contact email and the eager work covers no longer carry `data-reveal`. They paint with the HTML. The metric-matched Geist fallback keeps the font swap from moving them.
+- Their entrance is now the page transition's "page-in" rise, played on `main` as a plain CSS animation on first load, so a first visit and a click between pages look the same. It starts with the first paint and needs no JS. `pagereveal` sets `html[data-arrived]` when a view transition brought the page in, which turns the CSS version off so it doesn't play twice. Firefox and older Safari (no cross-document transitions) get the rise on every page.
+- Not chosen: a preloader. It would hide the content for longer, it adds a fake wait on fast connections, and it would make LCP worse. Fixing what blocks the title is the root-cause fix.
+- Below-the-fold reveals (section titles, fades, the story, the process line) still use the motion layer. They are off screen when it loads, so nothing waits on them.
+
+## Lighter portrait on phones (5 Nov)
+
+- Measured on a throttled Pixel 7: the portrait was 256 KB of a 449 KB page. The photo came at 2400 px (157 KB, the phone shows it at about half that), then two sculpture layers.
+- Phones at 2.5x and up now ask for a photo near 2x, like the canvas already did (`sizes` in HomeHero). 87 KB, same file reused by the canvas.
+- Dawid chose "lean glitch" for touch screens: one layer only, the iridescent one (`touch: true` in `src/lib/portrait.ts`), and no tap or drag interference. The rolling bands stay. Desktop is unchanged and keeps both layers.
+- The portrait's page-load fade now starts at 1% opacity, not 0. Chrome treats 0 as not painted, so the 1.2 s fade pushed the phone LCP from 1.8 s to 3.2 s. Nothing visible changes.
+- Result on the same phone: portrait 152 KB, page 346 KB, LCP 1.8 s.

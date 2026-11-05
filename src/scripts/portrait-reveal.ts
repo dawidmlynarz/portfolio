@@ -15,7 +15,10 @@
  *   scratch is released, so only the GPU textures stay. Their total is capped (TEXTURE_BUDGET); on
  *   very large retina screens they are drawn slightly below device resolution.
  * - Lazy: the other layers load one at a time at low priority once the canvas is running, each
- *   uploaded in its own idle slot, and join the picks when ready. Skipped on Save-Data or 2G/3G.
+ *   uploaded in its own idle slot, and join the picks when ready. Skipped on Save-Data and 2G/3G.
+ *   Touch screens (phones, tablets) only ever load one layer, the one marked `touch`.
+ * - Pointer only: the interference follows a mouse or pen. Touch doesn't trigger it, so on a phone
+ *   the portrait keeps its rolling bands and scrolling past it costs nothing extra.
  * - Transparent: the cutouts stay cutouts, so the hero grain (HeroBackdrop) shows around them.
  * - Theme-aware: the resolved --color-bg picks each layer's light or dark variant, and the canvas
  *   repaints on theme change (the `themechange` event from ThemeToggle; its waitUntil holds the
@@ -33,7 +36,7 @@ type Config = {
   face: [number, number, number, number]; // x0, x1, y0, y1 (0–1) kept in frame
 };
 type Source = { url: string; w: number };
-type LayerData = { light: Source[]; dark?: Source[]; weight: number };
+type LayerData = { light: Source[]; dark?: Source[]; weight: number; touch?: boolean };
 type Slot = {
   data: LayerData;
   variants: { light?: Promise<HTMLImageElement>; dark?: Promise<HTMLImageElement> };
@@ -167,8 +170,6 @@ class PortraitReveal extends HTMLElement {
   #lastClient = { x: -1, y: -1 };
   #over = false;
   #wasResting = true;
-  #touchUntil = 0;
-  #tapped = false;
 
   // loop
   #visible = false;
@@ -179,8 +180,13 @@ class PortraitReveal extends HTMLElement {
   connectedCallback() {
     this.#cfg = JSON.parse(this.dataset.config ?? "{}") as Config;
     this.#reduceMotion = matchMedia("(prefers-reduced-motion: reduce)").matches;
-    const layers = JSON.parse(this.dataset.layers ?? "[]") as LayerData[];
-    this.#slots = layers.slice(0, MAX_LAYERS).map((data) => ({ data, variants: {}, img: null }));
+    let layers = (JSON.parse(this.dataset.layers ?? "[]") as LayerData[]).slice(0, MAX_LAYERS);
+    // Touch screens keep one layer: the one marked `touch`, else the first.
+    if (matchMedia("(hover: none)").matches) {
+      const touch = layers.find((layer) => layer.touch) ?? layers[0];
+      layers = touch ? [touch] : [];
+    }
+    this.#slots = layers.map((data) => ({ data, variants: {}, img: null }));
 
     // Page-load fade: mark the portrait as shown once the static image has decoded
     // (PortraitReveal.astro fades it in from 0 to 100% opacity under the motion layer). The image's
@@ -304,12 +310,7 @@ class PortraitReveal extends HTMLElement {
     window.addEventListener(
       "pointermove",
       (e) => {
-        if (e.pointerType === "touch") {
-          // A finger still down after a tap drags the glitch until the page starts scrolling.
-          if (performance.now() < this.#touchUntil && this.#track(e.clientX, e.clientY))
-            this.#touchUntil = performance.now() + 1600;
-          return;
-        }
+        if (e.pointerType === "touch") return; // touch never triggers the interference
         this.#lastClient.x = e.clientX;
         this.#lastClient.y = e.clientY;
         this.#over = this.#track(e.clientX, e.clientY);
@@ -328,20 +329,6 @@ class PortraitReveal extends HTMLElement {
     );
     document.documentElement.addEventListener("mouseleave", () => (this.#over = false), opts);
     window.addEventListener("blur", () => (this.#over = false), opts);
-    // Touch: a tap pulls the glitch there for a moment and switches the layer; scrolling is
-    // never blocked.
-    window.addEventListener(
-      "pointerdown",
-      (e) => {
-        if (e.pointerType !== "touch") return;
-        if (this.#track(e.clientX, e.clientY)) {
-          this.#touchUntil = performance.now() + 1600;
-          this.#tapped = true;
-          this.#kick();
-        }
-      },
-      opts,
-    );
 
     this.#resize();
     this.dataset.ready = "";
@@ -487,7 +474,7 @@ class PortraitReveal extends HTMLElement {
       this.#running = false;
       return;
     }
-    const resting = !this.#over && now > this.#touchUntil;
+    const resting = !this.#over;
     // At rest the bands roll slowly and jitter at 14 fps, so 30 fps draws look the same; while the
     // page scrolls the rest state holds still. Both leave the frame budget to scrolling.
     if (
@@ -512,12 +499,10 @@ class PortraitReveal extends HTMLElement {
       cursor: this.#cursor,
       pointing: !resting,
       arrived,
-      tapped: this.#tapped,
       reduceMotion: this.#reduceMotion,
       pick: (current) => this.#pickLayer(current),
       pair: (layer) => this.#pickLayer(layer, layer),
     });
-    this.#tapped = false;
     requestAnimationFrame((t) => this.#frame(t));
   }
 }
