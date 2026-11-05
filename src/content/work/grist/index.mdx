@@ -12,13 +12,17 @@ businessLabel: Model
 date: "2026"
 tags: [Agentic UX, AI Tools, Content Design, Design Systems, Design Engineering]
 cover: ./cover.avif
-coverAlt: The Grist front door in light mode. The headline reads Your AI is only as good as what you feed it, next to the rotating badge and the first cards of Season 1.
+coverAlt: The Grist front door in a browser window, on a pink and purple gradient. The headline reads Your AI is only as good as what you feed it, next to the rotating badge and the first cards of Season 1.
 order: 3.7
 next: nerdwallet
-draft: true
+draft: false
 ---
 
-{/* Draft by Claude on 2026-11-03, from the Grist code, DECISIONS.md and Dawid's Grist copy (the About panel, the author note, the Human-in-the-loop Checkpoints drop). Draft notes (Callout variant draft, previews only) mark what needs Dawid's words or a check before draft comes off. The cover is a screenshot of the preview front door, swap it for a designed one when it's ready. */}
+import frontDoor from "./grist-front-door.avif";
+import rarities from "./grist-rarities.avif";
+import dropTitle from "./grist-drop-title.avif";
+import dropPages from "./grist-drop-pages.avif";
+import mobile from "./grist-mobile.avif";
 
 {/* Every number here is counted from the repository on 2026-11-03 (64 drops, 8 seasons, 6 rarities, 6 drop types). None is an estimate. */}
 
@@ -44,11 +48,6 @@ I designed and built [Grist](/grist) by myself, and I write every drop. The idea
 
 ## Why I made it
 
-<Callout variant="draft">
-  Your words needed. Why you started Grist, what you kept doing by hand before it, and where the
-  name comes from. The two paragraphs below are my placeholder, built from your About text.
-</Callout>
-
 I've been using AI tools on real product work for a while now, at Zazmic and on my own projects. Along the way I kept writing the same things again. A rule for a CLAUDE.md, a prompt for a design system audit, a checklist for reviewing an agent before it ships. They lived in random files and chats, and every new project started from a blank page.
 
 So I started putting them in one place, with a short note on why I use each one. Tested means I've used it on real work. Trying means I'm still finding out. I wanted every drop to be honest about which one it is.
@@ -58,9 +57,11 @@ So I started putting them in one place, with a short note on why I use each one.
 - One drop a week, short enough to read in a few minutes and use the same day.
 - Every drop useful to a person and to an AI tool, without writing it twice.
 - A clear sense of how deep a drop goes before you open it.
-- Free to use at work, as long as people credit me.
 
-<Figure alt="Screenshot to come. The Grist front door with the next drop, the running season and its eight cards." />
+<Figure
+  src={frontDoor}
+  alt="The Grist front door with the next drop date, Season 1 complete with its pack, and the Season 2 cards still locked."
+/>
 
 ## Rarity says how deep a drop goes
 
@@ -77,22 +78,28 @@ The tiers aren't only a label. Each one sets what a drop has to carry around the
 
 I borrowed the names from games on purpose. People already know that Legendary is above Epic, so I didn't have to explain the order. Each tier has its own tile icon and colour, and the name always sits next to the icon, so colour is never the only signal.
 
-<Figure alt="Rarity explanation to come. The six tiers from Common to Ultra, each with its tile icon, colour and what a drop of that tier carries." />
-
-<Callout variant="draft">
-  Optional. Say why you dropped the pixel gems for tile icons, and the foil and embers you tried on
-  Legendary cards.
-</Callout>
+<Figure
+  src={rarities}
+  alt="The rarity ladder from Common to Ultra, each with its tile icon, above drop cards tinted by tier, like a Design-to-code Workflow at the top, a Legendary spec and a Rare checklist."
+/>
 
 ## A page for people, a file for agents
 
 This was the main design problem. A person wants to know why a drop exists and whether it's for them. An AI tool only needs the loot itself, clean and with nothing around it.
 
+<Figure
+  src={dropTitle}
+  alt="The top of the DESIGN.md drop page, with its breadcrumb, the Spec type, the date, Tested and the one-line summary."
+/>
+
 So every drop is two things. The page has my note, a one-line hint on when to use it, the type, the rarity and whether it's Tested or Trying. Under it sits the loot, with Copy for AI and Download. The same drop also lives as plain markdown, and adding `.md` to any address gives you that version. There's a file with only the loot, a pack for each finished season and an `llms.txt` for the whole collection, so an agent can read [Grist](/grist) without scraping the page.
 
 Skills and workflows download as a `.zip` you can drop straight into `.claude/skills/`. The bigger drops show a sample run under the loot, so you can see what you get before you install anything.
 
-<Figure alt="Drop page sample to come. A Legendary drop with the note, the hint, the loot, Copy for AI and Download, next to its plain markdown version." />
+<Figure
+  src={dropPages}
+  alt="Three drop pages side by side. In the middle, Design System for Conversational AI with its one-line summary, the hint, the Why and the page contents."
+/>
 
 ## Seasons and Friday drops
 
@@ -100,10 +107,10 @@ Drops come in seasons of eight, like a battle pass. The first one is about the A
 
 A season shows all eight slots from the start. Each slot unlocks on its Friday, and the site rebuilds itself that morning to let it out. Before that, a reviewed drop shows only its title and a lock, and the tier stays hidden until drop day. It gives people a reason to come back on Fridays.
 
-<Callout variant="draft">
-  Season 1 went out in a silent launch, and Season 2 starts on Friday Nov 6, 2026. Tell me what to
-  say about the launch once it's out.
-</Callout>
+<Figure
+  src={mobile}
+  alt="Grist on a phone. The front door in the middle, Season 2 with its locked cards on the left, and the Season 1 cards on the right."
+/>
 
 ## Shipping beyond the site
 
@@ -119,15 +126,7 @@ I built [Grist](/grist) the same way I built Anvil UI, with an AI coding agent d
 
 Writing is where I was most careful. The ideas and the Why in each drop are mine. When Claude adds something I didn't write, it leaves a note in the file, and a production build refuses to publish a drop that still has one. It's the same rule as in my Human-in-the-loop Checkpoints drop. The agent pauses before anything that speaks for me.
 
-<Callout variant="draft">
-  Check this framing, and add a moment where the checkpoint caught something, if there was one.
-</Callout>
-
 ## What I learned
-
-<Callout variant="draft">
-  Your words needed. The two paragraphs below are my first draft, from the decision log.
-</Callout>
 
 Designing for an agent as a reader changed how I write. A note for a person can lean on context, and a file for an agent can't. Keeping both in one source made me cut a lot of words I didn't need.
 
