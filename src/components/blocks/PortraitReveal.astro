@@ -187,7 +187,7 @@ const objectPosition = `${((face[0] + face[1]) / 2) * 100}% ${((face[2] + face[3
        page's Largest Contentful Paint (this image on phones) to the end of the fade. 1% looks
        the same as nothing. */
     :global(.motion) .portrait-reveal:not([data-shown]) {
-      opacity: 0.01;
+      opacity: var(--opacity-unpainted);
       animation: portrait-reveal-failsafe 0s var(--duration-failsafe) forwards;
     }
 
