@@ -2,6 +2,10 @@
 
 Non-obvious choices, newest first. One entry per decision: what, why, and what it rules out.
 
+## 2026-11-05 · Work tiles and Next up covers are 3:2
+
+Every case-study cover is now 3840×2560 (3:2), so the work cards (Work page and Home) and the Next up thumbnails and hover preview crop to 3:2 instead of 4:3. The covers show whole, with nothing trimmed. This replaces the 4:3 crop from 26 Oct for those three places. The Contact page marquee keeps 4:3 for now because its size formula is built on it.
+
 ## 2026-11-04 · Case study password ignores surrounding spaces
 
 The gate trims `CASE_STUDY_PASSWORD` and the typed password before comparing. A secret pasted into the Cloudflare dashboard with a trailing space or newline looks right there but never matches, and that is invisible from the site. When the secret is missing the function logs a warning, so Pages real-time logs show it. Spaces inside the password still count.
