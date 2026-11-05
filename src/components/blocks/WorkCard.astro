@@ -53,7 +53,7 @@ const sizes =
 ---
 
 <article class:list={["work-card", `work-card--${layout}`, { "work-card--linked": href }]}>
-  <div class="work-card__media" data-reveal="fade">
+  <div class="work-card__media" data-reveal={eager ? undefined : "fade"}>
     <div class="work-card__frame">
       <Image
         class="work-card__cover"

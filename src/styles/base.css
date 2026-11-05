@@ -267,6 +267,19 @@
   }
 
   /*
+   * First load: the page content arrives with the same rise, so opening the site feels like
+   * moving through it. Pure CSS, so it starts with the first paint and never waits for a script
+   * or the web font. After a page transition (html[data-arrived], set on pagereveal in
+   * BaseLayout) the view transition has already played it, so it is off. Browsers without
+   * cross-document transitions get it on every page.
+   */
+  @media (prefers-reduced-motion: no-preference) {
+    :root:not([data-arrived]) main {
+      animation: page-in var(--duration-page-in) var(--ease-out-expo) both;
+    }
+  }
+
+  /*
    * The hero grain (HeroBackdrop) is left out of the moving page images and holds still at the
    * top: no move, no fade, the new page's grain from the first frame. It sits above the page images
    * while they settle, which doesn't show: it is a few percent of ink with no fill.
