@@ -183,9 +183,7 @@ const widths = (cover: ImageMetadata) => [320, 480, 800].filter((w) => w <= cove
        * comes to full contrast.
        */
       .services--summary .services__row {
-        transition:
-          padding var(--duration-zoom) var(--ease-in-out-quart),
-          margin var(--duration-zoom) var(--ease-in-out-quart);
+        transition: padding var(--duration-zoom) var(--ease-in-out-quart);
       }
 
       .services--summary .services__row > * {
@@ -198,15 +196,11 @@ const widths = (cover: ImageMetadata) => [320, 480, 800].filter((w) => w <= cove
       }
 
       /*
-       * The row grows by the same amount above and below. The pull-up margin cancels the extra
-       * top padding, so the top rule moves up into the gap above while the content holds still
-       * under the pointer (moving it would drop the link hover and the floating cover).
+       * The row grows by the same amount above and below its own content and pushes everything
+       * after it down. Neighbouring rows and sections keep their spacing.
        */
       .services--summary .services__row:hover {
-        --services-grow: var(--space-6);
-
-        margin-block-start: calc(-1 * var(--services-grow));
-        padding-block: calc(var(--space-10) + var(--services-grow));
+        padding-block: calc(var(--space-10) + var(--space-8));
       }
 
       .services--summary .services__row:hover .services__index,
