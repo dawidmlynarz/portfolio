@@ -1017,3 +1017,10 @@ From the market comparison (Claude Doc "Grist drops vs the market").
 - Dawid chose "lean glitch" for touch screens: one layer only, the iridescent one (`touch: true` in `src/lib/portrait.ts`), and no tap or drag interference. The rolling bands stay. Desktop is unchanged and keeps both layers.
 - The portrait's page-load fade now starts at 1% opacity, not 0. Chrome treats 0 as not painted, so the 1.2 s fade pushed the phone LCP from 1.8 s to 3.2 s. Nothing visible changes.
 - Result on the same phone: portrait 152 KB, page 346 KB, LCP 1.8 s.
+
+## Footer redesign with a Grist card (6 Nov)
+
+- From Dawid's Figma exploration (`mlynarz.com — Foundations`, node 229:3124), built from the live tokens and components. The closing line keeps its cycling endings and now breaks after "your", so "next" starts the second line next to the ending.
+- Right column (from 64em): Explore (Home, Work, Services, About, the current page muted) and Connect (social links) side by side, Experiments under them. On tablets the three groups share one row under the closing line. Phones stack as in the mobile frame. Links are `Link variant="quiet"` at h4 size, so external ones keep the ↗ every external link on the site has.
+- Experiments is a card to /grist with the Grist `Logo` and Dawid's line "Loot for AI grinders. Human-curated." Hover lifts it onto the subtle surface, the arrow steps forward, and the dot on the i rolls through the rarity colours with a small hop, landing on Legendary gold. With reduced motion the dot just turns gold. `Logo` gained a `logo__diamond` class for this.
+- This replaces "No portfolio link to Grist yet": the footer now links to Grist on every portfolio page. The Grist footer (simple variant) and the legal one are unchanged.
