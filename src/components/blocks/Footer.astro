@@ -98,7 +98,7 @@ const current = (href: string) =>
             <h2 class="text-caption footer__label">Experiments</h2>
             <a class="footer__grist" href="/grist" target="_blank" data-no-tear>
               <span class="footer__grist-text">
-                <GristLogo class="footer__grist-logo" />
+                <GristLogo class="footer__grist-logo" hop />
                 <span class="footer__grist-line text-small">
                   Loot for AI grinders. <span class="footer__grist-muted">Human-curated.</span>
                   <span class="visually-hidden">(opens in a new tab)</span>
@@ -309,10 +309,6 @@ const current = (href: string) =>
       transition: translate var(--duration-link) var(--ease-out-expo);
     }
 
-    .footer__grist :global(.logo__diamond) {
-      transform-box: fill-box;
-    }
-
     .footer__grist:is(:hover, :focus-visible) {
       border-color: var(--color-border-muted);
       background-color: var(--color-bg-subtle);
@@ -320,29 +316,6 @@ const current = (href: string) =>
 
     .footer__grist:is(:hover, :focus-visible) :global(.footer__grist-arrow) {
       translate: var(--space-1) 0;
-    }
-
-    @media (prefers-reduced-motion: no-preference) {
-      .footer__grist:is(:hover, :focus-visible) :global(.logo__diamond) {
-        animation: footer-grist-hop var(--duration-icon) var(--ease-standard);
-      }
-    }
-
-    @keyframes footer-grist-hop {
-      0%,
-      60%,
-      100% {
-        translate: 0 0;
-      }
-
-      15%,
-      45% {
-        translate: 0 calc(-1 * var(--space-2));
-      }
-
-      30% {
-        translate: 0 calc(-1 * var(--space-3));
-      }
     }
 
     /* ---------- Bottom row: the copyright line and privacy link under a rule ---------- */
