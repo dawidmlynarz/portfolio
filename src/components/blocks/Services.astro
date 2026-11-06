@@ -3,7 +3,14 @@
  * Services as numbered rows: the service, a one-line promise, a short description and links to
  * the case studies that prove it. The detailed variant (the /services page) adds the list of
  * deliverables. Data: src/lib/services.ts.
+ *
+ * Hover, with a fine pointer only. On Home the row opens up above and below and its muted text
+ * comes to full contrast, while the other rows quiet down (as in "Next up"). On both pages, hovering
+ * a "See it in" link floats that case study's cover beside the pointer, the same
+ * [data-cover-follow] mechanism as "Next up" (motion.ts). Without hover or JS the rows and links
+ * are unchanged.
  */
+import { Image } from "astro:assets";
 import { getEntry } from "astro:content";
 import { hasPage, workHref } from "@/lib/work";
 import type { Service } from "@/lib/services";
@@ -22,41 +29,70 @@ const rows = await Promise.all(
     const entries = await Promise.all(service.proof.map((slug) => getEntry("work", slug)));
     const proof = entries
       .filter((entry) => entry && hasPage(entry))
-      .map((entry) => ({ href: workHref(entry!), label: entry!.data.company }));
+      .map((entry) => ({
+        slug: entry!.id,
+        href: workHref(entry!),
+        label: entry!.data.company,
+        cover: entry!.data.cover,
+      }));
     return { ...service, proof };
   }),
 );
+
+// Each proof link floats its cover beside the pointer: one image per case study.
+const covers = [
+  ...new Map(rows.flatMap((row) => row.proof).map((p) => [p.slug, p.cover])).entries(),
+];
+const widths = (cover: ImageMetadata) => [320, 480, 800].filter((w) => w <= cover.width);
 ---
 
-<ol class:list={["services", `services--${variant}`]} role="list">
-  {rows.map(({ id, title, promise, description, deliverables, proof }, index) => (
-    <li class="services__row" id={variant === "detailed" ? id : undefined} data-reveal="fade">
-      <span class="text-caption services__index" aria-hidden="true">
-        {String(index + 1).padStart(2, "0")}
-      </span>
-      <Heading class="services__title">{title}</Heading>
-      <div class="services__body">
-        <p class="text-lead services__promise">{promise}</p>
-        <p class="services__description">{description}</p>
-        {variant === "detailed" && (
-          <ul class="services__deliverables" role="list">
-            {deliverables.map((item) => (
-              <li>{item}</li>
-            ))}
-          </ul>
-        )}
-        {proof.length > 0 && (
-          <p class="text-small services__proof">
-            <span class="text-caption">See it in</span>
-            {proof.map(({ href, label }) => (
-              <a href={href}>{label}</a>
-            ))}
-          </p>
-        )}
-      </div>
-    </li>
-  ))}
-</ol>
+<div class="services-wrap" data-cover-follow>
+  <ol class:list={["services", `services--${variant}`]} role="list">
+    {rows.map(({ id, title, promise, description, deliverables, proof }, index) => (
+      <li class="services__row" id={variant === "detailed" ? id : undefined} data-reveal="fade">
+        <span class="text-caption services__index" aria-hidden="true">
+          {String(index + 1).padStart(2, "0")}
+        </span>
+        <Heading class="services__title">{title}</Heading>
+        <div class="services__body">
+          <p class="text-lead services__promise">{promise}</p>
+          <p class="services__description">{description}</p>
+          {variant === "detailed" && (
+            <ul class="services__deliverables" role="list">
+              {deliverables.map((item) => (
+                <li>{item}</li>
+              ))}
+            </ul>
+          )}
+          {proof.length > 0 && (
+            <p class="text-small services__proof">
+              <span class="text-caption">See it in</span>
+              {proof.map(({ slug, href, label }) => (
+                <a href={href} data-cover-index={slug}>
+                  {label}
+                </a>
+              ))}
+            </p>
+          )}
+        </div>
+      </li>
+    ))}
+  </ol>
+  <div class="services__preview" aria-hidden="true" data-cover-frame>
+    {covers.map(([slug, cover]) => (
+      <Image
+        class="services__preview-img"
+        src={cover}
+        alt=""
+        widths={widths(cover)}
+        sizes="22rem"
+        loading="lazy"
+        format="avif"
+        data-cover-img={slug}
+      />
+    ))}
+  </div>
+</div>
 
 <style>
   @layer components {
@@ -67,10 +103,12 @@ const rows = await Promise.all(
     }
 
     .services__row {
+      --services-pad: var(--space-10);
+
       display: grid;
       grid-template-columns: auto 1fr;
       gap: var(--space-4) var(--space-6);
-      padding-block: var(--space-10);
+      padding-block: var(--services-pad);
       border-block-start: var(--border-width) solid var(--color-border-subtle);
     }
 
@@ -118,8 +156,13 @@ const rows = await Promise.all(
       color: var(--color-text-muted);
     }
 
+    /* The floating cover (positioned by motion.ts); hidden until a proof link is hovered. */
+    .services__preview {
+      display: none;
+    }
+
     .services--detailed .services__row {
-      padding-block: var(--space-section-sm);
+      --services-pad: var(--space-section-sm);
     }
 
     @media (width >= 62em) {
@@ -131,6 +174,82 @@ const rows = await Promise.all(
       .services__body {
         grid-column: auto;
         padding-block-start: var(--space-2);
+      }
+    }
+
+    @media (hover: hover) and (pointer: fine) {
+      /*
+       * The row hover (Home only, /services rows are already tall). The row opens up above and below on a slow in-out ease and its muted text
+       * comes to full contrast.
+       */
+      .services--summary .services__row {
+        transition: padding var(--duration-zoom) var(--ease-in-out-quart);
+      }
+
+      .services--summary .services__row > * {
+        transition: opacity var(--duration-link) var(--ease-standard);
+      }
+
+      .services--summary .services__index,
+      .services--summary .services__description {
+        transition: color var(--duration-link) var(--ease-standard);
+      }
+
+      /*
+       * The row grows by the same amount above and below its own content and pushes everything
+       * after it down. Neighbouring rows and sections keep their spacing.
+       */
+      .services--summary .services__row:hover {
+        padding-block: calc(var(--services-pad) + var(--space-8));
+      }
+
+      .services--summary .services__row:hover .services__index,
+      .services--summary .services__row:hover .services__description {
+        color: var(--color-text);
+      }
+
+      /*
+       * Hovering one row quiets the others, like "Next up". Their contents fade, not the row:
+       * the scroll reveal owns the row's own opacity.
+       */
+      .services--summary:has(.services__row:hover) .services__row:not(:hover) > * {
+        opacity: var(--opacity-dim);
+      }
+
+      .services__preview {
+        position: fixed;
+        inset-block-start: 0;
+        inset-inline-start: 0;
+        z-index: 1;
+        display: grid;
+        inline-size: var(--size-cover);
+        overflow: hidden;
+        border-radius: var(--radius-md);
+        pointer-events: none;
+        opacity: 0;
+        scale: 0.9;
+        translate: var(--cover-x, 0) calc(var(--cover-y, 0px) - 50%);
+        transition:
+          opacity var(--duration-fast) var(--ease-standard),
+          scale var(--duration-link) var(--ease-out-expo);
+      }
+
+      .services__preview[data-active] {
+        opacity: 1;
+        scale: 1;
+      }
+
+      .services__preview-img {
+        grid-area: 1 / 1;
+        inline-size: 100%;
+        block-size: auto;
+        aspect-ratio: 3 / 2;
+        object-fit: cover;
+        visibility: hidden;
+      }
+
+      .services__preview-img[data-shown] {
+        visibility: visible;
       }
     }
   }
