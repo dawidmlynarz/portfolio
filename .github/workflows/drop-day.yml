@@ -5,9 +5,15 @@ name: Drop day rebuild
 
 on:
   schedule:
-    # 05:07 UTC on Fridays: 6:07 in Warsaw in winter, 7:07 in summer. Off the full hour,
-    # when GitHub's scheduler is busiest and runs start late.
+    # GitHub's scheduler is best effort. Runs start late or get dropped when it's busy, and
+    # the first Friday (6 Nov 2026) got no run at all. So Friday has three tries, off the full
+    # hour. A spare rebuild of the same content is harmless.
+    # 00:17 UTC, right after the drop unlocks (1:17 in Warsaw in winter).
+    - cron: "17 0 * * 5"
+    # 05:07 UTC (6:07 in Warsaw in winter, 7:07 in summer).
     - cron: "7 5 * * 5"
+    # 09:37 UTC, last try in the morning.
+    - cron: "37 9 * * 5"
   # "Run workflow" button on the Actions tab, to rebuild by hand.
   workflow_dispatch:
 
