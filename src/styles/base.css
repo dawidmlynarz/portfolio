@@ -274,8 +274,12 @@
    * cross-document transitions get it on every page.
    */
   @media (prefers-reduced-motion: no-preference) {
+    /*
+     * Fill backwards only: a held end state (translate 0, blur 0) would make main the containing
+     * block for position: fixed, and the floating covers (Next up, Services) would land off screen.
+     */
     :root:not([data-arrived]) main {
-      animation: page-in var(--duration-page-in) var(--ease-out-expo) both;
+      animation: page-in var(--duration-page-in) var(--ease-out-expo) backwards;
     }
   }
 

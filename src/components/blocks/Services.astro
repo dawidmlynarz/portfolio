@@ -3,7 +3,14 @@
  * Services as numbered rows: the service, a one-line promise, a short description and links to
  * the case studies that prove it. The detailed variant (the /services page) adds the list of
  * deliverables. Data: src/lib/services.ts.
+ *
+ * Summary (Home) hover, with a fine pointer only: the row fills with the subtle surface edge to
+ * edge, opens up a little below and its muted text comes to full contrast, while the other rows quiet
+ * down (as in "Next up"). Hovering a "See it in" link floats that case study's cover beside the
+ * pointer, the same [data-cover-follow] mechanism as "Next up" (motion.ts). Without hover or JS
+ * the rows and links are unchanged.
  */
+import { Image } from "astro:assets";
 import { getEntry } from "astro:content";
 import { hasPage, workHref } from "@/lib/work";
 import type { Service } from "@/lib/services";
@@ -22,41 +29,73 @@ const rows = await Promise.all(
     const entries = await Promise.all(service.proof.map((slug) => getEntry("work", slug)));
     const proof = entries
       .filter((entry) => entry && hasPage(entry))
-      .map((entry) => ({ href: workHref(entry!), label: entry!.data.company }));
+      .map((entry) => ({
+        slug: entry!.id,
+        href: workHref(entry!),
+        label: entry!.data.company,
+        cover: entry!.data.cover,
+      }));
     return { ...service, proof };
   }),
 );
+
+// The summary floats each proof link's cover beside the pointer: one image per case study.
+const follow = variant === "summary";
+const covers = [
+  ...new Map(rows.flatMap((row) => row.proof).map((p) => [p.slug, p.cover])).entries(),
+];
+const widths = (cover: ImageMetadata) => [320, 480, 800].filter((w) => w <= cover.width);
 ---
 
-<ol class:list={["services", `services--${variant}`]} role="list">
-  {rows.map(({ id, title, promise, description, deliverables, proof }, index) => (
-    <li class="services__row" id={variant === "detailed" ? id : undefined} data-reveal="fade">
-      <span class="text-caption services__index" aria-hidden="true">
-        {String(index + 1).padStart(2, "0")}
-      </span>
-      <Heading class="services__title">{title}</Heading>
-      <div class="services__body">
-        <p class="text-lead services__promise">{promise}</p>
-        <p class="services__description">{description}</p>
-        {variant === "detailed" && (
-          <ul class="services__deliverables" role="list">
-            {deliverables.map((item) => (
-              <li>{item}</li>
-            ))}
-          </ul>
-        )}
-        {proof.length > 0 && (
-          <p class="text-small services__proof">
-            <span class="text-caption">See it in</span>
-            {proof.map(({ href, label }) => (
-              <a href={href}>{label}</a>
-            ))}
-          </p>
-        )}
-      </div>
-    </li>
-  ))}
-</ol>
+<div class="services-wrap" data-cover-follow={follow ? "" : undefined}>
+  <ol class:list={["services", `services--${variant}`]} role="list">
+    {rows.map(({ id, title, promise, description, deliverables, proof }, index) => (
+      <li class="services__row" id={variant === "detailed" ? id : undefined} data-reveal="fade">
+        <span class="text-caption services__index" aria-hidden="true">
+          {String(index + 1).padStart(2, "0")}
+        </span>
+        <Heading class="services__title">{title}</Heading>
+        <div class="services__body">
+          <p class="text-lead services__promise">{promise}</p>
+          <p class="services__description">{description}</p>
+          {variant === "detailed" && (
+            <ul class="services__deliverables" role="list">
+              {deliverables.map((item) => (
+                <li>{item}</li>
+              ))}
+            </ul>
+          )}
+          {proof.length > 0 && (
+            <p class="text-small services__proof">
+              <span class="text-caption">See it in</span>
+              {proof.map(({ slug, href, label }) => (
+                <a href={href} data-cover-index={follow ? slug : undefined}>
+                  {label}
+                </a>
+              ))}
+            </p>
+          )}
+        </div>
+      </li>
+    ))}
+  </ol>
+  {follow && (
+    <div class="services__preview" aria-hidden="true" data-cover-frame>
+      {covers.map(([slug, cover]) => (
+        <Image
+          class="services__preview-img"
+          src={cover}
+          alt=""
+          widths={widths(cover)}
+          sizes="22rem"
+          loading="lazy"
+          format="avif"
+          data-cover-img={slug}
+        />
+      ))}
+    </div>
+  )}
+</div>
 
 <style>
   @layer components {
@@ -118,6 +157,11 @@ const rows = await Promise.all(
       color: var(--color-text-muted);
     }
 
+    /* The floating cover (positioned by motion.ts); hidden until a proof link is hovered. */
+    .services__preview {
+      display: none;
+    }
+
     .services--detailed .services__row {
       padding-block: var(--space-section-sm);
     }
@@ -131,6 +175,98 @@ const rows = await Promise.all(
       .services__body {
         grid-column: auto;
         padding-block-start: var(--space-2);
+      }
+    }
+
+    @media (hover: hover) and (pointer: fine) {
+      /*
+       * The row hover. The fill is a pseudo-element painted past the container to the viewport
+       * edges (a spread shadow, clipped to the row's height), so it bleeds like a full-width band
+       * without widening the page.
+       */
+      .services--summary .services__row {
+        position: relative;
+        isolation: isolate;
+        transition: padding var(--duration-reveal) var(--ease-out-expo);
+      }
+
+      .services--summary .services__row > * {
+        transition: opacity var(--duration-fast) var(--ease-standard);
+      }
+
+      .services--summary .services__row::before {
+        position: absolute;
+        inset: 0;
+        z-index: -1;
+        content: "";
+        background-color: var(--color-bg-subtle);
+        box-shadow: 0 0 0 100vmax var(--color-bg-subtle);
+        clip-path: inset(0 -100vmax);
+        opacity: 0;
+        transition: opacity var(--duration-link) var(--ease-standard);
+      }
+
+      .services--summary .services__index,
+      .services--summary .services__description {
+        transition: color var(--duration-link) var(--ease-standard);
+      }
+
+      /* It opens downwards only, so the links stay put under the pointer. */
+      .services--summary .services__row:hover {
+        padding-block-end: var(--space-16);
+      }
+
+      .services--summary .services__row:hover::before {
+        opacity: 1;
+      }
+
+      .services--summary .services__row:hover .services__index,
+      .services--summary .services__row:hover .services__description {
+        color: var(--color-text);
+      }
+
+      /*
+       * Hovering one row quiets the others, like "Next up". Their contents fade, not the row:
+       * the scroll reveal owns the row's own opacity.
+       */
+      .services--summary:has(.services__row:hover) .services__row:not(:hover) > * {
+        opacity: var(--opacity-dim);
+      }
+
+      .services__preview {
+        position: fixed;
+        inset-block-start: 0;
+        inset-inline-start: 0;
+        z-index: 1;
+        display: grid;
+        inline-size: var(--size-cover);
+        overflow: hidden;
+        border-radius: var(--radius-md);
+        pointer-events: none;
+        opacity: 0;
+        scale: 0.9;
+        translate: var(--cover-x, 0) calc(var(--cover-y, 0px) - 50%);
+        transition:
+          opacity var(--duration-fast) var(--ease-standard),
+          scale var(--duration-link) var(--ease-out-expo);
+      }
+
+      .services__preview[data-active] {
+        opacity: 1;
+        scale: 1;
+      }
+
+      .services__preview-img {
+        grid-area: 1 / 1;
+        inline-size: 100%;
+        block-size: auto;
+        aspect-ratio: 3 / 2;
+        object-fit: cover;
+        visibility: hidden;
+      }
+
+      .services__preview-img[data-shown] {
+        visibility: visible;
       }
     }
   }

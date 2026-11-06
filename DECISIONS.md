@@ -1030,3 +1030,10 @@ From the market comparison (Claude Doc "Grist drops vs the market").
 - Dawid asked for a simple, standard cookie notice on the page just in case, compliance aside. Inspiration: anthracitestudio.be (a card bottom left with one line, a privacy link and two equal buttons). `ConsentBanner` is back in that shape: his line, a Privacy policy link, Decline and Accept as two equal secondary buttons across the card. It shows on every build (previews too) until a choice is saved in `analytics-consent`.
 - Follow-up (Dawid): Accept is the primary button and the Privacy policy link keeps its underline at rest.
 - Analytics still run through Pages' automatic setup, which ignores the choice. If `CF_WEB_ANALYTICS_TOKEN` is set and the automatic setup turned off, BaseLayout loads the beacon only after Accept, with no code change.
+
+## Services hover on Home (6 Nov)
+
+- Dawid asked for the "Next up" mechanism on the Services links on Home, plus the feel of the miquido.com Services hover. Both are in, at two levels. The row is the miquido part: it fills with the subtle surface edge to edge, opens up a little below and its muted text goes to full contrast, while the other rows quiet down like "Next up". The "See it in" links are the "Next up" part: the case study's cover floats beside the pointer (`[data-cover-follow]` in motion.ts, unchanged).
+- The row opens downwards only. Growing it above would move the links out from under the pointer and the cover would flicker off.
+- Fine pointers only, summary variant only. Touch, /services and no-JS are unchanged. Nothing from miquido's visuals is copied, only the idea of a row that fills and opens.
+- Found on the way: the first-load page rise (`page-in` on main) used `both`, so main kept `translate: 0` and `filter: blur(0)` after it ended. That made main the containing block for `position: fixed`, so the floating cover (Next up too) landed off screen on a fresh load. It now fills `backwards` only.
