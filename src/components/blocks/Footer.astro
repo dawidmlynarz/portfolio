@@ -1,16 +1,18 @@
 ---
 /**
- * Sign-off on every page: a giant closing line whose last words cycle (CSS only; static with
- * reduced motion; screen readers get the full sentence), "Get in touch" (to /contact) as the
- * main action, social links and the copyright line. Not on /contact (SiteLayout `footer`).
- * The simple variant (Grist) is the same footer without the closing line and the button: the
- * social links and the legal line, as on the portfolio. The legal variant (/privacy) keeps only the
- * copyright line, centred.
+ * Sign-off on every page. Left: a giant closing line whose last words cycle (CSS only; static with
+ * reduced motion; screen readers get the full sentence) and "Get in touch" (to /contact). Right:
+ * Explore (site pages), Connect (social links) and Experiments (the Grist card). Under a rule, the
+ * copyright line and the privacy link. Not on /contact (SiteLayout `fit`).
+ * The simple variant (Grist) keeps only the social links and the legal line. The legal variant
+ * (/privacy) keeps only the copyright line, centred.
  */
 import Container from "@/components/layout/Container.astro";
 import Button from "@/components/ui/Button.astro";
+import Icon from "@/components/ui/Icon.astro";
 import Link from "@/components/ui/Link.astro";
-import { SITE, SOCIAL_LINKS } from "@/lib/site";
+import GristLogo from "@/components/grist/Logo.astro";
+import { NAV_LINKS, SITE, SOCIAL_LINKS } from "@/lib/site";
 
 interface Props {
   variant?: "default" | "simple" | "legal";
@@ -21,35 +23,94 @@ const simple = variant !== "default";
 const legal = variant === "legal";
 const year = new Date().getFullYear();
 const endings = ["AI product", "design system", "product team"];
+const explore = [
+  { href: "/", label: "Home" },
+  ...NAV_LINKS.filter(({ href }) => href !== "/contact"),
+];
+const path = Astro.url.pathname.replace(/\/$/, "") || "/";
+const current = (href: string) =>
+  href === "/" ? path === "/" : path === href || path.startsWith(`${href}/`);
 ---
 
 <footer class:list={["footer", { "footer--simple": simple, "footer--legal": legal }]}>
   <Container class="footer__inner">
     {!simple && (
-      <>
-        <p class="text-caption footer__label">Contact</p>
-        <h2 class="footer__title">
-          <span class="visually-hidden">
-            Let's build your next {endings.slice(0, -1).join(", ")} or {endings.at(-1)}.
-          </span>
-          <span aria-hidden="true">
-            Let's build your next{" "}
-            <span class="footer__ticker">
-              <span class="footer__ticker-track">
-                {[...endings, endings[0]].map((ending) => (
-                  <span>{ending}</span>
-                ))}
+      <div class="footer__top">
+        <div class="footer__cta">
+          <p class="text-caption footer__label">Contact</p>
+          <h2 class="footer__title">
+            <span class="visually-hidden">
+              Let's build your next {endings.slice(0, -1).join(", ")} or {endings.at(-1)}.
+            </span>
+            <span aria-hidden="true">
+              <span class="footer__line">Let's build your</span>
+              <span class="footer__line">
+                next{" "}
+                <span class="footer__ticker">
+                  <span class="footer__ticker-track">
+                    {[...endings, endings[0]].map((ending) => (
+                      <span>{ending}</span>
+                    ))}
+                  </span>
+                </span>
               </span>
             </span>
-          </span>
-        </h2>
-        <Button href="/contact" size="lg" icon="arrow">
-          Get in touch
-        </Button>
-      </>
+          </h2>
+          <Button href="/contact" size="lg" icon="arrow">
+            Get in touch
+          </Button>
+        </div>
+
+        <nav class="footer__nav" aria-label="Footer">
+          <div class="footer__group">
+            <h2 class="text-caption footer__label" id="footer-explore">
+              Explore
+            </h2>
+            <ul class="footer__links" role="list" aria-labelledby="footer-explore">
+              {explore.map(({ href, label }) => (
+                <li>
+                  <Link
+                    href={href}
+                    variant="quiet"
+                    aria-current={current(href) ? "page" : undefined}
+                  >
+                    {label}
+                  </Link>
+                </li>
+              ))}
+            </ul>
+          </div>
+          <div class="footer__group">
+            <h2 class="text-caption footer__label" id="footer-connect">
+              Connect
+            </h2>
+            <ul class="footer__links" role="list" aria-labelledby="footer-connect">
+              {SOCIAL_LINKS.map(({ href, label }) => (
+                <li>
+                  <Link href={href} variant="quiet">
+                    {label}
+                  </Link>
+                </li>
+              ))}
+            </ul>
+          </div>
+          <div class="footer__group footer__group--wide">
+            <h2 class="text-caption footer__label">Experiments</h2>
+            <a class="footer__grist" href="/grist" data-no-tear>
+              <span class="footer__grist-text">
+                <GristLogo class="footer__grist-logo" />
+                <span class="footer__grist-line text-small">
+                  Loot for AI grinders. <span class="footer__grist-muted">Human-curated.</span>
+                </span>
+              </span>
+              <Icon name="arrow" class="footer__grist-arrow" />
+            </a>
+          </div>
+        </nav>
+      </div>
     )}
     <div class="footer__meta text-small">
-      {!legal && (
+      {simple && !legal && (
         <ul class="footer__social" role="list">
           {SOCIAL_LINKS.map(({ href, label }) => (
             <li>
@@ -78,24 +139,42 @@ const endings = ["AI product", "design system", "product team"];
       padding-block: var(--space-section-sm) var(--space-12);
     }
 
-    .footer--simple .footer__meta {
-      padding-block-start: var(--space-8);
-    }
-
     .footer__inner {
       display: grid;
-      justify-items: start;
-      gap: var(--space-8);
+      gap: var(--space-12);
     }
 
     .footer__label {
       color: var(--color-text-muted);
     }
 
+    /* The closing line and button, then the link groups: stacked on phones and tablets, side by
+       side from 64em with the groups in a fixed column on the right. */
+    .footer__top {
+      display: grid;
+      gap: var(--space-12);
+    }
+
+    @media (width >= 64em) {
+      .footer__top {
+        grid-template-columns: minmax(0, 1fr) 22rem;
+      }
+    }
+
+    .footer__cta {
+      display: grid;
+      justify-items: start;
+      align-content: start;
+      gap: var(--space-6);
+    }
+
     .footer__title {
       font: var(--weight-heading) var(--text-h1) / var(--leading-h1) var(--font-heading);
       letter-spacing: var(--tracking-h1);
-      max-inline-size: 14em;
+    }
+
+    .footer__line {
+      display: block;
     }
 
     /* One line tall window over a column of endings that steps upward. The window is taller than
@@ -148,15 +227,156 @@ const endings = ["AI product", "design system", "product team"];
       }
     }
 
-    /* Social links on top, the copyright and privacy link beneath them. */
+    /* Explore and Connect side by side, Experiments under them across both. On tablets, where the
+       groups take the full width, all three sit in one row. */
+    .footer__nav {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: var(--space-12) var(--space-6);
+      align-items: start;
+    }
+
+    .footer__group--wide {
+      grid-column: 1 / -1;
+    }
+
+    @media (width >= 40em) and (width < 64em) {
+      .footer__nav {
+        grid-template-columns: repeat(2, minmax(0, 1fr)) minmax(0, 2fr);
+      }
+
+      .footer__group--wide {
+        grid-column: auto;
+      }
+    }
+
+    .footer__group {
+      display: grid;
+      gap: var(--space-6);
+    }
+
+    .footer__links {
+      display: grid;
+      justify-items: start;
+      gap: var(--space-2);
+      padding: 0;
+      font: var(--weight-heading) var(--text-h4) / var(--leading-h4) var(--font-heading);
+      letter-spacing: var(--tracking-h4);
+    }
+
+    .footer__links :global([aria-current="page"]) {
+      color: var(--color-text-muted);
+    }
+
+    /* ---------- Grist card ----------
+       Hover: the card lifts onto the subtle surface, the arrow steps forward, and the dot on the
+       i rolls through the rarity colours with a little hop, landing on Legendary. With reduced
+       motion it just turns Legendary. */
+    .footer__grist {
+      --underline-size: 0%;
+
+      display: flex;
+      align-items: center;
+      gap: var(--space-4);
+      padding: var(--space-4);
+      border: var(--border-width) solid var(--color-border-subtle);
+      border-radius: var(--radius-md);
+      transition:
+        background-color var(--duration-fast) var(--ease-standard),
+        border-color var(--duration-fast) var(--ease-standard);
+    }
+
+    .footer__grist-text {
+      display: grid;
+      flex: 1;
+      justify-items: start;
+      gap: var(--space-1);
+      padding-block-start: var(--space-1);
+    }
+
+    .footer__grist-text :global(.footer__grist-logo) {
+      block-size: var(--space-6);
+    }
+
+    .footer__grist-muted {
+      color: var(--color-text-muted);
+    }
+
+    .footer__grist :global(.footer__grist-arrow) {
+      flex: none;
+      inline-size: var(--space-6);
+      block-size: var(--space-6);
+      transition: translate var(--duration-link) var(--ease-out-expo);
+    }
+
+    .footer__grist :global(.logo__diamond) {
+      transform-box: fill-box;
+      transition: fill var(--duration-fast) var(--ease-standard);
+    }
+
+    .footer__grist:is(:hover, :focus-visible) {
+      border-color: var(--color-border-muted);
+      background-color: var(--color-bg-subtle);
+    }
+
+    .footer__grist:is(:hover, :focus-visible) :global(.footer__grist-arrow) {
+      translate: var(--space-1) 0;
+    }
+
+    .footer__grist:is(:hover, :focus-visible) :global(.logo__diamond) {
+      fill: var(--rarity-legendary-fill);
+    }
+
+    @media (prefers-reduced-motion: no-preference) {
+      .footer__grist:is(:hover, :focus-visible) :global(.logo__diamond) {
+        animation: footer-grist-roll var(--duration-icon) var(--ease-standard);
+      }
+    }
+
+    @keyframes footer-grist-roll {
+      0% {
+        fill: currentcolor;
+        translate: 0 0;
+      }
+
+      15% {
+        fill: var(--rarity-common-fill);
+        translate: 0 calc(-1 * var(--space-2));
+      }
+
+      30% {
+        fill: var(--rarity-uncommon-fill);
+        translate: 0 calc(-1 * var(--space-3));
+      }
+
+      45% {
+        fill: var(--rarity-rare-fill);
+        translate: 0 calc(-1 * var(--space-2));
+      }
+
+      60% {
+        fill: var(--rarity-epic-fill);
+        translate: 0 0;
+      }
+
+      100% {
+        fill: var(--rarity-legendary-fill);
+        translate: 0 0;
+      }
+    }
+
+    /* ---------- Bottom row: the copyright line and privacy link under a rule ---------- */
     .footer__meta {
       display: flex;
       flex-direction: column;
       gap: var(--space-4);
-      inline-size: 100%;
-      padding-block-start: var(--space-8);
+      padding-block-start: var(--space-12);
       border-block-start: var(--border-width) solid var(--color-border-subtle);
       color: var(--color-text-muted);
+    }
+
+    .footer--simple .footer__meta {
+      padding-block-start: var(--space-8);
     }
 
     /* Legal pages: only the copyright line, centred. */
@@ -168,7 +388,7 @@ const endings = ["AI product", "design system", "product team"];
     .footer__legal {
       display: flex;
       flex-wrap: wrap;
-      gap: var(--space-2) var(--space-6);
+      gap: var(--space-4) var(--space-8);
     }
 
     .footer__social {
