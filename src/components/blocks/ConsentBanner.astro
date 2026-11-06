@@ -28,15 +28,13 @@ const { preview = false } = Astro.props;
 >
   <p class="consent__text">
     I use analytics to measure and improve the website, only if you agree.{" "}
-    <Link href="/privacy" variant="quiet">
-      Privacy policy
-    </Link>
+    <Link href="/privacy">Privacy policy</Link>
   </p>
   <div class="consent__actions">
     <Button size="sm" variant="secondary" hover="icon" data-consent-choice="denied">
       Decline
     </Button>
-    <Button size="sm" variant="secondary" hover="icon" data-consent-choice="granted">
+    <Button size="sm" hover="icon" data-consent-choice="granted">
       Accept
     </Button>
   </div>
@@ -120,7 +118,7 @@ const { preview = false } = Astro.props;
       text-wrap: pretty;
     }
 
-    /* Two equal buttons across the card, so neither choice stands out. */
+    /* Two buttons of equal size across the card, Accept as the primary one. */
     .consent__actions {
       display: grid;
       grid-template-columns: 1fr 1fr;
