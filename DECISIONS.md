@@ -1037,3 +1037,4 @@ From the market comparison (Claude Doc "Grist drops vs the market").
 - The row opens downwards only. Growing it above would move the links out from under the pointer and the cover would flicker off.
 - Fine pointers only, summary variant only. Touch, /services and no-JS are unchanged. Nothing from miquido's visuals is copied, only the idea of a row that fills and opens.
 - Found on the way: the first-load page rise (`page-in` on main) used `both`, so main kept `translate: 0` and `filter: blur(0)` after it ended. That made main the containing block for `position: fixed`, so the floating cover (Next up too) landed off screen on a fresh load. It now fills `backwards` only.
+- Follow-up (Dawid): no fill, the row stays on the page background. It opens up more (to `--space-24` below) on a slower in-out ease (`--duration-zoom`, `--ease-in-out-quart`). The fade on the other rows stays, still desktop only.
