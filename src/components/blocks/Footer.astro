@@ -96,11 +96,12 @@ const current = (href: string) =>
           </div>
           <div class="footer__group footer__group--wide">
             <h2 class="text-caption footer__label">Experiments</h2>
-            <a class="footer__grist" href="/grist" data-no-tear>
+            <a class="footer__grist" href="/grist" target="_blank" data-no-tear>
               <span class="footer__grist-text">
                 <GristLogo class="footer__grist-logo" />
                 <span class="footer__grist-line text-small">
                   Loot for AI grinders. <span class="footer__grist-muted">Human-curated.</span>
+                  <span class="visually-hidden">(opens in a new tab)</span>
                 </span>
               </span>
               <Icon name="arrow" class="footer__grist-arrow" />
@@ -269,9 +270,8 @@ const current = (href: string) =>
     }
 
     /* ---------- Grist card ----------
-       Hover: the card lifts onto the subtle surface, the arrow steps forward, and the dot on the
-       i rolls through the rarity colours with a little hop, landing on Legendary. With reduced
-       motion it just turns Legendary. */
+       Opens in a new tab. Hover: the card lifts onto the subtle surface, the arrow steps forward
+       and the dot on the i hops, keeping its colour. With reduced motion the dot stays still. */
     .footer__grist {
       --underline-size: 0%;
 
@@ -311,7 +311,6 @@ const current = (href: string) =>
 
     .footer__grist :global(.logo__diamond) {
       transform-box: fill-box;
-      transition: fill var(--duration-fast) var(--ease-standard);
     }
 
     .footer__grist:is(:hover, :focus-visible) {
@@ -323,45 +322,26 @@ const current = (href: string) =>
       translate: var(--space-1) 0;
     }
 
-    .footer__grist:is(:hover, :focus-visible) :global(.logo__diamond) {
-      fill: var(--rarity-legendary-fill);
-    }
-
     @media (prefers-reduced-motion: no-preference) {
       .footer__grist:is(:hover, :focus-visible) :global(.logo__diamond) {
-        animation: footer-grist-roll var(--duration-icon) var(--ease-standard);
+        animation: footer-grist-hop var(--duration-icon) var(--ease-standard);
       }
     }
 
-    @keyframes footer-grist-roll {
-      0% {
-        fill: currentcolor;
+    @keyframes footer-grist-hop {
+      0%,
+      60%,
+      100% {
         translate: 0 0;
       }
 
-      15% {
-        fill: var(--rarity-common-fill);
+      15%,
+      45% {
         translate: 0 calc(-1 * var(--space-2));
       }
 
       30% {
-        fill: var(--rarity-uncommon-fill);
         translate: 0 calc(-1 * var(--space-3));
-      }
-
-      45% {
-        fill: var(--rarity-rare-fill);
-        translate: 0 calc(-1 * var(--space-2));
-      }
-
-      60% {
-        fill: var(--rarity-epic-fill);
-        translate: 0 0;
-      }
-
-      100% {
-        fill: var(--rarity-legendary-fill);
-        translate: 0 0;
       }
     }
 
