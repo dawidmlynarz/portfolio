@@ -12,7 +12,8 @@
     "check": "astro check && npm run lint:css && npm run format:check",
     "lint:css": "stylelint \"src/**/*.{css,astro}\"",
     "format": "prettier --write .",
-    "format:check": "prettier --check ."
+    "format:check": "prettier --check .",
+    "stats": "node --env-file-if-exists=.env tooling/grist-stats.mjs"
   },
   "dependencies": {
     "@astrojs/mdx": "^8.1.0",

@@ -3,6 +3,10 @@
  * Copies text and says so in a status toast for two seconds. The text is either given (`text`) or
  * fetched on click (`from`, a same-site URL such as a markdown twin). With `label` and no slot
  * content it's an icon-only button.
+ *
+ * With `track` and `drop`, a copy is counted for Grist stats, only after the visitor chose Accept
+ * on the cookie notice. A `from` copy marks its fetch (functions/grist/_middleware.ts); any other
+ * copy sends a small beacon to /grist/_count. Nothing is sent without consent or without JS.
  */
 import Button from "@/components/ui/Button.astro";
 import type { ComponentProps } from "astro/types";
@@ -17,9 +21,22 @@ interface Props {
   variant?: "secondary" | "ghost";
   /** What the toast says once it's copied. */
   done?: string;
+  /** Grist stats event for this copy, e.g. "copy-drop". See functions/grist/_count.ts. */
+  track?: "copy-ai" | "copy-drop" | "copy-file" | "copy-install" | "copy-link";
+  /** The drop the copy belongs to, for `track`. */
+  drop?: string;
 }
 
-const { text, from, label, icon = "copy", variant = "secondary", done = "Copied" } = Astro.props;
+const {
+  text,
+  from,
+  label,
+  icon = "copy",
+  variant = "secondary",
+  done = "Copied",
+  track,
+  drop,
+} = Astro.props;
 ---
 
 <span class="copy-button">
@@ -31,6 +48,8 @@ const { text, from, label, icon = "copy", variant = "secondary", done = "Copied"
     data-copy-text={text}
     data-copy-from={from}
     data-copy-done={done}
+    data-copy-track={track && drop ? track : undefined}
+    data-copy-drop={track && drop ? drop : undefined}
   >
     <slot />
   </Button>
@@ -44,11 +63,15 @@ const { text, from, label, icon = "copy", variant = "secondary", done = "Copied"
     const toast = button.parentElement?.querySelector(".copy-button__toast");
     let timer: number | undefined;
     button.addEventListener("click", async () => {
-      const { copyText, copyFrom, copyDone } = button.dataset;
+      const { copyText, copyFrom, copyDone, copyTrack, copyDrop } = button.dataset;
+      // Counted only after Accept on the cookie notice (ConsentBanner).
+      const counted = Boolean(copyTrack) && document.documentElement.dataset.consent === "granted";
       try {
         // Safari wants the clipboard write inside the click, so a fetch goes in as a promise.
         const text = copyFrom
-          ? fetch(copyFrom).then((response) => response.text())
+          ? fetch(copyFrom, counted ? { headers: { "X-Grist-Copy": "1" } } : undefined).then(
+              (response) => response.text(),
+            )
           : Promise.resolve(copyText ?? "");
         await navigator.clipboard.write([
           new ClipboardItem({
@@ -57,6 +80,12 @@ const { text, from, label, icon = "copy", variant = "secondary", done = "Copied"
         ]);
       } catch {
         return;
+      }
+      if (counted && !copyFrom) {
+        navigator.sendBeacon?.(
+          "/grist/_count",
+          JSON.stringify({ event: copyTrack, drop: copyDrop }),
+        );
       }
       if (!toast) return;
       toast.textContent = copyDone ?? "Copied";

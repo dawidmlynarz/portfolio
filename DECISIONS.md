@@ -1042,3 +1042,12 @@ From the market comparison (Claude Doc "Grist drops vs the market").
 - Follow-up (Dawid): no negative margin. The row grows `--space-8` above and below inside itself and pushes the rows and sections after it down, so no neighbour's spacing changes. Its content moves down with the top padding, so a pointer resting on a link can end up just above it and the cover then hides until the pointer moves onto the link again.
 - Follow-up (Dawid): the same hover and floating covers on /services (the detailed variant). The row grows `--space-8` above and below its own padding there too.
 - Follow-up (Dawid): on /services the rows are already tall, so the row hover (grow, fade, contrast) is Home only again. /services keeps just the floating covers on the "See it in" links.
+
+## Grist download and install counter (6 Nov)
+
+- Dawid asked how to tell whether Grist drops work and how many people download them. Web Analytics only sees pages that run its beacon, so it misses .zip and .md downloads, copy buttons and Claude Code installs, which never open a page.
+- `functions/grist/_middleware.ts` serves every /grist request through `next()` (so `_headers` still apply) and, for Grist files only, writes one row to Workers Analytics Engine (`GRIST_STATS`, dataset `grist_stats`): event, drop, client kind from the user agent, country and the user agent's first token. No IP or cookie, so it runs for everyone like a server log. Only 200 GETs count, so browser revalidations (304) don't.
+- Copy buttons (Dawid's pick, "counter plus copy clicks") count only after Accept on the cookie notice. Copy for AI already fetches the .md twin, so it adds an `X-Grist-Copy` header to that fetch instead of a second request. Without consent the same fetch still counts, as a plain `md` request. The other copies send a `sendBeacon` to `/grist/_count`, which accepts only a fixed list of events and a slug, from the site's own pages.
+- Every /grist request now runs the function. That's well inside the free 100k a day. A custom `_routes.json` could narrow it to the files, but Pages' wildcard support for patterns like `/grist/*.md` is unclear, so it's left for later if it ever matters.
+- Numbers are requests, not people. "Takes" in `npm run stats` (downloads, copies and plugin installs) divided by the drop's page views in Web Analytics is the take rate, the number to compare drops by.
+- Not chosen: Cloudflare's zone traffic analytics per path (sampled, a few days of history on the free plan) and Google Analytics (cookies, needs a real consent wall).
