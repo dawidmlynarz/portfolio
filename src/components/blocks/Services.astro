@@ -4,8 +4,8 @@
  * the case studies that prove it. The detailed variant (the /services page) adds the list of
  * deliverables. Data: src/lib/services.ts.
  *
- * Hover (Home and /services), with a fine pointer only: the row opens up above and below and its
- * muted text comes to full contrast, while the other rows quiet down (as in "Next up"). Hovering
+ * Hover, with a fine pointer only. On Home the row opens up above and below and its muted text
+ * comes to full contrast, while the other rows quiet down (as in "Next up"). On both pages, hovering
  * a "See it in" link floats that case study's cover beside the pointer, the same
  * [data-cover-follow] mechanism as "Next up" (motion.ts). Without hover or JS the rows and links
  * are unchanged.
@@ -179,19 +179,19 @@ const widths = (cover: ImageMetadata) => [320, 480, 800].filter((w) => w <= cove
 
     @media (hover: hover) and (pointer: fine) {
       /*
-       * The row hover. The row opens up above and below on a slow in-out ease and its muted text
+       * The row hover (Home only, /services rows are already tall). The row opens up above and below on a slow in-out ease and its muted text
        * comes to full contrast.
        */
-      .services__row {
+      .services--summary .services__row {
         transition: padding var(--duration-zoom) var(--ease-in-out-quart);
       }
 
-      .services__row > * {
+      .services--summary .services__row > * {
         transition: opacity var(--duration-link) var(--ease-standard);
       }
 
-      .services__index,
-      .services__description {
+      .services--summary .services__index,
+      .services--summary .services__description {
         transition: color var(--duration-link) var(--ease-standard);
       }
 
@@ -199,12 +199,12 @@ const widths = (cover: ImageMetadata) => [320, 480, 800].filter((w) => w <= cove
        * The row grows by the same amount above and below its own content and pushes everything
        * after it down. Neighbouring rows and sections keep their spacing.
        */
-      .services__row:hover {
+      .services--summary .services__row:hover {
         padding-block: calc(var(--services-pad) + var(--space-8));
       }
 
-      .services__row:hover .services__index,
-      .services__row:hover .services__description {
+      .services--summary .services__row:hover .services__index,
+      .services--summary .services__row:hover .services__description {
         color: var(--color-text);
       }
 
@@ -212,7 +212,7 @@ const widths = (cover: ImageMetadata) => [320, 480, 800].filter((w) => w <= cove
        * Hovering one row quiets the others, like "Next up". Their contents fade, not the row:
        * the scroll reveal owns the row's own opacity.
        */
-      .services:has(.services__row:hover) .services__row:not(:hover) > * {
+      .services--summary:has(.services__row:hover) .services__row:not(:hover) > * {
         opacity: var(--opacity-dim);
       }
 
