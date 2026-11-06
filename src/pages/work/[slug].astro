@@ -9,15 +9,21 @@ import ImageGrid from "@/components/content/ImageGrid.astro";
 import Metrics from "@/components/content/Metrics.astro";
 import Callout from "@/components/content/Callout.astro";
 import Quote from "@/components/content/Quote.astro";
-import { getPagedWork, hasPage, type Work } from "@/lib/work";
+import { getBuiltPages, getPagedWork, isLinked, type Work } from "@/lib/work";
 
 export async function getStaticPaths() {
   const visible = await getPagedWork();
-  return visible.map((entry, index) => ({
-    params: { slug: entry.id },
-    // The case studies after this one, in order (wrapping round), for "Next up".
-    props: { entry, following: [...visible.slice(index + 1), ...visible.slice(0, index)] },
-  }));
+  return (await getBuiltPages()).map((entry) => {
+    // The case studies after this one, in order (wrapping round), for "Next up". Unlisted ones
+    // are never among them.
+    const own = visible.findIndex((work) => work.id === entry.id);
+    const after = visible.findIndex((work) => work.data.order > entry.data.order);
+    const split = own !== -1 ? own + 1 : after === -1 ? visible.length : after;
+    return {
+      params: { slug: entry.id },
+      props: { entry, following: [...visible.slice(split), ...visible.slice(0, split)] },
+    };
+  });
 }
 
 /** Case studies in "Next up". */
@@ -33,7 +39,7 @@ const { Content, headings } = await render(entry);
 
 // The curated "next" leads when it has a page; the rest follow in order.
 const curated = entry.data.next ? await getEntry(entry.data.next) : undefined;
-const nextUp = [...(curated && hasPage(curated) ? [curated] : []), ...following]
+const nextUp = [...(curated && isLinked(curated) ? [curated] : []), ...following]
   .filter((work, i, list) => work.id !== entry.id && list.findIndex((w) => w.id === work.id) === i)
   .slice(0, NEXT_UP);
 

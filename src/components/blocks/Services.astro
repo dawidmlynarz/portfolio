@@ -5,7 +5,7 @@
  * deliverables. Data: src/lib/services.ts.
  */
 import { getEntry } from "astro:content";
-import { hasPage, workHref } from "@/lib/work";
+import { isLinked, workHref } from "@/lib/work";
 import type { Service } from "@/lib/services";
 
 interface Props {
@@ -21,7 +21,7 @@ const rows = await Promise.all(
   services.map(async (service) => {
     const entries = await Promise.all(service.proof.map((slug) => getEntry("work", slug)));
     const proof = entries
-      .filter((entry) => entry && hasPage(entry))
+      .filter((entry) => entry && isLinked(entry))
       .map((entry) => ({ href: workHref(entry!), label: entry!.data.company }));
     return { ...service, proof };
   }),

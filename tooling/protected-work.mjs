@@ -16,8 +16,9 @@ import { fileURLToPath } from "node:url";
 const WORK_DIR = new URL("../src/content/work/", import.meta.url);
 const MODULE = new URL("../.generated/protected-pages.js", import.meta.url);
 
-/** Slugs of case studies marked `protected: true` in their frontmatter. */
-export function protectedSlugs() {
+/** Slugs of case studies whose frontmatter sets `<flag>: true`. */
+function slugsWith(/** @type {string} */ flag) {
+  const pattern = new RegExp(`^${flag}:\\s*true\\s*$`, "m");
   return readdirSync(WORK_DIR, { withFileTypes: true })
     .filter((dir) => dir.isDirectory())
     .map((dir) => dir.name)
@@ -25,9 +26,15 @@ export function protectedSlugs() {
       const file = new URL(`${slug}/index.mdx`, WORK_DIR);
       if (!existsSync(file)) return false;
       const frontmatter = readFileSync(file, "utf8").split(/^---\s*$/m)[1] ?? "";
-      return /^protected:\s*true\s*$/m.test(frontmatter);
+      return pattern.test(frontmatter);
     });
 }
+
+/** Slugs of case studies marked `protected: true` in their frontmatter. */
+export const protectedSlugs = () => slugsWith("protected");
+
+/** Slugs of case studies marked `unlisted: true` (private URL, see src/content.config.ts). */
+export const unlistedSlugs = () => slugsWith("unlisted");
 
 /** @returns {import("astro").AstroIntegration} */
 export default function protectedWork() {

@@ -10,6 +10,12 @@ Case-study covers are saved at 3200×2133, the largest rendition any page asks f
 
 Every case-study cover is now 3840×2560 (3:2), so the work cards (Work page and Home) and the Next up thumbnails and hover preview crop to 3:2 instead of 4:3. The covers show whole, with nothing trimmed. This replaces the 4:3 crop from 26 Oct for those three places. The Contact page marquee keeps 4:3 for now because its size formula is built on it.
 
+## 2026-11-06 · Unlisted case studies, for private URLs
+
+- **`unlisted: true`** builds a case study's page but links it from nowhere. No card on Home or Work, no Next up, no Services proof, no marquee. It stays out of the sitemap and gets `noindex` on every build, like protected work. `src/lib/work.ts` now separates `hasPage` (gets a page), `isListed` (gets a card) and `isLinked` (other pages may link to it).
+- **Pair it with `protected: true` and a slug nobody can guess.** The first one is Great Wolf Lodge's AI Trip Planner at `/work/gwl-ai-planner-bc15a061` (draft). The random suffix keeps the locked screen from being found by trying names.
+- **Not covered:** as with protected work, its images are files in `/_astro/` under hashed names that nothing public links to.
+
 ## 2026-11-04 · Case study password ignores surrounding spaces
 
 The gate trims `CASE_STUDY_PASSWORD` and the typed password before comparing. A secret pasted into the Cloudflare dashboard with a trailing space or newline looks right there but never matches, and that is invisible from the site. When the secret is missing the function logs a warning, so Pages real-time logs show it. Spaces inside the password still count.

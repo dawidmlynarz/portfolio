@@ -1,0 +1,178 @@
+---
+title: An agentic AI Trip Planner that gives Great Wolf Lodge guests a second way to book
+description: We designed and shipped an agentic AI Trip Planner for Great Wolf Lodge. A conversation takes guests from “when can we go?” to a priced cart, then hands off to GWL’s existing checkout.
+lead: "We designed and shipped an agentic AI Trip Planner that gives Great Wolf Lodge guests a second way to book. A conversation takes them from “when can we go?” to a priced cart, then hands off to GWL’s existing checkout. The pilot has been live in production since 1 August 2026 across four lodges."
+company: Great Wolf Lodge
+role: Lead Product Designer
+via: Zazmic
+industry: Hospitality
+business: Waterpark resorts
+date: "2026"
+tags: [Agentic UX, Conversational UX, AI Experiences, Product Design]
+cover: ./cover.avif
+coverAlt: Placeholder cover for the Great Wolf Lodge AI Trip Planner case study.
+metrics:
+  - { value: "2.45%", label: "Of planner sessions ended in a paid booking" }
+  - { value: "23.8%", label: "Of carts handed to checkout were paid" }
+  - { value: "57", label: "Paid bookings in the first three months" }
+order: 0.6
+next: zazmic-anvil-ui
+draft: true
+protected: true
+unlisted: true
+---
+
+import funnel from "./gwl-funnel.avif";
+
+{/* Private case study: unlisted (no card or link anywhere, out of the sitemap, noindex) and behind the password. The slug has a random suffix so nobody can guess the URL. */}
+
+{/* FLAG: the cover is a plain placeholder. Industry, business and tags were picked by Claude, Dawid to confirm. */}
+
+{/* Every number comes from Dawid's doc and the GWL production dashboard, 1 Aug to 6 Nov 2026. */}
+
+In the first three months, 2,079 planner sessions produced 214 carts handed to checkout and 57 paid bookings. Nearly one in four handed-off carts (23.8%) turned into a paid booking, with 65 more carts still pending payment at the time of measurement.
+
+## The challenge
+
+GWL’s booking funnel is built for guests who already know what they want. Pick a lodge, pick dates, pick a suite. Families planning a waterpark trip rarely start there. They start with questions, like which lodge suits a toddler and a ten-year-old, which weekend is cheaper, or what fits five people.
+
+The brief was to design an alternative journey where an AI agent guides discovery, does the searching and comparing, and assembles a cart the guest can trust. The existing checkout would then take over for guest details and payment, so we added a new front door without touching a system that already works.
+
+That raised three design problems.
+
+- **Trust at the point of money.** Guests had to believe the agent’s prices and availability were real before they would click through to pay.
+- **Conversation vs. control.** Free-text chat is flexible but slow for choices like dates and room types, so the UI needed structured moments inside the conversation.
+- **Brand continuity.** The handoff into GWL checkout had to feel like one product, not a third-party widget.
+
+Our competitive audit of Kayak, Tripadvisor, Trip.com and Mindtrip showed the gap. All four could chat about a trip and list hotels, but none could take a guest through to booking a room inside the conversation. That became the bar for the planner.
+
+## My role and the team
+
+I led design end to end and was the design voice in front of the client. I worked inside an Agile squad with a PM, front-end engineers and ML engineers, and we shipped in sprints.
+
+- **With the client.** I ran workshops and reviews, negotiated what belonged in the MVP, and presented each iteration to GWL stakeholders.
+- **With the PM.** We shaped the MVP scope and the success metrics we would track once live.
+- **With ML engineers.** I designed how the agent’s outputs (search results, recommendations, errors) map to UI modules, so the model returns structured data the interface can render, and not only text.
+- **With front-end engineers.** We built the conversational module library together, and set up how GWL’s design system tokens are injected into our components.
+
+Before build, I ran a competitive chatbot audit and wrote an interaction design specification, including a 9-stage journey map in Figma that became the team’s shared reference.
+
+## Defining the MVP
+
+The key scoping decision was where the agent stops. It builds the cart, and GWL’s checkout takes payment. That boundary kept guest data and payment inside GWL’s proven system, cut integration risk, and let us go live within weeks.
+
+### What the agent owns
+
+- Open-ended trip discovery, with the reason for the trip, dates, party and kids’ ages
+- Live availability search, with active deals offered and applied
+- Two recommended suites, each with a reason
+- Rate choice on the room card (Standard, Flexible or Voyagers Club)
+- One package or pass offer, sized to the party
+- Booking summary and “Book Now” handoff with the cart pre-filled
+
+### What GWL checkout owns
+
+- Guest details
+- Payment
+- Booking confirmation
+
+We also agreed the success metric up front. It’s the share of planner sessions that end in a paid booking, with cart-to-payment conversion as the measure of handoff quality.
+
+The journey map had nine stages, including separate steps for dining, trip protection and Voyagers Club sign-up. For the MVP we folded those into the room card’s rate options and a single package offer. That cut the conversation to the steps that move a guest to a cart, and kept upsells from piling up before checkout.
+
+## Designing the conversational modules
+
+I designed a library of rich modules the agent can call at each step. Each module matches a stage of the funnel, so the conversation and the purchase path stay in sync.
+
+1. **Chat started.** A welcome card with dates, guests and offer code, and starter prompts. It lets guests who know their trip skip ahead, and gives everyone else a first step.
+2. **Searched availability.** Quick-reply pills and a calendar turn “somewhere mid October” and “2 kids, 5 and 7” into a valid search. A deal-found card spots an active sale (like up to 40% off) and asks before applying it.
+3. **Picked a room.** Room cards with a photo gallery and expandable rates. Two suites with a reason for each, and Standard, Flexible and Voyagers Club rates side by side.
+4. **Saw a priced cart.** Package and pass cards with bulk add. They add dining packages and Pup or Wolf Passes for the whole party in one tap.
+5. **Book now and handoff.** A booking summary, collapsed or expanded. It shows suite, dates, guests, packages, promo and total savings before “Book Now”.
+
+The modules are built on our own conversational component system, with GWL’s design system tokens injected into them. The same components can take any client’s brand, while guests see colours, type and buttons that match the rest of greatwolf.com. That made the handoff into checkout feel continuous, and it cut the time to restyle every iteration.
+
+{/* FLAG: is "our own conversational component system" Anvil UI? If so, link /work/zazmic-anvil-ui here. */}
+
+Wiley, the planner’s wolf character, got its own avatar and character sheet to keep the tone warm and on-brand. One rule shaped every widget. The agent asks before it shows. Wiley offers add-ons or a deal in words first, and the card appears only once the guest says yes, so the chat never turns into a stream of upsells.
+
+{/* FLAG: Figma screenshots to come. These placeholders show on previews only. */}
+
+<Figure alt="Figma screenshot to come. The conversation flow." />
+
+<Figure alt="Figma screenshot to come. The room card with rates." />
+
+<Figure alt="Figma screenshot to come. The booking summary." />
+
+## Iterations
+
+The planner went from a competitive audit in late June 2026 to a live pilot on 1 August, then kept evolving in production. Each round answered one question.
+
+### 1. Competitive audit (June 2026)
+
+The question was what AI travel planners do well, and where they stop. I walked Kayak, Tripadvisor, Trip.com and Mindtrip through intro, trip building, search, results, offer comparison, booking and off-topic questions. None let you book a hotel inside the chat. Owning the path to a priced cart became our differentiator.
+
+### 2. User journey map, V1 to V3
+
+Here I looked at what a family needs at each step. Our persona was “Sarah, the Organiser”. Two adults, kids aged 4, 7 and 10, a first visit, and she wants no checkout surprises. The map had nine stages from intro to checkout, with her feelings, Wolf’s actions and the cart building up.
+
+It led to asking ages, not headcount, a reason with every room, and add-ons as a curated bundle. V2 added Flex rates, V3 a discount offer.
+
+### 3. Chatbot simulator
+
+Then I wanted to see how the agent behaves when things go well, and when they don’t. I scripted three full conversations. An optimistic one, one full of questions (Flex vs Standard, what MagiQuest is) and a pessimistic one (a sixth guest, a suite that doesn’t fit).
+
+Out of it came rules for recovery. Never defend a wrong suggestion, widen the search at once, offer a human handoff, and rejoin the main flow.
+
+### 4. Exploration (July 2026)
+
+The question was booking-oriented or conversation-oriented. We explored mobile and desktop concepts, from a prefilled booking form to an open chat, along with the first widget set and the Wiley character. We landed on a hybrid. The welcome card captures dates and guests up front, and the conversation does the rest.
+
+### 5. Pilot build (live 1 August)
+
+Here we looked for the smallest flow that ends in a cart. It became a 19-screen experience flow from welcome to booking summary, built in sprints with engineering. That’s the live MVP measured in the pilot results below.
+
+### 6. Web-aligned redesign (September 2026)
+
+Next I checked if the planner looks like greatwolf.com. We compared the current mobile planner against GWL web, and restyled the chat and room cards to match. It made the handoff into GWL checkout smoother.
+
+### 7. Widget revisions (ongoing)
+
+Now I’m working on which widgets make choosing easier. The calendar, small vs large image room cards, a photo gallery (hover on desktop, swipe on mobile), expandable pass cards with bulk add, a booking summary with promo code, and a modal start with suggested prompts in v1 and v2. They target the room-choice drop the pilot data shows.
+
+{/* FLAG: has the web-aligned redesign or any revision widget shipped yet, and from what date? That decides whether it belongs in results or next steps. */}
+
+## Pilot results
+
+2.45% of all planner sessions ended in a paid booking, and 23.8% of carts handed to checkout were paid. Three in four guests who opened the chat went on to search real availability.
+
+<Figure
+  src={funnel}
+  alt="Bar chart titled Most guests are lost when picking a room. Planner sessions at each step: 2,079 chats started, 1,565 searched availability (75% kept), 636 picked a room (41% kept, 929 sessions lost), 373 saw a priced cart (59%), 214 clicked Book now (57%), 214 handed off to GWL checkout (100%) and 51 paid bookings (24%)."
+  caption="GWL production dashboard, 1 August to 6 November 2026."
+/>
+
+Of the 214 carts handed to checkout, 51 (24%) were paid and 65 (30%) were still pending, because carts stay payable for 7 days. The other 98 (46%) went unpaid. Counting only carts with a final outcome, 34% were paid (51 of 149). The 51 converted sessions produced 57 paid bookings, so some guests booked more than one stay.
+
+{/* FLAG: 57 paid bookings vs 51 converted sessions. Dawid to confirm some sessions booked more than one stay. The lodge rates below are counted from converted sessions, so Perryville's 12 bookings come from 9 paid carts. */}
+
+- **Perryville.** 738 sessions, 60 carts handed off and 12 paid bookings. 1.22% of sessions ended in a booking and 15.0% of carts were paid, with 25 carts pending.
+- **Manteca.** 695 sessions, 95 carts handed off and 26 paid bookings. 3.31% of sessions ended in a booking and 24.2% of carts were paid, with 22 carts pending.
+- **Georgia.** 642 sessions, 59 carts handed off and 19 paid bookings. 2.96% of sessions ended in a booking and 32.2% of carts were paid, with 18 carts pending.
+- **Concord.** 4 sessions and no carts yet.
+
+{/* FLAG: Concord, soft-launched later or a different reason for only 4 sessions? */}
+
+Manteca hands off the most carts, and Georgia converts the highest share of them.
+
+## What we learned and what’s next
+
+The agent is good at getting guests started and very good at closing once a cart exists. The weak point is choosing a room.
+
+- **Room choice is the bottleneck.** 1,565 sessions searched availability but only 636 picked a room. That’s 929 sessions lost, more than at any other step. Next iterations should test clearer suite comparison, a “best fit for your group” recommendation, and handling sold-out dates with alternatives.
+- **Handoff works once guests commit.** Every “Book now” click (214) reached GWL checkout with nothing lost in between, so the cart-to-checkout bridge is technically sound.
+- **Unpaid carts come next.** 98 carts (46%) were still unpaid after 7 days. A reminder or saved-cart flow could recover part of them.
+- **Lodges differ.** Georgia converts 32% of carts and Perryville 15% from similar volumes. That points to lodge-specific content, pricing or availability worth investigating.
+- **Modules scale.** Because GWL’s brand sits in tokens, not in the components, the module library can carry other hospitality and ticketing clients.
+
+{/* FLAG: no guest quotes or client reaction yet, and no GWL baseline conversion for the standard funnel to compare against. */}

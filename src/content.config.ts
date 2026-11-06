@@ -60,6 +60,12 @@ const work = defineCollection({
        * password is entered (tooling/protected-work.mjs, functions/work/_middleware.ts).
        */
       protected: z.boolean().default(false),
+      /**
+       * Private URL: the page is built but nothing links to it (no card, Next up, Services or
+       * marquee), and it stays out of the sitemap and search on every build. Pair it with
+       * `protected: true` and a slug nobody can guess. Only people given the link find it.
+       */
+      unlisted: z.boolean().default(false),
     }),
 });
 
