@@ -2,12 +2,15 @@
 import { defineConfig, envField } from "astro/config";
 import mdx from "@astrojs/mdx";
 import sitemap from "@astrojs/sitemap";
-import protectedWork, { protectedSlugs } from "./tooling/protected-work.mjs";
+import protectedWork, { protectedSlugs, unlistedSlugs } from "./tooling/protected-work.mjs";
 
 // Pages that must never be indexed or listed in the sitemap.
 const PRIVATE_PATHS = ["/styleguide", "/404", "/playground", "/grist/review"];
-// Password-protected case studies: only their locked state is public, and it stays unindexed.
-const PROTECTED_PATHS = protectedSlugs().map((slug) => `/work/${slug}`);
+// Password-protected and unlisted case studies: only their locked state is public, and it stays
+// unindexed. Unlisted ones are also linked from nowhere (src/lib/work.ts).
+const PROTECTED_PATHS = [...new Set([...protectedSlugs(), ...unlistedSlugs()])].map(
+  (slug) => `/work/${slug}`,
+);
 
 export default defineConfig({
   // Share images (src/lib/og.ts) render with resvg, a native module: leave it to Node, unbundled.

@@ -71,6 +71,7 @@ const facts = [
   description={data.seoDescription ?? data.description}
   type="article"
   jsonLd={jsonLd}
+  noindex={data.protected || data.unlisted}
 >
   <article class="case-study">
     <header class="case-study__header hero-backdrop-host">

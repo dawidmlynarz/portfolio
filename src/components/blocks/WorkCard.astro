@@ -15,7 +15,7 @@
 import Icon from "@/components/ui/Icon.astro";
 import { Image } from "astro:assets";
 import Tag from "@/components/ui/Tag.astro";
-import { hasPage, workHref, type Work } from "@/lib/work";
+import { isLinked, workHref, type Work } from "@/lib/work";
 
 /** Tags shown on a card; the rest are counted. */
 const MAX_TAGS = 3;
@@ -33,7 +33,7 @@ interface Props {
 const { entry, layout = "tile", headingLevel = 3, eager = false } = Astro.props;
 const { data } = entry;
 const Heading = `h${headingLevel}` as const;
-const href = hasPage(entry) ? workHref(entry) : undefined;
+const href = isLinked(entry) ? workHref(entry) : undefined;
 const meta = [
   layout === "row" && data.role,
   layout === "row" && data.company,
