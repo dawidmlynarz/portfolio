@@ -2,6 +2,7 @@
 import "@/styles/global.css";
 // Preload the Latin subset of Geist so it is usually ready before first paint.
 import geistLatin from "@fontsource-variable/geist/files/geist-latin-wght-normal.woff2?url";
+import ConsentBanner from "@/components/blocks/ConsentBanner.astro";
 import { SEO_LIMITS, SITE, assetOrigin, isProduction, webAnalyticsToken } from "@/lib/site";
 
 interface Props {
@@ -156,14 +157,26 @@ const imageType = /\.jpe?g$/i.test(image.src) ? "image/jpeg" : "image/png";
     <link rel="manifest" href="/site.webmanifest" />
     <link rel="sitemap" href="/sitemap-index.xml" />
     {jsonLd && <script type="application/ld+json" set:html={JSON.stringify(jsonLd)} />}
-    {webAnalyticsToken && (
-      <script
-        is:inline
-        defer
-        src="https://static.cloudflareinsights.com/beacon.min.js"
-        data-cf-beacon={JSON.stringify({ token: webAnalyticsToken })}
-      />
-    )}
+    <!-- Cookie notice (ConsentBanner): no saved choice shows the card from first paint. With a
+         token, the Cloudflare beacon loads only after Accept. -->
+    <script is:inline define:vars={{ token: webAnalyticsToken ?? null }}>
+      if (token) {
+        window.loadAnalytics = () => {
+          if (document.querySelector("script[data-cf-beacon]")) return;
+          const beacon = document.createElement("script");
+          beacon.defer = true;
+          beacon.src = "https://static.cloudflareinsights.com/beacon.min.js";
+          beacon.dataset.cfBeacon = JSON.stringify({ token });
+          document.head.append(beacon);
+        };
+      }
+      let consent = null;
+      try {
+        consent = localStorage.getItem("analytics-consent");
+      } catch {}
+      document.documentElement.dataset.consent = consent ?? "ask";
+      if (consent === "granted") window.loadAnalytics?.();
+    </script>
     <meta name="generator" content={Astro.generator} />
     <slot name="head" />
   </head>
@@ -173,6 +186,7 @@ const imageType = /\.jpe?g$/i.test(image.src) ? "image/jpeg" : "image/png";
       Skip to content
     </a>
     <slot />
+    <ConsentBanner />
   </body>
 </html>
 

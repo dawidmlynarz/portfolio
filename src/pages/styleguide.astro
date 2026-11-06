@@ -43,6 +43,7 @@ import NextUp from "@/components/content/NextUp.astro";
 import CaseStudyToc from "@/components/content/CaseStudyToc.astro";
 import { getPagedWork } from "@/lib/work";
 import LockPanel from "@/components/blocks/LockPanel.astro";
+import ConsentBanner from "@/components/blocks/ConsentBanner.astro";
 import Gem from "@/components/grist/Gem.astro";
 import TileIcon from "@/components/grist/TileIcon.astro";
 import Icon, { type IconName } from "@/components/ui/Icon.astro";
@@ -502,6 +503,15 @@ const ICON_NAMES = Object.keys(ICONS) as IconName[];
           />
         </Stack>
 
+        <Stack gap="4">
+          <h3>ConsentBanner</h3>
+          <p class="muted measure">
+            Cookie notice, fixed bottom left on every page until the visitor picks Decline or Accept
+            (full width on small screens). The choice is saved in localStorage. Two buttons of equal
+            size, Accept primary. Shown here in place.
+          </p>
+          <ConsentBanner preview />
+        </Stack>
         <Stack gap="4">
           <h3>LockPanel</h3>
           <p class="muted measure">

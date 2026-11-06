@@ -1024,3 +1024,9 @@ From the market comparison (Claude Doc "Grist drops vs the market").
 - Right column (from 64em): Explore (Home, Work, Services, About, the current page muted) and Connect (social links) side by side, Experiments under them. On tablets the three groups share one row under the closing line. Phones stack as in the mobile frame. Links are `Link variant="quiet"` at h4 size, so external ones keep the ↗ every external link on the site has.
 - Experiments is a card to /grist with the Grist `Logo` and Dawid's line "Loot for AI grinders. Human-curated." It opens in a new tab (Dawid). Hover lifts it onto the subtle surface, the arrow steps forward and the dot on the i hops. The dot keeps its colour (Dawid asked to drop the rarity colours). With reduced motion the dot stays still. The hop lives in `Logo` (`hop` prop), and the Grist header logo on every /grist page uses it too.
 - This replaces "No portfolio link to Grist yet": the footer now links to Grist on every portfolio page. The Grist footer (simple variant) and the legal one are unchanged.
+
+## Cookie notice back (6 Nov)
+
+- Dawid asked for a simple, standard cookie notice on the page just in case, compliance aside. Inspiration: anthracitestudio.be (a card bottom left with one line, a privacy link and two equal buttons). `ConsentBanner` is back in that shape: his line, a Privacy policy link, Decline and Accept as two equal secondary buttons across the card. It shows on every build (previews too) until a choice is saved in `analytics-consent`.
+- Follow-up (Dawid): Accept is the primary button and the Privacy policy link keeps its underline at rest.
+- Analytics still run through Pages' automatic setup, which ignores the choice. If `CF_WEB_ANALYTICS_TOKEN` is set and the automatic setup turned off, BaseLayout loads the beacon only after Accept, with no code change.
