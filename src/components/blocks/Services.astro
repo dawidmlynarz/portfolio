@@ -4,10 +4,10 @@
  * the case studies that prove it. The detailed variant (the /services page) adds the list of
  * deliverables. Data: src/lib/services.ts.
  *
- * Summary (Home) hover, with a fine pointer only: the row opens up below and its muted text comes
- * to full contrast, while the other rows quiet down (as in "Next up"). Hovering a "See it in" link
- * floats that case study's cover beside the pointer, the same [data-cover-follow] mechanism as
- * "Next up" (motion.ts). Without hover or JS the rows and links are unchanged.
+ * Summary (Home) hover, with a fine pointer only: the row opens up above and below and its muted
+ * text comes to full contrast, while the other rows quiet down (as in "Next up"). Hovering a
+ * "See it in" link floats that case study's cover beside the pointer, the same
+ * [data-cover-follow] mechanism as "Next up" (motion.ts). Without hover or JS the rows and links are unchanged.
  */
 import { Image } from "astro:assets";
 import { getEntry } from "astro:content";
@@ -179,11 +179,13 @@ const widths = (cover: ImageMetadata) => [320, 480, 800].filter((w) => w <= cove
 
     @media (hover: hover) and (pointer: fine) {
       /*
-       * The row hover. The row opens up below on a slow in-out ease and its muted text comes to
-       * full contrast. It opens downwards only, so the links stay put under the pointer.
+       * The row hover. The row opens up above and below on a slow in-out ease and its muted text
+       * comes to full contrast.
        */
       .services--summary .services__row {
-        transition: padding var(--duration-zoom) var(--ease-in-out-quart);
+        transition:
+          padding var(--duration-zoom) var(--ease-in-out-quart),
+          margin var(--duration-zoom) var(--ease-in-out-quart);
       }
 
       .services--summary .services__row > * {
@@ -195,8 +197,16 @@ const widths = (cover: ImageMetadata) => [320, 480, 800].filter((w) => w <= cove
         transition: color var(--duration-link) var(--ease-standard);
       }
 
+      /*
+       * The row grows by the same amount above and below. The pull-up margin cancels the extra
+       * top padding, so the top rule moves up into the gap above while the content holds still
+       * under the pointer (moving it would drop the link hover and the floating cover).
+       */
       .services--summary .services__row:hover {
-        padding-block-end: var(--space-24);
+        --services-grow: var(--space-6);
+
+        margin-block-start: calc(-1 * var(--services-grow));
+        padding-block: calc(var(--space-10) + var(--services-grow));
       }
 
       .services--summary .services__row:hover .services__index,
