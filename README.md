@@ -49,6 +49,18 @@ Optional, production only: `CF_WEB_ANALYTICS_TOKEN` (Cloudflare Web Analytics si
 
 Every other branch gets a preview URL, which is `noindex` (see `DECISIONS.md`).
 
+## Grist stats
+
+`functions/grist/_middleware.ts` counts Grist downloads (`.zip`, `.md`, season packs), plugin installs (`/grist/plugins/*.zip`) and marketplace adds (`marketplace.json`) into Workers Analytics Engine. Copy buttons on a drop are counted through `/grist/_count`, only after Accept on the cookie notice. No IPs or cookies are kept. Page views stay in Cloudflare Web Analytics.
+
+One-time setup:
+
+1. Cloudflare dashboard, Workers & Pages, the project, Settings, Bindings, Add, Analytics Engine. Variable name `GRIST_STATS`, dataset `grist_stats`, for Production only (previews would mix test clicks in). Redeploy production so the binding takes effect.
+2. My Profile, API Tokens, Create Token, Custom token, permission Account, Account Analytics, Read. Copy the token.
+3. In a git-ignored `.env` at the repo root, add `CF_ACCOUNT_ID=<account id>` (shown on the Workers & Pages overview) and `CF_API_TOKEN=<token>`.
+
+Then `npm run stats` prints the last 7 days per drop, and `npm run stats -- --days 30` a longer window. Without the binding nothing is counted and the site works as before.
+
 ## Weekly drop rebuild
 
 Grist drops unlock on Fridays, but the site is static, so a drop only goes live when `main` rebuilds. `.github/workflows/drop-day.yml` asks Cloudflare for a production build every Friday at 00:17, 05:07 and 09:37 UTC. GitHub sometimes skips a scheduled run, so there are three tries. Pushing to `main` rebuilds too, so this only matters on weeks without a push.

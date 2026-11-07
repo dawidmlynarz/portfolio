@@ -5,9 +5,18 @@ import CopyButton from "./CopyButton.astro";
 interface Props {
   /** Absolute URL to copy. */
   url: string;
+  /** The drop's slug, to count copies in Grist stats (after Accept only). */
+  drop?: string;
 }
 
-const { url } = Astro.props;
+const { url, drop } = Astro.props;
 ---
 
-<CopyButton text={url} icon="link" label="Copy link to this drop" done="Link copied" />
+<CopyButton
+  text={url}
+  icon="link"
+  label="Copy link to this drop"
+  done="Link copied"
+  track="copy-link"
+  drop={drop}
+/>
